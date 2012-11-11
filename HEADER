@@ -1,0 +1,23 @@
+This file is part of ${name}.
+
+${copyright} <${url}/>
+${name} is licensed under the ${license}.
+
+${name} is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License Version 3,
+as published by the Free Software Foundation.
+
+In addition, 90 days after any changes are published, you can use the
+software, incorporating those changes, under the terms of the FreeBSD license,
+as described in the ${license}.
+
+${name} is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License,
+the FreeBSD license and the ${license} along with this program.
+If not, see <http://www.gnu.org/licenses/> for the GNU Lesser General Public
+License and see <${licenseUrl}> for the full license,
+including the FreeBSD license.
