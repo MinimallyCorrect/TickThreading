@@ -1,4 +1,4 @@
-package me.nallar.TickThreading.ConcurrentCollections;
+package me.nallar.tickthreading.concurrentcollections;
 
 import java.util.ArrayList;
 
