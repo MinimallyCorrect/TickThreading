@@ -30,9 +30,11 @@ public class CollectionFixer {
 			method.instrument(new ExprEditor() {
 				@Override
 				public void edit(NewExpr e) throws CannotCompileException {
-					if(e.getClassName().equals("java.util.HashMap")){
+					if (e.getClassName().equals("java.util.HashMap")) {
 						System.out.println("(" + e.getSignature() + ") " + e.getClassName() + " at " + e.getFileName() + ":" + e.getLineNumber());
-						String block = "{$_=new me.nallar.tickthreading.concurrentcollections.CHashMap($$);}";
+						String hashMapType = true ? "me.nallar.tickthreading.concurrentcollections.CHashMap" : "java.util.concurrent.ConcurrentHashMap";
+						// TODO Detect if Map or HashMap is type of local variable
+						String block = "{$_=($r)new " + hashMapType + "($$);}";
 						e.replace(block);
 					}
 				}
