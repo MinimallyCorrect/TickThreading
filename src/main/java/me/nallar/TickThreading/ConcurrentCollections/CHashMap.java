@@ -11,24 +11,24 @@ import java.util.concurrent.ConcurrentHashMap;
  * Necessary as ConcurrentHashMap does not, so it's
  * much harder to replace usages of HashMap with it
  */
-public class CHashMap extends HashMap {
+public class CHashMap<K, V> extends HashMap<K, V> {
 	private static final long serialVersionUID = 7249069246763182397L;
-	private ConcurrentHashMap hashMap;
+	private ConcurrentHashMap<K, V> hashMap;
 
 	public CHashMap(int initialCapacity, float loadFactor) {
-		hashMap = new ConcurrentHashMap(initialCapacity, loadFactor);
+		hashMap = new ConcurrentHashMap<K, V>(initialCapacity, loadFactor);
 	}
 
 	public CHashMap(int initialCapacity) {
-		hashMap = new ConcurrentHashMap(initialCapacity);
+		hashMap = new ConcurrentHashMap<K, V>(initialCapacity);
 	}
 
 	public CHashMap() {
-		hashMap = new ConcurrentHashMap();
+		hashMap = new ConcurrentHashMap<K, V>();
 	}
 
 	public CHashMap(Map m) {
-		hashMap = new ConcurrentHashMap(m);
+		hashMap = new ConcurrentHashMap<K, V>(m);
 	}
 
 	@Override
@@ -42,7 +42,7 @@ public class CHashMap extends HashMap {
 	}
 
 	@Override
-	public Object get(Object key) {
+	public V get(Object key) {
 		return hashMap.get(key);
 	}
 
@@ -52,7 +52,7 @@ public class CHashMap extends HashMap {
 	}
 
 	@Override
-	public Object put(Object key, Object value) {
+	public V put(K key, V value) {
 		return hashMap.put(key, value);
 	}
 
@@ -62,7 +62,7 @@ public class CHashMap extends HashMap {
 	}
 
 	@Override
-	public Object remove(Object key) {
+	public V remove(Object key) {
 		return hashMap.remove(key);
 	}
 
@@ -77,17 +77,17 @@ public class CHashMap extends HashMap {
 	}
 
 	@Override
-	public Set keySet() {
+	public Set<K> keySet() {
 		return hashMap.keySet();
 	}
 
 	@Override
-	public Collection values() {
+	public Collection<V> values() {
 		return hashMap.values();
 	}
 
 	@Override
-	public Set entrySet() {
+	public Set<Map.Entry<K, V>> entrySet() {
 		return hashMap.entrySet();
 	}
 
