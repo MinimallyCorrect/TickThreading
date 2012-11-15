@@ -11,7 +11,7 @@ cd forge/mcp
 
 cd reobf/minecraft_server
 
-rm ../reobf_server.jar
+rm -f ../reobf_server.jar
 zip -r ../reobf_server.jar *
 
 cd ../../../..

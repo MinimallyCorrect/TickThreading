@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PATH=~/forgebin:$PATH
+PATH=/var/lib/jenkins/forgebin:$PATH
 
 MCP_VERSION="721"
 FORGE_VERSION="latest"
@@ -57,7 +57,7 @@ if [ $update == "true" ]; then
 
 	cd bin/minecraft
 
-	rm ../minecraft.jar
+	rm -f ../minecraft.jar
 	zip -r ../minecraft.jar *
 
 	cd ../../../..
