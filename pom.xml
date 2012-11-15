@@ -231,15 +231,15 @@
 				<executions>
 					<execution>
 						<id>Forge Update</id>
-						<phase>generate-sources</phase>
+						<phase>pre-clean</phase>
 						<goals>
 							<goal>exec</goal>
 						</goals>
 						<configuration>
-							<executable>bash</executable>
+							<executable>/bin/bash</executable>
 							<workingDirectory>${basedir}</workingDirectory>
 							<arguments>
-								<argument>ForgeUpdate.sh</argument>
+								<argument>${basedir}/ForgeUpdate.sh</argument>
 							</arguments>
 						</configuration>
 					</execution>

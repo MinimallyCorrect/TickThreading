@@ -1,9 +1,9 @@
 #!/bin/bash
 
-MCP_VERSION="719"
+MCP_VERSION="721"
 FORGE_VERSION="latest"
 
-MCP_URL="https://dl.dropbox.com/s/qb9q5ohtzekfk1e/mcp$MCP_VERSION.zip?dl=1"
+MCP_URL="https://dl.dropbox.com/s/dao8itysfwuhj9q/mcp$MCP_VERSION.zip?dl=1"
 FORGE_URL="http://files.minecraftforge.net/minecraftforge-src-$FORGE_VERSION.zip"
 
 mkdir -p forge
@@ -46,4 +46,21 @@ if [ $update == "true" ]; then
 	cd ..
 	mv src forge_src
 	cd ../..
+	cp -r forge/mcp/forge_src forge/mcp/src
+
+	cd forge/mcp
+	
+	./recompile.sh
+	./reobfuscate.sh
+
+	cd bin/minecraft
+
+	rm ../minecraft.jar
+	zip -r ../minecraft.jar *
+
+	cd ../../../..
+
+	mkdir -p libs/net/mojang/minecraft/1.0/
+
+	mv forge/mcp/bin/minecraft.jar libs/net/mojang/minecraft/1.0/minecraft-1.0.jar
 fi
