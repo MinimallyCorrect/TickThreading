@@ -1,5 +1,7 @@
 #!/bin/bash
 
+PATH=~/forgebin:$PATH
+
 MCP_VERSION="721"
 FORGE_VERSION="latest"
 
