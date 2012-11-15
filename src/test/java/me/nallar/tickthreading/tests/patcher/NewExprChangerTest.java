@@ -1,6 +1,8 @@
 package me.nallar.tickthreading.tests.patcher;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javassist.ClassPool;
@@ -9,18 +11,23 @@ import javassist.Loader;
 import me.nallar.tickthreading.patcher.NewExprChanger;
 import org.junit.Test;
 
-public class CollectionFixerTest {
+public class NewExprChangerTest {
 	private HashMap<String, String> h;
 	private Map<String, String> h2;
 
 	@Test
 	public void testFixUnsafeCollections() throws Exception {
-		NewExprChanger collectionFixer = new NewExprChanger();
+		Map replacementClasses = new HashMap();
+		List hashMapReplacementClasses = new ArrayList();
+		hashMapReplacementClasses.add("java.util.concurrent.ConcurrentHashMap");
+		hashMapReplacementClasses.add("me.nallar.tickthreading.concurrentcollections.CHashMap");
+		replacementClasses.put("java.util.HashMap", hashMapReplacementClasses);
+		NewExprChanger newExprChanger = new NewExprChanger(replacementClasses);
 
-		CtClass ctClass = ClassPool.getDefault().get("me.nallar.tickthreading.tests.patcher.CollectionFixerTest");
-		collectionFixer.fixUnsafeCollections(ctClass);
+		CtClass ctClass = ClassPool.getDefault().get("me.nallar.tickthreading.tests.patcher.NewExprChangerTest");
+		newExprChanger.patchClass(ctClass);
 		Loader loader = new Loader(ClassPool.getDefault());
-		Object obj = loader.loadClass("me.nallar.tickthreading.tests.patcher.CollectionFixerTest").newInstance();
+		Object obj = loader.loadClass("me.nallar.tickthreading.tests.patcher.NewExprChangerTest").newInstance();
 		Class<?> objClass = obj.getClass();
 		objClass.getDeclaredMethod("testMethodWhichUsesHashMap").invoke(obj);
 		objClass.getDeclaredMethod("testMethodWhichUsesHashMap2").invoke(obj);

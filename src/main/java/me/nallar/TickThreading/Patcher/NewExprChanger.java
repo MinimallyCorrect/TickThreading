@@ -1,7 +1,7 @@
 package me.nallar.tickthreading.patcher;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,11 +24,18 @@ import javassist.expr.NewExpr;
  * Replaces new instances of one object with others
  */
 public class NewExprChanger {
-	public void fixUnsafeCollections(CtClass ctClass) throws CannotCompileException {
-		final Map<String, List<String>> replacementClasses = new HashMap<String, List<String>>();
+	Map<String, List<String>> replacementClasses;
+	final Field positionField;
 
+	public NewExprChanger(Map replacementClasses) throws NoSuchFieldException {
+		positionField = NewExpr.class.getDeclaredField("newPos");
+		positionField.setAccessible(true);
+		this.replacementClasses = replacementClasses;
+	}
+
+	public void patchClass(CtClass ctClass) throws CannotCompileException {
 		for (CtMethod method : ctClass.getDeclaredMethods()) {
-			final List<String> newExprType = new ArrayList<String>();
+			final Map<Integer, String> newExprType = new HashMap<Integer, String>();
 			method.instrument(new ExprEditor() {
 				NewExpr lastNewExpr;
 
@@ -38,7 +45,6 @@ public class NewExprChanger {
 					if (replacementClasses.containsKey(e.getClassName())) {
 						System.out.println("(" + e.getSignature() + ") " + e.getClassName() + " at " + e.getFileName() + ":" + e.getLineNumber());
 						lastNewExpr = e;
-						newExprType.add("");
 					}
 				}
 
@@ -47,7 +53,12 @@ public class NewExprChanger {
 					NewExpr myLastNewExpr = lastNewExpr;
 					lastNewExpr = null;
 					if (myLastNewExpr != null) {
-						newExprType.add(newExprType.size() - 1, signatureToName(e.getSignature()));
+						try {
+							newExprType.put((Integer) positionField.get(myLastNewExpr), signatureToName(e.getSignature()));
+						} catch (IllegalAccessException e1) {
+							e1.printStackTrace();
+							//This should never happen.
+						}
 					}
 				}
 
@@ -84,20 +95,34 @@ public class NewExprChanger {
 			method.instrument(new ExprEditor() {
 				@Override
 				public void edit(NewExpr e) throws CannotCompileException {
-					if (e.getClassName().equals("java.util.HashMap") && newExprType.size() > 0) {
-						String hashMapType, assignedType = newExprType.get(0);
-						newExprType.remove(0);
-						System.out.println(assignedType + " at " + e.getFileName() + ":" + e.getLineNumber());
-						if (assignedType.equals("java.util.Map")) {
-							hashMapType = "java.util.concurrent.ConcurrentHashMap";
-						} else if (assignedType.equals("java.util.HashMap")) {
-							hashMapType = "me.nallar.tickthreading.concurrentcollections.CHashMap";
-						} else {
-							return;
+					int newPos;
+					try {
+						newPos = (Integer) positionField.get(e);
+					} catch (IllegalAccessException e1) {
+						e1.printStackTrace();
+						//This should never happen
+						return;
+					}
+					try {
+						if (newExprType.containsKey(newPos)) {
+							String replacementType = null, assignedType = newExprType.get(newPos);
+							System.out.println(assignedType + " at " + e.getFileName() + ":" + e.getLineNumber());
+							Class<?> assignTo = Class.forName(assignedType);
+							for (String replacementClass : replacementClasses.get(e.getClassName())) {
+								if (assignTo.isAssignableFrom(Class.forName(replacementClass))) {
+									replacementType = replacementClass;
+									break;
+								}
+							}
+							if (replacementType == null) {
+								return;
+							}
+							String block = "{$_=new " + replacementType + "($$);}";
+							System.out.println("Replaced with " + block);
+							e.replace(block);
 						}
-						String block = "{$_=new " + hashMapType + "($$);}";
-						System.out.println("Replaced with " + block);
-						e.replace(block);
+					} catch (ClassNotFoundException el) {
+						el.printStackTrace();
 					}
 				}
 			});
