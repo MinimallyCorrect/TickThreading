@@ -2,8 +2,6 @@ package me.nallar.tickthreading.concurrentcollections;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
 import java.util.ListIterator;
 
 /**
@@ -22,13 +20,13 @@ public class CArrayList<E> extends ArrayList<E> {
 		super();
 	}
 
-	public CArrayList(Collection c) {
+	public CArrayList(Collection<? extends E> c) {
 		super(c);
 	}
 
 	@Override
-	public ListIterator listIterator(int index) {
+	public ListIterator<E> listIterator(int index) {
 		//TODO: Fix this? :P
-		return new ArrayList(this).listIterator(index);
+		return new ArrayList<E>(this).listIterator(index);
 	}
 }

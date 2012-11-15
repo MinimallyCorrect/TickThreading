@@ -99,6 +99,13 @@
 	<!-- Dependencies -->
 	<dependencies>
 		<dependency>
+			<groupId>net.mojang</groupId>
+			<artifactId>minecraft</artifactId>
+			<version>1.0</version>
+			<type>jar</type>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.bukkit</groupId>
 			<artifactId>bukkit</artifactId>
 			<version>${bukkit.version}</version>
@@ -216,6 +223,27 @@
 					<maxmemory>128m</maxmemory>
 					<additionalJOption>-J-jamvm</additionalJOption>
 				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>exec-maven-plugin</artifactId>
+				<groupId>org.codehaus.mojo</groupId>
+				<version>1.2.1</version>
+				<executions>
+					<execution>
+						<id>Forge Update</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>bash</executable>
+							<workingDirectory>${basedir}</workingDirectory>
+							<arguments>
+								<argument>ForgeUpdate.sh</argument>
+							</arguments>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

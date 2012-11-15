@@ -50,3 +50,7 @@ dist
 nbproject
 build.xml
 
+# Forge+MCP files #
+##################
+forge
+

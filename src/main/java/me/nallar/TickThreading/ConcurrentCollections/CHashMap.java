@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class CHashMap<K, V> extends HashMap<K, V> {
 	private static final long serialVersionUID = 7249069246763182397L;
-	private ConcurrentHashMap<K, V> hashMap;
+	private final ConcurrentHashMap<K, V> hashMap;
 
 	public CHashMap(int initialCapacity, float loadFactor) {
 		hashMap = new ConcurrentHashMap<K, V>(initialCapacity, loadFactor);
@@ -27,7 +27,7 @@ public class CHashMap<K, V> extends HashMap<K, V> {
 		hashMap = new ConcurrentHashMap<K, V>();
 	}
 
-	public CHashMap(Map m) {
+	public CHashMap(Map<? extends K, ? extends V> m) {
 		hashMap = new ConcurrentHashMap<K, V>(m);
 	}
 
@@ -57,7 +57,7 @@ public class CHashMap<K, V> extends HashMap<K, V> {
 	}
 
 	@Override
-	public void putAll(Map m) {
+	public void putAll(Map<? extends K, ? extends V> m) {
 		hashMap.putAll(m);
 	}
 
