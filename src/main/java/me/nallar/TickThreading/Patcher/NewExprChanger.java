@@ -51,7 +51,7 @@ public class NewExprChanger {
 					NewExpr myLastNewExpr = lastNewExpr;
 					lastNewExpr = null;
 					if (myLastNewExpr != null) {
-						System.out.println("(" + myLastNewExpr.getSignature() + ") " + myLastNewExpr.getClassName() + " at " + myLastNewExpr.getFileName() + ":" + myLastNewExpr.getLineNumber() + ":" + newPos);
+						Log.fine("(" + myLastNewExpr.getSignature() + ") " + myLastNewExpr.getClassName() + " at " + myLastNewExpr.getFileName() + ":" + myLastNewExpr.getLineNumber() + ":" + newPos);
 						newExprType.put(newPos, signatureToName(e.getSignature()));
 					}
 				}
@@ -93,10 +93,10 @@ public class NewExprChanger {
 				public void edit(NewExpr e) throws CannotCompileException {
 					newPos++;
 					try {
-						System.out.println(e.getFileName() + ":" + e.getLineNumber() + ", pos: " + newPos);
+						Log.fine(e.getFileName() + ":" + e.getLineNumber() + ", pos: " + newPos);
 						if (newExprType.containsKey(newPos)) {
 							String replacementType = null, assignedType = newExprType.get(newPos);
-							System.out.println(assignedType + " at " + e.getFileName() + ":" + e.getLineNumber());
+							Log.fine(assignedType + " at " + e.getFileName() + ":" + e.getLineNumber());
 							Class<?> assignTo = Class.forName(assignedType);
 							for (String replacementClass : replacementClasses.get(e.getClassName())) {
 								if (assignTo.isAssignableFrom(Class.forName(replacementClass))) {

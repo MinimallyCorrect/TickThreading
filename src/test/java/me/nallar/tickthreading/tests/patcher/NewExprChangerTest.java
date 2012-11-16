@@ -1,6 +1,7 @@
 package me.nallar.tickthreading.tests.patcher;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,17 +12,16 @@ import javassist.Loader;
 import me.nallar.tickthreading.patcher.NewExprChanger;
 import org.junit.Test;
 
+import org.junit.Assert;
+
 public class NewExprChangerTest {
 	private HashMap<String, String> h;
 	private Map<String, String> h2;
 
 	@Test
 	public void testFixUnsafeCollections() throws Exception {
-		Map replacementClasses = new HashMap();
-		List hashMapReplacementClasses = new ArrayList();
-		hashMapReplacementClasses.add("java.util.concurrent.ConcurrentHashMap");
-		hashMapReplacementClasses.add("me.nallar.tickthreading.concurrentcollections.CHashMap");
-		replacementClasses.put("java.util.HashMap", hashMapReplacementClasses);
+		Map<String, List<String>> replacementClasses = new HashMap<String, List<String>>();
+		replacementClasses.put("java.util.HashMap", Arrays.asList("java.util.concurrent.ConcurrentHashMap,me.nallar.tickthreading.concurrentcollections.CHashMap".split(",")));
 		NewExprChanger newExprChanger = new NewExprChanger(replacementClasses);
 
 		CtClass ctClass = ClassPool.getDefault().get("me.nallar.tickthreading.tests.patcher.NewExprChangerTest");
@@ -36,8 +36,11 @@ public class NewExprChangerTest {
 	public void testMethodWhichUsesHashMap() {
 		h = new HashMap<String, String>();
 		h2 = new HashMap<String, String>();
-		System.out.println("h: " + h.getClass().getName());
-		System.out.println("h2: " + h2.getClass().getName());
+		if(h.getClass().getName() == "java.util.HashMap" || h.getClass().getName() == "java.util.HashMap"){
+			System.out.println("h: " + h.getClass().getName());
+			System.out.println("h2: " + h2.getClass().getName());
+			Assert.fail("Expected replacement concurrent classes, h: " + h.getClass().getName() + "h2: " + h2.getClass().getName());
+		}
 		h.put("test", "test2");
 		h2.put("test", "test2");
 	}
