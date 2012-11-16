@@ -1,7 +1,6 @@
 package me.nallar.tickthreading.patcher;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,17 +18,15 @@ import javassist.expr.Instanceof;
 import javassist.expr.MethodCall;
 import javassist.expr.NewArray;
 import javassist.expr.NewExpr;
+import me.nallar.tickthreading.Log;
 
 /**
  * Replaces new instances of one object with others
  */
 public class NewExprChanger {
 	Map<String, List<String>> replacementClasses;
-	final Field positionField;
 
 	public NewExprChanger(Map replacementClasses) throws NoSuchFieldException {
-		positionField = NewExpr.class.getDeclaredField("newPos");
-		positionField.setAccessible(true);
 		this.replacementClasses = replacementClasses;
 	}
 
@@ -38,12 +35,13 @@ public class NewExprChanger {
 			final Map<Integer, String> newExprType = new HashMap<Integer, String>();
 			method.instrument(new ExprEditor() {
 				NewExpr lastNewExpr;
+				int newPos = 0;
 
 				@Override
 				public void edit(NewExpr e) throws CannotCompileException {
 					lastNewExpr = null;
+					newPos++;
 					if (replacementClasses.containsKey(e.getClassName())) {
-						System.out.println("(" + e.getSignature() + ") " + e.getClassName() + " at " + e.getFileName() + ":" + e.getLineNumber());
 						lastNewExpr = e;
 					}
 				}
@@ -53,12 +51,8 @@ public class NewExprChanger {
 					NewExpr myLastNewExpr = lastNewExpr;
 					lastNewExpr = null;
 					if (myLastNewExpr != null) {
-						try {
-							newExprType.put((Integer) positionField.get(myLastNewExpr), signatureToName(e.getSignature()));
-						} catch (IllegalAccessException e1) {
-							e1.printStackTrace();
-							//This should never happen.
-						}
+						System.out.println("(" + myLastNewExpr.getSignature() + ") " + myLastNewExpr.getClassName() + " at " + myLastNewExpr.getFileName() + ":" + myLastNewExpr.getLineNumber() + ":" + newPos);
+						newExprType.put(newPos, signatureToName(e.getSignature()));
 					}
 				}
 
@@ -93,17 +87,13 @@ public class NewExprChanger {
 				}
 			});
 			method.instrument(new ExprEditor() {
+				int newPos = 0;
+
 				@Override
 				public void edit(NewExpr e) throws CannotCompileException {
-					int newPos;
+					newPos++;
 					try {
-						newPos = (Integer) positionField.get(e);
-					} catch (IllegalAccessException e1) {
-						e1.printStackTrace();
-						//This should never happen
-						return;
-					}
-					try {
+						System.out.println(e.getFileName() + ":" + e.getLineNumber() + ", pos: " + newPos);
 						if (newExprType.containsKey(newPos)) {
 							String replacementType = null, assignedType = newExprType.get(newPos);
 							System.out.println(assignedType + " at " + e.getFileName() + ":" + e.getLineNumber());
@@ -118,7 +108,7 @@ public class NewExprChanger {
 								return;
 							}
 							String block = "{$_=new " + replacementType + "($$);}";
-							System.out.println("Replaced with " + block);
+							Log.fine("Replaced with " + block + ", " + replacementType.length() + ":" + assignedType.length());
 							e.replace(block);
 						}
 					} catch (ClassNotFoundException el) {
