@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.ListIterator;
 
 /**
- * Semi-concurrent arraylist.
+ * Semi-concurrent ArrayList.
  * Ignores comodification exceptions, some synchronisation (except not yet. Need to test)
  * TODO: Determine whether this should be changed to internally use CopyOnWriteArrayList
  */

@@ -24,9 +24,9 @@ import me.nallar.tickthreading.Log;
  * Replaces new instances of one object with others
  */
 public class NewExprChanger {
-	Map<String, List<String>> replacementClasses;
+	private final Map<String, List<String>> replacementClasses;
 
-	public NewExprChanger(Map replacementClasses) throws NoSuchFieldException {
+	public NewExprChanger(Map replacementClasses) {
 		this.replacementClasses = replacementClasses;
 	}
 

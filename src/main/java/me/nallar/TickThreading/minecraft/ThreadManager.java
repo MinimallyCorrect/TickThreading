@@ -15,18 +15,18 @@ import net.minecraftforge.common.Configuration;
 
 public class ThreadManager {
 	private static class TileEntityTask implements Runnable {
-		private static final Configuration conf = new Configuration(new File("TickThreading.conf"));
+		private static final Configuration configuration = new Configuration(new File("TickThreading.configuration"));
 		private static final Random random = new Random();
 		public static final CyclicBarrier tickNotifyLatch;
 		public static final CyclicBarrier endTickLatch;
-		private static volatile CopyOnWriteArrayList<TileEntity>[] tileEntityList;
-		private static volatile CopyOnWriteArrayList<TileEntity>[] entityList;
+		private static final CopyOnWriteArrayList<TileEntity>[] tileEntityList;
+		private static final CopyOnWriteArrayList<TileEntity>[] entityList;
 		private static volatile ThreadPoolExecutor threadPool = null;
-		static int numTileThreads = 1;
-		static int numEntityThreads = 1;
+		static final int numTileThreads = 1;
+		static final int numEntityThreads = 1;
 
 		static {
-			/*Property TileThreads = conf.get("core.TileThreads", Configuration.CATEGORY_GENERAL, numTileThreads);
+			/*Property TileThreads = configuration.get("core.TileThreads", Configuration.CATEGORY_GENERAL, numTileThreads);
 					numTileThreads = Integer.parseInt(TileThreads.value);*/
 
 			endTickLatch = new CyclicBarrier(1 + numTileThreads);//+numEntityThreads);
@@ -62,6 +62,7 @@ public class ThreadManager {
 			return rootGroup;
 		}
 
+		@SuppressWarnings ("EmptyMethod")
 		public static void initialise() {
 			// Doesn't actually do anything, just an easy way to get the class to run,
 			// and run the static block.
@@ -97,7 +98,6 @@ public class ThreadManager {
 							World world = tile.worldObj;
 							Log.fine("Invalid tile!");
 							while (tileEntityList[threadID].remove(tile)) {
-								;
 							}
 							Log.warning("Removed invalid tile: " + tile.xCoord + ", " + tile.yCoord + ", " + tile.zCoord + "\ttype:" + tile.getClass().toString());//yes, it's blank...
 							if (world.getChunkProvider().chunkExists(tile.xCoord >> 4, tile.zCoord >> 4)) {

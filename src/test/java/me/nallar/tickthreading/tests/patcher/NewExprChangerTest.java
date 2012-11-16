@@ -1,6 +1,5 @@
 package me.nallar.tickthreading.tests.patcher;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -10,9 +9,8 @@ import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.Loader;
 import me.nallar.tickthreading.patcher.NewExprChanger;
-import org.junit.Test;
-
 import org.junit.Assert;
+import org.junit.Test;
 
 public class NewExprChangerTest {
 	private HashMap<String, String> h;
@@ -36,7 +34,7 @@ public class NewExprChangerTest {
 	public void testMethodWhichUsesHashMap() {
 		h = new HashMap<String, String>();
 		h2 = new HashMap<String, String>();
-		if(h.getClass().getName() == "java.util.HashMap" || h.getClass().getName() == "java.util.HashMap"){
+		if (h.getClass().getName().equals("java.util.HashMap") || h.getClass().getName().equals("java.util.HashMap")) {
 			System.out.println("h: " + h.getClass().getName());
 			System.out.println("h2: " + h2.getClass().getName());
 			Assert.fail("Expected replacement concurrent classes, h: " + h.getClass().getName() + "h2: " + h2.getClass().getName());
