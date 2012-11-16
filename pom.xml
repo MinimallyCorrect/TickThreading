@@ -59,23 +59,11 @@
 			<url>file://${project.basedir}/libs</url>
 		</repository>
 		<repository>
-			<id>central</id>
-			<url>http://repo1.maven.org/maven2/</url>
-		</repository>
-		<repository>
 			<id>repobo-snap</id>
 			<url>http://repo.bukkit.org/content/groups/public</url>
 		</repository>
-		<repository>
-			<id>spout-repo</id>
-			<url>http://repo.spout.org</url>
-		</repository>
 	</repositories>
 	<pluginRepositories>
-		<pluginRepository>
-			<id>spout-plugins</id>
-			<url>http://repo.spout.org</url>
-		</pluginRepository>
 		<pluginRepository>
 			<id>bukkit-plugins</id>
 			<url>http://repo.bukkit.org/content/groups/public</url>
@@ -164,23 +152,6 @@
 			</resource>
 		</resources>
 		<plugins>
-			<plugin>
-				<groupId>com.sourcesense.maven</groupId>
-				<artifactId>maven-nosnapshot-plugin</artifactId>
-				<version>0.0.7-SNAPSHOT</version>
-				<executions>
-					<execution>
-						<phase>initialize</phase>
-						<goals>
-							<goal>strip</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<version>${project.version}</version>
-					<propertyName>releaseVersion</propertyName>
-				</configuration>
-			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>

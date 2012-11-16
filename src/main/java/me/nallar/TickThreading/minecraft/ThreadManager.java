@@ -68,13 +68,11 @@ public class ThreadManager {
 			// and run the static block.
 		}
 
-		public static synchronized void addTile(TileEntity TE) {
-			//Log.fine("Added TE!");
-			tileEntityList[random.nextInt(numTileThreads)].add(TE);
+		public static synchronized void addTile(TileEntity tileEntity) {
+			tileEntityList[random.nextInt(numTileThreads)].add(tileEntity);
 		}
 
 		private final int threadID;
-		private final int worldID = 0;
 
 		public TileEntityTask(int threadID) {
 			super();
@@ -91,20 +89,21 @@ public class ThreadManager {
 						tickNotifyLatch.reset();
 					}
 					for (TileEntity tile : tileEntityList[threadID]) {
-						if (!tile.isInvalid() && tile.worldObj != null) {
-							tile.updateEntity();
-						}
-						if (tile.isInvalid() && tile.worldObj != null) {
-							World world = tile.worldObj;
-							Log.fine("Invalid tile!");
-							while (tileEntityList[threadID].remove(tile)) {
-							}
-							Log.warning("Removed invalid tile: " + tile.xCoord + ", " + tile.yCoord + ", " + tile.zCoord + "\ttype:" + tile.getClass().toString());//yes, it's blank...
-							if (world.getChunkProvider().chunkExists(tile.xCoord >> 4, tile.zCoord >> 4)) {
-								Chunk chunk = world.getChunkFromChunkCoords(tile.xCoord >> 4, tile.zCoord >> 4);
-								if (chunk != null) {
-									chunk.cleanChunkBlockTileEntity(tile.xCoord & 0xf, tile.yCoord, tile.zCoord & 0xf);
+						if(tile.worldObj != null){
+							if (tile.isInvalid()) {
+								World world = tile.worldObj;
+								Log.fine("Invalid tile!");
+								while (tileEntityList[threadID].remove(tile)) {
 								}
+								Log.warning("Removed invalid tile: " + tile.xCoord + ", " + tile.yCoord + ", " + tile.zCoord + "\ttype:" + tile.getClass().toString());//yes, it's blank...
+								if (world.getChunkProvider().chunkExists(tile.xCoord >> 4, tile.zCoord >> 4)) {
+									Chunk chunk = world.getChunkFromChunkCoords(tile.xCoord >> 4, tile.zCoord >> 4);
+									if (chunk != null) {
+										chunk.cleanChunkBlockTileEntity(tile.xCoord & 0xf, tile.yCoord, tile.zCoord & 0xf);
+									}
+								}
+							} else {
+								tile.updateEntity();
 							}
 						}
 					}
