@@ -29,7 +29,7 @@ if [[ $1 == "force" ]]; then
 	update="true"
 fi
 
-if [ ! -f lastMCPVersion ] || [ `cat lastMCPVersion` != $MCP_VERSION ]; then
+if [ ! -f lastMCPVersion ] || [ `cat lastMCPVersion` != "$MCP_VERSION" ]; then
 	touch lastMCPVersion
 	echo "Updating MCP to $MCP_VERSION"
 	echo $MCP_VERSION > lastMCPVersion
@@ -38,7 +38,7 @@ if [ ! -f lastMCPVersion ] || [ `cat lastMCPVersion` != $MCP_VERSION ]; then
 	update="true"
 fi
 
-if [ ! -f lastForgeVersion ] || [ `cat lastForgeVersion` != $FORGE_VERSION ]; then
+if [ ! -f lastForgeVersion ] || [ "`cat lastForgeVersion`" != "$FORGE_VERSION" ]; then
 	touch lastForgeVersion
 	echo "Updating Forge to $FORGE_VERSION"
 	echo $FORGE_VERSION > lastForgeVersion
