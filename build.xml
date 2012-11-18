@@ -1,0 +1,219 @@
+<project name="TickThreading" default="main" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+	<property environment="env"/>
+
+	<property name="build.dir" value="build"/>
+	<property name="src.dir" value="src"/>
+
+	<property name="download.dir" value="download"/>
+	<property name="lib.dir" value="${download.dir}/libs"/>
+
+	<property name="classes.dir" value="${build.dir}/classes"/>
+	<property name="jar.dir" value="target"/>
+
+	<property name="mcp.dir" value="${build.dir}/mcp"/>
+	<property name="mcplib.dir" value="${build.dir}/mcp/lib"/>
+	<property name="forge.dir" value="${mcp.dir}/forge"/>
+
+	<property name="mcpsrc.dir" value="${mcp.dir}/src"/>
+	<property name="forgesrc.dir" value="${mcp.dir}/forge_src"/>
+
+	<property name="mcp.version" value="722"/>
+	<property name="forge.version" value="1.4.5-6.4.0.385"/>
+	<property name="TickThreading.version" value="1.0"/>
+
+	<property name="maven.ant.tasks.jar" value="${lib.dir}/maven-ant-tasks-2.1.3.jar"/>
+	<property name="maven.ant.tasks.bootstrap.location" value="http://apache.mirrors.timporter.net/maven/ant-tasks/2.1.3/binaries/maven-ant-tasks-2.1.3.jar"/>
+
+	<available property="forge-exists" file="${download.dir}/minecraftforge-src-${forge.version}.zip"/>
+	<condition property="should-download-ant-libs">
+		<not>
+			<and>
+				<or>
+					<available file="${download.dir}/ant-contrib/ant-contrib-1.0b3.jar"/>
+					<available file="${download.dir}/minecraftforge-src-${forge.version}.zip"/>
+				</or>
+				<available property="maven.ant.tasks.jar.exists" file="${maven.ant.tasks.jar}"/>
+			</and>
+		</not>
+	</condition>
+	<condition property="out-of-date">
+		<not>
+			<and>
+				<available file="${download.dir}/mcp${mcp.version}.zip"/>
+				<available file="${download.dir}/minecraftforge-src-${forge.version}.zip"/>
+				<available file="${forgesrc.dir}"/>
+			</and>
+		</not>
+	</condition>
+
+	<mkdir dir="${download.dir}"/>
+
+	<target name="clean">
+		<delete dir="${build.dir}"/>
+	</target>
+
+	<target name="initialize-version" depends="version-provided,version-not-provided">
+		<property name="TickThreading.version.full" value="${TickThreading.version}.${build.number}"/>
+	</target>
+
+	<target name="version-not-provided" unless="env.BUILD_NUMBER">
+		<buildnumber/>
+	</target>
+
+	<target name="version-provided" if="env.BUILD_NUMBER">
+		<property name="build.number" value="${env.BUILD_NUMBER}"/>
+	</target>
+
+	<target name="download-files" depends="initialize-version,download-mcp,download-forge"/>
+
+	<target name="download-ant-libs" if="should-download-ant-libs">
+		<mkdir dir="${lib.dir}"/>
+		<get src="${maven.ant.tasks.bootstrap.location}" dest="${maven.ant.tasks.jar}"/>
+
+		<mkdir dir="${download.dir}/tmp"/>
+
+		<get src="http://sourceforge.net/projects/ant-contrib/files/ant-contrib/1.0b3/ant-contrib-1.0b3-bin.zip/download" dest="${download.dir}/tmp/ant-contrib-1.0b3-bin.zip"/>
+		<get src="http://archive.apache.org/dist/commons/codec/binaries/commons-codec-1.6-bin.zip" dest="${download.dir}/tmp/commons-codec-1.6-bin.zip"/>
+
+		<unzip src="${download.dir}/tmp/ant-contrib-1.0b3-bin.zip" dest="${download.dir}"/>
+		<unzip src="${download.dir}/tmp/commons-codec-1.6-bin.zip" dest="${download.dir}/tmp"/>
+
+		<move todir="${download.dir}/ant-contrib/lib">
+			<fileset file="${download.dir}/tmp/commons-codec-1.6/commons-codec-1.6.jar"/>
+		</move>
+
+		<!-- Delete useless files -->
+		<delete dir="${download.dir}/ant-contrib/docs"/>
+		<delete dir="${download.dir}/tmp"/>
+
+	</target>
+
+	<!-- Download mcp -->
+	<target name="download-mcp">
+
+		<get src="http://mcp.ocean-labs.de/files/mcp${mcp.version}.zip" dest="${download.dir}" usetimestamp="True"/>
+
+	</target>
+
+	<!-- Download forge (if it doesn't exist) -->
+	<target name="download-forge" depends="download-ant-libs" unless="forge-exists">
+
+		<taskdef resource="net/sf/antcontrib/antlib.xml">
+			<classpath>
+				<pathelement location="${download.dir}/ant-contrib/ant-contrib-1.0b3.jar"/>
+				<fileset dir="${download.dir}/ant-contrib/lib">
+					<include name="*.jar"/>
+				</fileset>
+			</classpath>
+		</taskdef>
+
+		<getMethod url="http://files.minecraftforge.net/minecraftforge-src-${forge.version}.zip"
+							 responseDataFile="${download.dir}/minecraftforge-src-${forge.version}.zip">
+			<header name="User-Agent" value="Ant-${ant.version}/${ant.java.version}"/>
+		</getMethod>
+
+	</target>
+
+	<!-- Setup mcp and forge -->
+	<target name="setup" if="out-of-date">
+		<delete dir="${mcp.dir}" failonerror="false"/>
+		<path
+						id="maven.ant.tasks.classpath"
+						path="${maven.ant.tasks.jar}"/>
+		<typedef resource="org/apache/maven/artifact/ant/antlib.xml"
+						 uri="antlib:org.apache.maven.artifact.ant"
+						 classpathref="maven.ant.tasks.classpath">
+		</typedef>
+
+		<unzip dest="${mcp.dir}">
+			<fileset dir="${download.dir}">
+				<include name="mcp${mcp.version}.zip"/>
+			</fileset>
+		</unzip>
+
+		<unzip dest="${mcp.dir}">
+			<fileset dir="${download.dir}">
+				<include name="minecraftforge-src-${forge.version}.zip"/>
+			</fileset>
+		</unzip>
+
+		<!-- Fix executable permissions -->
+		<chmod dir="${mcp.dir}" perm="ugo+rx" includes="**.sh"/>
+		<chmod file="${mcp.dir}/runtime/bin/astyle-osx" perm="ugo+rx"/>
+
+		<!-- Install forge -->
+		<exec dir="${forge.dir}" executable="cmd" osfamily="windows">
+			<arg line="/c install.cmd"/>
+		</exec>
+		<exec dir="${forge.dir}" executable="sh" osfamily="unix">
+			<arg value="install.sh"/>
+		</exec>
+
+		<artifact:dependencies filesetId="dependency.fileset"
+													 versionsId="dependency.versions">
+			<artifact:dependency groupId="javassist" artifactId="javassist" version="3.12.1.GA"/>
+		</artifact:dependencies>
+		<copy todir="${mcplib.dir}">
+			<fileset refid="dependency.fileset"/>
+			<mapper classpathref="maven.ant.tasks.classpath"
+							classname="org.apache.maven.artifact.ant.VersionMapper"
+							from="${dependency.versions}" to="flatten"/>
+		</copy>
+
+		<delete dir="${forgesrc.dir}"/>
+		<move file="${mcpsrc.dir}" todir="${forgesrc.dir}"/>
+
+	</target>
+
+	<target name="compile" depends="setup">
+		<delete dir="${mcpsrc.dir}"/>
+		<copy todir="${mcp.dir}">
+			<fileset dir="${forgesrc.dir}"/>
+		</copy>
+		<copy todir="${mcpsrc.dir}">
+			<fileset dir="${src.dir}">
+			</fileset>
+			<filterset>
+				<filter token="VERSION" value="${TickThreading.version}"/>
+				<filter token="BUILD_NUMBER" value="${build.number}"/>
+			</filterset>
+		</copy>
+
+		<exec dir="${mcp.dir}" executable="cmd" osfamily="windows">
+			<arg line="/c recompile.bat"/>
+		</exec>
+
+		<exec dir="${mcp.dir}" executable="sh" osfamily="unix">
+			<arg value="recompile.sh"/>
+			<env key="PATH" value="~/forgebin:${env.PATH}"/>
+		</exec>
+
+		<exec dir="${mcp.dir}" executable="cmd" osfamily="windows">
+			<arg line="/c reobfuscate.bat"/>
+		</exec>
+
+		<exec dir="${mcp.dir}" executable="sh" osfamily="unix">
+			<arg value="reobfuscate.sh"/>
+			<env key="PATH" value="~/forgebin:${env.PATH}"/>
+		</exec>
+
+		<copy todir="${classes.dir}">
+			<fileset dir="${mcp.dir}/reobf/minecraft"/>
+		</copy>
+
+		<copy file="LICENSE" todir="${classes.dir}"/>
+
+		<copy todir="${classes.dir}" failonerror="false">
+			<fileset dir="resources"/>
+		</copy>
+	</target>
+
+	<!-- Zip the compiled files -->
+	<target name="package" depends="compile">
+		<jar destfile="${jar.dir}/TickThreading-${TickThreading.version.full}.jar" basedir="${classes.dir}"/>
+	</target>
+
+	<!-- Default target to run -->
+	<target name="main" depends="download-files,package"/>
+
+</project>
