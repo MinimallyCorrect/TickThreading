@@ -52,5 +52,5 @@ build.xml
 
 # Forge+MCP files #
 ##################
-forge
-
+mcp
+download
