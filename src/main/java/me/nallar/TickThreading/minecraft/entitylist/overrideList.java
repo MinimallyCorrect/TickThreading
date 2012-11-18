@@ -31,6 +31,11 @@ public abstract class overrideList<T> extends ArrayList<T> {
 	}
 
 	@Override
+	public int size() {
+		return 0;
+	}
+
+	@Override
 	public abstract boolean add(T t);
 
 	@Override
