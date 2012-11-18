@@ -1,4 +1,4 @@
-package me.nallar.tickthreading.concurrentcollections;
+package me.nallar.tickthreading.collections;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Necessary as ConcurrentHashMap does not, so it's
  * much harder to replace usages of HashMap with it
  */
+@SuppressWarnings ("UnusedDeclaration")
 public class CHashMap<K, V> extends HashMap<K, V> {
 	private static final long serialVersionUID = 7249069246763182397L;
 	private final ConcurrentHashMap<K, V> hashMap;

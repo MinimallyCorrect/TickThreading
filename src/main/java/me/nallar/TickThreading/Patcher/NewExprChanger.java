@@ -38,7 +38,7 @@ public class NewExprChanger {
 				int newPos = 0;
 
 				@Override
-				public void edit(NewExpr e) throws CannotCompileException {
+				public void edit(NewExpr e) {
 					lastNewExpr = null;
 					newPos++;
 					if (replacementClasses.containsKey(e.getClassName())) {
@@ -47,7 +47,7 @@ public class NewExprChanger {
 				}
 
 				@Override
-				public void edit(FieldAccess e) throws CannotCompileException {
+				public void edit(FieldAccess e) {
 					NewExpr myLastNewExpr = lastNewExpr;
 					lastNewExpr = null;
 					if (myLastNewExpr != null) {
@@ -57,32 +57,32 @@ public class NewExprChanger {
 				}
 
 				@Override
-				public void edit(MethodCall e) throws CannotCompileException {
+				public void edit(MethodCall e) {
 					lastNewExpr = null;
 				}
 
 				@Override
-				public void edit(NewArray e) throws CannotCompileException {
+				public void edit(NewArray e) {
 					lastNewExpr = null;
 				}
 
 				@Override
-				public void edit(Cast e) throws CannotCompileException {
+				public void edit(Cast e) {
 					lastNewExpr = null;
 				}
 
 				@Override
-				public void edit(Instanceof e) throws CannotCompileException {
+				public void edit(Instanceof e) {
 					lastNewExpr = null;
 				}
 
 				@Override
-				public void edit(Handler e) throws CannotCompileException {
+				public void edit(Handler e) {
 					lastNewExpr = null;
 				}
 
 				@Override
-				public void edit(ConstructorCall e) throws CannotCompileException {
+				public void edit(ConstructorCall e) {
 					lastNewExpr = null;
 				}
 			});
@@ -127,6 +127,7 @@ public class NewExprChanger {
 	}
 
 	private static String signatureToName(String signature) {
+		//noinspection HardcodedFileSeparator
 		return signature.substring(1, signature.length() - 1).replace("/", ".");
 	}
 }

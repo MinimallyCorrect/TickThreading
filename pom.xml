@@ -17,7 +17,6 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<build.number>Unknown</build.number>
 		<minimumJreVersion>1.6</minimumJreVersion>
-		<bukkit.version>1.4.2-R0.3-SNAPSHOT</bukkit.version>
 		<github.organisation>nallar</github.organisation>
 		<github.project>TickThreading</github.project>
 	</properties>
@@ -94,13 +93,6 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.bukkit</groupId>
-			<artifactId>bukkit</artifactId>
-			<version>${bukkit.version}</version>
-			<type>jar</type>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
 			<groupId>javassist</groupId>
 			<artifactId>javassist</artifactId>
 			<version>3.12.1.GA</version>
@@ -114,11 +106,6 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.10</version>
-		</dependency>
-		<dependency>
-			<groupId>asm</groupId>
-			<artifactId>asm-all</artifactId>
-			<version>3.3.1</version>
 		</dependency>
 	</dependencies>
 

@@ -3,6 +3,7 @@ package me.nallar.tickthreading;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+@SuppressWarnings ("UnusedDeclaration")
 public class Log {
 	private static final Logger LOGGER = Logger.getLogger("Minecraft");
 

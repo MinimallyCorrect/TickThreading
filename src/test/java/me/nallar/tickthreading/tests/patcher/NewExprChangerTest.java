@@ -12,6 +12,7 @@ import me.nallar.tickthreading.patcher.NewExprChanger;
 import org.junit.Assert;
 import org.junit.Test;
 
+@SuppressWarnings ("UnusedDeclaration")
 public class NewExprChangerTest {
 	private HashMap<String, String> h;
 	private Map<String, String> h2;
@@ -19,7 +20,7 @@ public class NewExprChangerTest {
 	@Test
 	public void testFixUnsafeCollections() throws Exception {
 		Map<String, List<String>> replacementClasses = new HashMap<String, List<String>>();
-		replacementClasses.put("java.util.HashMap", Arrays.asList("java.util.concurrent.ConcurrentHashMap,me.nallar.tickthreading.concurrentcollections.CHashMap".split(",")));
+		replacementClasses.put("java.util.HashMap", Arrays.asList("java.util.concurrent.ConcurrentHashMap,me.nallar.tickthreading.collections.CHashMap".split(",")));
 		NewExprChanger newExprChanger = new NewExprChanger(replacementClasses);
 
 		CtClass ctClass = ClassPool.getDefault().get("me.nallar.tickthreading.tests.patcher.NewExprChangerTest");
