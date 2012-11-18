@@ -146,6 +146,7 @@
 			<arg line="/c install.cmd"/>
 		</exec>
 		<exec dir="${forge.dir}" executable="sh" osfamily="unix">
+			<env key="PATH" value="/var/lib/jenkins/forgebin/:${env.PATH}"/>
 			<arg value="install.sh"/>
 		</exec>
 
@@ -185,7 +186,6 @@
 
 		<exec dir="${mcp.dir}" executable="sh" osfamily="unix">
 			<arg value="recompile.sh"/>
-			<env key="PATH" value="~/forgebin:${env.PATH}"/>
 		</exec>
 
 		<exec dir="${mcp.dir}" executable="cmd" osfamily="windows">
@@ -194,7 +194,6 @@
 
 		<exec dir="${mcp.dir}" executable="sh" osfamily="unix">
 			<arg value="reobfuscate.sh"/>
-			<env key="PATH" value="~/forgebin:${env.PATH}"/>
 		</exec>
 
 		<copy todir="${classes.dir}">
