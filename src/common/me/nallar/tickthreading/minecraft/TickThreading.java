@@ -25,7 +25,8 @@ public class TickThreading {
 	// TODO: Not hardcoded field names
 	private final String loadedTileEntityFieldName = "";
 	private final String loadedEntityFieldName = "";
-	private int regionSize;
+	private int tileEntityRegionSize = 16;
+	private int entityRegionSize = 64;
 	private Configuration config;
 
 	@Mod.Init
@@ -36,13 +37,20 @@ public class TickThreading {
 	@Mod.PreInit
 	public void preInit(FMLPreInitializationEvent event) {
 		config = new Configuration(event.getSuggestedConfigurationFile());
-		Property regionSize = config.get(Configuration.CATEGORY_GENERAL, "regionSize", "16");
-		this.regionSize = regionSize.getInt(16);
+		config.load();
+		Property tileEntityRegionSizeProperty = config.get(Configuration.CATEGORY_GENERAL, "tileEntityRegionSize", String.valueOf(tileEntityRegionSize));
+		tileEntityRegionSizeProperty.comment = "width/length of tile entity tick regions, specified in blocks.";
+		Property entityRegionSizeProperty = config.get(Configuration.CATEGORY_GENERAL, "entityRegionSize", String.valueOf(entityRegionSize));
+		tileEntityRegionSizeProperty.comment = "width/length of entity tick regions, specified in blocks.";
+		config.save();
+
+		tileEntityRegionSize = tileEntityRegionSizeProperty.getInt(tileEntityRegionSize);
+		entityRegionSize = entityRegionSizeProperty.getInt(entityRegionSize);
 	}
 
 	@ForgeSubscribe
 	public void onWorldLoad(WorldEvent.Load event) {
-		ThreadManager manager = new ThreadManager(event.world, regionSize);
+		ThreadManager manager = new ThreadManager(event.world, tileEntityRegionSize, entityRegionSize);
 		try {
 			Field loadedTileEntityField = World.class.getDeclaredField(loadedTileEntityFieldName);
 			Field loadedEntityField = World.class.getDeclaredField(loadedEntityFieldName);

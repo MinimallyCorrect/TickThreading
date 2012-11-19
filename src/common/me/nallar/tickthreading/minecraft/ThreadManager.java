@@ -15,7 +15,8 @@ import net.minecraft.src.TileEntity;
 import net.minecraft.src.World;
 
 public class ThreadManager {
-	public final int regionSize;
+	public final int tileEntityRegionSize;
+	public final int entityRegionSize;
 	private CyclicBarrier tileEntityTickNotifyLatch = new CyclicBarrier(1);
 	private CyclicBarrier tileEntityTickEndLatch = new CyclicBarrier(1);
 	private CyclicBarrier entityTickNotifyLatch = new CyclicBarrier(1);
@@ -28,9 +29,10 @@ public class ThreadManager {
 	private final Map<Integer, EntityTickThread> entityThreads = new HashMap<Integer, EntityTickThread>();
 	private final World world;
 
-	public ThreadManager(World world, int regionSize) {
+	public ThreadManager(World world, int tileEntityRegionSize, int entityRegionSize) {
 		this.world = world;
-		this.regionSize = regionSize;
+		this.tileEntityRegionSize = tileEntityRegionSize;
+		this.entityRegionSize = entityRegionSize;
 	}
 
 	// TODO: Don't use thread.stop() in unload(), use thread.interrupt() and make this return false.
@@ -86,7 +88,7 @@ public class ThreadManager {
 		int hashCode = getHashCode(tileEntity);
 		TileEntityTickThread thread = tileEntityThreads.get(hashCode);
 		if (thread == null) {
-			thread = new TileEntityTickThread(world, "region: x" + tileEntity.xCoord / regionSize + ",z" + tileEntity.zCoord / regionSize, this, hashCode);
+			thread = new TileEntityTickThread(world, "region: x" + tileEntity.xCoord / tileEntityRegionSize + ",z" + tileEntity.zCoord / tileEntityRegionSize, this, hashCode);
 			tileEntityThreads.put(hashCode, thread);
 		}
 		return thread;
@@ -97,19 +99,19 @@ public class ThreadManager {
 		int hashCode = getHashCode(entity);
 		EntityTickThread thread = entityThreads.get(hashCode);
 		if (thread == null) {
-			thread = new EntityTickThread(world, "region: x" + (int) entity.posX / regionSize + ",z" + (int) entity.posZ / regionSize, this, hashCode);
+			thread = new EntityTickThread(world, "region: x" + (int) entity.posX / tileEntityRegionSize + ",z" + (int) entity.posZ / tileEntityRegionSize, this, hashCode);
 			entityThreads.put(hashCode, thread);
 		}
 		return thread;
 	}
 
 	public int getHashCode(TileEntity tileEntity) {
-		return tileEntity.xCoord / regionSize + (tileEntity.zCoord / regionSize << 16);
+		return tileEntity.xCoord / tileEntityRegionSize + (tileEntity.zCoord / tileEntityRegionSize << 16);
 	}
 
 	@SuppressWarnings ("NumericCastThatLosesPrecision")
 	public int getHashCode(Entity entity) {
-		return ((int) entity.posX) / regionSize + (((int) entity.posY) / regionSize << 16);
+		return ((int) entity.posX) / entityRegionSize + (((int) entity.posY) / entityRegionSize << 16);
 	}
 
 	private synchronized void processChanges() {
