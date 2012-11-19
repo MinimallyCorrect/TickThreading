@@ -1,3 +1,4 @@
+<!--suppress AntResolveInspection -->
 <project name="TickThreading" default="main" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
 	<property environment="env"/>
 

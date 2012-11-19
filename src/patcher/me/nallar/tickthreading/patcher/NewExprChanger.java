@@ -1,4 +1,4 @@
-package me.nallar.tickthreading.patcher;
+package patcher;
 
 import java.io.IOException;
 import java.util.HashMap;
