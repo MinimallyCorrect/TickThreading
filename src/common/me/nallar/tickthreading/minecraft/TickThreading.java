@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.entitylist.LoadedEntityList;
@@ -11,26 +12,37 @@ import me.nallar.tickthreading.minecraft.entitylist.LoadedTileEntityList;
 import me.nallar.tickthreading.minecraft.entitylist.overrideList;
 import net.minecraft.src.TileEntity;
 import net.minecraft.src.World;
+import net.minecraftforge.common.Configuration;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.Property;
 import net.minecraftforge.event.ForgeSubscribe;
 import net.minecraftforge.event.world.WorldEvent;
 
 @SuppressWarnings ("WeakerAccess")
-@Mod (modid = "nallar_TickThreading", name = "TickThreading", version = "1.0")
+@Mod (modid = "TickThreading", name = "TickThreading", version = "1.0")
 @NetworkMod (clientSideRequired = false, serverSideRequired = false)
 public class TickThreading {
 	// TODO: Not hardcoded field names
 	private final String loadedTileEntityFieldName = "";
 	private final String loadedEntityFieldName = "";
+	private int regionSize;
+	private Configuration config;
 
 	@Mod.Init
-	public void load(FMLInitializationEvent event) {
+	public void init(FMLInitializationEvent event) {
 		MinecraftForge.EVENT_BUS.register(this);
+	}
+
+	@Mod.PreInit
+	public void preInit(FMLPreInitializationEvent event) {
+		config = new Configuration(event.getSuggestedConfigurationFile());
+		Property regionSize = config.get(Configuration.CATEGORY_GENERAL, "regionSize", "16");
+		this.regionSize = regionSize.getInt(16);
 	}
 
 	@ForgeSubscribe
 	public void onWorldLoad(WorldEvent.Load event) {
-		ThreadManager manager = new ThreadManager(event.world);
+		ThreadManager manager = new ThreadManager(event.world, regionSize);
 		try {
 			Field loadedTileEntityField = World.class.getDeclaredField(loadedTileEntityFieldName);
 			Field loadedEntityField = World.class.getDeclaredField(loadedEntityFieldName);

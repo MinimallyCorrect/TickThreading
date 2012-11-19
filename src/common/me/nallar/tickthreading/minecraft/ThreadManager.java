@@ -15,7 +15,7 @@ import net.minecraft.src.TileEntity;
 import net.minecraft.src.World;
 
 public class ThreadManager {
-	public final int regionSize = 16;
+	public final int regionSize;
 	private CyclicBarrier tileEntityTickNotifyLatch = new CyclicBarrier(1);
 	private CyclicBarrier tileEntityTickEndLatch = new CyclicBarrier(1);
 	private CyclicBarrier entityTickNotifyLatch = new CyclicBarrier(1);
@@ -28,8 +28,9 @@ public class ThreadManager {
 	private final Map<Integer, EntityTickThread> entityThreads = new HashMap<Integer, EntityTickThread>();
 	private final World world;
 
-	public ThreadManager(World world) {
+	public ThreadManager(World world, int regionSize) {
 		this.world = world;
+		this.regionSize = regionSize;
 	}
 
 	// TODO: Don't use thread.stop() in unload(), use thread.interrupt() and make this return false.
