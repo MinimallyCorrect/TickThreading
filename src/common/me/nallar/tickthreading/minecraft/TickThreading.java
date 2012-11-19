@@ -7,9 +7,9 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 import me.nallar.tickthreading.Log;
+import me.nallar.tickthreading.minecraft.entitylist.EntityList;
 import me.nallar.tickthreading.minecraft.entitylist.LoadedEntityList;
 import me.nallar.tickthreading.minecraft.entitylist.LoadedTileEntityList;
-import me.nallar.tickthreading.minecraft.entitylist.overrideList;
 import net.minecraft.src.TileEntity;
 import net.minecraft.src.World;
 import net.minecraftforge.common.Configuration;
@@ -66,8 +66,8 @@ public class TickThreading {
 		try {
 			Field loadedTileEntityField = World.class.getDeclaredField(loadedTileEntityFieldName);
 			Object loadedTileEntityList = loadedTileEntityField.get(event.world);
-			if (loadedTileEntityList instanceof overrideList) {
-				((overrideList) loadedTileEntityList).unload();
+			if (loadedTileEntityList instanceof EntityList) {
+				((EntityList) loadedTileEntityList).unload();
 			} else {
 				Log.severe("Looks like another mod broke threading for world, probably a long time ago: " + event.world.getWorldInfo().getWorldName());
 			}

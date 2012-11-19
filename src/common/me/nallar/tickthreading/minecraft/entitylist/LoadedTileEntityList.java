@@ -9,7 +9,7 @@ import me.nallar.tickthreading.minecraft.ThreadManager;
 import net.minecraft.src.TileEntity;
 import net.minecraft.src.World;
 
-public class LoadedTileEntityList<T> extends overrideList<T> {
+public class LoadedTileEntityList<T> extends EntityList<T> {
 	private final Iterable<T> emptyList = Collections.emptyList();
 
 	public LoadedTileEntityList(World world, Field overridenField, ThreadManager manager) {

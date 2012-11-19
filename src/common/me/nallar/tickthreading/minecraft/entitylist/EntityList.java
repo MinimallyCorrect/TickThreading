@@ -10,10 +10,10 @@ import net.minecraft.src.World;
 /*
 * Used to override World.loadedTileEntityList.
 * */
-public abstract class overrideList<T> extends ArrayList<T> {
+public abstract class EntityList<T> extends ArrayList<T> {
 	final ThreadManager manager;
 
-	overrideList(World world, Field overridenField, ThreadManager manager) {
+	EntityList(World world, Field overridenField, ThreadManager manager) {
 		this.manager = manager;
 		overridenField.setAccessible(true);
 		try {
