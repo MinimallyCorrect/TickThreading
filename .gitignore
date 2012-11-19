@@ -48,6 +48,7 @@ MANIFEST.MF
 build
 dist
 nbproject
+build.number
 
 # Forge+MCP downloads #
 ##################
