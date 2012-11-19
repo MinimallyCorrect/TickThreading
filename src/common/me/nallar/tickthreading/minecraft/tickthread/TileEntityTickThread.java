@@ -24,7 +24,7 @@ public class TileEntityTickThread extends TickThread {
 				for (TileEntity tileEntity : tileEntityList) {
 					if (tileEntity.isInvalid()) {
 						Log.fine("Invalid tile!");
-						tileEntityList.remove(tileEntity);
+						manager.remove(tileEntity);
 						Log.warning("Removed invalid tile: " + tileEntity.xCoord + ", " + tileEntity.yCoord + ", " + tileEntity.zCoord + "\ttype:" + tileEntity.getClass().toString());//yes, it's blank...
 						if (world.getChunkProvider().chunkExists(tileEntity.xCoord >> 4, tileEntity.zCoord >> 4)) {
 							Chunk chunk = world.getChunkFromChunkCoords(tileEntity.xCoord >> 4, tileEntity.zCoord >> 4);
@@ -36,7 +36,7 @@ public class TileEntityTickThread extends TickThread {
 						tileEntity.updateEntity();
 					}
 					if (manager.getHashCode(tileEntity) != hashCode) {
-						tileEntityList.remove(tileEntity);
+						manager.remove(tileEntity);
 						manager.add(tileEntity);
 					}
 				}

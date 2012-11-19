@@ -44,12 +44,12 @@ public class EntityTickThread extends TickThread {
 							world.getChunkFromChunkCoords(entityX, entityY).removeEntity(entity);
 						}
 
-						entityList.remove(entity);
+						manager.remove(entity);
 						//Entity skin not removed - this mod only runs on the server.
 					}
 
 					if (manager.getHashCode(entity) != hashCode) {
-						entityList.remove(entity);
+						manager.remove(entity);
 						manager.add(entity);
 					}
 				}
