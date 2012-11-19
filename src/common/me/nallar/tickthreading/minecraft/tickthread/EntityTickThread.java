@@ -20,7 +20,7 @@ public class EntityTickThread extends TickThread {
 	public void run() {
 		try {
 			Log.fine("Started entity tick thread");
-			while (manager.waitForEntityTick()) {
+			while (entityList.size() > 0 && manager.waitForEntityTick()) {
 				IChunkProvider chunkProvider = world.getChunkProvider();
 				for (Entity entity : entityList) {
 					if (entity.ridingEntity != null) {

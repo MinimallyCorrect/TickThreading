@@ -20,7 +20,7 @@ public class TileEntityTickThread extends TickThread {
 	public void run() {
 		try {
 			Log.fine("Started tick thread");
-			while (manager.waitForTileEntityTick()) {
+			while (tileEntityList.size() > 0 && manager.waitForTileEntityTick()) {
 				for (TileEntity tileEntity : tileEntityList) {
 					if (tileEntity.isInvalid()) {
 						Log.fine("Invalid tile!");

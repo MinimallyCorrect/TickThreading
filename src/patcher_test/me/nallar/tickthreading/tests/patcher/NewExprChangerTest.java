@@ -8,7 +8,7 @@ import java.util.Map;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.Loader;
-import patcher.NewExprChanger;
+import me.nallar.tickthreading.patcher.NewExprChanger;
 import org.junit.Assert;
 import org.junit.Test;
 

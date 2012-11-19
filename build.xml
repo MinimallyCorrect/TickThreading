@@ -154,6 +154,7 @@
 		<artifact:dependencies filesetId="dependency.fileset"
 													 versionsId="dependency.versions">
 			<artifact:dependency groupId="javassist" artifactId="javassist" version="3.12.1.GA"/>
+			<artifact:dependency groupId="junit" artifactId="junit" version="4.10"/>
 		</artifact:dependencies>
 		<copy todir="${mcplib.dir}">
 			<fileset refid="dependency.fileset"/>
