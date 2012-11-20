@@ -20,9 +20,7 @@ public class LoadedTileEntityList<T> extends EntityList<T> {
 	public Iterator<T> iterator() {
 		try {
 			manager.waitForTileEntityTick();
-			manager.waitForEntityTick();
 			manager.endTileEntityTick();
-			manager.endEntityTick();
 		} catch (BrokenBarrierException e) {
 			e.printStackTrace();
 		}

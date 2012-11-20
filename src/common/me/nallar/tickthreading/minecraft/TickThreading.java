@@ -1,6 +1,9 @@
 package me.nallar.tickthreading.minecraft;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
@@ -23,8 +26,8 @@ import net.minecraftforge.event.world.WorldEvent;
 @NetworkMod (clientSideRequired = false, serverSideRequired = false)
 public class TickThreading {
 	// TODO: Not hardcoded field names
-	private final String loadedTileEntityFieldName = "";
-	private final String loadedEntityFieldName = "";
+	private final int loadedTileEntityFieldIndex = 2;
+	private final int loadedEntityFieldIndex = 0;
 	private int tileEntityRegionSize = 16;
 	private int entityRegionSize = 64;
 	private Configuration config;
@@ -52,10 +55,14 @@ public class TickThreading {
 	public void onWorldLoad(WorldEvent.Load event) {
 		ThreadManager manager = new ThreadManager(event.world, tileEntityRegionSize, entityRegionSize);
 		try {
-			Field loadedTileEntityField = World.class.getDeclaredField(loadedTileEntityFieldName);
-			Field loadedEntityField = World.class.getDeclaredField(loadedEntityFieldName);
+			Field loadedTileEntityField = getListFields(World.class)[loadedTileEntityFieldIndex];
+			Field loadedEntityField = getListFields(World.class)[loadedEntityFieldIndex];
 			new LoadedTileEntityList<TileEntity>(event.world, loadedTileEntityField, manager);
-			new LoadedEntityList<TileEntity>(event.world, loadedEntityField, manager);
+			// TODO: Enable entity tick threading
+			// Requires:
+			//	- AxisAlignedBB pool threadlocal
+			// 	- ^automated patching
+			//new LoadedEntityList<TileEntity>(event.world, loadedEntityField, manager);
 		} catch (Exception e) {
 			Log.severe("Failed to initialise tile threading for world " + event.world.getWorldInfo().getWorldName(), e);
 		}
@@ -64,7 +71,7 @@ public class TickThreading {
 	@ForgeSubscribe
 	public void onWorldUnload(WorldEvent.Unload event) {
 		try {
-			Field loadedTileEntityField = World.class.getDeclaredField(loadedTileEntityFieldName);
+			Field loadedTileEntityField = getListFields(World.class)[loadedTileEntityFieldIndex];
 			Object loadedTileEntityList = loadedTileEntityField.get(event.world);
 			if (loadedTileEntityList instanceof EntityList) {
 				((EntityList) loadedTileEntityList).unload();
@@ -74,5 +81,16 @@ public class TickThreading {
 		} catch (Exception e) {
 			Log.severe("Probable memory leak: Failed to unload tile threading for world " + event.world.getWorldInfo().getWorldName(), e);
 		}
+	}
+
+	private static Field[] getListFields(Class c){
+		List<Field> listFields = new ArrayList<Field>();
+		List<Field> fields = Arrays.asList(c.getDeclaredFields());
+		for(Field field : fields){
+			if(List.class.isAssignableFrom(field.getType())){
+				listFields.add(field);
+			}
+		}
+		return listFields.toArray(new Field[listFields.size()]);
 	}
 }

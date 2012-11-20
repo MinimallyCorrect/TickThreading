@@ -90,7 +90,7 @@
 	</target>
 
 	<!-- Download mcp -->
-	<target name="download-mcp">
+	<target name="download-mcp" if="out-of-date">
 
 		<get src="http://mcp.ocean-labs.de/files/mcp${mcp.version}.zip" dest="${download.dir}" usetimestamp="True"/>
 
@@ -170,6 +170,8 @@
 
 	<target name="compile" depends="setup">
 		<delete dir="${mcpsrc.dir}"/>
+		<delete dir="${classes.dir}"/>
+		<mkdir dir="${classes.dir}"/>
 		<copy todir="${mcp.dir}">
 			<fileset dir="${forgesrc.dir}"/>
 		</copy>
@@ -211,6 +213,8 @@
 
 	<!-- Zip the compiled files -->
 	<target name="package" depends="compile">
+		<delete dir="${jar.dir}" failonerror="false"/>
+		<mkdir dir="${jar.dir}"/>
 		<jar destfile="${jar.dir}/TickThreading-${TickThreading.version.full}.jar" basedir="${classes.dir}"/>
 	</target>
 

@@ -17,15 +17,13 @@ import net.minecraft.src.World;
 public class ThreadManager {
 	public final int tileEntityRegionSize;
 	public final int entityRegionSize;
-	private volatile boolean entityCyclicBarrierReset = false;
-	private volatile boolean tileEntityCyclicBarrierReset = false;
 	private int lastNumberOfEntityThreads = 0;
 	private int lastNumberOfTileEntityThreads = 0;
 	private volatile CyclicBarrier tileEntityTickNotifyBarrier = new CyclicBarrier(1);
 	private volatile CyclicBarrier tileEntityTickEndBarrier = new CyclicBarrier(1);
 	private volatile CyclicBarrier entityTickNotifyBarrier = new CyclicBarrier(1);
 	private volatile CyclicBarrier entityTickEndBarrier = new CyclicBarrier(1);
-	private volatile CyclicBarrier processChangesBarrier = new CyclicBarrier(0);
+	private volatile CyclicBarrier processChangesBarrier = new CyclicBarrier(1);
 	private final List<TileEntity> toRemoveTileEntities = new ArrayList<TileEntity>();
 	private final List<Entity> toRemoveEntities = new ArrayList<Entity>();
 	private final List<TileEntity> toAddTileEntities = new ArrayList<TileEntity>();
@@ -143,20 +141,26 @@ public class ThreadManager {
 		for (Entity entity : toRemoveEntities) {
 			getThreadForEntity(entity).remove(entity);
 		}
-		if(entityThreads.size() != lastNumberOfEntityThreads){
-			entityTickEndBarrier = new CyclicBarrier(entityThreads.size());
-			entityTickNotifyBarrier = new CyclicBarrier(entityThreads.size());
-			entityCyclicBarrierReset = true;
+		boolean entityThreadsChange = entityThreads.size() != lastNumberOfEntityThreads;
+		boolean tileEntityThreadsChange = tileEntityThreads.size() != lastNumberOfTileEntityThreads;
+		if(tileEntityThreadsChange || entityThreadsChange){
+			if(entityThreadsChange){
+				entityTickEndBarrier = new CyclicBarrier(entityThreads.size());
+				entityTickNotifyBarrier = new CyclicBarrier(entityThreads.size());
+				lastNumberOfEntityThreads = entityThreads.size();
+			}
+			if(tileEntityThreadsChange){
+				tileEntityTickEndBarrier = new CyclicBarrier(tileEntityThreads.size() + 1);
+				tileEntityTickNotifyBarrier = new CyclicBarrier(tileEntityThreads.size() + 1);
+				lastNumberOfTileEntityThreads = tileEntityThreads.size();
+			}
+			CyclicBarrier oldProcessChangesBarrier = processChangesBarrier;
+			processChangesBarrier = new CyclicBarrier(tileEntityThreads.size() + entityThreads.size() + 1);
+			oldProcessChangesBarrier.await();
+		} else {
+			processChangesBarrier.await();
 		}
-		if(tileEntityThreads.size() != lastNumberOfTileEntityThreads){
-			tileEntityTickEndBarrier = new CyclicBarrier(tileEntityThreads.size() + 1);
-			tileEntityTickNotifyBarrier = new CyclicBarrier(tileEntityThreads.size() + 1);
-			tileEntityCyclicBarrierReset = true;
-		}
-		lastNumberOfEntityThreads = entityThreads.size();
-		lastNumberOfTileEntityThreads = tileEntityThreads.size();
-		processChangesBarrier.await();
-		processChangesBarrier = new CyclicBarrier(tileEntityThreads.size() + entityThreads.size());
+
 		for(Thread toStart : toStartThreads){
 			toStart.start();
 		}
