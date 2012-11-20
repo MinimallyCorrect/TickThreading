@@ -1,15 +1,17 @@
 package me.nallar.tickthreading.minecraft;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import me.nallar.tickthreading.minecraft.tickthread.EntityTickThread;
-import me.nallar.tickthreading.minecraft.tickthread.TileEntityTickThread;
+import me.nallar.tickthreading.Log;
+import me.nallar.tickthreading.minecraft.tickcallables.EntityTickCallable;
+import me.nallar.tickthreading.minecraft.tickcallables.TickCallable;
+import me.nallar.tickthreading.minecraft.tickcallables.TileEntityTickCallable;
 import net.minecraft.src.Entity;
 import net.minecraft.src.TileEntity;
 import net.minecraft.src.World;
@@ -17,19 +19,20 @@ import net.minecraft.src.World;
 public class ThreadManager {
 	public final int tileEntityRegionSize;
 	public final int entityRegionSize;
-	private int lastNumberOfEntityThreads = 0;
-	private int lastNumberOfTileEntityThreads = 0;
-	private volatile CyclicBarrier tileEntityTickNotifyBarrier = new CyclicBarrier(1);
-	private volatile CyclicBarrier tileEntityTickEndBarrier = new CyclicBarrier(1);
-	private volatile CyclicBarrier entityTickNotifyBarrier = new CyclicBarrier(1);
-	private volatile CyclicBarrier entityTickEndBarrier = new CyclicBarrier(1);
-	private volatile CyclicBarrier processChangesBarrier = new CyclicBarrier(1);
+
+	private final Object changeProcessLock = new Object();
+
 	private final List<TileEntity> toRemoveTileEntities = new ArrayList<TileEntity>();
 	private final List<Entity> toRemoveEntities = new ArrayList<Entity>();
 	private final List<TileEntity> toAddTileEntities = new ArrayList<TileEntity>();
 	private final List<Entity> toAddEntities = new ArrayList<Entity>();
-	private final Map<Integer, TileEntityTickThread> tileEntityThreads = new HashMap<Integer, TileEntityTickThread>();
-	private final Map<Integer, EntityTickThread> entityThreads = new HashMap<Integer, EntityTickThread>();
+
+	private final Map<Integer, TileEntityTickCallable> tileEntityRunnables = new HashMap<Integer, TileEntityTickCallable>();
+	private final Map<Integer, EntityTickCallable> entityRunnables = new HashMap<Integer, EntityTickCallable>();
+	private final List<TickCallable<Object>> tickCallables = new ArrayList<TickCallable<Object>>();
+
+	private final ExecutorService tickExecutor = Executors.newCachedThreadPool();
+
 	private final World world;
 
 	public ThreadManager(World world, int tileEntityRegionSize, int entityRegionSize) {
@@ -38,76 +41,28 @@ public class ThreadManager {
 		this.entityRegionSize = entityRegionSize;
 	}
 
-	// TODO: Don't use thread.stop() in unload(), use thread.interrupt() and make this return false.
-	@SuppressWarnings ("SameReturnValue")
-	public boolean waitForTileEntityTick() throws BrokenBarrierException {
-		try {
-			if (tileEntityTickNotifyBarrier.await() == 0) {
-				tileEntityTickNotifyBarrier.reset();
-			}
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		return true;
-	}
-
-	public void endTileEntityTick() throws BrokenBarrierException {
-		try {
-			if (tileEntityTickEndBarrier.await() == 0) {
-				tileEntityTickEndBarrier.reset();
-				processChanges();
-			}else{
-				processChangesBarrier.await();
-			}
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
-
-	// TODO: Don't use thread.stop() in unload(), use thread.interrupt() and make this return false.
-	@SuppressWarnings ("SameReturnValue")
-	public boolean waitForEntityTick() throws BrokenBarrierException {
-		try {
-			if (entityTickNotifyBarrier.await() == 0) {
-				entityTickNotifyBarrier.reset();
-			}
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		return true;
-	}
-
-	public void endEntityTick() throws BrokenBarrierException {
-		try {
-			if (entityTickEndBarrier.await() == 0) {
-				entityTickEndBarrier.reset();
-			}
-			processChangesBarrier.await();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
-
 	@SuppressWarnings ("NumericCastThatLosesPrecision")
-	private TileEntityTickThread getThreadForTileEntity(TileEntity tileEntity) {
+	private TileEntityTickCallable getRunnableForTileEntity(TileEntity tileEntity) {
 		int hashCode = getHashCode(tileEntity);
-		TileEntityTickThread thread = tileEntityThreads.get(hashCode);
-		if (thread == null) {
-			thread = new TileEntityTickThread(world, "region: x" + tileEntity.xCoord / tileEntityRegionSize + ",z" + tileEntity.zCoord / tileEntityRegionSize, this, hashCode);
-			tileEntityThreads.put(hashCode, thread);
+		TileEntityTickCallable runnable = tileEntityRunnables.get(hashCode);
+		if (runnable == null) {
+			runnable = new TileEntityTickCallable<Object>(world, "region: x" + tileEntity.xCoord / tileEntityRegionSize + ",z" + tileEntity.zCoord / tileEntityRegionSize, this, hashCode);
+			tileEntityRunnables.put(hashCode, runnable);
+			tickCallables.add(runnable);
 		}
-		return thread;
+		return runnable;
 	}
 
 	@SuppressWarnings ("NumericCastThatLosesPrecision")
-	private EntityTickThread getThreadForEntity(Entity entity) {
+	private EntityTickCallable getRunnableForEntity(Entity entity) {
 		int hashCode = getHashCode(entity);
-		EntityTickThread thread = entityThreads.get(hashCode);
-		if (thread == null) {
-			thread = new EntityTickThread(world, "region: x" + (int) entity.posX / tileEntityRegionSize + ",z" + (int) entity.posZ / tileEntityRegionSize, this, hashCode);
-			entityThreads.put(hashCode, thread);
+		EntityTickCallable runnable = entityRunnables.get(hashCode);
+		if (runnable == null) {
+			runnable = new EntityTickCallable<Object>(world, "region: x" + (int) entity.posX / tileEntityRegionSize + ",z" + (int) entity.posZ / tileEntityRegionSize, this, hashCode);
+			entityRunnables.put(hashCode, runnable);
+			tickCallables.add(runnable);
 		}
-		return thread;
+		return runnable;
 	}
 
 	public int getHashCode(TileEntity tileEntity) {
@@ -119,50 +74,32 @@ public class ThreadManager {
 		return ((int) entity.posX) / entityRegionSize + (((int) entity.posY) / entityRegionSize << 16);
 	}
 
-	private synchronized void processChanges() throws BrokenBarrierException, InterruptedException {
-		List<Thread> toStartThreads = new ArrayList<Thread>();
-		for (TileEntity tileEntity : toAddTileEntities) {
-			TileEntityTickThread tileEntityTickThread = getThreadForTileEntity(tileEntity);
-			tileEntityTickThread.add(tileEntity);
-			if(!tileEntityTickThread.isAlive() && !toStartThreads.contains(tileEntityTickThread)){
-				toStartThreads.add(tileEntityTickThread);
+	private synchronized void processChanges() {
+		synchronized (changeProcessLock) {
+			for (TileEntity tileEntity : toAddTileEntities) {
+				getRunnableForTileEntity(tileEntity).add(tileEntity);
 			}
-		}
-		for (TileEntity tileEntity : toRemoveTileEntities) {
-			getThreadForTileEntity(tileEntity).remove(tileEntity);
-		}
-		for (Entity entity : toAddEntities) {
-			EntityTickThread entityTickThread = getThreadForEntity(entity);
-			entityTickThread.add(entity);
-			if(!entityTickThread.isAlive() && !toStartThreads.contains(entityTickThread)){
-				toStartThreads.add(entityTickThread);
+			for (TileEntity tileEntity : toRemoveTileEntities) {
+				getRunnableForTileEntity(tileEntity).remove(tileEntity);
 			}
-		}
-		for (Entity entity : toRemoveEntities) {
-			getThreadForEntity(entity).remove(entity);
-		}
-		boolean entityThreadsChange = entityThreads.size() != lastNumberOfEntityThreads;
-		boolean tileEntityThreadsChange = tileEntityThreads.size() != lastNumberOfTileEntityThreads;
-		if(tileEntityThreadsChange || entityThreadsChange){
-			if(entityThreadsChange){
-				entityTickEndBarrier = new CyclicBarrier(entityThreads.size());
-				entityTickNotifyBarrier = new CyclicBarrier(entityThreads.size());
-				lastNumberOfEntityThreads = entityThreads.size();
+			for (Entity entity : toAddEntities) {
+				getRunnableForEntity(entity).add(entity);
 			}
-			if(tileEntityThreadsChange){
-				tileEntityTickEndBarrier = new CyclicBarrier(tileEntityThreads.size() + 1);
-				tileEntityTickNotifyBarrier = new CyclicBarrier(tileEntityThreads.size() + 1);
-				lastNumberOfTileEntityThreads = tileEntityThreads.size();
+			for (Entity entity : toRemoveEntities) {
+				getRunnableForEntity(entity).remove(entity);
 			}
-			CyclicBarrier oldProcessChangesBarrier = processChangesBarrier;
-			processChangesBarrier = new CyclicBarrier(tileEntityThreads.size() + entityThreads.size() + 1);
-			oldProcessChangesBarrier.await();
-		} else {
-			processChangesBarrier.await();
-		}
-
-		for(Thread toStart : toStartThreads){
-			toStart.start();
+			Iterator<TickCallable<Object>> iterator = tickCallables.iterator();
+			while(iterator.hasNext()){
+				TickCallable tickCallable = iterator.next();
+				if(tickCallable.isEmpty()){
+					iterator.remove();
+					if(tickCallable instanceof EntityTickCallable){
+						entityRunnables.remove(tickCallable.hashCode);
+					} else {
+						tileEntityRunnables.remove(tickCallable.hashCode);
+					}
+				}
+			}
 		}
 	}
 
@@ -182,16 +119,23 @@ public class ThreadManager {
 		toRemoveEntities.add(entity);
 	}
 
-	public void unload() {
-		for (Thread thread : getThreads()) {
-			thread.stop();
+	public void doTick() {
+		synchronized (changeProcessLock) {
+			try {
+				tickExecutor.invokeAll(tickCallables);
+			} catch (InterruptedException e) {
+				Log.warning("Interrupted while ticking: ", e);
+			}
 		}
+		tickExecutor.submit(new Runnable() {
+			@Override
+			public void run() {
+				processChanges();
+			}
+		});
 	}
 
-	private Collection<Thread> getThreads() {
-		Collection<Thread> collection = new ArrayList<Thread>();
-		collection.addAll(tileEntityThreads.values());
-		collection.addAll(entityThreads.values());
-		return collection;
+	public void unload() {
+		tickExecutor.shutdown();
 	}
 }

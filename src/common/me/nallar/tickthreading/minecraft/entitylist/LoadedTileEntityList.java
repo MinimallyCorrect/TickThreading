@@ -18,12 +18,7 @@ public class LoadedTileEntityList<T> extends EntityList<T> {
 
 	@Override
 	public Iterator<T> iterator() {
-		try {
-			manager.waitForTileEntityTick();
-			manager.endTileEntityTick();
-		} catch (BrokenBarrierException e) {
-			e.printStackTrace();
-		}
+		manager.doTick();
 		return emptyList.iterator();
 	}
 

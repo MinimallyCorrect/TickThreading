@@ -5,7 +5,11 @@ import java.util.logging.Logger;
 
 @SuppressWarnings ("UnusedDeclaration")
 public class Log {
-	private static final Logger LOGGER = Logger.getLogger("Minecraft");
+	private static final Logger LOGGER = Logger.getLogger("TickThreading");
+
+	static {
+		LOGGER.setLevel(Level.ALL);
+	}
 
 	public static void severe(String msg) {
 		LOGGER.severe(msg);

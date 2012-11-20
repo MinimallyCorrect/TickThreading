@@ -18,8 +18,8 @@
 	<property name="mcpsrc.dir" value="${mcp.dir}/src"/>
 	<property name="forgesrc.dir" value="${mcp.dir}/forge_src"/>
 
-	<property name="mcp.version" value="722"/>
-	<property name="forge.version" value="1.4.5-6.4.0.385"/>
+	<property name="mcp.version" value="723"/>
+	<property name="forge.version" value="1.4.5-6.4.0.394"/>
 	<property name="TickThreading.version" value="1.0"/>
 
 	<property name="maven.ant.tasks.jar" value="${lib.dir}/maven-ant-tasks-2.1.3.jar"/>
