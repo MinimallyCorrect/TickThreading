@@ -58,7 +58,7 @@
 	</target>
 
 	<target name="version-not-provided" unless="env.BUILD_NUMBER">
-		<buildnumber/>
+		<property name="build.number" value="unknown"/>
 	</target>
 
 	<target name="version-provided" if="env.BUILD_NUMBER">

@@ -58,13 +58,14 @@ public class TickThreading {
 			Field loadedTileEntityField = getListFields(World.class)[loadedTileEntityFieldIndex];
 			Field loadedEntityField = getListFields(World.class)[loadedEntityFieldIndex];
 			new LoadedTileEntityList<TileEntity>(event.world, loadedTileEntityField, manager);
+			Log.info("Threading initialised for world " + Log.name(event.world));
 			// TODO: Enable entity tick threading
 			// Requires:
 			//	- AxisAlignedBB pool threadlocal
 			// 	- ^automated patching
 			//new LoadedEntityList<TileEntity>(event.world, loadedEntityField, manager);
 		} catch (Exception e) {
-			Log.severe("Failed to initialise tile threading for world " + event.world.getWorldInfo().getWorldName(), e);
+			Log.severe("Failed to initialise tile threading for world " + Log.name(event.world), e);
 		}
 	}
 
@@ -79,7 +80,7 @@ public class TickThreading {
 				Log.severe("Looks like another mod broke threading for world, probably a long time ago: " + event.world.getWorldInfo().getWorldName());
 			}
 		} catch (Exception e) {
-			Log.severe("Probable memory leak: Failed to unload tile threading for world " + event.world.getWorldInfo().getWorldName(), e);
+			Log.severe("Probable memory leak: Failed to unload tile threading for world " + Log.name(event.world), e);
 		}
 	}
 

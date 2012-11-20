@@ -75,31 +75,35 @@ public class ThreadManager {
 	}
 
 	private synchronized void processChanges() {
-		synchronized (changeProcessLock) {
-			for (TileEntity tileEntity : toAddTileEntities) {
-				getRunnableForTileEntity(tileEntity).add(tileEntity);
-			}
-			for (TileEntity tileEntity : toRemoveTileEntities) {
-				getRunnableForTileEntity(tileEntity).remove(tileEntity);
-			}
-			for (Entity entity : toAddEntities) {
-				getRunnableForEntity(entity).add(entity);
-			}
-			for (Entity entity : toRemoveEntities) {
-				getRunnableForEntity(entity).remove(entity);
-			}
-			Iterator<TickCallable<Object>> iterator = tickCallables.iterator();
-			while(iterator.hasNext()){
-				TickCallable tickCallable = iterator.next();
-				if(tickCallable.isEmpty()){
-					iterator.remove();
-					if(tickCallable instanceof EntityTickCallable){
-						entityRunnables.remove(tickCallable.hashCode);
-					} else {
-						tileEntityRunnables.remove(tickCallable.hashCode);
+		try{
+			synchronized (changeProcessLock) {
+				for (TileEntity tileEntity : toAddTileEntities) {
+					getRunnableForTileEntity(tileEntity).add(tileEntity);
+				}
+				for (TileEntity tileEntity : toRemoveTileEntities) {
+					getRunnableForTileEntity(tileEntity).remove(tileEntity);
+				}
+				for (Entity entity : toAddEntities) {
+					getRunnableForEntity(entity).add(entity);
+				}
+				for (Entity entity : toRemoveEntities) {
+					getRunnableForEntity(entity).remove(entity);
+				}
+				Iterator<TickCallable<Object>> iterator = tickCallables.iterator();
+				while(iterator.hasNext()){
+					TickCallable tickCallable = iterator.next();
+					if(tickCallable.isEmpty()){
+						iterator.remove();
+						if(tickCallable instanceof EntityTickCallable){
+							entityRunnables.remove(tickCallable.hashCode);
+						} else {
+							tileEntityRunnables.remove(tickCallable.hashCode);
+						}
 					}
 				}
 			}
+		} catch(Exception e) {
+			Log.severe("Exception occured while processing entity changes: ", e);
 		}
 	}
 

@@ -3,11 +3,15 @@ package me.nallar.tickthreading;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import cpw.mods.fml.common.FMLLog;
+import net.minecraft.src.World;
+
 @SuppressWarnings ("UnusedDeclaration")
 public class Log {
 	private static final Logger LOGGER = Logger.getLogger("TickThreading");
 
 	static {
+		LOGGER.setParent(FMLLog.getLogger());
 		LOGGER.setLevel(Level.ALL);
 	}
 
@@ -65,5 +69,9 @@ public class Log {
 
 	public static void finest(String msg, Throwable t) {
 		LOGGER.log(Level.FINEST, msg, t);
+	}
+
+	public static String name(World world) {
+		return world.getWorldInfo().getWorldName() + ":" + world.getWorldInfo().getDimension() + ":" + world.hashCode();
 	}
 }

@@ -19,9 +19,13 @@ public class TileEntityTickCallable<T> extends TickCallable {
 
 	@Override
 	public T call() {
-		try {
-			IChunkProvider chunkProvider = world.getChunkProvider();
-			for (TileEntity tileEntity : tileEntityList) {
+		IChunkProvider chunkProvider = world.getChunkProvider();
+		for (TileEntity tileEntity : tileEntityList) {
+			try {
+				if (!tileEntity.isInvalid()) {
+					// TODO: Lock this chunk, and if this entity is on a boundary, that chunk.
+					tileEntity.updateEntity();
+				}
 				if (tileEntity.isInvalid()) {
 					manager.remove(tileEntity);
 					Log.warning("Removed invalid tile: " + tileEntity.xCoord + ", " + tileEntity.yCoord + ", " + tileEntity.zCoord + "\ttype:" + tileEntity.getClass().toString());
@@ -31,16 +35,14 @@ public class TileEntityTickCallable<T> extends TickCallable {
 							chunk.cleanChunkBlockTileEntity(tileEntity.xCoord & 0xf, tileEntity.yCoord, tileEntity.zCoord & 0xf);
 						}
 					}
-				} else {
-					tileEntity.updateEntity();
-				}
-				if (manager.getHashCode(tileEntity) != hashCode) {
+				} else if (manager.getHashCode(tileEntity) != hashCode) {
 					manager.remove(tileEntity);
 					manager.add(tileEntity);
 				}
+			} catch (Exception exception) {
+				Log.severe("Exception during tile entity tick ");
+				Log.severe("Tick region: " + identifier + ":", exception);
 			}
-		} catch (Exception exception) {
-			Log.severe("Exception during tile entity tick at " + identifier + ":", exception);
 		}
 		return null;
 	}
