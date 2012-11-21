@@ -1,6 +1,7 @@
 TickThreading [![Build Status](http://nallar.me/buildservice/job/TickThreading/badge/icon)](http://nallar.me/buildservice/job/TickThreading/)
 ==========
 Mod to run entity and tileentity ticks in threads and a patcher to improve thread-safety issues.
+Optionally, allows for automatically variable tick rate per tick region.
 
 Copyright &copy; 2012, nallar <rallan.pcl+gt@gmail.com>
 TickThreading is licensed under the [N Open License, Version 1][License]
