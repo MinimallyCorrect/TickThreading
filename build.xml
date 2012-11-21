@@ -16,7 +16,6 @@
 	<property name="forge.dir" value="${mcp.dir}/forge"/>
 
 	<property name="mcpsrc.dir" value="${mcp.dir}/src"/>
-	<property name="forgesrc.dir" value="${mcp.dir}/forge_src"/>
 
 	<property name="mcp.version" value="723"/>
 	<property name="forge.version" value="1.4.5-6.4.0.394"/>
@@ -42,7 +41,7 @@
 			<and>
 				<available file="${download.dir}/mcp${mcp.version}.zip"/>
 				<available file="${download.dir}/minecraftforge-src-${forge.version}.zip"/>
-				<available file="${forgesrc.dir}"/>
+				<available file="${mcpsrc.dir}"/>
 			</and>
 		</not>
 	</condition>
@@ -163,18 +162,12 @@
 							from="${dependency.versions}" to="flatten"/>
 		</copy>
 
-		<delete dir="${forgesrc.dir}"/>
-		<move file="${mcpsrc.dir}" todir="${forgesrc.dir}"/>
-
 	</target>
 
 	<target name="compile" depends="setup">
-		<delete dir="${mcpsrc.dir}"/>
+		<delete dir="${mcpsrc.dir}/common/me/nallar"/>
 		<delete dir="${classes.dir}"/>
 		<mkdir dir="${classes.dir}"/>
-		<copy todir="${mcp.dir}">
-			<fileset dir="${forgesrc.dir}"/>
-		</copy>
 		<copy todir="${mcpsrc.dir}">
 			<fileset dir="${src.dir}">
 			</fileset>
