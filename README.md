@@ -1,6 +1,6 @@
 TickThreading [![Build Status](http://nallar.me/buildservice/job/TickThreading/badge/icon)](http://nallar.me/buildservice/job/TickThreading/)
 ==========
-Automated patcher to run entity and tileentity ticks in threads.
+Mod to run entity and tileentity ticks in threads and a patcher to improve thread-safety issues.
 
 Copyright &copy; 2012, nallar <rallan.pcl+gt@gmail.com>
 TickThreading is licensed under the [N Open License, Version 1][License]
@@ -14,8 +14,8 @@ Compiling
 ---------
 TickThreading is built using Maven.
 
-* Install [Maven 2 or 3](http://maven.apache.org/download.html)  
-* Checkout this repo and run: `mvn`
+* Install [Ant](http://ant.apache.org/)
+* Checkout this repo and run: `ant`
 
 Coding and Pull Request Formatting
 ----------------------------------
