@@ -4,16 +4,16 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import me.nallar.tickthreading.minecraft.ThreadManager;
+import me.nallar.tickthreading.minecraft.TickManager;
 import net.minecraft.src.World;
 
 /*
 * Used to override World.loadedTileEntityList.
 * */
 public abstract class EntityList<T> extends ArrayList<T> {
-	final ThreadManager manager;
+	final TickManager manager;
 
-	EntityList(World world, Field overridenField, ThreadManager manager) {
+	EntityList(World world, Field overridenField, TickManager manager) {
 		this.manager = manager;
 		overridenField.setAccessible(true);
 		try {

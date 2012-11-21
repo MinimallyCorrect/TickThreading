@@ -2,12 +2,12 @@ package me.nallar.tickthreading.minecraft.entitylist;
 
 import java.lang.reflect.Field;
 
-import me.nallar.tickthreading.minecraft.ThreadManager;
+import me.nallar.tickthreading.minecraft.TickManager;
 import net.minecraft.src.Entity;
 import net.minecraft.src.World;
 
 public class LoadedEntityList<T> extends EntityList<T> {
-	public LoadedEntityList(World world, Field overridenField, ThreadManager manager) {
+	public LoadedEntityList(World world, Field overridenField, TickManager manager) {
 		super(world, overridenField, manager);
 	}
 

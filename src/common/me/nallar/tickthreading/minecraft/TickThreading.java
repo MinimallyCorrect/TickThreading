@@ -24,7 +24,6 @@ import net.minecraftforge.event.world.WorldEvent;
 @Mod (modid = "TickThreading", name = "TickThreading", version = "1.0")
 @NetworkMod (clientSideRequired = false, serverSideRequired = false)
 public class TickThreading {
-	// TODO: Not hardcoded field names
 	private final int loadedTileEntityFieldIndex = 2;
 	private final int loadedEntityFieldIndex = 0;
 	private int tileEntityRegionSize = 16;
@@ -52,7 +51,7 @@ public class TickThreading {
 
 	@ForgeSubscribe
 	public void onWorldLoad(WorldEvent.Load event) {
-		ThreadManager manager = new ThreadManager(event.world, tileEntityRegionSize, entityRegionSize);
+		TickManager manager = new TickManager(event.world, tileEntityRegionSize, entityRegionSize);
 		try {
 			Field loadedTileEntityField = getListFields(World.class)[loadedTileEntityFieldIndex];
 			Field loadedEntityField = getListFields(World.class)[loadedEntityFieldIndex];

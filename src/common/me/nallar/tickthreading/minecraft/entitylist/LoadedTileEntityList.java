@@ -4,14 +4,14 @@ import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.Iterator;
 
-import me.nallar.tickthreading.minecraft.ThreadManager;
+import me.nallar.tickthreading.minecraft.TickManager;
 import net.minecraft.src.TileEntity;
 import net.minecraft.src.World;
 
 public class LoadedTileEntityList<T> extends EntityList<T> {
 	private final Iterable<T> emptyList = Collections.emptyList();
 
-	public LoadedTileEntityList(World world, Field overridenField, ThreadManager manager) {
+	public LoadedTileEntityList(World world, Field overridenField, TickManager manager) {
 		super(world, overridenField, manager);
 	}
 
