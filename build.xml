@@ -165,7 +165,6 @@
 	</target>
 
 	<target name="compile" depends="setup">
-		<delete dir="${mcpsrc.dir}/common/me/nallar"/>
 		<delete dir="${classes.dir}"/>
 		<mkdir dir="${classes.dir}"/>
 		<copy todir="${mcpsrc.dir}">
@@ -202,6 +201,9 @@
 		<copy todir="${classes.dir}" failonerror="false">
 			<fileset dir="resources"/>
 		</copy>
+
+		<delete dir="${mcpsrc.dir}/common/me/nallar"/>
+
 	</target>
 
 	<!-- Zip the compiled files -->

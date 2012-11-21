@@ -22,7 +22,6 @@ Coding and Pull Request Formatting
 ----------------------------------
 * Generally follows the Oracle coding standards.
 * Tabs, no spaces.
-* 200 column limit
 * Pull requests must compile and work.
 * Pull requests must be formatted properly.
 
