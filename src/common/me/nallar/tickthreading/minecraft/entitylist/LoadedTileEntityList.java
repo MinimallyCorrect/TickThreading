@@ -3,7 +3,6 @@ package me.nallar.tickthreading.minecraft.entitylist;
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.concurrent.BrokenBarrierException;
 
 import me.nallar.tickthreading.minecraft.ThreadManager;
 import net.minecraft.src.TileEntity;

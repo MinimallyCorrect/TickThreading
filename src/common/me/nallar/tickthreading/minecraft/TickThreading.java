@@ -11,7 +11,6 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.entitylist.EntityList;
-import me.nallar.tickthreading.minecraft.entitylist.LoadedEntityList;
 import me.nallar.tickthreading.minecraft.entitylist.LoadedTileEntityList;
 import net.minecraft.src.TileEntity;
 import net.minecraft.src.World;
@@ -84,11 +83,11 @@ public class TickThreading {
 		}
 	}
 
-	private static Field[] getListFields(Class c){
+	private static Field[] getListFields(Class c) {
 		List<Field> listFields = new ArrayList<Field>();
 		List<Field> fields = Arrays.asList(c.getDeclaredFields());
-		for(Field field : fields){
-			if(List.class.isAssignableFrom(field.getType())){
+		for (Field field : fields) {
+			if (List.class.isAssignableFrom(field.getType())) {
 				listFields.add(field);
 			}
 		}

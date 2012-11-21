@@ -19,20 +19,15 @@ import net.minecraft.src.World;
 public class ThreadManager {
 	public final int tileEntityRegionSize;
 	public final int entityRegionSize;
-
-	private final Object changeProcessLock = new Object();
-
+	private final Object processChangesLock = new Object();
 	private final List<TileEntity> toRemoveTileEntities = new ArrayList<TileEntity>();
 	private final List<Entity> toRemoveEntities = new ArrayList<Entity>();
 	private final List<TileEntity> toAddTileEntities = new ArrayList<TileEntity>();
 	private final List<Entity> toAddEntities = new ArrayList<Entity>();
-
 	private final Map<Integer, TileEntityTickCallable> tileEntityRunnables = new HashMap<Integer, TileEntityTickCallable>();
 	private final Map<Integer, EntityTickCallable> entityRunnables = new HashMap<Integer, EntityTickCallable>();
 	private final List<TickCallable<Object>> tickCallables = new ArrayList<TickCallable<Object>>();
-
 	private final ExecutorService tickExecutor = Executors.newCachedThreadPool();
-
 	private final World world;
 
 	public ThreadManager(World world, int tileEntityRegionSize, int entityRegionSize) {
@@ -75,8 +70,8 @@ public class ThreadManager {
 	}
 
 	private synchronized void processChanges() {
-		try{
-			synchronized (changeProcessLock) {
+		try {
+			synchronized (processChangesLock) {
 				for (TileEntity tileEntity : toAddTileEntities) {
 					getRunnableForTileEntity(tileEntity).add(tileEntity);
 				}
@@ -90,11 +85,11 @@ public class ThreadManager {
 					getRunnableForEntity(entity).remove(entity);
 				}
 				Iterator<TickCallable<Object>> iterator = tickCallables.iterator();
-				while(iterator.hasNext()){
+				while (iterator.hasNext()) {
 					TickCallable tickCallable = iterator.next();
-					if(tickCallable.isEmpty()){
+					if (tickCallable.isEmpty()) {
 						iterator.remove();
-						if(tickCallable instanceof EntityTickCallable){
+						if (tickCallable instanceof EntityTickCallable) {
 							entityRunnables.remove(tickCallable.hashCode);
 						} else {
 							tileEntityRunnables.remove(tickCallable.hashCode);
@@ -102,7 +97,7 @@ public class ThreadManager {
 					}
 				}
 			}
-		} catch(Exception e) {
+		} catch (Exception e) {
 			Log.severe("Exception occured while processing entity changes: ", e);
 		}
 	}
@@ -124,7 +119,7 @@ public class ThreadManager {
 	}
 
 	public void doTick() {
-		synchronized (changeProcessLock) {
+		synchronized (processChangesLock) {
 			try {
 				tickExecutor.invokeAll(tickCallables);
 			} catch (InterruptedException e) {
