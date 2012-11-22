@@ -28,7 +28,6 @@ public class TickThreading {
 	private final int loadedEntityFieldIndex = 0;
 	private int tileEntityRegionSize = 16;
 	private int entityRegionSize = 64;
-	private Configuration config;
 
 	@Mod.Init
 	public void init(FMLInitializationEvent event) {
@@ -37,7 +36,7 @@ public class TickThreading {
 
 	@Mod.PreInit
 	public void preInit(FMLPreInitializationEvent event) {
-		config = new Configuration(event.getSuggestedConfigurationFile());
+		Configuration config = new Configuration(event.getSuggestedConfigurationFile());
 		config.load();
 		Property tileEntityRegionSizeProperty = config.get(Configuration.CATEGORY_GENERAL, "tileEntityRegionSize", String.valueOf(tileEntityRegionSize));
 		tileEntityRegionSizeProperty.comment = "width/length of tile entity tick regions, specified in blocks.";
@@ -54,7 +53,7 @@ public class TickThreading {
 		TickManager manager = new TickManager(event.world, tileEntityRegionSize, entityRegionSize);
 		try {
 			Field loadedTileEntityField = getListFields(World.class)[loadedTileEntityFieldIndex];
-			Field loadedEntityField = getListFields(World.class)[loadedEntityFieldIndex];
+			//Field loadedEntityField = getListFields(World.class)[loadedEntityFieldIndex];
 			new LoadedTileEntityList<TileEntity>(event.world, loadedTileEntityField, manager);
 			Log.info("Threading initialised for world " + Log.name(event.world));
 			// TODO: Enable entity tick threading

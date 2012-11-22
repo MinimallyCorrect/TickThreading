@@ -8,18 +8,18 @@ import me.nallar.tickthreading.minecraft.TickManager;
 import net.minecraft.src.World;
 
 public abstract class TickCallable<T> implements Callable<T> {
-	public volatile Lock thisLock = new ReentrantLock();
-	public volatile Lock xPlusLock = null;
-	public volatile Lock xMinusLock = null;
-	public volatile Lock zPlusLock = null;
-	public volatile Lock zMinusLock = null;
+	volatile Lock thisLock = new ReentrantLock();
+	volatile Lock xPlusLock = null;
+	volatile Lock xMinusLock = null;
+	volatile Lock zPlusLock = null;
+	volatile Lock zMinusLock = null;
 	final World world;
 	final TickManager manager;
 	public final int hashCode;
-	public final int regionX;
-	public final int regionZ;
+	private final int regionX;
+	private final int regionZ;
 
-	public TickCallable(World world, TickManager manager, int regionX, int regionZ) {
+	TickCallable(World world, TickManager manager, int regionX, int regionZ) {
 		super();
 		this.world = world;
 		this.manager = manager;

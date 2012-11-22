@@ -79,7 +79,7 @@ public class TickManager {
 		return getHashCode((int) entity.posX, (int) entity.posZ);
 	}
 
-	public int getHashCode(int x, int z) {
+	int getHashCode(int x, int z) {
 		return getHashCodeFromRegionCoords(x / tileEntityRegionSize, z / tileEntityRegionSize);
 	}
 
