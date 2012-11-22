@@ -1,11 +1,11 @@
 {
   "modinfoversion": 2,
   "modlist": [{
-    "modid": "MOD_ID",
-    "name": "MOD_NAME",
+    "modid": "@MOD_ID@",
+    "name": "@MOD_NAME@",
     "description": "A simple mod adding some new chests with larger sizes, upgradeable in place. The feature chest is the crystal chest, which is see-through - this inventory contents can be viewed without opening the chest.",
-    "version": "MOD_VERSION",
-    "mcversion": "MC_VERSION",
+    "version": "@MOD_VERSION@",
+    "mcversion": "@MC_VERSION@",
     "url": "http://nallar.me/minecraft/",
     "updateUrl": "",
     "authors": [ "nallar" ],
