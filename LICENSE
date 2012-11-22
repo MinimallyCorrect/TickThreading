@@ -9,7 +9,7 @@ In addition, the software as it existed no less than 90 days previously,
 is licensed under the FreeBSD license.  For clarity, files in a state that
 includes changes published less than 90 days previously, are NOT licensed 
 under the FreeBSD license.  However, files in a state that only includes
-changespublished more than 90 days previously, are licensed under the
+changes published more than 90 days previously, are licensed under the
 FreeBSD license.
 
 -----------------------------------------------------------------------
@@ -206,4 +206,4 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies, 
-either expressed or implied, of the FreeBSD Project.
+either expressed or implied, of this project.
