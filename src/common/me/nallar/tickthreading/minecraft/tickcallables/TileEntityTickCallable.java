@@ -14,8 +14,8 @@ public class TileEntityTickCallable<T> extends TickCallable {
 	private final List<TileEntity> tileEntityList = new ArrayList<TileEntity>();
 	private final List<TileEntity> toRemoveList = new ArrayList<TileEntity>();
 
-	public TileEntityTickCallable(World world, String identifier, TickManager manager, int regionX, int regionY) {
-		super(world, identifier, manager, regionX, regionY);
+	public TileEntityTickCallable(World world, TickManager manager, int regionX, int regionY) {
+		super(world, manager, regionX, regionY);
 	}
 
 	@Override
@@ -25,14 +25,13 @@ public class TileEntityTickCallable<T> extends TickCallable {
 		int maxPosition = (regionSize / 2) - 1;
 		int relativeXPos;
 		int relativeZPos;
-		boolean locked;
+		boolean locked = false;
 		boolean xMinusLocked = false;
 		boolean xPlusLocked = false;
 		boolean zMinusLocked = false;
 		boolean zPlusLocked = false;
 		Log.fine("In tick for r: ");
 		for (TileEntity tileEntity : tileEntityList) {
-			locked = false;
 			try {
 				relativeXPos = (tileEntity.xCoord % regionSize) / 2;
 				relativeZPos = (tileEntity.zCoord % regionSize) / 2;
@@ -62,7 +61,7 @@ public class TileEntityTickCallable<T> extends TickCallable {
 				}
 				if (tileEntity.isInvalid()) {
 					toRemoveList.add(tileEntity);
-					Log.warning("Removed invalid tile: " + tileEntity.xCoord + ", " + tileEntity.yCoord + ", " + tileEntity.zCoord + "\ttype:" + tileEntity.getClass().toString());
+					Log.fine("Removed invalid tile: " + tileEntity.xCoord + ", " + tileEntity.yCoord + ", " + tileEntity.zCoord + "\ttype:" + tileEntity.getClass().toString());
 					if (chunkProvider.chunkExists(tileEntity.xCoord >> 4, tileEntity.zCoord >> 4)) {
 						Chunk chunk = world.getChunkFromChunkCoords(tileEntity.xCoord >> 4, tileEntity.zCoord >> 4);
 						if (chunk != null) {
@@ -72,10 +71,11 @@ public class TileEntityTickCallable<T> extends TickCallable {
 				} else if (manager.getHashCode(tileEntity) != hashCode) {
 					toRemoveList.add(tileEntity);
 					manager.add(tileEntity);
+					Log.severe("Inconsistent state: " + tileEntity + " is in the wrong TickCallable.");
 				}
 			} catch (Exception exception) {
 				Log.severe("Exception during tile entity tick ");
-				Log.severe("Tick region: " + identifier + ":", exception);
+				Log.severe("Tick region: " + toString() + ":", exception);
 			} finally {
 				if (locked) {
 					if (xMinusLocked) {

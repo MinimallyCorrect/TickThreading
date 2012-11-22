@@ -45,7 +45,7 @@ public class TickManager {
 		int hashCode = getHashCode(tileEntity);
 		TileEntityTickCallable callable = tileEntityCallables.get(hashCode);
 		if (callable == null) {
-			callable = new TileEntityTickCallable<Object>(world, "region: x" + tileEntity.xCoord / tileEntityRegionSize + ",z" + tileEntity.zCoord / tileEntityRegionSize, this, tileEntity.xCoord / tileEntityRegionSize, tileEntity.yCoord / tileEntityRegionSize);
+			callable = new TileEntityTickCallable<Object>(world, this, tileEntity.xCoord / tileEntityRegionSize, tileEntity.yCoord / tileEntityRegionSize);
 			tileEntityCallables.put(hashCode, callable);
 			tickCallables.add(callable);
 		}
@@ -63,7 +63,7 @@ public class TickManager {
 		int hashCode = getHashCodeFromRegionCoords(regionX, regionY);
 		EntityTickCallable callable = entityCallables.get(hashCode);
 		if (callable == null) {
-			callable = new EntityTickCallable<Object>(world, "region: x" + regionX + ",z" + regionY, this, regionX, regionY);
+			callable = new EntityTickCallable<Object>(world, this, regionX, regionY);
 			entityCallables.put(hashCode, callable);
 			tickCallables.add(callable);
 		}

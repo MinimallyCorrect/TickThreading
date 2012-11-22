@@ -14,16 +14,14 @@ public abstract class TickCallable<T> implements Callable<T> {
 	public volatile Lock zPlusLock = null;
 	public volatile Lock zMinusLock = null;
 	final World world;
-	final String identifier;
 	final TickManager manager;
 	public final int hashCode;
 	public final int regionX;
 	public final int regionZ;
 
-	public TickCallable(World world, String identifier, TickManager manager, int regionX, int regionZ) {
+	public TickCallable(World world, TickManager manager, int regionX, int regionZ) {
 		super();
 		this.world = world;
-		this.identifier = identifier;
 		this.manager = manager;
 		this.hashCode = TickManager.getHashCodeFromRegionCoords(regionX, regionZ);
 		this.regionX = regionX;
@@ -72,6 +70,28 @@ public abstract class TickCallable<T> implements Callable<T> {
 		if (tickCallable != null) {
 			tickCallable.zPlusLock = null;
 		}
+	}
+
+	@Override
+	public String toString() {
+		return "rX: " + regionX + ", rZ: " + regionZ + ", hashCode: " + hashCode;
+	}
+
+	@Override
+	public int hashCode() {
+		return hashCode;
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (this == other) {
+			return true;
+		}
+		if (!(other instanceof TickCallable)) {
+			return false;
+		}
+		TickCallable otherTickCallable = (TickCallable) other;
+		return otherTickCallable.hashCode == this.hashCode;
 	}
 
 	protected abstract TickCallable getCallable(int regionX, int regionZ);

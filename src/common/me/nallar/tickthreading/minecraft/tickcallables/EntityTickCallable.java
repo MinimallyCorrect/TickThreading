@@ -12,8 +12,8 @@ import net.minecraft.src.World;
 public class EntityTickCallable<T> extends TickCallable {
 	private final List<Entity> entityList = new ArrayList<Entity>();
 
-	public EntityTickCallable(World world, String identifier, TickManager manager, int regionX, int regionZ) {
-		super(world, identifier, manager, regionX, regionZ);
+	public EntityTickCallable(World world, TickManager manager, int regionX, int regionZ) {
+		super(world, manager, regionX, regionZ);
 	}
 
 	@Override
@@ -52,7 +52,7 @@ public class EntityTickCallable<T> extends TickCallable {
 				}
 			}
 		} catch (Exception exception) {
-			Log.severe("Exception during entity tick at " + identifier + ":", exception);
+			Log.severe("Exception during entity tick at " + toString() + ":", exception);
 		}
 		return null;
 	}
