@@ -108,7 +108,7 @@ public class TickManager {
 				toRemoveTileEntities.clear();
 				Iterator<TickCallable<Object>> iterator = tickCallables.iterator();
 				while (iterator.hasNext()) {
-					TickCallable tickCallable = iterator.next();
+					TickCallable<Object> tickCallable = iterator.next();
 					if (tickCallable.isEmpty()) {
 						iterator.remove();
 						if (tickCallable instanceof EntityTickCallable) {
