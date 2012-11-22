@@ -22,7 +22,7 @@ public class TileEntityTickCallable<T> extends TickCallable {
 	public T call() {
 		IChunkProvider chunkProvider = world.getChunkProvider();
 		int regionSize = manager.tileEntityRegionSize;
-		int maxPosition = regionSize - 1;
+		int maxPosition = (regionSize / 2) - 1;
 		int relativeXPos;
 		int relativeZPos;
 		boolean locked;
@@ -34,8 +34,8 @@ public class TileEntityTickCallable<T> extends TickCallable {
 		for (TileEntity tileEntity : tileEntityList) {
 			locked = false;
 			try {
-				relativeXPos = tileEntity.xCoord % regionSize;
-				relativeZPos = tileEntity.zCoord % regionSize;
+				relativeXPos = (tileEntity.xCoord % regionSize) / 2;
+				relativeZPos = (tileEntity.zCoord % regionSize) / 2;
 				xMinusLocked = relativeXPos == 0 && this.xMinusLock != null;
 				zMinusLocked = relativeZPos == 0 && this.zMinusLock != null;
 				xPlusLocked = relativeXPos == maxPosition && this.xPlusLock != null;
