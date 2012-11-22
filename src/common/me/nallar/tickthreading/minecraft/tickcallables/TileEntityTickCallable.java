@@ -30,7 +30,6 @@ public class TileEntityTickCallable<T> extends TickCallable {
 		boolean xPlusLocked = false;
 		boolean zMinusLocked = false;
 		boolean zPlusLocked = false;
-		Log.fine("In tick for r: ");
 		for (TileEntity tileEntity : tileEntityList) {
 			try {
 				relativeXPos = (tileEntity.xCoord % regionSize) / 2;
