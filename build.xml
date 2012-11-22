@@ -144,7 +144,7 @@
 		</copy>
 
 		<!-- Reset src dir to post-forge-install state -->
-		<delete dir="${mcpsrc.dir}/me/nallar"/>
+		<delete dir="${mcpsrc.dir}/common/me/nallar"/>
 
 	</target>
 
