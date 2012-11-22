@@ -45,7 +45,7 @@ public class TickManager {
 		int hashCode = getHashCode(tileEntity);
 		TileEntityTickCallable callable = tileEntityCallables.get(hashCode);
 		if (callable == null) {
-			callable = new TileEntityTickCallable<Object>(world, this, tileEntity.xCoord / tileEntityRegionSize, tileEntity.yCoord / tileEntityRegionSize);
+			callable = new TileEntityTickCallable<Object>(world, this, tileEntity.xCoord / tileEntityRegionSize, tileEntity.zCoord / tileEntityRegionSize);
 			tileEntityCallables.put(hashCode, callable);
 			tickCallables.add(callable);
 		}
@@ -59,11 +59,11 @@ public class TickManager {
 	@SuppressWarnings ("NumericCastThatLosesPrecision")
 	private EntityTickCallable getOrCreateCallable(Entity entity) {
 		int regionX = (int) entity.posX / entityRegionSize;
-		int regionY = (int) entity.posY / entityRegionSize;
-		int hashCode = getHashCodeFromRegionCoords(regionX, regionY);
+		int regionZ = (int) entity.posZ / entityRegionSize;
+		int hashCode = getHashCodeFromRegionCoords(regionX, regionZ);
 		EntityTickCallable callable = entityCallables.get(hashCode);
 		if (callable == null) {
-			callable = new EntityTickCallable<Object>(world, this, regionX, regionY);
+			callable = new EntityTickCallable<Object>(world, this, regionX, regionZ);
 			entityCallables.put(hashCode, callable);
 			tickCallables.add(callable);
 		}
@@ -71,20 +71,20 @@ public class TickManager {
 	}
 
 	public int getHashCode(TileEntity tileEntity) {
-		return getHashCode(tileEntity.xCoord, tileEntity.yCoord);
+		return getHashCode(tileEntity.xCoord, tileEntity.zCoord);
 	}
 
 	@SuppressWarnings ("NumericCastThatLosesPrecision")
 	public int getHashCode(Entity entity) {
-		return getHashCode((int) entity.posX, (int) entity.posY);
+		return getHashCode((int) entity.posX, (int) entity.posZ);
 	}
 
-	public int getHashCode(int x, int y) {
-		return getHashCodeFromRegionCoords(x / tileEntityRegionSize, y / tileEntityRegionSize);
+	public int getHashCode(int x, int z) {
+		return getHashCodeFromRegionCoords(x / tileEntityRegionSize, z / tileEntityRegionSize);
 	}
 
-	public static int getHashCodeFromRegionCoords(int x, int y) {
-		return x + (y << 16);
+	public static int getHashCodeFromRegionCoords(int x, int z) {
+		return x + (z << 16);
 	}
 
 	private synchronized void processChanges() {

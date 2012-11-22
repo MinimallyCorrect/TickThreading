@@ -91,7 +91,7 @@ public abstract class TickCallable<T> implements Callable<T> {
 			return false;
 		}
 		TickCallable otherTickCallable = (TickCallable) other;
-		return otherTickCallable.hashCode == this.hashCode;
+		return otherTickCallable.hashCode == this.hashCode && this.getClass().isInstance(other);
 	}
 
 	protected abstract TickCallable getCallable(int regionX, int regionZ);
