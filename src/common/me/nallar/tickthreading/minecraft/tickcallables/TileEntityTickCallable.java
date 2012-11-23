@@ -1,6 +1,7 @@
 package me.nallar.tickthreading.minecraft.tickcallables;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import me.nallar.tickthreading.Log;
@@ -12,7 +13,6 @@ import net.minecraft.src.World;
 
 public class TileEntityTickCallable<T> extends TickCallable {
 	private final List<TileEntity> tileEntityList = new ArrayList<TileEntity>();
-	private final List<TileEntity> toRemoveList = new ArrayList<TileEntity>();
 
 	public TileEntityTickCallable(World world, TickManager manager, int regionX, int regionY) {
 		super(world, manager, regionX, regionY);
@@ -30,7 +30,9 @@ public class TileEntityTickCallable<T> extends TickCallable {
 		boolean xPlusLocked = false;
 		boolean zMinusLocked = false;
 		boolean zPlusLocked = false;
-		for (TileEntity tileEntity : tileEntityList) {
+		Iterator<TileEntity> tileEntitiesIterator = tileEntityList.iterator();
+		while (tileEntitiesIterator.hasNext()) {
+			TileEntity tileEntity = tileEntitiesIterator.next();
 			try {
 				relativeXPos = (tileEntity.xCoord % regionSize) / 2;
 				relativeZPos = (tileEntity.zCoord % regionSize) / 2;
@@ -58,8 +60,9 @@ public class TileEntityTickCallable<T> extends TickCallable {
 				if (!tileEntity.isInvalid()) {
 					tileEntity.updateEntity();
 				}
+				//Yes, this is correct. Can't be simplified to else if, as it may be invalidated during updateEntity
 				if (tileEntity.isInvalid()) {
-					toRemoveList.add(tileEntity);
+					tileEntitiesIterator.remove();
 					Log.fine("Removed invalid tile: " + tileEntity.xCoord + ", " + tileEntity.yCoord + ", " + tileEntity.zCoord + "\ttype:" + tileEntity.getClass().toString());
 					if (chunkProvider.chunkExists(tileEntity.xCoord >> 4, tileEntity.zCoord >> 4)) {
 						Chunk chunk = world.getChunkFromChunkCoords(tileEntity.xCoord >> 4, tileEntity.zCoord >> 4);
@@ -68,7 +71,7 @@ public class TileEntityTickCallable<T> extends TickCallable {
 						}
 					}
 				} else if (manager.getHashCode(tileEntity) != hashCode) {
-					toRemoveList.add(tileEntity);
+					tileEntitiesIterator.remove();
 					manager.add(tileEntity);
 					Log.severe("Inconsistent state: " + tileEntity + " is in the wrong TickCallable.");
 				}
@@ -93,8 +96,6 @@ public class TileEntityTickCallable<T> extends TickCallable {
 				}
 			}
 		}
-		tileEntityList.removeAll(toRemoveList);
-		toRemoveList.clear();
 		return null;
 	}
 
