@@ -77,7 +77,7 @@ public abstract class TickCallable<T> implements Callable<T> {
 		if (shouldTick()) {
 			long startTime = System.nanoTime();
 			doTick();
-			averageTickTime = ((averageTickTime * 32) + (System.nanoTime() - startTime) / 33);
+			averageTickTime = ((averageTickTime * 32) + (System.nanoTime() - startTime)) / 33;
 		}
 		return null;
 	}
