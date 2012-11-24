@@ -57,13 +57,13 @@ public class TileEntityTickCallable<T> extends TickCallable {
 						this.xMinusLock.lock();
 					}
 				}
-				if (!tileEntity.isInvalid()) {
+				if (!tileEntity.isInvalid() && tileEntity.func_70309_m() && world.blockExists(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord)) {
 					tileEntity.updateEntity();
 				}
 				//Yes, this is correct. Can't be simplified to else if, as it may be invalidated during updateEntity
 				if (tileEntity.isInvalid()) {
 					tileEntitiesIterator.remove();
-					Log.fine("Removed invalid tile: " + tileEntity.xCoord + ", " + tileEntity.yCoord + ", " + tileEntity.zCoord + "\ttype:" + tileEntity.getClass().toString());
+					Log.warning("Removed invalid tile: " + tileEntity.xCoord + ", " + tileEntity.yCoord + ", " + tileEntity.zCoord + "\ttype:" + tileEntity.getClass().toString());
 					if (chunkProvider.chunkExists(tileEntity.xCoord >> 4, tileEntity.zCoord >> 4)) {
 						Chunk chunk = world.getChunkFromChunkCoords(tileEntity.xCoord >> 4, tileEntity.zCoord >> 4);
 						if (chunk != null) {
