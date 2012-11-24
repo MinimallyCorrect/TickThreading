@@ -18,7 +18,7 @@ public abstract class TickCallable<T> implements Callable<T> {
 	public final int hashCode;
 	private final int regionX;
 	private final int regionZ;
-	private long averageTickTime = 5000;
+	private long averageTickTime = 5000000;
 
 	TickCallable(World world, TickManager manager, int regionX, int regionZ) {
 		super();
@@ -83,7 +83,7 @@ public abstract class TickCallable<T> implements Callable<T> {
 	}
 
 	public boolean shouldTick() {
-		return !manager.variableTickRate || averageTickTime < 50000 || Math.random() < ((double) 50000) / averageTickTime;
+		return !manager.variableTickRate || averageTickTime < 55000000 || Math.random() < ((double) 55000000) / averageTickTime;
 	}
 
 	public abstract void doTick();
