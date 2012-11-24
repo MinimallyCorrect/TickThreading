@@ -28,6 +28,7 @@ public class TickThreading {
 	private final int loadedEntityFieldIndex = 0;
 	private int tileEntityRegionSize = 16;
 	private int entityRegionSize = 64;
+	private boolean variableTickRate = false;
 
 	@Mod.Init
 	public void init(FMLInitializationEvent event) {
@@ -41,11 +42,14 @@ public class TickThreading {
 		Property tileEntityRegionSizeProperty = config.get(Configuration.CATEGORY_GENERAL, "tileEntityRegionSize", String.valueOf(tileEntityRegionSize));
 		tileEntityRegionSizeProperty.comment = "width/length of tile entity tick regions, specified in blocks.";
 		Property entityRegionSizeProperty = config.get(Configuration.CATEGORY_GENERAL, "entityRegionSize", String.valueOf(entityRegionSize));
-		tileEntityRegionSizeProperty.comment = "width/length of entity tick regions, specified in blocks.";
+		entityRegionSizeProperty.comment = "width/length of entity tick regions, specified in blocks.";
+		Property variableTickRateProperty = config.get(Configuration.CATEGORY_GENERAL, "variableRegionTickRate", variableTickRate);
+		variableTickRateProperty.comment = "Allows tick rate to vary per region so that each region uses at most 50ms on average per tick.";
 		config.save();
 
 		tileEntityRegionSize = tileEntityRegionSizeProperty.getInt(tileEntityRegionSize);
 		entityRegionSize = entityRegionSizeProperty.getInt(entityRegionSize);
+		variableTickRate = variableTickRateProperty.getBoolean(variableTickRate);
 	}
 
 	@ForgeSubscribe
