@@ -19,6 +19,7 @@ import net.minecraft.src.World;
 public class TickManager {
 	public final int tileEntityRegionSize;
 	public final int entityRegionSize;
+	public boolean variableTickRate;
 	private final Object processChangesLock = new Object();
 	private final List<TileEntity> toRemoveTileEntities = new ArrayList<TileEntity>();
 	private final List<Entity> toRemoveEntities = new ArrayList<Entity>();
@@ -34,6 +35,10 @@ public class TickManager {
 		this.world = world;
 		this.tileEntityRegionSize = tileEntityRegionSize;
 		this.entityRegionSize = entityRegionSize;
+	}
+
+	public void setVariableTickRate(boolean variableTickRate) {
+		this.variableTickRate = variableTickRate;
 	}
 
 	public TickCallable getTileEntityCallable(int hashCode) {
@@ -117,6 +122,8 @@ public class TickManager {
 							tileEntityCallables.remove(tickCallable.hashCode);
 						}
 						tickCallable.die();
+					} else {
+						tickCallable.processChanges();
 					}
 				}
 			}

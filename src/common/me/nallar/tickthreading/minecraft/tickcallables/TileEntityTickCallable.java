@@ -19,7 +19,7 @@ public class TileEntityTickCallable<T> extends TickCallable {
 	}
 
 	@Override
-	public T call() {
+	public void doTick() {
 		IChunkProvider chunkProvider = world.getChunkProvider();
 		int regionSize = manager.tileEntityRegionSize;
 		int maxPosition = (regionSize / 2) - 1;
@@ -96,7 +96,6 @@ public class TileEntityTickCallable<T> extends TickCallable {
 				}
 			}
 		}
-		return null;
 	}
 
 	public void add(TileEntity tileEntity) {

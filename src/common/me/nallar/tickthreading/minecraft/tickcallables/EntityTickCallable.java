@@ -17,7 +17,7 @@ public class EntityTickCallable<T> extends TickCallable {
 	}
 
 	@Override
-	public T call() {
+	public void doTick() {
 		try {
 			IChunkProvider chunkProvider = world.getChunkProvider();
 			int regionSize = manager.entityRegionSize;
@@ -54,7 +54,6 @@ public class EntityTickCallable<T> extends TickCallable {
 		} catch (Exception exception) {
 			Log.severe("Exception during entity tick at " + toString() + ":", exception);
 		}
-		return null;
 	}
 
 	public void add(Entity entity) {

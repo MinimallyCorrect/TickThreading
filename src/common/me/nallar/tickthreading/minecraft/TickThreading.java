@@ -28,7 +28,7 @@ public class TickThreading {
 	private final int loadedEntityFieldIndex = 0;
 	private int tileEntityRegionSize = 16;
 	private int entityRegionSize = 64;
-	private boolean variableTickRate = false;
+	private boolean variableTickRate = true;
 
 	@Mod.Init
 	public void init(FMLInitializationEvent event) {
@@ -55,6 +55,7 @@ public class TickThreading {
 	@ForgeSubscribe
 	public void onWorldLoad(WorldEvent.Load event) {
 		TickManager manager = new TickManager(event.world, tileEntityRegionSize, entityRegionSize);
+		manager.setVariableTickRate(variableTickRate);
 		try {
 			Field loadedTileEntityField = getListFields(World.class)[loadedTileEntityFieldIndex];
 			//Field loadedEntityField = getListFields(World.class)[loadedEntityFieldIndex];
