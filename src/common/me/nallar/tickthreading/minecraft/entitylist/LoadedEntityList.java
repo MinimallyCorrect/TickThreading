@@ -7,8 +7,8 @@ import net.minecraft.src.Entity;
 import net.minecraft.src.World;
 
 public class LoadedEntityList<T> extends EntityList<T> {
-	public LoadedEntityList(World world, Field overridenField, TickManager manager) {
-		super(world, overridenField, manager);
+	public LoadedEntityList(World world, Field overriddenField, TickManager manager) {
+		super(world, overriddenField, manager);
 	}
 
 	public boolean add(T t) {

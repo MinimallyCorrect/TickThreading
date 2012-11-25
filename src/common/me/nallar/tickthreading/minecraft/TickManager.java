@@ -1,6 +1,7 @@
 package me.nallar.tickthreading.minecraft;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -174,7 +175,7 @@ public class TickManager {
 		stats.append("---- Slowest tick regions ----").append("\n");
 		float averageAverageTickTime = 0;
 		float maxTickTime = 0;
-		SortedMap<Float, TickCallable> sortedTickCallables = new TreeMap<Float, TickCallable>();
+		SortedMap<Float, TickCallable<Object>> sortedTickCallables = new TreeMap<Float, TickCallable<Object>>();
 		synchronized (processChangesLock) {
 			for (TickCallable<Object> tickCallable : tickCallables) {
 				float averageTickTime = tickCallable.getAverageTickTime();
@@ -185,7 +186,8 @@ public class TickManager {
 				}
 			}
 		}
-		TickCallable[] sortedTickCallablesArray = sortedTickCallables.values().toArray(new TickCallable[]{});
+		Collection<TickCallable<Object>> var = sortedTickCallables.values();
+		TickCallable[] sortedTickCallablesArray = var.toArray(new TickCallable[var.size()]);
 		for (int i = sortedTickCallablesArray.length - 1; i >= sortedTickCallablesArray.length - 6; i--) {
 			stats.append(sortedTickCallablesArray[i].getStats()).append("\n");
 		}

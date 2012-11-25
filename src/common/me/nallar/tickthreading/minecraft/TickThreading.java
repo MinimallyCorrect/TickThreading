@@ -33,7 +33,7 @@ public class TickThreading {
 	private int regionSize = 16;
 	private int entityRegionSize = 64;
 	private boolean variableTickRate = true;
-	Map<World, TickManager> managers = new HashMap<World, TickManager>();
+	final Map<World, TickManager> managers = new HashMap<World, TickManager>();
 	private static TickThreading instance;
 
 	@Mod.Init
@@ -73,7 +73,7 @@ public class TickThreading {
 			Log.info("Threading initialised for world " + Log.name(event.world));
 			// TODO: Enable entity tick threading
 			// Requires:
-			//	- AxisAlignedBB pool threadlocal
+			//	- AxisAlignedBB pool threadLocal
 			// 	- ^automated patching
 			//new LoadedEntityList<TileEntity>(event.world, loadedEntityField, manager);
 			managers.put(event.world, manager);

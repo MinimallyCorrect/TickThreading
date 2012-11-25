@@ -11,8 +11,8 @@ import net.minecraft.src.World;
 public class LoadedTileEntityList<T> extends EntityList<T> {
 	private final Iterable<T> emptyList = Collections.emptyList();
 
-	public LoadedTileEntityList(World world, Field overridenField, TickManager manager) {
-		super(world, overridenField, manager);
+	public LoadedTileEntityList(World world, Field overriddenField, TickManager manager) {
+		super(world, overriddenField, manager);
 	}
 
 	@Override

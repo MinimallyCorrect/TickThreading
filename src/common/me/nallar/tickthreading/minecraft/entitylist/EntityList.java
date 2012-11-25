@@ -13,15 +13,15 @@ import net.minecraft.src.World;
 public abstract class EntityList<T> extends ArrayList<T> {
 	final TickManager manager;
 
-	EntityList(World world, Field overridenField, TickManager manager) {
+	EntityList(World world, Field overriddenField, TickManager manager) {
 		this.manager = manager;
-		overridenField.setAccessible(true);
+		overriddenField.setAccessible(true);
 		try {
 			//This should hopefully avoid leaving the world in a bad state if something goes wrong.
-			this.addAll((Collection) overridenField.get(world));
-			overridenField.set(world, this);
+			this.addAll((Collection<? extends T>) overriddenField.get(world));
+			overriddenField.set(world, this);
 		} catch (Exception e) {
-			throw new RuntimeException("Failed to override " + overridenField.getName() + " in world " + world.getWorldInfo().getWorldName(), e);
+			throw new RuntimeException("Failed to override " + overriddenField.getName() + " in world " + world.getWorldInfo().getWorldName(), e);
 		}
 	}
 
