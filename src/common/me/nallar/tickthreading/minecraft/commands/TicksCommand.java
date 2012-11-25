@@ -1,12 +1,11 @@
 package me.nallar.tickthreading.minecraft.commands;
 
 import me.nallar.tickthreading.minecraft.TickThreading;
-import net.minecraft.src.CommandBase;
 import net.minecraft.src.Entity;
 import net.minecraft.src.ICommandSender;
 import net.minecraft.src.World;
 
-public class TicksCommand extends CommandBase {
+public class TicksCommand extends Command {
 	public static String name = "ticks";
 
 	@Override
@@ -23,18 +22,7 @@ public class TicksCommand extends CommandBase {
 		if (commandSender instanceof Entity) {
 			World world = ((Entity) commandSender).worldObj;
 			String stats = TickThreading.instance().getManager(world).getStats();
-			while (stats != null) {
-				int nlIndex = stats.indexOf("\n");
-				String sent;
-				if (nlIndex == -1) {
-					sent = stats;
-					stats = null;
-				} else {
-					sent = stats.substring(0, nlIndex);
-					stats = stats.substring(nlIndex + 1);
-				}
-				commandSender.sendChatToPlayer(sent);
-			}
+			sendChat(commandSender, stats);
 		}
 	}
 }
