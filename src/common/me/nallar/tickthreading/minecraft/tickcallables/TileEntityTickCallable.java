@@ -21,7 +21,7 @@ public class TileEntityTickCallable<T> extends TickCallable {
 	@Override
 	public void doTick() {
 		IChunkProvider chunkProvider = world.getChunkProvider();
-		int regionSize = manager.tileEntityRegionSize;
+		int regionSize = manager.regionSize;
 		int maxPosition = (regionSize / 2) - 1;
 		int relativeXPos;
 		int relativeZPos;
@@ -63,7 +63,7 @@ public class TileEntityTickCallable<T> extends TickCallable {
 				//Yes, this is correct. Can't be simplified to else if, as it may be invalidated during updateEntity
 				if (tileEntity.isInvalid()) {
 					tileEntitiesIterator.remove();
-					Log.warning("Removed invalid tile: " + tileEntity.xCoord + ", " + tileEntity.yCoord + ", " + tileEntity.zCoord + "\ttype:" + tileEntity.getClass().toString());
+					Log.fine("Removed invalid tile: " + tileEntity.xCoord + ", " + tileEntity.yCoord + ", " + tileEntity.zCoord + "\ttype:" + tileEntity.getClass().toString());
 					if (chunkProvider.chunkExists(tileEntity.xCoord >> 4, tileEntity.zCoord >> 4)) {
 						Chunk chunk = world.getChunkFromChunkCoords(tileEntity.xCoord >> 4, tileEntity.zCoord >> 4);
 						if (chunk != null) {

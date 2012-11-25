@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -17,8 +19,7 @@ import net.minecraft.src.TileEntity;
 import net.minecraft.src.World;
 
 public class TickManager {
-	public final int tileEntityRegionSize;
-	public final int entityRegionSize;
+	public final int regionSize;
 	public boolean variableTickRate;
 	private final Object processChangesLock = new Object();
 	private final List<TileEntity> toRemoveTileEntities = new ArrayList<TileEntity>();
@@ -31,10 +32,9 @@ public class TickManager {
 	private final ExecutorService tickExecutor = Executors.newCachedThreadPool();
 	private final World world;
 
-	public TickManager(World world, int tileEntityRegionSize, int entityRegionSize) {
+	public TickManager(World world, int regionSize) {
 		this.world = world;
-		this.tileEntityRegionSize = tileEntityRegionSize;
-		this.entityRegionSize = entityRegionSize;
+		this.regionSize = regionSize;
 	}
 
 	public void setVariableTickRate(boolean variableTickRate) {
@@ -50,7 +50,7 @@ public class TickManager {
 		int hashCode = getHashCode(tileEntity);
 		TileEntityTickCallable callable = tileEntityCallables.get(hashCode);
 		if (callable == null) {
-			callable = new TileEntityTickCallable<Object>(world, this, tileEntity.xCoord / tileEntityRegionSize, tileEntity.zCoord / tileEntityRegionSize);
+			callable = new TileEntityTickCallable<Object>(world, this, tileEntity.xCoord / regionSize, tileEntity.zCoord / regionSize);
 			tileEntityCallables.put(hashCode, callable);
 			tickCallables.add(callable);
 		}
@@ -63,8 +63,8 @@ public class TickManager {
 
 	@SuppressWarnings ("NumericCastThatLosesPrecision")
 	private EntityTickCallable getOrCreateCallable(Entity entity) {
-		int regionX = (int) entity.posX / entityRegionSize;
-		int regionZ = (int) entity.posZ / entityRegionSize;
+		int regionX = (int) entity.posX / regionSize;
+		int regionZ = (int) entity.posZ / regionSize;
 		int hashCode = getHashCodeFromRegionCoords(regionX, regionZ);
 		EntityTickCallable callable = entityCallables.get(hashCode);
 		if (callable == null) {
@@ -85,7 +85,7 @@ public class TickManager {
 	}
 
 	int getHashCode(int x, int z) {
-		return getHashCodeFromRegionCoords(x / tileEntityRegionSize, z / tileEntityRegionSize);
+		return getHashCodeFromRegionCoords(x / regionSize, z / regionSize);
 	}
 
 	public static int getHashCodeFromRegionCoords(int x, int z) {
@@ -166,5 +166,34 @@ public class TickManager {
 
 	public void unload() {
 		tickExecutor.shutdown();
+	}
+
+	public String getStats() {
+		StringBuilder stats = new StringBuilder();
+		stats.append("World: ").append(Log.name(world)).append("\n");
+		stats.append("---- Slowest tick regions ----").append("\n");
+		float averageAverageTickTime = 0;
+		float maxTickTime = 0;
+		SortedMap<Float, TickCallable> sortedTickCallables = new TreeMap<Float, TickCallable>();
+		synchronized (processChangesLock) {
+			for (TickCallable<Object> tickCallable : tickCallables) {
+				float averageTickTime = tickCallable.getAverageTickTime();
+				averageAverageTickTime += averageTickTime;
+				sortedTickCallables.put(averageTickTime, tickCallable);
+				if (averageTickTime > maxTickTime) {
+					maxTickTime = averageTickTime;
+				}
+			}
+		}
+		TickCallable[] sortedTickCallablesArray = sortedTickCallables.values().toArray(new TickCallable[]{});
+		for (int i = sortedTickCallablesArray.length - 1; i >= sortedTickCallablesArray.length - 6; i--) {
+			stats.append(sortedTickCallablesArray[i].getStats()).append("\n");
+		}
+		averageAverageTickTime /= tickCallables.size();
+		stats.append("---- World stats ----").append("\n");
+		stats.append("Average tick time: ").append(averageAverageTickTime).append("\n");
+		stats.append("Max tick time: ").append(maxTickTime).append("\n");
+		stats.append("Effective tick time: ").append((maxTickTime > 55) ? 55 : maxTickTime).append("\n");
+		return stats.toString();
 	}
 }

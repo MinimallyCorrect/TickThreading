@@ -18,7 +18,7 @@ public abstract class TickCallable<T> implements Callable<T> {
 	public final int hashCode;
 	private final int regionX;
 	private final int regionZ;
-	private long averageTickTime = 5000000;
+	float averageTickTime = 1;
 
 	TickCallable(World world, TickManager manager, int regionX, int regionZ) {
 		super();
@@ -75,25 +75,33 @@ public abstract class TickCallable<T> implements Callable<T> {
 
 	public T call() {
 		if (shouldTick()) {
-			long startTime = System.nanoTime();
+			long startTime = System.currentTimeMillis();
 			doTick();
-			averageTickTime = ((averageTickTime * 32) + (System.nanoTime() - startTime)) / 33;
+			averageTickTime = ((averageTickTime * 100) + (System.currentTimeMillis() - startTime)) / 101;
 		}
 		return null;
 	}
 
 	public boolean shouldTick() {
-		return !manager.variableTickRate || averageTickTime < 55000000 || Math.random() < ((double) 55000000) / averageTickTime;
+		return !manager.variableTickRate || averageTickTime < 55 || Math.random() < ((float) 55) / averageTickTime;
 	}
 
 	public abstract void doTick();
 
 	/**
 	 * Called in processChanges thread, to be used for data processing
-	 * and anything else which does not need to run in the main thread.
+	 * and anything else which is not part of a tick
 	 */
 	public void processChanges() {
 
+	}
+
+	public float getAverageTickTime() {
+		return averageTickTime;
+	}
+
+	public String getStats() {
+		return "X: " + regionX * manager.regionSize + ", Z: " + regionZ * manager.regionSize + ", time: " + getAverageTickTime() + "ms";
 	}
 
 	@Override

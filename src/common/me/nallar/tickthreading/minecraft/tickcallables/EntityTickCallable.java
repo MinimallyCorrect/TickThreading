@@ -20,7 +20,7 @@ public class EntityTickCallable<T> extends TickCallable {
 	public void doTick() {
 		try {
 			IChunkProvider chunkProvider = world.getChunkProvider();
-			int regionSize = manager.entityRegionSize;
+			int regionSize = manager.regionSize;
 			for (Entity entity : entityList) {
 				if (entity.ridingEntity != null) {
 					if (!entity.ridingEntity.isDead && entity.ridingEntity.riddenByEntity == entity) {
