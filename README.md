@@ -13,7 +13,7 @@ Download the latest builds from [Jenkins].
 
 Compiling
 ---------
-TickThreading is built using Maven.
+TickThreading is built using Ant.
 
 * Install [Ant](http://ant.apache.org/)
 * Checkout this repo and run: `ant`
