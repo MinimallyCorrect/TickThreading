@@ -18,7 +18,7 @@
 
 	<property name="mcp.version" value="723"/>
 	<property name="mc.version" value="1.4.5"/>
-	<property name="forge.version" value="6.4.0.395"/>
+	<property name="forge.version" value="6.4.0.396"/>
 	<property name="project.version" value="1.0.0"/>
 
 	<property name="mcp.name" value="mcp${mcp.version}.zip"/>
