@@ -1,6 +1,7 @@
 package me.nallar.tickthreading.minecraft;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,7 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 import me.nallar.tickthreading.Log;
+import me.nallar.tickthreading.minecraft.commands.TPSCommand;
 import me.nallar.tickthreading.minecraft.commands.TicksCommand;
 import me.nallar.tickthreading.minecraft.entitylist.EntityList;
 import me.nallar.tickthreading.minecraft.entitylist.LoadedTileEntityList;
@@ -51,17 +53,21 @@ public class TickThreading {
 		variableTickRateProperty.comment = "Allows tick rate to vary per region so that each region uses at most 50ms on average per tick.";
 		Property ticksCommandName = config.get(Configuration.CATEGORY_GENERAL, "ticksCommandName", TicksCommand.name);
 		ticksCommandName.comment = "Name of the command to be used for performance stats. Defaults to ticks.";
+		Property tpsCommandName = config.get(Configuration.CATEGORY_GENERAL, "tpsCommandName", TPSCommand.name);
+		tpsCommandName.comment = "Name of the command to be used for TPS reports.";
 		config.save();
 
 		regionSize = regionSizeProperty.getInt(regionSize);
 		variableTickRate = variableTickRateProperty.getBoolean(variableTickRate);
 		TicksCommand.name = ticksCommandName.value;
+		TPSCommand.name = tpsCommandName.value;
 	}
 
 	@Mod.ServerStarting
 	public void serverStarting(FMLServerStartingEvent event) {
 		ServerCommandManager serverCommandManager = (ServerCommandManager) event.getServer().getCommandManager();
 		serverCommandManager.registerCommand(new TicksCommand());
+		serverCommandManager.registerCommand(new TPSCommand());
 	}
 
 	@ForgeSubscribe
@@ -102,6 +108,10 @@ public class TickThreading {
 
 	public TickManager getManager(World world) {
 		return managers.get(world);
+	}
+
+	public List<TickManager> getManagers() {
+		return new ArrayList<TickManager>(managers.values());
 	}
 
 	public static TickThreading instance() {

@@ -1,5 +1,7 @@
 package me.nallar.tickthreading.minecraft.commands;
 
+import java.util.List;
+
 import me.nallar.tickthreading.minecraft.TickThreading;
 import net.minecraft.src.Entity;
 import net.minecraft.src.ICommandSender;
@@ -18,11 +20,14 @@ public class TicksCommand extends Command {
 	}
 
 	@Override
-	public void processCommand(ICommandSender commandSender, String... arguments) {
+	public void processCommand(ICommandSender commandSender, List<String> arguments) {
 		if (commandSender instanceof Entity) {
 			World world = ((Entity) commandSender).worldObj;
-			String stats = TickThreading.instance().getManager(world).getStats();
-			sendChat(commandSender, stats);
+			if (arguments.contains("all")) {
+
+			} else {
+				sendChat(commandSender, TickThreading.instance().getManager(world).getDetailedStats());
+			}
 		}
 	}
 }

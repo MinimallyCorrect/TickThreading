@@ -1,5 +1,9 @@
 package me.nallar.tickthreading.minecraft.commands;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import net.minecraft.src.CommandBase;
 import net.minecraft.src.ICommandSender;
 
@@ -18,4 +22,11 @@ abstract class Command extends CommandBase {
 			commandSender.sendChatToPlayer(sent);
 		}
 	}
+
+	@Override
+	public final void processCommand(ICommandSender commandSender, String... argumentsArray) {
+		processCommand(commandSender, new ArrayList<String>(Arrays.asList(argumentsArray)));
+	}
+
+	public abstract void processCommand(ICommandSender commandSender, List<String> arguments);
 }

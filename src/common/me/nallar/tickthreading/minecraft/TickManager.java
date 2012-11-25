@@ -22,7 +22,7 @@ import net.minecraft.src.World;
 public class TickManager {
 	public final int regionSize;
 	public boolean variableTickRate;
-	private final Object processChangesLock = new Object();
+	private final Object tickLock = new Object();
 	private final List<TileEntity> toRemoveTileEntities = new ArrayList<TileEntity>();
 	private final List<Entity> toRemoveEntities = new ArrayList<Entity>();
 	private final List<TileEntity> toAddTileEntities = new ArrayList<TileEntity>();
@@ -31,7 +31,7 @@ public class TickManager {
 	private final Map<Integer, EntityTickCallable> entityCallables = new HashMap<Integer, EntityTickCallable>();
 	private final List<TickCallable<Object>> tickCallables = new ArrayList<TickCallable<Object>>();
 	private final ExecutorService tickExecutor = Executors.newCachedThreadPool();
-	private final World world;
+	public final World world;
 
 	public TickManager(World world, int regionSize) {
 		this.world = world;
@@ -95,7 +95,7 @@ public class TickManager {
 
 	private synchronized void processChanges() {
 		try {
-			synchronized (processChangesLock) {
+			synchronized (tickLock) {
 				for (TileEntity tileEntity : toRemoveTileEntities) {
 					getOrCreateCallable(tileEntity).remove(tileEntity);
 				}
@@ -150,7 +150,7 @@ public class TickManager {
 	}
 
 	public void doTick() {
-		synchronized (processChangesLock) {
+		synchronized (tickLock) {
 			try {
 				tickExecutor.invokeAll(tickCallables);
 			} catch (InterruptedException e) {
@@ -169,14 +169,37 @@ public class TickManager {
 		tickExecutor.shutdown();
 	}
 
-	public String getStats() {
+	public float getTickTime() {
+		float maxTickTime = 0;
+		synchronized (tickLock) {
+			for (TickCallable<Object> tickCallable : tickCallables) {
+				float averageTickTime = tickCallable.getAverageTickTime();
+				if (averageTickTime > maxTickTime) {
+					maxTickTime = averageTickTime;
+				}
+			}
+		}
+		return (maxTickTime > 55) ? 55 : maxTickTime;
+	}
+
+	public float getEffectiveTickTime() {
+		float tickTime = getTickTime();
+		if (tickTime < 50) {
+			tickTime = 50;
+		} else if (tickTime > 55 && variableTickRate) {
+			tickTime = 55;
+		}
+		return tickTime;
+	}
+
+	public String getDetailedStats() {
 		StringBuilder stats = new StringBuilder();
 		stats.append("World: ").append(Log.name(world)).append("\n");
 		stats.append("---- Slowest tick regions ----").append("\n");
 		float averageAverageTickTime = 0;
 		float maxTickTime = 0;
 		SortedMap<Float, TickCallable<Object>> sortedTickCallables = new TreeMap<Float, TickCallable<Object>>();
-		synchronized (processChangesLock) {
+		synchronized (tickLock) {
 			for (TickCallable<Object> tickCallable : tickCallables) {
 				float averageTickTime = tickCallable.getAverageTickTime();
 				averageAverageTickTime += averageTickTime;
@@ -189,7 +212,9 @@ public class TickManager {
 		Collection<TickCallable<Object>> var = sortedTickCallables.values();
 		TickCallable[] sortedTickCallablesArray = var.toArray(new TickCallable[var.size()]);
 		for (int i = sortedTickCallablesArray.length - 1; i >= sortedTickCallablesArray.length - 6; i--) {
-			stats.append(sortedTickCallablesArray[i].getStats()).append("\n");
+			if (sortedTickCallablesArray[i].getAverageTickTime() > 3) {
+				stats.append(sortedTickCallablesArray[i].getStats()).append("\n");
+			}
 		}
 		averageAverageTickTime /= tickCallables.size();
 		stats.append("---- World stats ----").append("\n");

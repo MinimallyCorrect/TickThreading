@@ -72,6 +72,6 @@ public class Log {
 	}
 
 	public static String name(World world) {
-		return world.getWorldInfo().getWorldName() + ":" + world.getWorldInfo().getDimension() + ":" + world.hashCode();
+		return world.getWorldInfo().getWorldName() + "/" + world.provider.getDimensionName();
 	}
 }
