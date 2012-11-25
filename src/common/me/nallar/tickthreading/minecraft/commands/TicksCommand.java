@@ -7,9 +7,11 @@ import net.minecraft.src.ICommandSender;
 import net.minecraft.src.World;
 
 public class TicksCommand extends CommandBase {
+	public static String name = "ticks";
+
 	@Override
 	public String getCommandName() {
-		return "ticks";
+		return name;
 	}
 
 	public boolean canCommandSenderUseCommand(ICommandSender par1ICommandSender) {

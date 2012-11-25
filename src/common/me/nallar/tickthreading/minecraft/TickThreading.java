@@ -31,7 +31,6 @@ public class TickThreading {
 	private final int loadedTileEntityFieldIndex = 2;
 	private final int loadedEntityFieldIndex = 0;
 	private int regionSize = 16;
-	private int entityRegionSize = 64;
 	private boolean variableTickRate = true;
 	final Map<World, TickManager> managers = new HashMap<World, TickManager>();
 	private static TickThreading instance;
@@ -50,10 +49,13 @@ public class TickThreading {
 		regionSizeProperty.comment = "width/length of tick regions, specified in blocks.";
 		Property variableTickRateProperty = config.get(Configuration.CATEGORY_GENERAL, "variableRegionTickRate", variableTickRate);
 		variableTickRateProperty.comment = "Allows tick rate to vary per region so that each region uses at most 50ms on average per tick.";
+		Property ticksCommandName = config.get(Configuration.CATEGORY_GENERAL, "ticksCommandName", TicksCommand.name);
+		ticksCommandName.comment = "Name of the command to be used for performance stats. Defaults to ticks.";
 		config.save();
 
 		regionSize = regionSizeProperty.getInt(regionSize);
 		variableTickRate = variableTickRateProperty.getBoolean(variableTickRate);
+		TicksCommand.name = ticksCommandName.value;
 	}
 
 	@Mod.ServerStarting
