@@ -1,0 +1,7 @@
+<mods>
+	<minecraftCommon>
+		<class id="net.minecraft.src.WorldServer">
+			<synchronize>func_82740_a,scheduleBlockUpdateFromLoad,getPendingBlockUpdates</synchronize>
+		</class>
+	</minecraftCommon>
+</mods>
