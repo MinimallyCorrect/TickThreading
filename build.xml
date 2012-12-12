@@ -12,30 +12,26 @@
 	<property name="classes.dir" value="${build.dir}/classes"/>
 	<property name="jar.dir" value="target"/>
 
-	<property name="mcp.dir" value="${build.dir}/mcp"/>
-	<property name="forge.dir" value="${mcp.dir}/forge"/>
+	<property name="forge.dir" value="${build.dir}/forge"/>
+	<property name="mcp.dir" value="${forge.dir}/mcp"/>
 
 	<property name="mcpsrc.dir" value="${mcp.dir}/src"/>
 
-	<property name="mcp.version" value="723"/>
 	<property name="mc.version" value="1.4.5"/>
-	<property name="forge.version" value="6.4.0.396"/>
+	<property name="forge.version" value="6.4.1.438"/>
 	<property name="project.version" value="1.0.0"/>
 
-	<property name="mcp.name" value="mcp${mcp.version}.zip"/>
 	<property name="forge.name" value="minecraftforge-src-${mc.version}-${forge.version}.zip"/>
 	<property name="maven-ant-tasks.name" value="maven-ant-tasks-2.1.3.jar"/>
 
 	<property name="maven-ant-tasks.url" value="http://apache.mirrors.timporter.net/maven/ant-tasks/2.1.3/binaries/${maven-ant-tasks.name}"/>
 
 	<available property="forge-exists" file="${download.dir}/${forge.name}"/>
-	<available property="mcp-exists" file="${download.dir}/${mcp.name}"/>
 	<available property="maven-ant-tasks-exists" file="${lib.dir}/${maven-ant-tasks.name}"/>
 
 	<condition property="out-of-date">
 		<not>
 			<and>
-				<available file="${download.dir}/${mcp.name}"/>
 				<available file="${download.dir}/${forge.name}"/>
 				<available file="${mcpsrc.dir}"/>
 			</and>
@@ -68,16 +64,11 @@
 	</target>
 
 	<!-- Download necessary files -->
-	<target name="download-files" depends="download-mcp,download-forge,download-maven-ant-tasks"/>
+	<target name="download-files" depends="download-forge,download-maven-ant-tasks"/>
 
 	<!-- Download Maven Ant Tasks -->
 	<target name="download-maven-ant-tasks" unless="maven-ant-tasks-exists">
 		<get src="${maven-ant-tasks.url}" dest="${lib.dir}/${maven-ant-tasks.name}"/>
-	</target>
-
-	<!-- Download mcp -->
-	<target name="download-mcp" unless="mcp-exists">
-		<get src="http://mcp.ocean-labs.de/files/${mcp.name}" dest="${download.dir}" usetimestamp="True"/>
 	</target>
 
 	<!-- Download forge (if it doesn't exist) -->
@@ -110,16 +101,10 @@
 	<!-- Setup mcp and forge -->
 	<target name="setup" depends="download-files" if="out-of-date">
 
-		<delete dir="${mcp.dir}"/>
-
-		<!-- Unzip them -->
-		<unzip dest="${mcp.dir}" src="${download.dir}/${mcp.name}"/>
-
-		<unzip dest="${mcp.dir}" src="${download.dir}/${forge.name}"/>
+		<unzip dest="${forge.dir}/.." src="${download.dir}/${forge.name}"/>
 
 		<!-- Fix executable permissions -->
-		<chmod dir="${mcp.dir}" perm="ugo+rx" includes="**.sh"/>
-		<chmod file="${mcp.dir}/runtime/bin/astyle-osx" perm="ugo+rx"/>
+		<chmod dir="${forge.dir}" perm="ugo+rx" includes="**.sh"/>
 
 		<!-- Install forge -->
 		<exec dir="${forge.dir}" executable="cmd" osfamily="windows">
