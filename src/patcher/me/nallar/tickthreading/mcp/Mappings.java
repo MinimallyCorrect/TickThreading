@@ -21,7 +21,7 @@ public class Mappings {
 	public MethodDescription obfuscate(MethodDescription methodDescription) {
 		MethodDescription obfuscated = methodMappings.get(methodDescription);
 		if (obfuscated == null) {
-			obfuscated = parameterlessMethodMappings.get(methodDescription.getFullName());
+			obfuscated = parameterlessMethodMappings.get(methodDescription.getShortName());
 		}
 		return obfuscated;
 	}
@@ -56,7 +56,7 @@ public class Mappings {
 				MethodDescription deobfuscatedMethodDescription = new MethodDescription(deobfuscatedClassName, deobfuscatedName, deobfuscatedTypeInfo);
 				MethodDescription obfuscatedMethodDescription = new MethodDescription(obfuscatedClassName, obfuscatedName, obfuscatedTypeInfo);
 				methodMappings.put(deobfuscatedMethodDescription, obfuscatedMethodDescription);
-				parameterlessMethodMappings.put(deobfuscatedMethodDescription.getFullName(), obfuscatedMethodDescription);
+				parameterlessMethodMappings.put(deobfuscatedMethodDescription.getShortName(), obfuscatedMethodDescription);
 			} else {
 				srgScanner.nextLine();
 			}

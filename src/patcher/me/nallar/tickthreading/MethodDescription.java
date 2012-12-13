@@ -27,8 +27,12 @@ public class MethodDescription {
 		this(clazz, name, MCPDescription.substring(1, MCPDescription.lastIndexOf(')') - 1), MCPDescription.substring(MCPDescription.lastIndexOf(')') + 1));
 	}
 
-	public String getFullName() {
+	public String getShortName() {
 		return clazz + "/" + name;
+	}
+
+	public String getMCPName() {
+		return "(" + parameters + ")" + returnType;
 	}
 
 	@Override
