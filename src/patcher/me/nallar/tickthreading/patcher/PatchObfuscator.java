@@ -10,8 +10,8 @@ import org.xml.sax.SAXException;
 public class PatchObfuscator {
 	public static void main(String[] args) {
 		String mcpConfigPath = args.length > 0 ? args[1] : "build/forge/mcp/conf";
-		String inputPatchPath = args.length > 1 ? args[2] : "";
-		String outputPatchPath = args.length > 2 ? args[3] : "build/forge/mcp/conf";
+		String inputPatchPath = args.length > 1 ? args[2] : "resources/patches-unobfuscated.xml";
+		String outputPatchPath = args.length > 2 ? args[3] : "resources/patches.xml";
 
 		try {
 			Mappings mcpMappings = new Mappings(new File(mcpConfigPath));
