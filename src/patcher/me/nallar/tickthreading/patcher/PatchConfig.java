@@ -27,7 +27,7 @@ public class PatchConfig {
 		} catch (ParserConfigurationException e) {
 			//This exception is thrown, and no shorthand way of getting a DocumentBuilder without it.
 			//Should not be thrown, as we do not do anything to the DocumentBuilderFactory.
-			Log.severe("Java was bad, you shouldn't see this. DocBuilder instantiation via docBuilderFactory failed", e);
+			Log.severe("Java was bad, you shouldn't see this. DocBuilder instantiation via default docBuilderFactory failed", e);
 		}
 	}
 }
