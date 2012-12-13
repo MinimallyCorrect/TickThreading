@@ -1,7 +1,12 @@
 <mods>
 	<minecraftCommon>
 		<class id="net.minecraft.src.WorldServer">
+			<!-- Fixes an issue where the tickNextTickLists would become out of sync -->
 			<synchronize>func_82740_a,scheduleBlockUpdateFromLoad,getPendingBlockUpdates</synchronize>
+		</class>
+		<class id="net.minecraft.src.Vec3Pool">
+			<!-- This prevents entities in multiple threads using the same Vec3 for collisions. -->
+			<synchronize>getVecFromPool</synchronize>
 		</class>
 	</minecraftCommon>
 </mods>

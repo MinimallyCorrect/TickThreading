@@ -26,6 +26,10 @@ public class Mappings {
 		return obfuscated;
 	}
 
+	public Mappings(File mcpDir) throws IOException {
+		parse(mcpDir);
+	}
+
 	public void parse(File mcpDir) throws IOException {
 		loadCsv(new File(mcpDir, "methods.csv"));
 		loadSrg(new File(mcpDir, "joined.srg"));
