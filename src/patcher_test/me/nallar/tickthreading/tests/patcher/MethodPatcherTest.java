@@ -7,30 +7,34 @@ import java.util.Map;
 
 import javassist.ClassPool;
 import javassist.CtClass;
+import javassist.CtMethod;
 import javassist.Loader;
-import me.nallar.tickthreading.patcher.NewExprChanger;
+import me.nallar.tickthreading.patcher.MethodPatcher;
 import org.junit.Assert;
 import org.junit.Test;
 
 @SuppressWarnings ("UnusedDeclaration")
-public class NewExprChangerTest {
-	private HashMap<String, String> h;
-	private Map<String, String> h2;
-
+public class MethodPatcherTest {
 	@Test
-	public void testFixUnsafeCollections() throws Exception {
+	public void testReplaceInstantiations() throws Exception {
 		Map<String, List<String>> replacementClasses = new HashMap<String, List<String>>();
 		replacementClasses.put("java.util.HashMap", Arrays.asList("java.util.concurrent.ConcurrentHashMap,me.nallar.tickthreading.collections.CHashMap".split(",")));
-		NewExprChanger newExprChanger = new NewExprChanger(replacementClasses);
+		MethodPatcher methodPatcher = new MethodPatcher();
 
-		CtClass ctClass = ClassPool.getDefault().get("me.nallar.tickthreading.tests.patcher.NewExprChangerTest");
-		newExprChanger.patchClass(ctClass);
+		CtClass ctClass = ClassPool.getDefault().get("me.nallar.tickthreading.tests.patcher.MethodPatcherTest");
+		for (CtMethod ctMethod : ctClass.getDeclaredMethods()) {
+			methodPatcher.replaceInstantiations(ctMethod, replacementClasses);
+		}
+
 		Loader loader = new Loader(ClassPool.getDefault());
-		Object obj = loader.loadClass("me.nallar.tickthreading.tests.patcher.NewExprChangerTest").newInstance();
+		Object obj = loader.loadClass("me.nallar.tickthreading.tests.patcher.MethodPatcherTest").newInstance();
 		Class<?> objClass = obj.getClass();
 		objClass.getDeclaredMethod("testMethodWhichUsesHashMap").invoke(obj);
 		objClass.getDeclaredMethod("testMethodWhichUsesHashMap2").invoke(obj);
 	}
+
+	private HashMap<String, String> h;
+	private Map<String, String> h2;
 
 	public void testMethodWhichUsesHashMap() {
 		h = new HashMap<String, String>();
