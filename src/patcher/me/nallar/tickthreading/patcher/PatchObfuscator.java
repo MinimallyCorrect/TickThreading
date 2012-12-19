@@ -21,5 +21,12 @@ public class PatchObfuscator {
 		} catch (SAXException e) {
 			Log.severe("Failed to parse input file", e);
 		}
+
+		try {
+			patchConfig.obfuscate();
+			patchConfig.save(new File(outputPatchPath));
+		} catch (IOException e) {
+			Log.severe("Failed to write obfuscated patch");
+		}
 	}
 }

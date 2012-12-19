@@ -9,7 +9,7 @@ import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
 import javassist.Loader;
-import me.nallar.tickthreading.patcher.MethodPatcher;
+import me.nallar.tickthreading.patcher.Patches;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -19,15 +19,15 @@ public class MethodPatcherTest {
 	public void testReplaceInstantiations() throws Exception {
 		Map<String, List<String>> replacementClasses = new HashMap<String, List<String>>();
 		replacementClasses.put("java.util.HashMap", Arrays.asList("java.util.concurrent.ConcurrentHashMap,me.nallar.tickthreading.collections.CHashMap".split(",")));
-		MethodPatcher methodPatcher = new MethodPatcher();
+		Patches patches = new Patches();
 
-		CtClass ctClass = ClassPool.getDefault().get("me.nallar.tickthreading.tests.patcher.MethodPatcherTest");
+		CtClass ctClass = ClassPool.getDefault().get("me.nallar.tickthreading.tests.patches.MethodPatcherTest");
 		for (CtMethod ctMethod : ctClass.getDeclaredMethods()) {
-			methodPatcher.replaceInstantiations(ctMethod, replacementClasses);
+			patches.replaceInstantiations(ctMethod, replacementClasses);
 		}
 
 		Loader loader = new Loader(ClassPool.getDefault());
-		Object obj = loader.loadClass("me.nallar.tickthreading.tests.patcher.MethodPatcherTest").newInstance();
+		Object obj = loader.loadClass("me.nallar.tickthreading.tests.patches.MethodPatcherTest").newInstance();
 		Class<?> objClass = obj.getClass();
 		objClass.getDeclaredMethod("testMethodWhichUsesHashMap").invoke(obj);
 		objClass.getDeclaredMethod("testMethodWhichUsesHashMap2").invoke(obj);

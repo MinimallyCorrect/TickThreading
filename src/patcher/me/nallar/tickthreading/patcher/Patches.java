@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import javassist.CannotCompileException;
+import javassist.CtClass;
 import javassist.CtMethod;
 import javassist.Modifier;
 import javassist.expr.Cast;
@@ -18,7 +19,8 @@ import javassist.expr.NewArray;
 import javassist.expr.NewExpr;
 import me.nallar.tickthreading.Log;
 
-public class MethodPatcher {
+public class Patches {
+	@Patch
 	public void synchronize(CtMethod method) {
 		int currentModifiers = method.getModifiers();
 		if (Modifier.isSynchronized(currentModifiers)) {
@@ -28,7 +30,18 @@ public class MethodPatcher {
 		}
 	}
 
-	public void replaceInstantiations(CtMethod method, final Map<String, List<String>> replacementClasses) throws CannotCompileException {
+	@Patch
+	public void replaceInstantiations(CtClass clazz, Map<String, String> attributes) {
+
+	}
+
+	@Patch
+	public void replaceInstantiations(CtMethod method, Map<String, String> attributes) {
+
+	}
+
+	private void replaceInstantiationsInternal(CtMethod method, final Map<String, List<String>> replacementClasses) throws CannotCompileException {
+		// TODO: Learn to use ASM, javassist isn't nice. :(
 		final Map<Integer, String> newExprType = new HashMap<Integer, String>();
 		method.instrument(new ExprEditor() {
 			NewExpr lastNewExpr;
