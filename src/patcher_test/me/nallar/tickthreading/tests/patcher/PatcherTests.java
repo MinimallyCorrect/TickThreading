@@ -14,20 +14,20 @@ import org.junit.Assert;
 import org.junit.Test;
 
 @SuppressWarnings ("UnusedDeclaration")
-public class MethodPatcherTest {
+public class PatcherTests {
 	@Test
 	public void testReplaceInstantiations() throws Exception {
 		Map<String, List<String>> replacementClasses = new HashMap<String, List<String>>();
 		replacementClasses.put("java.util.HashMap", Arrays.asList("java.util.concurrent.ConcurrentHashMap,me.nallar.tickthreading.collections.CHashMap".split(",")));
 		Patches patches = new Patches();
 
-		CtClass ctClass = ClassPool.getDefault().get("me.nallar.tickthreading.tests.patches.MethodPatcherTest");
+		CtClass ctClass = ClassPool.getDefault().get("me.nallar.tickthreading.tests.patches.PatcherTests");
 		for (CtMethod ctMethod : ctClass.getDeclaredMethods()) {
 			patches.replaceInstantiations(ctMethod, replacementClasses);
 		}
 
 		Loader loader = new Loader(ClassPool.getDefault());
-		Object obj = loader.loadClass("me.nallar.tickthreading.tests.patches.MethodPatcherTest").newInstance();
+		Object obj = loader.loadClass("me.nallar.tickthreading.tests.patches.PatcherTests").newInstance();
 		Class<?> objClass = obj.getClass();
 		objClass.getDeclaredMethod("testMethodWhichUsesHashMap").invoke(obj);
 		objClass.getDeclaredMethod("testMethodWhichUsesHashMap2").invoke(obj);
