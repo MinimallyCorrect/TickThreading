@@ -1,6 +1,5 @@
 package me.nallar.tickthreading.tests.patcher;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +9,7 @@ import javassist.CtClass;
 import javassist.CtMethod;
 import javassist.Loader;
 import me.nallar.tickthreading.patcher.Patches;
+import me.nallar.tickthreading.util.ListUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -18,12 +18,12 @@ public class PatcherTests {
 	@Test
 	public void testReplaceInstantiations() throws Exception {
 		Map<String, List<String>> replacementClasses = new HashMap<String, List<String>>();
-		replacementClasses.put("java.util.HashMap", Arrays.asList("java.util.concurrent.ConcurrentHashMap,me.nallar.tickthreading.collections.CHashMap".split(",")));
+		replacementClasses.put("java.util.HashMap", ListUtil.split("java.util.concurrent.ConcurrentHashMap,me.nallar.tickthreading.collections.CHashMap"));
 		Patches patches = new Patches();
 
 		CtClass ctClass = ClassPool.getDefault().get("me.nallar.tickthreading.tests.patches.PatcherTests");
 		for (CtMethod ctMethod : ctClass.getDeclaredMethods()) {
-			patches.replaceInstantiations(ctMethod, replacementClasses);
+			patches.replaceInstantiationsImplementation(ctMethod, replacementClasses);
 		}
 
 		Loader loader = new Loader(ClassPool.getDefault());

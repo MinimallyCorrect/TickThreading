@@ -40,7 +40,7 @@ public class Patches {
 
 	}
 
-	private void replaceInstantiationsInternal(CtMethod method, final Map<String, List<String>> replacementClasses) throws CannotCompileException {
+	public void replaceInstantiationsImplementation(CtMethod method, final Map<String, List<String>> replacementClasses) throws CannotCompileException {
 		// TODO: Learn to use ASM, javassist isn't nice. :(
 		final Map<Integer, String> newExprType = new HashMap<Integer, String>();
 		method.instrument(new ExprEditor() {
