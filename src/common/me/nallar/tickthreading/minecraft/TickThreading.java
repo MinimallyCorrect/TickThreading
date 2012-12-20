@@ -16,7 +16,7 @@ import me.nallar.tickthreading.minecraft.commands.TPSCommand;
 import me.nallar.tickthreading.minecraft.commands.TicksCommand;
 import me.nallar.tickthreading.minecraft.entitylist.EntityList;
 import me.nallar.tickthreading.minecraft.entitylist.LoadedTileEntityList;
-import me.nallar.tickthreading.util.FieldUtils;
+import me.nallar.tickthreading.util.FieldUtil;
 import net.minecraft.src.ServerCommandManager;
 import net.minecraft.src.TileEntity;
 import net.minecraft.src.World;
@@ -75,8 +75,8 @@ public class TickThreading {
 		TickManager manager = new TickManager(event.world, regionSize);
 		manager.setVariableTickRate(variableTickRate);
 		try {
-			Field loadedTileEntityField = FieldUtils.getFields(World.class, List.class)[loadedTileEntityFieldIndex];
-			//Field loadedEntityField = FieldUtils.getFields(World.class)[loadedEntityFieldIndex];
+			Field loadedTileEntityField = FieldUtil.getFields(World.class, List.class)[loadedTileEntityFieldIndex];
+			//Field loadedEntityField = FieldUtil.getFields(World.class)[loadedEntityFieldIndex];
 			new LoadedTileEntityList<TileEntity>(event.world, loadedTileEntityField, manager);
 			Log.info("Threading initialised for world " + Log.name(event.world));
 			// TODO: Enable entity tick threading
@@ -94,7 +94,7 @@ public class TickThreading {
 	public void onWorldUnload(WorldEvent.Unload event) {
 		managers.remove(event.world);
 		try {
-			Field loadedTileEntityField = FieldUtils.getFields(World.class, List.class)[loadedTileEntityFieldIndex];
+			Field loadedTileEntityField = FieldUtil.getFields(World.class, List.class)[loadedTileEntityFieldIndex];
 			Object loadedTileEntityList = loadedTileEntityField.get(event.world);
 			if (loadedTileEntityList instanceof EntityList) {
 				((EntityList) loadedTileEntityList).unload();
