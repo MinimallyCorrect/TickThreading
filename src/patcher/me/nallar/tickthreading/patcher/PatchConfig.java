@@ -80,7 +80,7 @@ public class PatchConfig {
 
 	public void save(File file) throws TransformerException {
 		Transformer transformer = TransformerFactory.newInstance().newTransformer();
-		Result output = new StreamResult(new File("output.xml"));
+		Result output = new StreamResult(file);
 		Source input = new DOMSource(configDocument);
 
 		transformer.transform(input, output);
