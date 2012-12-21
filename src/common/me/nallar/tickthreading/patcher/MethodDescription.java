@@ -1,4 +1,4 @@
-package me.nallar.tickthreading;
+package me.nallar.tickthreading.patcher;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;

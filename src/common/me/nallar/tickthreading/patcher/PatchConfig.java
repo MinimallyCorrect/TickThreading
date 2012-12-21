@@ -20,6 +20,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javassist.CtClass;
+import javassist.CtMethod;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.mcp.Mappings;
 import me.nallar.tickthreading.util.ListUtil;
@@ -32,6 +34,10 @@ import org.xml.sax.SAXException;
 public class PatchConfig {
 	Document configDocument;
 
+	private Object patchTypes;
+	// Patch name -> patch method descriptor
+	private Map<String, PatchMethodDescriptor> patches = new HashMap<String, PatchMethodDescriptor>();
+
 	public PatchConfig() {
 
 	}
@@ -43,16 +49,16 @@ public class PatchConfig {
 	}
 
 	public void loadPatches(Class patchClass) {
+		try {
+			patchTypes = patchClass.newInstance();
+		} catch (Exception e) {
+			Log.severe("Failed to instantiate patch class", e);
+		}
 		for (Method method : patchClass.getDeclaredMethods()) {
 			for (Annotation annotation : method.getDeclaredAnnotations()) {
 				if (annotation instanceof Patch) {
-					Patch patch = (Patch) annotation;
-					PatchMethodInfo patchMethodInfo = new PatchMethodInfo();
-					patchMethodInfo.name = patch.name();
-					patchMethodInfo.requiredAttributes = ListUtil.split(patch.requiredAttributes());
-					if (patchMethodInfo.name == null || patchMethodInfo.name.isEmpty()) {
-						patchMethodInfo.name = method.getName();
-					}
+					PatchMethodDescriptor patchMethodDescriptor = new PatchMethodDescriptor(method, (Patch) annotation);
+					patches.put(patchMethodDescriptor.name, patchMethodDescriptor);
 				}
 			}
 		}
@@ -98,8 +104,42 @@ public class PatchConfig {
 		return attributes;
 	}
 
-	public class PatchMethodInfo {
+	public class PatchMethodDescriptor {
 		public String name;
 		public List<String> requiredAttributes;
+		public Method patchMethod;
+		public Class<?> type;
+
+		public PatchMethodDescriptor(Method method, Patch patch) {
+			this.name = patch.name();
+			this.requiredAttributes = ListUtil.split(patch.requiredAttributes());
+			if (this.name == null || this.name.isEmpty()) {
+				this.name = method.getName();
+			}
+			type = method.getParameterTypes()[0];
+			patchMethod = method;
+		}
+
+		public void run(CtClass clazz) {
+			if (type.equals(CtClass.class)) {
+				try {
+					patchMethod.invoke(patchTypes, clazz);
+				} catch (Exception e) {
+					Log.severe("Failed to invoke class patch " + this, e);
+				}
+			} else {
+				for (CtMethod method : clazz.getDeclaredMethods()) {
+					run(method);
+				}
+			}
+		}
+
+		private void run(CtMethod method) {
+			try {
+				patchMethod.invoke(patchTypes, method);
+			} catch (Exception e) {
+				Log.severe("Failed to invoke method patch " + this, e);
+			}
+		}
 	}
 }

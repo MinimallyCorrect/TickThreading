@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
-import me.nallar.tickthreading.MethodDescription;
+import me.nallar.tickthreading.patcher.MethodDescription;
 
 public class MCPMappings extends Mappings {
 	Map<String, String> seargeMappings = new HashMap<String, String>();

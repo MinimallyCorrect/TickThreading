@@ -2,7 +2,7 @@ package me.nallar.tickthreading.mcp;
 
 import java.lang.reflect.Method;
 
-import me.nallar.tickthreading.MethodDescription;
+import me.nallar.tickthreading.patcher.MethodDescription;
 
 public abstract class Mappings {
 	public MethodDescription obfuscate(Method method) {
