@@ -1,6 +1,8 @@
 package me.nallar.tickthreading.minecraft;
 
+import java.io.File;
 import java.lang.reflect.Field;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +20,7 @@ import me.nallar.tickthreading.minecraft.entitylist.EntityList;
 import me.nallar.tickthreading.minecraft.entitylist.LoadedTileEntityList;
 import me.nallar.tickthreading.util.FieldUtil;
 import net.minecraft.command.ServerCommandManager;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.Configuration;
@@ -32,19 +35,37 @@ import net.minecraftforge.event.world.WorldEvent;
 public class TickThreading {
 	private final int loadedTileEntityFieldIndex = 2;
 	private final int loadedEntityFieldIndex = 0;
+	public final boolean enabled;
+
 	private int regionSize = 16;
 	private boolean variableTickRate = true;
+	private boolean requirePatched = true;
+	private static File configurationDirectory;
 	final Map<World, TickManager> managers = new HashMap<World, TickManager>();
+
 	private static TickThreading instance;
+
+	public TickThreading() {
+		if (requirePatched) {
+			MinecraftServer.class.getProtectionDomain().getCodeSource().getLocation();
+			enabled = true;
+		} else {
+			enabled = true;
+		}
+	}
 
 	@Mod.Init
 	public void init(FMLInitializationEvent event) {
-		MinecraftForge.EVENT_BUS.register(this);
+		if (enabled) {
+			MinecraftForge.EVENT_BUS.register(this);
+		}
 		instance = this;
+		Log.info(getServerDirectory().toString());
 	}
 
 	@Mod.PreInit
 	public void preInit(FMLPreInitializationEvent event) {
+		configurationDirectory = event.getSuggestedConfigurationFile().getParentFile();
 		Configuration config = new Configuration(event.getSuggestedConfigurationFile());
 		config.load();
 		Property regionSizeProperty = config.get(Configuration.CATEGORY_GENERAL, "regionSize", String.valueOf(regionSize));
@@ -55,19 +76,28 @@ public class TickThreading {
 		ticksCommandName.comment = "Name of the command to be used for performance stats. Defaults to ticks.";
 		Property tpsCommandName = config.get(Configuration.CATEGORY_GENERAL, "tpsCommandName", TPSCommand.name);
 		tpsCommandName.comment = "Name of the command to be used for TPS reports.";
+		Property requirePatchedProperty = config.get(Configuration.CATEGORY_GENERAL, "requirePatched", requirePatched);
+		tpsCommandName.comment = "If the server must be patched to run with TickThreading";
 		config.save();
 
 		regionSize = regionSizeProperty.getInt(regionSize);
 		variableTickRate = variableTickRateProperty.getBoolean(variableTickRate);
 		TicksCommand.name = ticksCommandName.value;
 		TPSCommand.name = tpsCommandName.value;
+		requirePatched = requirePatchedProperty.getBoolean(requirePatched);
 	}
 
 	@Mod.ServerStarting
 	public void serverStarting(FMLServerStartingEvent event) {
-		ServerCommandManager serverCommandManager = (ServerCommandManager) event.getServer().getCommandManager();
-		serverCommandManager.registerCommand(new TicksCommand());
-		serverCommandManager.registerCommand(new TPSCommand());
+		if (enabled) {
+			ServerCommandManager serverCommandManager = (ServerCommandManager) event.getServer().getCommandManager();
+			serverCommandManager.registerCommand(new TicksCommand());
+			serverCommandManager.registerCommand(new TPSCommand());
+		} else {
+			Log.severe("TickThreading is disabled, because your server has not been patched!" +
+			"\nTo patch your server, simply run the PATCHME.bat/sh file in your server directory" +
+			"\nAlternatively, you can try to run without patching, just edit th");
+		}
 	}
 
 	@ForgeSubscribe
@@ -116,5 +146,17 @@ public class TickThreading {
 
 	public static TickThreading instance() {
 		return instance;
+	}
+
+	public static File getServerDirectory() {
+		if (MinecraftServer.getServer().isDedicatedServer()) {
+			return new File(MinecraftServer.class.getProtectionDomain().getCodeSource().getLocation().getPath());
+		} else {
+			return new File(MinecraftServer.class.getProtectionDomain().getCodeSource().getLocation().getPath()).getParentFile();
+		}
+	}
+
+	public static File getDataDirectory() {
+		return configurationDirectory;
 	}
 }

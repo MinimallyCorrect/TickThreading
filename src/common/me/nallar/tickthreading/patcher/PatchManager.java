@@ -35,18 +35,13 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-public class PatchConfig {
+public class PatchManager {
 	Document configDocument;
 	private Object patchTypes;
 	// Patch name -> patch method descriptor
 	private Map<String, PatchMethodDescriptor> patches = new HashMap<String, PatchMethodDescriptor>();
 
-	public PatchConfig() {
-
-	}
-
-	public PatchConfig(File configFile, Class patchClass) throws IOException, SAXException {
-		this();
+	public PatchManager(File configFile, Class patchClass) throws IOException, SAXException {
 		loadPatches(patchClass);
 		loadConfig(configFile);
 	}

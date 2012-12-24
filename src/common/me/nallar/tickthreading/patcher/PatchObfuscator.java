@@ -19,11 +19,11 @@ public class PatchObfuscator {
 
 		try {
 			Mappings mcpMappings = new MCPMappings(new File(mcpConfigPath));
-			PatchConfig patchConfig = new PatchConfig(new File(inputPatchPath), Patches.class);
+			PatchManager patchManager = new PatchManager(new File(inputPatchPath), Patches.class);
 
 			try {
-				patchConfig.obfuscate(mcpMappings);
-				patchConfig.save(new File(outputPatchPath));
+				patchManager.obfuscate(mcpMappings);
+				patchManager.save(new File(outputPatchPath));
 			} catch (TransformerException e) {
 				Log.severe("Failed to save obfuscated patch");
 			}
