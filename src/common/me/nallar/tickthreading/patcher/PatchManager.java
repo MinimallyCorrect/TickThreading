@@ -11,7 +11,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
@@ -44,9 +43,9 @@ public class PatchManager {
 	private Map<String, PatchMethodDescriptor> patches = new HashMap<String, PatchMethodDescriptor>();
 	public final ClassRegistry classRegistry = new ClassRegistry();
 
-	public PatchManager(File configFile, Class patchClass) throws IOException, SAXException {
+	public PatchManager(InputStream configStream, Class patchClass) throws IOException, SAXException {
 		loadPatches(patchClass);
-		loadConfig(configFile);
+		loadConfig(configStream);
 	}
 
 	public void loadPatches(Class patchClass) {
@@ -63,10 +62,6 @@ public class PatchManager {
 				}
 			}
 		}
-	}
-
-	public void loadConfig(File configFile) throws IOException, SAXException {
-		loadConfig(new FileInputStream(configFile));
 	}
 
 	public void loadConfig(InputStream configInputStream) throws IOException, SAXException {

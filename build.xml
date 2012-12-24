@@ -187,6 +187,7 @@
 				<path refid="class.path"/>
 				<pathelement location="${classes.dir}"/>
 			</classpath>
+			<arg value="obfuscator"/>
 		</java>
 
 		<delete dir="${jar.dir}"/>

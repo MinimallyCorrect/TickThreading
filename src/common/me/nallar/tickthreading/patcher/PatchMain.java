@@ -4,6 +4,7 @@ import javax.xml.transform.TransformerException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.jar.JarFile;
 
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.mappings.MCPMappings;
@@ -11,19 +12,19 @@ import me.nallar.tickthreading.mappings.Mappings;
 import org.xml.sax.SAXException;
 
 public class PatchMain {
-	private static String location;
-
 	public static void main(String[] argv) {
-		if (argv.length == 1) {
+		if (argv.length < 1) {
 			Log.severe("Type must be passed");
+			return;
 		}
-		location = argv[0];
-		String type = argv[1];
+		String type = argv[0];
 		String[] args = Arrays.copyOfRange(argv, 1, argv.length);
 		if (type.equalsIgnoreCase("obfuscator")) {
 			obfuscator(args);
 		} else if (type.equalsIgnoreCase("patcher")) {
 			patcher(args);
+		} else {
+			Log.severe(type + " is not a valid action.");
 		}
 	}
 
@@ -36,7 +37,7 @@ public class PatchMain {
 
 		try {
 			Mappings mcpMappings = new MCPMappings(new File(mcpConfigPath));
-			PatchManager patchManager = new PatchManager(new File(inputPatchPath), Patches.class);
+			PatchManager patchManager = new PatchManager(new File(inputPatchPath).toURI().toURL().openStream(), Patches.class);
 
 			try {
 				patchManager.obfuscate(mcpMappings);
@@ -52,6 +53,15 @@ public class PatchMain {
 	}
 
 	public static void patcher(String[] args) {
-
+		try {
+			PatchManager patchManager = new PatchManager(PatchMain.class.getResourceAsStream("patches.xml"), Patches.class);
+			patchManager.classRegistry.loadJars(new File(new File("").getParentFile().getAbsoluteFile(), "mods"));
+			patchManager.classRegistry.loadJar(new JarFile(new File(args[0]).getAbsoluteFile()));
+			patchManager.runPatches();
+		} catch (IOException e) {
+			Log.severe("Failed to read patches", e);
+		} catch (SAXException e) {
+			Log.severe("Failed to load patches", e);
+		}
 	}
 }
