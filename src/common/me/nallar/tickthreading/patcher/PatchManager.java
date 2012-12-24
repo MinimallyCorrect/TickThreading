@@ -112,7 +112,7 @@ public class PatchManager {
 							continue;
 						}
 						try {
-							patch.run(patchElement);
+							patch.run(patchElement, ctClass);
 							patched = true;
 						} catch (Exception e) {
 							Log.severe("Failed to patch " + ctClass + " with " + patch.name + " :(");
@@ -167,8 +167,19 @@ public class PatchManager {
 			patchMethod = method;
 		}
 
-		public void run(Element patchElement) {
-
+		public void run(Element patchElement, CtClass ctClass) {
+			if (patchElement.getTextContent().isEmpty()) {
+				run(ctClass);
+			} else {
+				List<MethodDescription> methodDescriptions = MethodDescription.fromListString(ctClass.getSimpleName(), patchElement.getTextContent());
+				for (MethodDescription methodDescription : methodDescriptions) {
+					try {
+						run(methodDescription.inClass(ctClass));
+					} catch (Exception e) {
+						Log.severe("Error patching " + methodDescription.getMCPName() + " in " + ctClass, e);
+					}
+				}
+			}
 		}
 
 		private void run(CtClass clazz) {

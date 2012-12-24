@@ -1,5 +1,7 @@
 package me.nallar.tickthreading.mappings;
 
+import javassist.CtClass;
+
 public class ClassDescription {
 	public final String name;
 
@@ -9,6 +11,10 @@ public class ClassDescription {
 
 	public ClassDescription(Class clazz) {
 		this(clazz.getCanonicalName());
+	}
+
+	public ClassDescription(CtClass ctClass) {
+		this(ctClass.getSimpleName());
 	}
 
 	@Override

@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javassist.CtClass;
+import javassist.CtMethod;
+import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.util.ListUtil;
 
 public class MethodDescription {
@@ -25,6 +28,10 @@ public class MethodDescription {
 
 	public MethodDescription(Method method) {
 		this(method.getDeclaringClass().getCanonicalName(), method.getName(), getJVMName(method.getReturnType()), getParameterList(method));
+	}
+
+	public MethodDescription(CtMethod ctMethod) {
+		this(ctMethod.getDeclaringClass().getName(), ctMethod.getName(), ctMethod.getSignature());
 	}
 
 	public MethodDescription(String clazz, String name, String MCPDescription) {
@@ -64,6 +71,23 @@ public class MethodDescription {
 
 	public boolean similar(Object other) {
 		return this == other || (other instanceof MethodDescription && ((MethodDescription) other).getShortName() == this.getShortName()) || (other instanceof Method && new MethodDescription((Method) other).similar(this));
+	}
+
+	public CtMethod inClass(CtClass ctClass) {
+		for (CtMethod ctMethod : ctClass.getDeclaredMethods()) {
+			if (new MethodDescription(ctMethod).equals(this)) {
+				return ctMethod;
+			}
+		}
+		if (!this.parameters.isEmpty() || !this.returnType.isEmpty()) {
+			Log.warning("Failed to find exact match for " + this.getMCPName() + ", trying to find similar methods.");
+		}
+		for (CtMethod ctMethod : ctClass.getDeclaredMethods()) {
+			if (new MethodDescription(ctMethod).similar(this)) {
+				return ctMethod;
+			}
+		}
+		throw new RuntimeException("Method not found");
 	}
 
 	private static String getJVMName(Class<?> clazz) {
