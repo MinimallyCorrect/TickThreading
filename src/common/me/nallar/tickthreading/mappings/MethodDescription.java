@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.util.ListUtil;
 
 public class MethodDescription {

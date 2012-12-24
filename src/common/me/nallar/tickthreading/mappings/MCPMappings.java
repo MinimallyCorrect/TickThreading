@@ -6,8 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
-import me.nallar.tickthreading.Log;
-
 public class MCPMappings extends Mappings {
 	Map<String, String> seargeMappings = new HashMap<String, String>();
 	Map<ClassDescription, ClassDescription> classMappings = new HashMap<ClassDescription, ClassDescription>();

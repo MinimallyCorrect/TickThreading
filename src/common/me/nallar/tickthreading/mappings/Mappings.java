@@ -4,10 +4,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import me.nallar.tickthreading.Log;
-
 public abstract class Mappings {
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings ("unchecked")
 	public List map(List things) {
 		List mappedThings = new ArrayList();
 		for (Object thing : things) {

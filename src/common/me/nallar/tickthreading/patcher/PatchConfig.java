@@ -83,12 +83,8 @@ public class PatchConfig {
 		}
 	}
 
-	private NodeList getClassNodes() {
-		return configDocument.getDocumentElement().getElementsByTagName("class");
-	}
-
 	public void obfuscate(Mappings mappings) {
-		NodeList classNodes = getClassNodes();
+		NodeList classNodes = ((Element) configDocument.getElementsByTagName("minecraftCommon").item(0)).getElementsByTagName("class");
 		for (int i = 0, cNLength = classNodes.getLength(); i < cNLength; i++) {
 			Element classElement = (Element) classNodes.item(i);
 			String className = classElement.getAttribute("id");
