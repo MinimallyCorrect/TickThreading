@@ -1,2 +1,2 @@
 #!/bin/sh
-"%JAVA%" -cp "%TT%" me.nallar.tickthreading.patcher.PatchMain "%MS%"
+java -cp "%TT%" me.nallar.tickthreading.patcher.PatchMain patcher "%MS%"
