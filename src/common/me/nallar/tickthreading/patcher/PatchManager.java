@@ -42,7 +42,7 @@ import org.xml.sax.SAXException;
 public class PatchManager {
 	private static int cachedPatchVersion;
 	private static Properties patchStatus = new Properties();
-	private static File patchStatusLocation = new File(LocationUtil.locationOf(PatchManager.class).getParentFile(), "TickThreading/patch.conf");
+	private static File patchStatusLocation = new File(LocationUtil.directoryOf(PatchManager.class).getParentFile(), "TickThreading/patch.conf");
 
 	static {
 		if (patchStatusLocation.exists()) {
@@ -52,7 +52,7 @@ public class PatchManager {
 				Log.severe("Failed to load patch properties", e);
 			}
 		} else {
-			patchStatusLocation.mkdirs();
+			patchStatusLocation.getParentFile().mkdirs();
 		}
 	}
 
