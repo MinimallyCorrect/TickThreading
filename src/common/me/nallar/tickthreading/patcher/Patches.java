@@ -24,9 +24,9 @@ public class Patches {
 	public void synchronize(CtMethod method) {
 		int currentModifiers = method.getModifiers();
 		if (Modifier.isSynchronized(currentModifiers)) {
-			method.setModifiers(Modifier.clear(currentModifiers, Modifier.SYNCHRONIZED));
-		} else {
 			Log.warning("Method: " + method.getLongName() + " is already synchronized");
+		} else {
+			method.setModifiers(Modifier.clear(currentModifiers, Modifier.SYNCHRONIZED));
 		}
 	}
 
