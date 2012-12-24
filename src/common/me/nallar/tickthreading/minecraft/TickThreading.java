@@ -2,7 +2,6 @@ package me.nallar.tickthreading.minecraft;
 
 import java.io.File;
 import java.lang.reflect.Field;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,13 +35,11 @@ public class TickThreading {
 	private final int loadedTileEntityFieldIndex = 2;
 	private final int loadedEntityFieldIndex = 0;
 	public final boolean enabled;
-
 	private int regionSize = 16;
 	private boolean variableTickRate = true;
 	private boolean requirePatched = true;
 	private static File configurationDirectory;
 	final Map<World, TickManager> managers = new HashMap<World, TickManager>();
-
 	private static TickThreading instance;
 
 	public TickThreading() {
@@ -95,8 +92,8 @@ public class TickThreading {
 			serverCommandManager.registerCommand(new TPSCommand());
 		} else {
 			Log.severe("TickThreading is disabled, because your server has not been patched!" +
-			"\nTo patch your server, simply run the PATCHME.bat/sh file in your server directory" +
-			"\nAlternatively, you can try to run without patching, just edit th");
+					"\nTo patch your server, simply run the PATCHME.bat/sh file in your server directory" +
+					"\nAlternatively, you can try to run without patching, just edit th");
 		}
 	}
 

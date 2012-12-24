@@ -3,7 +3,7 @@ package me.nallar.tickthreading.util;
 import java.util.Enumeration;
 import java.util.Iterator;
 
-public class EnumerableWrapper<T> implements Iterator<T>, Iterable<T>{
+public class EnumerableWrapper<T> implements Iterator<T>, Iterable<T> {
 	private final Enumeration<T> wrappedEnumeration;
 
 	@Override
