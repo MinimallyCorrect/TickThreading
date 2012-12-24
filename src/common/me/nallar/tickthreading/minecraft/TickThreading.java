@@ -110,7 +110,7 @@ public class TickThreading {
 		} else {
 			Log.severe("TickThreading is disabled, because your server has not been patched!" +
 					"\nTo patch your server, simply run the PATCHME.bat/sh file in your server directory" +
-					"\nAlternatively, you can try to run without patching, just edit th");
+					"\nAlternatively, you can try to run without patching, just edit the config. Probably won't end well.");
 		}
 	}
 
@@ -160,11 +160,8 @@ public class TickThreading {
 	}
 
 	public static File getServerDirectory() {
-		if (MinecraftServer.getServer().isDedicatedServer()) {
-			return new File(MinecraftServer.class.getProtectionDomain().getCodeSource().getLocation().getPath());
-		} else {
-			return new File(MinecraftServer.class.getProtectionDomain().getCodeSource().getLocation().getPath()).getParentFile();
-		}
+		File jarPath = LocationUtil.directoryOf(MinecraftServer.class);
+		return MinecraftServer.getServer().isDedicatedServer() ? jarPath : jarPath.getParentFile();
 	}
 
 	public static File getDataDirectory() {
@@ -172,14 +169,13 @@ public class TickThreading {
 	}
 
 	private void writePatchRunners() throws IOException {
-		String java = System.getProperties().getProperty("java.home") + File.pathSeparator + "bin" + File.pathSeparator + "java";
+		String java = System.getProperties().getProperty("java.home") + File.separator + "bin" + File.separator + "java";
 		String TT = LocationUtil.locationOf(TickThreading.class).getAbsolutePath();
 		String MS = LocationUtil.locationOf(MinecraftServer.class).getAbsolutePath();
 
 		ZipFile zipFile = new ZipFile(new File(TT));
 		for (ZipEntry zipEntry : new EnumerableWrapper<ZipEntry>((Enumeration<ZipEntry>) zipFile.entries())) {
-			Log.info(zipEntry.getName());
-			if (zipEntry.getName().contains("patchrun/") && !zipEntry.getName().endsWith("/")) {
+			if (zipEntry.getName().startsWith("patchrun/") && !zipEntry.getName().endsWith("/")) {
 				String data = new java.util.Scanner(zipFile.getInputStream(zipEntry)).useDelimiter("\\A").next();
 				FileWriter fileWriter = new FileWriter(new File(getServerDirectory(), zipEntry.getName().replace("patchrun/", "")));
 				data = data.replace("%JAVA%", java).replace("%TT%", TT).replace("%MS%", MS);
