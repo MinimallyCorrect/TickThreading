@@ -19,7 +19,7 @@ public class PatchMain {
 		}
 		location = argv[0];
 		String type = argv[1];
-		String[] args = Arrays.copyOfRange(argv, 1, argv.length - 1);
+		String[] args = Arrays.copyOfRange(argv, 1, argv.length);
 		if (type.equalsIgnoreCase("obfuscator")) {
 			obfuscator(args);
 		} else if (type.equalsIgnoreCase("patcher")) {
