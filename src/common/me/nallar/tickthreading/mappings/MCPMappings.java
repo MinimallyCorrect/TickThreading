@@ -17,7 +17,6 @@ public class MCPMappings extends Mappings {
 	public MethodDescription map(MethodDescription methodDescription) {
 		MethodDescription obfuscated = methodMappings.get(methodDescription);
 		if (obfuscated == null) {
-			Log.info(methodDescription.getShortName());
 			obfuscated = parameterlessMethodMappings.get(methodDescription.getShortName());
 		}
 		return obfuscated;
@@ -65,7 +64,6 @@ public class MCPMappings extends Mappings {
 				MethodDescription obfuscatedMethodDescription = new MethodDescription(obfuscatedClassName, obfuscatedName, obfuscatedTypeInfo);
 				methodMappings.put(deobfuscatedMethodDescription, obfuscatedMethodDescription);
 				parameterlessMethodMappings.put(deobfuscatedMethodDescription.getShortName(), obfuscatedMethodDescription);
-				Log.info(deobfuscatedMethodDescription.getShortName());
 			} else {
 				srgScanner.nextLine();
 			}
