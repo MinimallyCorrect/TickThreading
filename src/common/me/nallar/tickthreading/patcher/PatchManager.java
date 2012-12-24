@@ -22,10 +22,12 @@ import java.util.Map;
 
 import javassist.CtClass;
 import javassist.CtMethod;
+import javassist.NotFoundException;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.mappings.ClassDescription;
 import me.nallar.tickthreading.mappings.Mappings;
 import me.nallar.tickthreading.mappings.MethodDescription;
+import me.nallar.tickthreading.util.DomUtil;
 import me.nallar.tickthreading.util.ListUtil;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -36,8 +38,9 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 public class PatchManager {
-	Document configDocument;
+	private Document configDocument;
 	private Object patchTypes;
+	private ClassRegistry classRegistry = new ClassRegistry();
 	// Patch name -> patch method descriptor
 	private Map<String, PatchMethodDescriptor> patches = new HashMap<String, PatchMethodDescriptor>();
 
@@ -80,21 +83,51 @@ public class PatchManager {
 
 	public void obfuscate(Mappings mappings) {
 		NodeList classNodes = ((Element) configDocument.getElementsByTagName("minecraftCommon").item(0)).getElementsByTagName("class");
-		for (int i = 0, cNLength = classNodes.getLength(); i < cNLength; i++) {
-			Element classElement = (Element) classNodes.item(i);
+		for (Element classElement : DomUtil.elementList(classNodes)) {
 			String className = classElement.getAttribute("id");
 			ClassDescription deobfuscatedClass = new ClassDescription(className);
 			ClassDescription obfuscatedClass = mappings.map(deobfuscatedClass);
 			classElement.setAttribute("id", obfuscatedClass.name);
 			NodeList patchElements = classElement.getChildNodes();
-			for (int j = 0, pELength = patchElements.getLength(); j < pELength; j++) {
-				Node patchNode = patchElements.item(j);
-				if (!(patchNode instanceof Element)) {
-					continue;
-				}
-				Element patchElement = (Element) patchNode;
-				if (patches.get(patchElement.getTagName()).type.equals(CtMethod.class)) {
+			for (Element patchElement : DomUtil.elementList(patchElements)) {
+				if (!patchElement.getTextContent().isEmpty()) {
 					patchElement.setTextContent(MethodDescription.toListString(mappings.map(MethodDescription.fromListString(deobfuscatedClass.name, patchElement.getTextContent()))));
+				}
+			}
+		}
+	}
+
+	public void runPatches() {
+		List<Element> modElements = DomUtil.elementList(configDocument.getDocumentElement().getFirstChild().getChildNodes());
+		for (Element modElement : modElements) {
+			for (Element classElement : DomUtil.getElementsByTag(modElement, "class")) {
+				try {
+					CtClass ctClass = classRegistry.getClass(classElement.getAttribute("id"));
+					List<Element> patchElements = DomUtil.elementList(classElement.getChildNodes());
+					boolean patched = false;
+					for (Element patchElement : patchElements) {
+						PatchMethodDescriptor patch = patches.get(patchElement.getTagName());
+						if (patch == null) {
+							Log.severe("Patch " + patchElement.getTagName() + " was not found.");
+							continue;
+						}
+						try {
+							patch.run(patchElement);
+							patched = true;
+						} catch (Exception e) {
+							Log.severe("Failed to patch " + ctClass + " with " + patch.name + " :(");
+						}
+					}
+					if (patched) {
+						try {
+							byte[] newClass = ctClass.toBytecode();
+							// TODO: Handle backing up and saving!
+						} catch (Exception e) {
+							Log.severe("Javassist failed to save " + ctClass.getName(), e);
+						}
+					}
+				} catch (NotFoundException e) {
+					Log.info("Not patching " + classElement.getAttribute("id") + ", not found.");
 				}
 			}
 		}
@@ -124,7 +157,6 @@ public class PatchManager {
 		public String name;
 		public List<String> requiredAttributes;
 		public Method patchMethod;
-		public Class<?> type;
 
 		public PatchMethodDescriptor(Method method, Patch patch) {
 			this.name = patch.name();
@@ -132,21 +164,18 @@ public class PatchManager {
 			if (this.name == null || this.name.isEmpty()) {
 				this.name = method.getName();
 			}
-			type = method.getParameterTypes()[0];
 			patchMethod = method;
 		}
 
-		public void run(CtClass clazz) {
-			if (type.equals(CtClass.class)) {
-				try {
-					patchMethod.invoke(patchTypes, clazz);
-				} catch (Exception e) {
-					Log.severe("Failed to invoke class patch " + this, e);
-				}
-			} else {
-				for (CtMethod method : clazz.getDeclaredMethods()) {
-					run(method);
-				}
+		public void run(Element patchElement) {
+
+		}
+
+		private void run(CtClass clazz) {
+			try {
+				patchMethod.invoke(patchTypes, clazz);
+			} catch (Exception e) {
+				Log.severe("Failed to invoke class patch " + this, e);
 			}
 		}
 
