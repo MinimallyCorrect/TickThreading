@@ -176,6 +176,9 @@
 	<!-- Package the compiled files -->
 	<target name="package" depends="compile">
 
+		<unzip dest="${classes.dir}/" src="${lib.dir}/javassist.jar"/>
+		<delete dir="${classes.dir}/META-INF"/>
+
 		<path id="class.path">
 			<fileset dir="${lib.dir}">
 				<include name="**/*.jar"/>

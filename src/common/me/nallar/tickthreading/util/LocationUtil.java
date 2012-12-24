@@ -12,6 +12,7 @@ public class LocationUtil {
 	}
 
 	public static File locationOf(Class clazz) {
-		return new File(clazz.getProtectionDomain().getCodeSource().getLocation().getPath());
+		String path = clazz.getProtectionDomain().getCodeSource().getLocation().getPath();
+		return path.contains("!") ? new File(path.substring(0, path.lastIndexOf('!'))) : new File(path);
 	}
 }

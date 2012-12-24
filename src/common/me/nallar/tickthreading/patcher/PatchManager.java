@@ -40,7 +40,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 public class PatchManager {
-	private static int patchVersion;
+	private static int cachedPatchVersion;
 	private static Properties patchStatus = new Properties();
 	private static File patchStatusLocation = new File(LocationUtil.locationOf(PatchManager.class).getParentFile(), "TickThreading/patch.conf");
 
@@ -49,15 +49,10 @@ public class PatchManager {
 			try {
 				patchStatus.load(patchStatusLocation.toURI().toURL().openStream());
 			} catch (IOException e) {
-				Log.severe("Failed to load patch properties");
+				Log.severe("Failed to load patch properties", e);
 			}
 		} else {
 			patchStatusLocation.mkdirs();
-		}
-		try {
-			patchVersion = Integer.valueOf(DomUtil.getElementsByTag(loadConfig(PatchManager.class.getResourceAsStream("patches.xml")).getDocumentElement(), "mod").get(0).getAttribute("version"));
-		} catch (Exception e) {
-			Log.severe("Failed to load patch version.");
 		}
 	}
 
@@ -120,10 +115,28 @@ public class PatchManager {
 	public static boolean shouldPatch() {
 		Object result = patchStatus.get("patchVersion");
 		if (result instanceof Integer) {
-			return patchVersion != (Integer) result;
+			return getPatchVersion() != (Integer) result;
 		} else {
 			return true;
 		}
+	}
+
+	public static int getPatchVersion() {
+		if (cachedPatchVersion == -1) {
+			try {
+				InputStream inputStream = PatchManager.class.getResourceAsStream("patches.xml");
+				if (inputStream == null) {
+					inputStream = new File("patches.xml").toURL().openStream();
+				}
+				if (inputStream != null) {
+					cachedPatchVersion = Integer.valueOf(DomUtil.getElementsByTag(loadConfig(inputStream).getDocumentElement(), "mod").get(0).getAttribute("version"));
+				}
+			} catch (Exception e) {
+				Log.severe("Failed to load patch version", e);
+				cachedPatchVersion = 0;
+			}
+		}
+		return cachedPatchVersion;
 	}
 
 	public void runPatches() {
@@ -164,7 +177,7 @@ public class PatchManager {
 		} catch (IOException e) {
 			Log.severe("Failed to save patched classes", e);
 		}
-		patchStatus.put("patchVersion", patchVersion);
+		patchStatus.put("patchVersion", getPatchVersion());
 		try {
 			patchStatus.store(new FileOutputStream(patchStatusLocation), "Patch status");
 		} catch (IOException e) {
