@@ -178,11 +178,11 @@
 
 		<path id="class.path">
 			<fileset dir="${lib.dir}">
-				<include name="**/*.jar" />
+				<include name="**/*.jar"/>
 			</fileset>
 		</path>
 
-		<java classname="me.nallar.tickthreading.patcher.PatchObfuscator">
+		<java classname="me.nallar.tickthreading.patcher.PatchMain">
 			<classpath>
 				<path refid="class.path"/>
 				<pathelement location="${classes.dir}"/>

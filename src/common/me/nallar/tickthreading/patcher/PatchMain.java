@@ -3,17 +3,34 @@ package me.nallar.tickthreading.patcher;
 import javax.xml.transform.TransformerException;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.mappings.MCPMappings;
 import me.nallar.tickthreading.mappings.Mappings;
 import org.xml.sax.SAXException;
 
-public class PatchObfuscator {
-	public static void main(String[] args) {
-		String mcpConfigPath = args.length > 0 ? args[1] : "build/forge/mcp/conf";
-		String inputPatchPath = args.length > 1 ? args[2] : "resources/patches-unobfuscated.xml";
-		String outputPatchPath = args.length > 2 ? args[3] : "build/classes/patches.xml";
+public class PatchMain {
+	private static String location;
+
+	public static void main(String[] argv) {
+		if (argv.length == 1) {
+			Log.severe("Type must be passed");
+		}
+		location = argv[0];
+		String type = argv[1];
+		String[] args = Arrays.copyOfRange(argv, 1, argv.length - 1);
+		if (type.equalsIgnoreCase("obfuscator")) {
+			obfuscator(args);
+		} else if (type.equalsIgnoreCase("patcher")) {
+			patcher(args);
+		}
+	}
+
+	public static void obfuscator(String[] args) {
+		String mcpConfigPath = args.length > 0 ? args[0] : "build/forge/mcp/conf";
+		String inputPatchPath = args.length > 1 ? args[1] : "resources/patches-unobfuscated.xml";
+		String outputPatchPath = args.length > 2 ? args[2] : "build/classes/patches.xml";
 
 		Log.info("Obfuscating " + inputPatchPath + " to " + outputPatchPath + " via " + mcpConfigPath);
 
@@ -32,5 +49,9 @@ public class PatchObfuscator {
 		} catch (SAXException e) {
 			Log.severe("Failed to parse input file", e);
 		}
+	}
+
+	public static void patcher(String[] args) {
+
 	}
 }

@@ -40,9 +40,9 @@ import org.xml.sax.SAXException;
 public class PatchManager {
 	private Document configDocument;
 	private Object patchTypes;
-	private ClassRegistry classRegistry = new ClassRegistry();
 	// Patch name -> patch method descriptor
 	private Map<String, PatchMethodDescriptor> patches = new HashMap<String, PatchMethodDescriptor>();
+	public final ClassRegistry classRegistry = new ClassRegistry();
 
 	public PatchManager(File configFile, Class patchClass) throws IOException, SAXException {
 		loadPatches(patchClass);
