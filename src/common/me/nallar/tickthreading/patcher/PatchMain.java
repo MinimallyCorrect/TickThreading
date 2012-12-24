@@ -61,11 +61,11 @@ public class PatchMain {
 		} catch (SAXException e) {
 			Log.severe("Failed to load patches", e);
 		}
-		try{
+		try {
 			patchManager.classRegistry.loadJars(new File(new File("."), "mods").getAbsoluteFile());
 			patchManager.classRegistry.loadJar(new JarFile(new File(args[0].trim())));
 			patchManager.runPatches();
-		} catch(IOException e) {
+		} catch (IOException e) {
 			Log.severe("Failed to load jars", e);
 		}
 	}

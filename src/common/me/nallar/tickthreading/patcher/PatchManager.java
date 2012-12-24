@@ -113,9 +113,9 @@ public class PatchManager {
 	}
 
 	public static boolean shouldPatch() {
-		Object result = patchStatus.get("patchVersion");
-		if (result instanceof Integer) {
-			return getPatchVersion() != (Integer) result;
+		String result = patchStatus.getProperty("patchVersion");
+		if (result != null) {
+			return getPatchVersion() != Integer.valueOf(result);
 		} else {
 			return true;
 		}
@@ -177,7 +177,7 @@ public class PatchManager {
 		} catch (IOException e) {
 			Log.severe("Failed to save patched classes", e);
 		}
-		patchStatus.put("patchVersion", getPatchVersion());
+		patchStatus.setProperty("patchVersion", String.valueOf(getPatchVersion()));
 		try {
 			patchStatus.store(new FileOutputStream(patchStatusLocation), "Patch status");
 		} catch (IOException e) {
