@@ -129,7 +129,7 @@ public class PatchManager {
 					inputStream = new File("patches.xml").toURL().openStream();
 				}
 				if (inputStream != null) {
-					cachedPatchVersion = Integer.valueOf(DomUtil.getElementsByTag(loadConfig(inputStream).getDocumentElement(), "mod").get(0).getAttribute("version"));
+					cachedPatchVersion = Integer.valueOf(loadConfig(inputStream).getDocumentElement().getAttribute("version"));
 				}
 			} catch (Exception e) {
 				Log.severe("Failed to load patch version", e);
@@ -140,7 +140,7 @@ public class PatchManager {
 	}
 
 	public void runPatches() {
-		List<Element> modElements = DomUtil.elementList(configDocument.getDocumentElement().getFirstChild().getChildNodes());
+		List<Element> modElements = DomUtil.elementList(configDocument.getDocumentElement().getChildNodes());
 		for (Element modElement : modElements) {
 			for (Element classElement : DomUtil.getElementsByTag(modElement, "class")) {
 				try {
