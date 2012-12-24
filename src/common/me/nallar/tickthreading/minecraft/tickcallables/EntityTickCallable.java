@@ -5,9 +5,9 @@ import java.util.List;
 
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickManager;
-import net.minecraft.src.Entity;
-import net.minecraft.src.IChunkProvider;
-import net.minecraft.src.World;
+import net.minecraft.entity.Entity;
+import net.minecraft.world.World;
+import net.minecraft.world.chunk.IChunkProvider;
 
 public class EntityTickCallable<T> extends TickCallable {
 	private final List<Entity> entityList = new ArrayList<Entity>();

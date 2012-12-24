@@ -5,7 +5,7 @@ import java.util.List;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
-import net.minecraft.src.ICommandSender;
+import net.minecraft.command.ICommandSender;
 
 public class TPSCommand extends Command {
 	public static String name = "tps";

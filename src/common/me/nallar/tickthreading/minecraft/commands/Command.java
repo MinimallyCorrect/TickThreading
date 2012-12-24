@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import net.minecraft.src.CommandBase;
-import net.minecraft.src.ICommandSender;
+import net.minecraft.command.CommandBase;
+import net.minecraft.command.ICommandSender;
 
 abstract class Command extends CommandBase {
 	static void sendChat(ICommandSender commandSender, String message) {

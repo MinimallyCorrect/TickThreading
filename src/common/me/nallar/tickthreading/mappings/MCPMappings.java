@@ -1,29 +1,30 @@
-package me.nallar.tickthreading.mcp;
+package me.nallar.tickthreading.mappings;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
-import me.nallar.tickthreading.patcher.MethodDescription;
+import me.nallar.tickthreading.Log;
 
 public class MCPMappings extends Mappings {
 	Map<String, String> seargeMappings = new HashMap<String, String>();
+	Map<ClassDescription, ClassDescription> classMappings = new HashMap<ClassDescription, ClassDescription>();
 	Map<MethodDescription, MethodDescription> methodMappings = new HashMap<MethodDescription, MethodDescription>();
 	Map<String, MethodDescription> parameterlessMethodMappings = new HashMap<String, MethodDescription>();
 
-	public MethodDescription obfuscate(Method method) {
-		return obfuscate(new MethodDescription(method));
-	}
-
-	public MethodDescription obfuscate(MethodDescription methodDescription) {
+	public MethodDescription map(MethodDescription methodDescription) {
 		MethodDescription obfuscated = methodMappings.get(methodDescription);
 		if (obfuscated == null) {
+			Log.info(methodDescription.getShortName());
 			obfuscated = parameterlessMethodMappings.get(methodDescription.getShortName());
 		}
 		return obfuscated;
+	}
+
+	public ClassDescription map(ClassDescription classDescription) {
+		return classMappings.get(classDescription);
 	}
 
 	public MCPMappings(File mcpDir) throws IOException {
@@ -39,24 +40,32 @@ public class MCPMappings extends Mappings {
 	private void loadSrg(File mappingsSrg) throws IOException {
 		Scanner srgScanner = new Scanner(mappingsSrg);
 		while (srgScanner.hasNextLine()) {
-			if (srgScanner.hasNext("MD:")) {
+			if (srgScanner.hasNext("CL:")) {
+				srgScanner.next();
+				String fromClass = srgScanner.next().replace('/', '.');
+				String toClass = srgScanner.next().replace('/', '.');
+				ClassDescription obfuscatedClass = new ClassDescription(fromClass);
+				ClassDescription deobfuscatedClass = new ClassDescription(toClass);
+				classMappings.put(deobfuscatedClass, obfuscatedClass);
+			} else if (srgScanner.hasNext("MD:")) {
 				srgScanner.next();
 				String obfuscatedName = srgScanner.next();
 				String obfuscatedTypeInfo = srgScanner.next();
 				String seargeName = srgScanner.next();
+				String deobfuscatedTypeInfo = srgScanner.next();
+				String obfuscatedClassName = obfuscatedName.substring(0, obfuscatedName.lastIndexOf('/')).replace('/', '.');
+				obfuscatedName = obfuscatedName.substring(obfuscatedName.lastIndexOf('/') + 1);
+				String deobfuscatedClassName = seargeName.substring(0, seargeName.lastIndexOf('/')).replace('/', '.');
+				seargeName = seargeName.substring(seargeName.lastIndexOf('/') + 1);
 				String deobfuscatedName = seargeMappings.get(seargeName);
 				if (deobfuscatedName == null) {
 					deobfuscatedName = seargeName;
 				}
-				String deobfuscatedTypeInfo = srgScanner.next();
-				String obfuscatedClassName = obfuscatedName.substring(0, obfuscatedName.lastIndexOf('/')).replace('/', '.');
-				obfuscatedName = obfuscatedName.substring(obfuscatedName.lastIndexOf('/') + 1);
-				String deobfuscatedClassName = obfuscatedName.substring(0, obfuscatedName.lastIndexOf('/')).replace('/', '.');
-				deobfuscatedName = obfuscatedName.substring(deobfuscatedName.lastIndexOf('/') + 1);
 				MethodDescription deobfuscatedMethodDescription = new MethodDescription(deobfuscatedClassName, deobfuscatedName, deobfuscatedTypeInfo);
 				MethodDescription obfuscatedMethodDescription = new MethodDescription(obfuscatedClassName, obfuscatedName, obfuscatedTypeInfo);
 				methodMappings.put(deobfuscatedMethodDescription, obfuscatedMethodDescription);
 				parameterlessMethodMappings.put(deobfuscatedMethodDescription.getShortName(), obfuscatedMethodDescription);
+				Log.info(deobfuscatedMethodDescription.getShortName());
 			} else {
 				srgScanner.nextLine();
 			}

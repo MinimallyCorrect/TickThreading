@@ -6,10 +6,10 @@ import java.util.List;
 
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickManager;
-import net.minecraft.src.Chunk;
-import net.minecraft.src.IChunkProvider;
-import net.minecraft.src.TileEntity;
-import net.minecraft.src.World;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.IChunkProvider;
 
 public class TileEntityTickCallable<T> extends TickCallable {
 	private final List<TileEntity> tileEntityList = new ArrayList<TileEntity>();

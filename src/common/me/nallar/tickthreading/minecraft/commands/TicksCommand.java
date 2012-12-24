@@ -3,9 +3,9 @@ package me.nallar.tickthreading.minecraft.commands;
 import java.util.List;
 
 import me.nallar.tickthreading.minecraft.TickThreading;
-import net.minecraft.src.Entity;
-import net.minecraft.src.ICommandSender;
-import net.minecraft.src.World;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.Entity;
+import net.minecraft.world.World;
 
 public class TicksCommand extends Command {
 	public static String name = "ticks";

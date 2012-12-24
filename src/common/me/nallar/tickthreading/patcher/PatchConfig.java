@@ -23,17 +23,20 @@ import java.util.Map;
 import javassist.CtClass;
 import javassist.CtMethod;
 import me.nallar.tickthreading.Log;
-import me.nallar.tickthreading.mcp.Mappings;
+import me.nallar.tickthreading.mappings.ClassDescription;
+import me.nallar.tickthreading.mappings.Mappings;
+import me.nallar.tickthreading.mappings.MethodDescription;
 import me.nallar.tickthreading.util.ListUtil;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 public class PatchConfig {
 	Document configDocument;
-
 	private Object patchTypes;
 	// Patch name -> patch method descriptor
 	private Map<String, PatchMethodDescriptor> patches = new HashMap<String, PatchMethodDescriptor>();
@@ -80,8 +83,30 @@ public class PatchConfig {
 		}
 	}
 
-	public void obfuscate(Mappings mappings) {
+	private NodeList getClassNodes() {
+		return configDocument.getDocumentElement().getElementsByTagName("class");
+	}
 
+	public void obfuscate(Mappings mappings) {
+		NodeList classNodes = getClassNodes();
+		for (int i = 0, cNLength = classNodes.getLength(); i < cNLength; i++) {
+			Element classElement = (Element) classNodes.item(i);
+			String className = classElement.getAttribute("id");
+			ClassDescription deobfuscatedClass = new ClassDescription(className);
+			ClassDescription obfuscatedClass = mappings.map(deobfuscatedClass);
+			classElement.setAttribute("id", obfuscatedClass.name);
+			NodeList patchElements = classElement.getChildNodes();
+			for (int j = 0, pELength = patchElements.getLength(); j < pELength; j++) {
+				Node patchNode = patchElements.item(j);
+				if (!(patchNode instanceof Element)) {
+					continue;
+				}
+				Element patchElement = (Element) patchNode;
+				if (patches.get(patchElement.getTagName()).type.equals(CtMethod.class)) {
+					patchElement.setTextContent(MethodDescription.toListString(mappings.map(MethodDescription.fromListString(deobfuscatedClass.name, patchElement.getTextContent()))));
+				}
+			}
+		}
 	}
 
 	public void save(File file) throws TransformerException {

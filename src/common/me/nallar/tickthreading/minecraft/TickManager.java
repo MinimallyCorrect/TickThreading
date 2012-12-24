@@ -15,9 +15,9 @@ import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.tickcallables.EntityTickCallable;
 import me.nallar.tickthreading.minecraft.tickcallables.TickCallable;
 import me.nallar.tickthreading.minecraft.tickcallables.TileEntityTickCallable;
-import net.minecraft.src.Entity;
-import net.minecraft.src.TileEntity;
-import net.minecraft.src.World;
+import net.minecraft.entity.Entity;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.World;
 
 public class TickManager {
 	public final int regionSize;

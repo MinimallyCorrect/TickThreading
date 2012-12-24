@@ -4,14 +4,18 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import cpw.mods.fml.common.FMLLog;
-import net.minecraft.src.World;
+import net.minecraft.world.World;
 
 @SuppressWarnings ("UnusedDeclaration")
 public class Log {
 	private static final Logger LOGGER = Logger.getLogger("TickThreading");
 
 	static {
-		LOGGER.setParent(FMLLog.getLogger());
+		try {
+			LOGGER.setParent(FMLLog.getLogger());
+		} catch (NoClassDefFoundError ignored) {
+			// Ignored, just means we aren't running under minecraft.
+		}
 		LOGGER.setLevel(Level.ALL);
 	}
 

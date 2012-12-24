@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import me.nallar.tickthreading.minecraft.TickManager;
-import net.minecraft.src.World;
+import net.minecraft.world.World;
 
 /*
 * Used to override World.loadedTileEntityList.

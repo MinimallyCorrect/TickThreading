@@ -3,8 +3,8 @@ package me.nallar.tickthreading.minecraft.entitylist;
 import java.lang.reflect.Field;
 
 import me.nallar.tickthreading.minecraft.TickManager;
-import net.minecraft.src.Entity;
-import net.minecraft.src.World;
+import net.minecraft.entity.Entity;
+import net.minecraft.world.World;
 
 public class LoadedEntityList<T> extends EntityList<T> {
 	public LoadedEntityList(World world, Field overriddenField, TickManager manager) {

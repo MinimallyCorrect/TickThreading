@@ -5,8 +5,8 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import me.nallar.tickthreading.minecraft.TickManager;
-import net.minecraft.src.TileEntity;
-import net.minecraft.src.World;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.World;
 
 public class LoadedTileEntityList<T> extends EntityList<T> {
 	private final Iterable<T> emptyList = Collections.emptyList();

@@ -5,7 +5,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import me.nallar.tickthreading.minecraft.TickManager;
-import net.minecraft.src.World;
+import net.minecraft.world.World;
 
 public abstract class TickCallable<T> implements Callable<T> {
 	volatile Lock thisLock = new ReentrantLock();

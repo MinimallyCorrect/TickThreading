@@ -125,8 +125,13 @@
 		<mkdir dir="${classes.dir}"/>
 
 		<!-- Copy sources -->
-		<copy todir="${mcpsrc.dir}/common">
+		<copy todir="${mcpsrc.dir}/minecraft">
 			<fileset dir="${src.dir}/common"/>
+		</copy>
+
+		<!-- Copy libs -->
+		<copy todir="${mcp.dir}/lib">
+			<fileset dir="${lib.dir}"/>
 		</copy>
 
 		<!-- Recompile -->
@@ -164,12 +169,25 @@
 		</copy>
 
 		<!-- Reset src dir to post-forge-install state -->
-		<delete dir="${mcpsrc.dir}/common/me/nallar"/>
+		<delete dir="${mcpsrc.dir}/minecraft/me/nallar"/>
 
 	</target>
 
 	<!-- Package the compiled files -->
 	<target name="package" depends="compile">
+
+		<path id="class.path">
+			<fileset dir="${lib.dir}">
+				<include name="**/*.jar" />
+			</fileset>
+		</path>
+
+		<java classname="me.nallar.tickthreading.patcher.PatchObfuscator">
+			<classpath>
+				<path refid="class.path"/>
+				<pathelement location="${classes.dir}"/>
+			</classpath>
+		</java>
 
 		<delete dir="${jar.dir}"/>
 		<mkdir dir="${jar.dir}"/>
