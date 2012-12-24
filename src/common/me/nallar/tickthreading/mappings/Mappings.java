@@ -11,15 +11,13 @@ public abstract class Mappings {
 	public List map(List things) {
 		List mappedThings = new ArrayList();
 		for (Object thing : things) {
-			Object old = thing;
 			if (thing instanceof MethodDescription) {
-				mappedThings.add(thing = map((MethodDescription) thing));
+				mappedThings.add(map((MethodDescription) thing));
 			} else if (thing instanceof ClassDescription) {
-				mappedThings.add(thing = map((ClassDescription) thing));
+				mappedThings.add(map((ClassDescription) thing));
 			} else {
 				throw new IllegalArgumentException("Must be mappable: " + thing + "isn't!");
 			}
-			Log.info(old + " -> " + thing);
 		}
 		return mappedThings;
 	}
