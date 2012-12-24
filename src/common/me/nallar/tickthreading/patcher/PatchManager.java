@@ -11,6 +11,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
@@ -18,6 +19,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javassist.CtClass;
 import javassist.CtMethod;
@@ -28,6 +30,7 @@ import me.nallar.tickthreading.mappings.Mappings;
 import me.nallar.tickthreading.mappings.MethodDescription;
 import me.nallar.tickthreading.util.DomUtil;
 import me.nallar.tickthreading.util.ListUtil;
+import me.nallar.tickthreading.util.LocationUtil;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -37,6 +40,27 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 public class PatchManager {
+	private static int patchVersion;
+	private static Properties patchStatus = new Properties();
+	private static File patchStatusLocation = new File(LocationUtil.locationOf(PatchManager.class).getParentFile(), "TickThreading/patch.conf");
+
+	static {
+		if (patchStatusLocation.exists()) {
+			try {
+				patchStatus.load(patchStatusLocation.toURI().toURL().openStream());
+			} catch (IOException e) {
+				Log.severe("Failed to load patch properties");
+			}
+		} else {
+			patchStatusLocation.mkdirs();
+		}
+		try {
+			patchVersion = Integer.valueOf(DomUtil.getElementsByTag(loadConfig(PatchManager.class.getResourceAsStream("patches.xml")).getDocumentElement(), "mod").get(0).getAttribute("version"));
+		} catch (Exception e) {
+			Log.severe("Failed to load patch version.");
+		}
+	}
+
 	private Document configDocument;
 	private Object patchTypes;
 	// Patch name -> patch method descriptor
@@ -45,7 +69,7 @@ public class PatchManager {
 
 	public PatchManager(InputStream configStream, Class patchClass) throws IOException, SAXException {
 		loadPatches(patchClass);
-		loadConfig(configStream);
+		configDocument = loadConfig(configStream);
 	}
 
 	public void loadPatches(Class patchClass) {
@@ -64,16 +88,17 @@ public class PatchManager {
 		}
 	}
 
-	public void loadConfig(InputStream configInputStream) throws IOException, SAXException {
+	public static Document loadConfig(InputStream configInputStream) throws IOException, SAXException {
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 		try {
 			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-			configDocument = docBuilder.parse(configInputStream);
+			return docBuilder.parse(configInputStream);
 		} catch (ParserConfigurationException e) {
 			//This exception is thrown, and no shorthand way of getting a DocumentBuilder without it.
 			//Should not be thrown, as we do not do anything to the DocumentBuilderFactory.
 			Log.severe("Java was bad, you shouldn't see this. DocBuilder instantiation via default docBuilderFactory failed", e);
 		}
+		return null;
 	}
 
 	public void obfuscate(Mappings mappings) {
@@ -89,6 +114,15 @@ public class PatchManager {
 					patchElement.setTextContent(MethodDescription.toListString(mappings.map(MethodDescription.fromListString(deobfuscatedClass.name, patchElement.getTextContent()))));
 				}
 			}
+		}
+	}
+
+	public static boolean shouldPatch() {
+		Object result = patchStatus.get("patchVersion");
+		if (result instanceof Integer) {
+			return patchVersion != (Integer) result;
+		} else {
+			return true;
 		}
 	}
 
@@ -115,8 +149,7 @@ public class PatchManager {
 					}
 					if (patched) {
 						try {
-							byte[] newClass = ctClass.toBytecode();
-							// TODO: Handle backing up and saving!
+							classRegistry.update(classElement.getAttribute("id"), ctClass.toBytecode());
 						} catch (Exception e) {
 							Log.severe("Javassist failed to save " + ctClass.getName(), e);
 						}
@@ -125,6 +158,17 @@ public class PatchManager {
 					Log.info("Not patching " + classElement.getAttribute("id") + ", not found.");
 				}
 			}
+		}
+		try {
+			classRegistry.save();
+		} catch (IOException e) {
+			Log.severe("Failed to save patched classes", e);
+		}
+		patchStatus.put("patchVersion", patchVersion);
+		try {
+			patchStatus.store(new FileOutputStream(patchStatusLocation), "Patch status");
+		} catch (IOException e) {
+			Log.severe("Failed to save patch status", e);
 		}
 	}
 

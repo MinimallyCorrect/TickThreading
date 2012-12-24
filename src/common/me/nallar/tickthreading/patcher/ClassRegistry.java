@@ -1,13 +1,19 @@
 package me.nallar.tickthreading.patcher;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -17,6 +23,8 @@ import me.nallar.tickthreading.util.EnumerableWrapper;
 
 public class ClassRegistry {
 	private Map<String, File> classNameToLocation = new HashMap<String, File>();
+	private Set<File> updatedFiles = new HashSet<File>();
+	private Map<String, byte[]> replacementFiles = new HashMap<String, byte[]>();
 	private ClassPool classes = new ClassPool(false);
 
 	public void loadJars(File folder) throws IOException {
@@ -49,6 +57,43 @@ public class ClassRegistry {
 			}
 		}
 		zip.close();
+	}
+
+	public void update(String className, byte[] replacement) {
+		updatedFiles.add(classNameToLocation.get(className));
+		className = className.replace('.', '/') + ".class";
+		replacementFiles.put(className, replacement);
+	}
+
+	public void save() throws IOException {
+		byte[] buf = new byte[1024];
+		int len;
+		for (File zipFile : updatedFiles) {
+			File tempFile = File.createTempFile(zipFile.getName(), null);
+			tempFile.delete();
+			zipFile.renameTo(tempFile);
+			ZipInputStream zin = new ZipInputStream(new FileInputStream(tempFile));
+			ZipOutputStream zout = new ZipOutputStream(new FileOutputStream(zipFile));
+
+			ZipEntry zipEntry;
+			while ((zipEntry = zin.getNextEntry()) != null) {
+				if (replacementFiles.containsKey(zipEntry.getName())) {
+					byte[] replacement = replacementFiles.get(zipEntry.getName());
+					ZipEntry newEntry = new ZipEntry(zipEntry.getName());
+					zout.putNextEntry(newEntry);
+					zout.write(replacement);
+				} else {
+					// TODO: Ignore meta-inf?
+					zout.putNextEntry(zipEntry);
+					while ((len = zin.read(buf)) > 0) {
+						zout.write(buf, 0, len);
+					}
+				}
+			}
+			zin.close();
+			zout.close();
+			tempFile.delete();
+		}
 	}
 
 	public CtClass getClass(String className) throws NotFoundException {

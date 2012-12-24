@@ -1,11 +1,16 @@
 package me.nallar.tickthreading.minecraft;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
@@ -17,7 +22,10 @@ import me.nallar.tickthreading.minecraft.commands.TPSCommand;
 import me.nallar.tickthreading.minecraft.commands.TicksCommand;
 import me.nallar.tickthreading.minecraft.entitylist.EntityList;
 import me.nallar.tickthreading.minecraft.entitylist.LoadedTileEntityList;
+import me.nallar.tickthreading.patcher.PatchManager;
+import me.nallar.tickthreading.util.EnumerableWrapper;
 import me.nallar.tickthreading.util.FieldUtil;
+import me.nallar.tickthreading.util.LocationUtil;
 import net.minecraft.command.ServerCommandManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
@@ -45,7 +53,16 @@ public class TickThreading {
 	public TickThreading() {
 		if (requirePatched) {
 			MinecraftServer.class.getProtectionDomain().getCodeSource().getLocation();
-			enabled = true;
+			if (PatchManager.shouldPatch()) {
+				enabled = false;
+				try {
+					writePatchRunners();
+				} catch (IOException e) {
+					Log.severe("Failed to write patchrunners", e);
+				}
+			} else {
+				enabled = true;
+			}
 		} else {
 			enabled = true;
 		}
@@ -152,5 +169,24 @@ public class TickThreading {
 
 	public static File getDataDirectory() {
 		return configurationDirectory;
+	}
+
+	private void writePatchRunners() throws IOException {
+		String java = System.getProperties().getProperty("java.home") + File.pathSeparator + "bin" + File.pathSeparator + "java";
+		String TT = LocationUtil.locationOf(TickThreading.class).getAbsolutePath();
+		String MS = LocationUtil.locationOf(MinecraftServer.class).getAbsolutePath();
+
+		ZipFile zipFile = new ZipFile(new File(TT));
+		for (ZipEntry zipEntry : new EnumerableWrapper<ZipEntry>((Enumeration<ZipEntry>) zipFile.entries())) {
+			Log.info(zipEntry.getName());
+			if (zipEntry.getName().contains("patchrun/") && !zipEntry.getName().endsWith("/")) {
+				String data = new java.util.Scanner(zipFile.getInputStream(zipEntry)).useDelimiter("\\A").next();
+				FileWriter fileWriter = new FileWriter(new File(getServerDirectory(), zipEntry.getName().replace("patchrun/", "")));
+				data = data.replace("%JAVA%", java).replace("%TT%", TT).replace("%MS%", MS);
+				fileWriter.write(data);
+				fileWriter.close();
+			}
+		}
+		zipFile.close();
 	}
 }
