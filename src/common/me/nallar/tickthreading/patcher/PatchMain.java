@@ -53,20 +53,22 @@ public class PatchMain {
 	}
 
 	public static void patcher(String[] args) {
-		PatchManager patchManager = null;
+		PatchManager patchManager;
 		try {
 			patchManager = new PatchManager(PatchMain.class.getResourceAsStream("/patches.xml"), Patches.class);
-		} catch (IOException e) {
-			Log.severe("Failed to read patches", e);
-		} catch (SAXException e) {
-			Log.severe("Failed to load patches", e);
+		} catch (Exception e) {
+			Log.severe("Failed to initialize Patch Manager", e);
+			return;
 		}
 		try {
 			patchManager.classRegistry.loadJars(new File(new File("."), "mods").getAbsoluteFile());
 			patchManager.classRegistry.loadJar(new JarFile(new File(args[0].trim())));
+			patchManager.classRegistry.loadPatchHashes(patchManager);
 			patchManager.runPatches();
 		} catch (IOException e) {
 			Log.severe("Failed to load jars", e);
+		} catch (Exception e) {
+			Log.severe("Unhandled patching failure", e);
 		}
 	}
 }

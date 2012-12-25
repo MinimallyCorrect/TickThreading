@@ -11,7 +11,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
@@ -19,7 +18,8 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
+import java.util.TreeMap;
+import java.util.jar.JarFile;
 
 import javassist.CtClass;
 import javassist.CtMethod;
@@ -30,7 +30,6 @@ import me.nallar.tickthreading.mappings.Mappings;
 import me.nallar.tickthreading.mappings.MethodDescription;
 import me.nallar.tickthreading.util.DomUtil;
 import me.nallar.tickthreading.util.ListUtil;
-import me.nallar.tickthreading.util.LocationUtil;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -40,34 +39,18 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 public class PatchManager {
-	private static int cachedPatchVersion;
-	private static Properties patchStatus = new Properties();
-	private static File patchStatusLocation = new File(LocationUtil.directoryOf(PatchManager.class).getParentFile(), "TickThreading/patch.conf");
-
-	static {
-		if (patchStatusLocation.exists()) {
-			try {
-				patchStatus.load(patchStatusLocation.toURI().toURL().openStream());
-			} catch (IOException e) {
-				Log.severe("Failed to load patch properties", e);
-			}
-		} else {
-			patchStatusLocation.getParentFile().mkdirs();
-		}
-	}
-
 	private Document configDocument;
-	private Object patchTypes;
+	private Patches patchTypes;
 	// Patch name -> patch method descriptor
 	private Map<String, PatchMethodDescriptor> patches = new HashMap<String, PatchMethodDescriptor>();
 	public final ClassRegistry classRegistry = new ClassRegistry();
 
-	public PatchManager(InputStream configStream, Class patchClass) throws IOException, SAXException {
+	public PatchManager(InputStream configStream, Class<Patches> patchClass) throws IOException, SAXException {
 		loadPatches(patchClass);
 		configDocument = loadConfig(configStream);
 	}
 
-	public void loadPatches(Class patchClass) {
+	public void loadPatches(Class<Patches> patchClass) {
 		try {
 			patchTypes = patchClass.newInstance();
 		} catch (Exception e) {
@@ -112,63 +95,63 @@ public class PatchManager {
 		}
 	}
 
-	public static boolean shouldPatch() {
-		String result = patchStatus.getProperty("patchVersion");
-		if (result != null) {
-			return getPatchVersion() != Integer.valueOf(result);
-		} else {
-			return true;
-		}
-	}
-
-	public static int getPatchVersion() {
-		if (cachedPatchVersion == -1) {
-			try {
-				InputStream inputStream = PatchManager.class.getResourceAsStream("patches.xml");
-				if (inputStream == null) {
-					inputStream = new File("patches.xml").toURL().openStream();
-				}
-				if (inputStream != null) {
-					cachedPatchVersion = Integer.valueOf(loadConfig(inputStream).getDocumentElement().getAttribute("version"));
-				}
-			} catch (Exception e) {
-				Log.severe("Failed to load patch version", e);
-				cachedPatchVersion = 0;
+	public Map<String, Integer> getHashes() {
+		Map<String, Integer> hashes = new TreeMap<String, Integer>();
+		List<Element> modElements = DomUtil.elementList(configDocument.getDocumentElement().getChildNodes());
+		for (Element modElement : modElements) {
+			for (Element classElement : DomUtil.getElementsByTag(modElement, "class")) {
+				hashes.put(classElement.getAttribute("id"), DomUtil.getHash(classElement));
 			}
 		}
-		return cachedPatchVersion;
+		return hashes;
+	}
+
+	public static boolean shouldPatch(File serverLocation) {
+		try {
+			PatchManager patchManager = new PatchManager(PatchMain.class.getResourceAsStream("/patches.xml"), Patches.class);
+			patchManager.classRegistry.loadJars(new File(serverLocation.getParentFile(), "mods"));
+			patchManager.classRegistry.loadJar(new JarFile(serverLocation));
+			patchManager.classRegistry.finishModifications();
+			patchManager.classRegistry.loadPatchHashes(patchManager);
+			return patchManager.classRegistry.shouldPatch();
+		} catch (Exception e) {
+			Log.severe("Failed to determine whether patches should run", e);
+		}
+		return false;
 	}
 
 	public void runPatches() {
 		List<Element> modElements = DomUtil.elementList(configDocument.getDocumentElement().getChildNodes());
 		for (Element modElement : modElements) {
 			for (Element classElement : DomUtil.getElementsByTag(modElement, "class")) {
+				CtClass ctClass;
 				try {
-					CtClass ctClass = classRegistry.getClass(classElement.getAttribute("id"));
-					List<Element> patchElements = DomUtil.elementList(classElement.getChildNodes());
-					boolean patched = false;
-					for (Element patchElement : patchElements) {
-						PatchMethodDescriptor patch = patches.get(patchElement.getTagName());
-						if (patch == null) {
-							Log.severe("Patch " + patchElement.getTagName() + " was not found.");
-							continue;
-						}
-						try {
-							patch.run(patchElement, ctClass);
-							patched = true;
-						} catch (Exception e) {
-							Log.severe("Failed to patch " + ctClass + " with " + patch.name + " :(");
-						}
-					}
-					if (patched) {
-						try {
-							classRegistry.update(classElement.getAttribute("id"), ctClass.toBytecode());
-						} catch (Exception e) {
-							Log.severe("Javassist failed to save " + ctClass.getName(), e);
-						}
-					}
+					ctClass = classRegistry.getClass(classElement.getAttribute("id"));
 				} catch (NotFoundException e) {
-					Log.info("Not patching " + classElement.getAttribute("id") + ", not found.");
+					Log.info("Not patching " + classElement.getAttribute("id") + ", not found or already patched.");
+					continue;
+				}
+				List<Element> patchElements = DomUtil.elementList(classElement.getChildNodes());
+				boolean patched = false;
+				for (Element patchElement : patchElements) {
+					PatchMethodDescriptor patch = patches.get(patchElement.getTagName());
+					if (patch == null) {
+						Log.severe("Patch " + patchElement.getTagName() + " was not found.");
+						continue;
+					}
+					try {
+						patch.run(patchElement, ctClass);
+						patched = true;
+					} catch (Exception e) {
+						Log.severe("Failed to patch " + ctClass + " with " + patch.name + " :(");
+					}
+				}
+				if (patched) {
+					try {
+						classRegistry.update(classElement.getAttribute("id"), ctClass.toBytecode());
+					} catch (Exception e) {
+						Log.severe("Javassist failed to save " + ctClass.getName(), e);
+					}
 				}
 			}
 		}
@@ -176,12 +159,6 @@ public class PatchManager {
 			classRegistry.save();
 		} catch (IOException e) {
 			Log.severe("Failed to save patched classes", e);
-		}
-		patchStatus.setProperty("patchVersion", String.valueOf(getPatchVersion()));
-		try {
-			patchStatus.store(new FileOutputStream(patchStatusLocation), "Patch status");
-		} catch (IOException e) {
-			Log.severe("Failed to save patch status", e);
 		}
 	}
 

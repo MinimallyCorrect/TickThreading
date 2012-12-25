@@ -53,7 +53,7 @@ public class TickThreading {
 	public TickThreading() {
 		if (requirePatched) {
 			MinecraftServer.class.getProtectionDomain().getCodeSource().getLocation();
-			if (PatchManager.shouldPatch()) {
+			if (PatchManager.shouldPatch(LocationUtil.locationOf(MinecraftServer.class))) {
 				enabled = false;
 				try {
 					writePatchRunners();

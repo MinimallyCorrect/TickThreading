@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<mods version="1">
+<mods>
 	<minecraftCommon>
 		<class id="net.minecraft.src.WorldServer">
 			<!-- Fixes an issue where the tickNextTickLists would become out of sync -->
@@ -10,4 +10,9 @@
 			<synchronize>getVecFromPool</synchronize>
 		</class>
 	</minecraftCommon>
+	<factorization>
+		<class id="factorization.common.TileEntityWrathLamp">
+			<synchronize>findLightAirParent</synchronize>
+		</class>
+	</factorization>
 </mods>

@@ -1,8 +1,16 @@
 package me.nallar.tickthreading.util;
 
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import me.nallar.tickthreading.Log;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -31,5 +39,23 @@ public class DomUtil {
 			nodes.add(nodeList.item(i));
 		}
 		return nodes;
+	}
+
+	public static String nodeToString(Node node) {
+		TransformerFactory transFactory = TransformerFactory.newInstance();
+		try {
+			Transformer transformer = transFactory.newTransformer();
+			StringWriter buffer = new StringWriter();
+			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+			transformer.transform(new DOMSource(node), new StreamResult(buffer));
+			return buffer.toString();
+		} catch (TransformerException e) {
+			Log.severe("Failed to convert " + node + " to string.", e);
+		}
+		return "";
+	}
+
+	public static int getHash(Node node) {
+		return nodeToString(node).hashCode();
 	}
 }

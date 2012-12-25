@@ -1,5 +1,6 @@
 package me.nallar.tickthreading.patcher;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -31,6 +32,8 @@ import me.nallar.tickthreading.util.EnumerableWrapper;
 public class ClassRegistry {
 	private static final byte[] BUFFER = new byte[1024 * 1024];
 	private Map<String, File> classNameToLocation = new HashMap<String, File>();
+	private Map<File, Integer> locationToPatchHash = new HashMap<File, Integer>();
+	private Map<File, Integer> expectedPatchHashes = new HashMap<File, Integer>();
 	private Set<File> updatedFiles = new HashSet<File>();
 	private Set<ClassPath> classPathSet = new HashSet<ClassPath>();
 	private Map<String, byte[]> replacementFiles = new HashMap<String, byte[]>();
@@ -62,7 +65,16 @@ public class ClassRegistry {
 		for (ZipEntry zipEntry : new EnumerableWrapper<ZipEntry>((Enumeration<ZipEntry>) zip.entries())) {
 			String name = zipEntry.getName();
 			if (name.endsWith(".class")) {
-				classNameToLocation.put(name.replace('/', '.').substring(0, name.lastIndexOf('.')), file);
+				String className = name.replace('/', '.').substring(0, name.lastIndexOf('.'));
+				if (classNameToLocation.containsKey(className)) {
+					Log.severe(className + " is in multiple jars. " + file + ", " + classNameToLocation.get(className));
+				}
+				classNameToLocation.put(className, file);
+			} else if (name.equals("TickThreading.hash")) {
+				ByteArrayOutputStream output = new ByteArrayOutputStream();
+				copy(zip.getInputStream(zipEntry), output);
+				int hash = Integer.valueOf(new String(output.toByteArray(), "UTF-8"));
+				locationToPatchHash.put(file, hash);
 			}
 		}
 		zip.close();
@@ -80,10 +92,14 @@ public class ClassRegistry {
 		}
 	}
 
-	public void save() throws IOException {
+	public void finishModifications() {
 		for (ClassPath classPath : classPathSet) {
 			classes.removeClassPath(classPath);
 		}
+	}
+
+	public void save() throws IOException {
+		finishModifications();
 		File tempFile = null, renameFile = null;
 		ZipInputStream zin = null;
 		ZipOutputStream zout = null;
@@ -93,6 +109,7 @@ public class ClassRegistry {
 				tempFile.delete();
 				if (zipFile.renameTo(tempFile)) {
 					renameFile = zipFile;
+					tempFile.deleteOnExit();
 				} else {
 					throw new IOException("Couldn't rename " + zipFile + " -> " + tempFile);
 				}
@@ -119,7 +136,10 @@ public class ClassRegistry {
 					zout.write(replacementFiles.get(name));
 					zout.closeEntry();
 				}
-				Log.info("Patched " + replacements.size() + " classes in " + zipFile.getName());
+				zout.putNextEntry(isJar(zipFile) ? new JarEntry("TickThreading.hash") : new ZipEntry("TickThreading.hash"));
+				String patchHash = String.valueOf(expectedPatchHashes.get(zipFile));
+				zout.write(patchHash.getBytes("UTF-8"));
+				Log.info("Patched " + replacements.size() + " classes in " + zipFile.getName() + ", patchHash: " + patchHash);
 				zin.close();
 				zout.close();
 				tempFile.delete();
@@ -135,11 +155,33 @@ public class ClassRegistry {
 		}
 	}
 
-	private static boolean isJar(File file) {
-		return file.getName().toLowerCase().endsWith(".jar");
-	}
-
 	public CtClass getClass(String className) throws NotFoundException {
 		return classes.get(className);
+	}
+
+	public void loadPatchHashes(PatchManager patchManager) {
+		Map<String, Integer> patchHashes = patchManager.getHashes();
+		for (String clazz : patchHashes.keySet()) {
+			File location = classNameToLocation.get(clazz);
+			if (location == null) {
+				continue;
+			}
+			int hash = patchHashes.get(clazz);
+			Integer currentHash = expectedPatchHashes.get(location);
+			expectedPatchHashes.put(location, (currentHash == null) ? hash : currentHash * 31 + hash);
+		}
+	}
+
+	public boolean shouldPatch() {
+		for (File file : expectedPatchHashes.keySet()) {
+			if (!file.equals(locationToPatchHash.get(file))) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static boolean isJar(File file) {
+		return file.getName().toLowerCase().endsWith(".jar");
 	}
 }
