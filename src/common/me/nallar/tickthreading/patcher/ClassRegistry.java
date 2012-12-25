@@ -31,6 +31,7 @@ import me.nallar.tickthreading.util.EnumerableWrapper;
 
 public class ClassRegistry {
 	private static final byte[] BUFFER = new byte[1024 * 1024];
+	private static final String hashFileName = "TickThreading.hash";
 	private Map<String, File> classNameToLocation = new HashMap<String, File>();
 	private Map<File, Integer> locationToPatchHash = new HashMap<File, Integer>();
 	private Map<File, Integer> expectedPatchHashes = new HashMap<File, Integer>();
@@ -71,7 +72,7 @@ public class ClassRegistry {
 					unsafeClassNames.add(className);
 				}
 				classNameToLocation.put(className, file);
-			} else if (name.equals("TickThreading.hash")) {
+			} else if (name.equals(hashFileName)) {
 				ByteArrayOutputStream output = new ByteArrayOutputStream();
 				copy(zip.getInputStream(zipEntry), output);
 				int hash = Integer.valueOf(new String(output.toByteArray(), "UTF-8"));
@@ -125,7 +126,7 @@ public class ClassRegistry {
 				Set<String> replacements = new HashSet<String>();
 				ZipEntry zipEntry;
 				while ((zipEntry = zin.getNextEntry()) != null) {
-					if (replacementFiles.containsKey(zipEntry.getName())) {
+					if (zipEntry.getName().equals(hashFileName) || replacementFiles.containsKey(zipEntry.getName())) {
 						replacements.add(zipEntry.getName());
 					} else {
 						// TODO: Ignore meta-inf?
@@ -138,7 +139,7 @@ public class ClassRegistry {
 					zout.write(replacementFiles.get(name));
 					zout.closeEntry();
 				}
-				zout.putNextEntry(isJar(zipFile) ? new JarEntry("TickThreading.hash") : new ZipEntry("TickThreading.hash"));
+				zout.putNextEntry(isJar(zipFile) ? new JarEntry(hashFileName) : new ZipEntry(hashFileName));
 				String patchHash = String.valueOf(expectedPatchHashes.get(zipFile));
 				zout.write(patchHash.getBytes("UTF-8"));
 				Log.info("Patched " + replacements.size() + " classes in " + zipFile.getName() + ", patchHash: " + patchHash);
