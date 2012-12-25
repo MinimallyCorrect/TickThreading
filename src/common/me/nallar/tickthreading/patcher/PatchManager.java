@@ -201,7 +201,7 @@ public class PatchManager {
 			if (patchElement.getTextContent().isEmpty()) {
 				run(ctClass);
 			} else {
-				List<MethodDescription> methodDescriptions = MethodDescription.fromListString(ctClass.getSimpleName(), patchElement.getTextContent());
+				List<MethodDescription> methodDescriptions = MethodDescription.fromListString(ctClass.getName(), patchElement.getTextContent());
 				Log.fine("Patching methods " + methodDescriptions.toString());
 				for (MethodDescription methodDescription : methodDescriptions) {
 					try {
