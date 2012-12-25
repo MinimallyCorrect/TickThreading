@@ -26,7 +26,7 @@ public class Patches {
 		if (Modifier.isSynchronized(currentModifiers)) {
 			Log.warning("Method: " + method.getLongName() + " is already synchronized");
 		} else {
-			method.setModifiers(Modifier.clear(currentModifiers, Modifier.SYNCHRONIZED));
+			method.setModifiers(currentModifiers | Modifier.SYNCHRONIZED);
 		}
 	}
 
