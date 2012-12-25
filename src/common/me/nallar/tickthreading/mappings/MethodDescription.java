@@ -70,7 +70,7 @@ public class MethodDescription {
 	}
 
 	public boolean similar(Object other) {
-		return this == other || (other instanceof MethodDescription && ((MethodDescription) other).getShortName() == this.getShortName()) || (other instanceof Method && new MethodDescription((Method) other).similar(this));
+		return this == other || (other instanceof MethodDescription && ((MethodDescription) other).getShortName().equals(this.getShortName())) || (other instanceof Method && new MethodDescription((Method) other).similar(this));
 	}
 
 	public CtMethod inClass(CtClass ctClass) {
