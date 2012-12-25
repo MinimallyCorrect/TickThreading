@@ -83,7 +83,9 @@ public class ClassRegistry {
 	}
 
 	public void update(String className, byte[] replacement) {
-		Log.severe(className + " is in multiple jars. Patching may not work correctly.");
+		if (unsafeClassNames.contains(className)) {
+			Log.severe(className + " is in multiple jars. Patching may not work correctly.");
+		}
 		updatedFiles.add(classNameToLocation.get(className));
 		className = className.replace('.', '/') + ".class";
 		replacementFiles.put(className, replacement);
@@ -126,7 +128,9 @@ public class ClassRegistry {
 				Set<String> replacements = new HashSet<String>();
 				ZipEntry zipEntry;
 				while ((zipEntry = zin.getNextEntry()) != null) {
-					if (zipEntry.getName().equals(hashFileName) || replacementFiles.containsKey(zipEntry.getName())) {
+					if (zipEntry.getName().equals(hashFileName)) {
+						// Skip
+					} else if (replacementFiles.containsKey(zipEntry.getName())) {
 						replacements.add(zipEntry.getName());
 					} else {
 						// TODO: Ignore meta-inf?
