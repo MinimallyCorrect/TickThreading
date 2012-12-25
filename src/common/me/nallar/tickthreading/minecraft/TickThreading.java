@@ -74,7 +74,6 @@ public class TickThreading {
 			MinecraftForge.EVENT_BUS.register(this);
 		}
 		instance = this;
-		Log.info(getServerDirectory().toString());
 	}
 
 	@Mod.PreInit

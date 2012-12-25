@@ -87,7 +87,7 @@ public class MethodDescription {
 				return ctMethod;
 			}
 		}
-		throw new RuntimeException("Method not found");
+		throw new RuntimeException("Method not found: " + this + " was not found in " + ctClass.getName());
 	}
 
 	private static String getJVMName(Class<?> clazz) {

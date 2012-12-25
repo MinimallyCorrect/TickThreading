@@ -35,6 +35,7 @@ public class ClassRegistry {
 	private Map<File, Integer> locationToPatchHash = new HashMap<File, Integer>();
 	private Map<File, Integer> expectedPatchHashes = new HashMap<File, Integer>();
 	private Set<File> updatedFiles = new HashSet<File>();
+	private Set<String> unsafeClassNames = new HashSet<String>();
 	private Set<ClassPath> classPathSet = new HashSet<ClassPath>();
 	private Map<String, byte[]> replacementFiles = new HashMap<String, byte[]>();
 	private ClassPool classes = new ClassPool(false);
@@ -67,7 +68,7 @@ public class ClassRegistry {
 			if (name.endsWith(".class")) {
 				String className = name.replace('/', '.').substring(0, name.lastIndexOf('.'));
 				if (classNameToLocation.containsKey(className)) {
-					Log.severe(className + " is in multiple jars. " + file + ", " + classNameToLocation.get(className));
+					unsafeClassNames.add(className);
 				}
 				classNameToLocation.put(className, file);
 			} else if (name.equals("TickThreading.hash")) {
@@ -81,6 +82,7 @@ public class ClassRegistry {
 	}
 
 	public void update(String className, byte[] replacement) {
+		Log.severe(className + " is in multiple jars. Patching may not work correctly.");
 		updatedFiles.add(classNameToLocation.get(className));
 		className = className.replace('.', '/') + ".class";
 		replacementFiles.put(className, replacement);
