@@ -15,6 +15,7 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import javassist.ClassPath;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.NotFoundException;
@@ -24,6 +25,7 @@ import me.nallar.tickthreading.util.EnumerableWrapper;
 public class ClassRegistry {
 	private Map<String, File> classNameToLocation = new HashMap<String, File>();
 	private Set<File> updatedFiles = new HashSet<File>();
+	private Set<ClassPath> classPathSet = new HashSet<ClassPath>();
 	private Map<String, byte[]> replacementFiles = new HashMap<String, byte[]>();
 	private ClassPool classes = new ClassPool(false);
 
@@ -46,7 +48,7 @@ public class ClassRegistry {
 	public void loadZip(ZipFile zip) throws IOException {
 		File file = new File(zip.getName());
 		try {
-			classes.appendClassPath(file.getAbsolutePath());
+			classPathSet.add(classes.appendClassPath(file.getAbsolutePath()));
 		} catch (Exception e) {
 			Log.severe("Javassist could not load " + file, e);
 		}
@@ -66,6 +68,9 @@ public class ClassRegistry {
 	}
 
 	public void save() throws IOException {
+		for (ClassPath classPath : classPathSet) {
+			classes.removeClassPath(classPath);
+		}
 		byte[] buf = new byte[1024];
 		int len;
 		for (File zipFile : updatedFiles) {
