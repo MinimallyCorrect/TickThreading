@@ -181,7 +181,7 @@ public class ClassRegistry {
 
 	public boolean shouldPatch() {
 		for (File file : expectedPatchHashes.keySet()) {
-			if (!file.equals(locationToPatchHash.get(file))) {
+			if (!(expectedPatchHashes.get(file).equals(locationToPatchHash.get(file)))) {
 				return true;
 			}
 		}
