@@ -220,10 +220,12 @@ public class PatchManager {
 		}
 
 		public void run(Element patchElement, CtClass ctClass) {
+			Log.fine("Patching " + ctClass.getName() + " with " + this.name);
 			if (patchElement.getTextContent().isEmpty()) {
 				run(ctClass);
 			} else {
 				List<MethodDescription> methodDescriptions = MethodDescription.fromListString(ctClass.getSimpleName(), patchElement.getTextContent());
+				Log.fine("Patching methods " + methodDescriptions.toString());
 				for (MethodDescription methodDescription : methodDescriptions) {
 					try {
 						run(methodDescription.inClass(ctClass));

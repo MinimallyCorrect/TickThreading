@@ -110,7 +110,6 @@ public class ClassRegistry {
 						replacements.add(zipEntry.getName());
 					} else {
 						// TODO: Ignore meta-inf?
-						Log.info(zipEntry.toString());
 						zout.putNextEntry(isJar(zipFile) ? new JarEntry(zipEntry.getName()) : new ZipEntry(zipEntry.getName()));
 						copy(zin, zout);
 					}
@@ -120,6 +119,7 @@ public class ClassRegistry {
 					zout.write(replacementFiles.get(name));
 					zout.closeEntry();
 				}
+				Log.info("Patched " + replacements.size() + " classes in " + zipFile.getName());
 				zin.close();
 				zout.close();
 				tempFile.delete();
