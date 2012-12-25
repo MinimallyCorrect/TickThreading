@@ -4,13 +4,19 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.jar.JarInputStream;
+import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -23,6 +29,7 @@ import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.util.EnumerableWrapper;
 
 public class ClassRegistry {
+	private static final byte[] BUFFER = new byte[1024 * 1024];
 	private Map<String, File> classNameToLocation = new HashMap<String, File>();
 	private Set<File> updatedFiles = new HashSet<File>();
 	private Set<ClassPath> classPathSet = new HashSet<ClassPath>();
@@ -67,38 +74,69 @@ public class ClassRegistry {
 		replacementFiles.put(className, replacement);
 	}
 
+	public static void copy(InputStream input, OutputStream output) throws IOException {
+		for (int read = input.read(BUFFER); read > -1; read = input.read(BUFFER)) {
+			output.write(BUFFER, 0, read);
+		}
+	}
+
 	public void save() throws IOException {
 		for (ClassPath classPath : classPathSet) {
 			classes.removeClassPath(classPath);
 		}
-		byte[] buf = new byte[1024];
-		int len;
-		for (File zipFile : updatedFiles) {
-			File tempFile = File.createTempFile(zipFile.getName(), null);
-			tempFile.delete();
-			zipFile.renameTo(tempFile);
-			ZipInputStream zin = new ZipInputStream(new FileInputStream(tempFile));
-			ZipOutputStream zout = new ZipOutputStream(new FileOutputStream(zipFile));
-
-			ZipEntry zipEntry;
-			while ((zipEntry = zin.getNextEntry()) != null) {
-				if (replacementFiles.containsKey(zipEntry.getName())) {
-					byte[] replacement = replacementFiles.get(zipEntry.getName());
-					ZipEntry newEntry = new ZipEntry(zipEntry.getName());
-					zout.putNextEntry(newEntry);
-					zout.write(replacement);
+		File tempFile = null, renameFile = null;
+		ZipInputStream zin = null;
+		ZipOutputStream zout = null;
+		try {
+			for (File zipFile : updatedFiles) {
+				tempFile = File.createTempFile(zipFile.getName(), null);
+				tempFile.delete();
+				if (zipFile.renameTo(tempFile)) {
+					renameFile = zipFile;
 				} else {
-					// TODO: Ignore meta-inf?
-					zout.putNextEntry(zipEntry);
-					while ((len = zin.read(buf)) > 0) {
-						zout.write(buf, 0, len);
+					throw new IOException("Couldn't rename " + zipFile + " -> " + tempFile);
+				}
+				if (isJar(zipFile)) {
+					zin = new JarInputStream(new FileInputStream(tempFile));
+					zout = new JarOutputStream(new FileOutputStream(zipFile));
+				} else {
+					zin = new ZipInputStream(new FileInputStream(tempFile));
+					zout = new ZipOutputStream(new FileOutputStream(zipFile));
+				}
+				Set<String> replacements = new HashSet<String>();
+				ZipEntry zipEntry;
+				while ((zipEntry = zin.getNextEntry()) != null) {
+					if (replacementFiles.containsKey(zipEntry.getName())) {
+						replacements.add(zipEntry.getName());
+					} else {
+						// TODO: Ignore meta-inf?
+						Log.info(zipEntry.toString());
+						zout.putNextEntry(isJar(zipFile) ? new JarEntry(zipEntry.getName()) : new ZipEntry(zipEntry.getName()));
+						copy(zin, zout);
 					}
 				}
+				for (String name : replacements) {
+					zout.putNextEntry(isJar(zipFile) ? new JarEntry(name) : new ZipEntry(name));
+					zout.write(replacementFiles.get(name));
+					zout.closeEntry();
+				}
+				zin.close();
+				zout.close();
+				tempFile.delete();
+				renameFile = null;
 			}
+		} catch (ZipException e) {
 			zin.close();
 			zout.close();
-			tempFile.delete();
+			if (renameFile != null && tempFile != null) {
+				tempFile.renameTo(renameFile);
+			}
+			throw e;
 		}
+	}
+
+	private static boolean isJar(File file) {
+		return file.getName().toLowerCase().endsWith(".jar");
 	}
 
 	public CtClass getClass(String className) throws NotFoundException {
