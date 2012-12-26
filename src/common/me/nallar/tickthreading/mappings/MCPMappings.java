@@ -6,10 +6,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+
 public class MCPMappings extends Mappings {
-	Map<String, String> seargeMappings = new HashMap<String, String>();
-	Map<ClassDescription, ClassDescription> classMappings = new HashMap<ClassDescription, ClassDescription>();
+	Map<String, String> methodSeargeMappings = new HashMap<String, String>();
+	Map<String, String> fieldSeargeMappings = new HashMap<String, String>();
+	BiMap<ClassDescription, ClassDescription> classMappings = HashBiMap.create();
 	Map<MethodDescription, MethodDescription> methodMappings = new HashMap<MethodDescription, MethodDescription>();
+	Map<FieldDescription, FieldDescription> fieldMappings = new HashMap<FieldDescription, FieldDescription>();
 	Map<String, MethodDescription> parameterlessMethodMappings = new HashMap<String, MethodDescription>();
 
 	public MethodDescription map(MethodDescription methodDescription) {
@@ -24,14 +29,20 @@ public class MCPMappings extends Mappings {
 		return classMappings.get(classDescription);
 	}
 
+	public FieldDescription map(FieldDescription fieldDescription) {
+		return fieldMappings.get(fieldDescription);
+	}
+
 	public MCPMappings(File mcpDir) throws IOException {
 		parse(mcpDir);
 	}
 
 	public void parse(File mcpDir) throws IOException {
-		loadCsv(new File(mcpDir, "methods.csv"));
+		loadCsv(new File(mcpDir, "methods.csv"), methodSeargeMappings);
+		loadCsv(new File(mcpDir, "fields.csv"), fieldSeargeMappings);
 		loadSrg(new File(mcpDir, "joined.srg"));
-		seargeMappings.clear();
+		methodSeargeMappings.clear();
+		fieldSeargeMappings.clear();
 	}
 
 	private void loadSrg(File mappingsSrg) throws IOException {
@@ -44,6 +55,18 @@ public class MCPMappings extends Mappings {
 				ClassDescription obfuscatedClass = new ClassDescription(fromClass);
 				ClassDescription deobfuscatedClass = new ClassDescription(toClass);
 				classMappings.put(deobfuscatedClass, obfuscatedClass);
+			} else if (srgScanner.hasNext("FD:")) {
+				srgScanner.next();
+				String obfuscatedMCPName = srgScanner.next();
+				String seargeName = srgScanner.next();
+				seargeName = seargeName.substring(seargeName.lastIndexOf('/') + 1);
+				String deobfuscatedName = fieldSeargeMappings.get(seargeName);
+				if (deobfuscatedName == null) {
+					deobfuscatedName = seargeName;
+				}
+				FieldDescription obfuscatedField = new FieldDescription(obfuscatedMCPName);
+				FieldDescription deobfuscatedField = new FieldDescription(classMappings.inverse().get(new ClassDescription(obfuscatedField.className)).name, deobfuscatedName);
+				fieldMappings.put(deobfuscatedField, obfuscatedField);
 			} else if (srgScanner.hasNext("MD:")) {
 				srgScanner.next();
 				String obfuscatedName = srgScanner.next();
@@ -54,7 +77,7 @@ public class MCPMappings extends Mappings {
 				obfuscatedName = obfuscatedName.substring(obfuscatedName.lastIndexOf('/') + 1);
 				String deobfuscatedClassName = seargeName.substring(0, seargeName.lastIndexOf('/')).replace('/', '.');
 				seargeName = seargeName.substring(seargeName.lastIndexOf('/') + 1);
-				String deobfuscatedName = seargeMappings.get(seargeName);
+				String deobfuscatedName = methodSeargeMappings.get(seargeName);
 				if (deobfuscatedName == null) {
 					deobfuscatedName = seargeName;
 				}
@@ -68,7 +91,7 @@ public class MCPMappings extends Mappings {
 		}
 	}
 
-	private void loadCsv(File mappingsCsv) throws IOException {
+	private void loadCsv(File mappingsCsv, Map<String, String> seargeMappings) throws IOException {
 		Scanner in = new Scanner(mappingsCsv);
 		try {
 			in.useDelimiter(",");

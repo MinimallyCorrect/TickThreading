@@ -1,13 +1,18 @@
 package me.nallar.tickthreading.patcher;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javassist.CannotCompileException;
+import javassist.ClassMap;
+import javassist.ClassPool;
 import javassist.CtClass;
+import javassist.CtConstructor;
 import javassist.CtMethod;
 import javassist.Modifier;
+import javassist.NotFoundException;
 import javassist.expr.Cast;
 import javassist.expr.ConstructorCall;
 import javassist.expr.ExprEditor;
@@ -18,8 +23,55 @@ import javassist.expr.MethodCall;
 import javassist.expr.NewArray;
 import javassist.expr.NewExpr;
 import me.nallar.tickthreading.Log;
+import me.nallar.tickthreading.mappings.MethodDescription;
 
 public class Patches {
+	private final ClassRegistry classRegistry;
+
+	public Patches(ClassRegistry classRegistry) {
+		this.classRegistry = classRegistry;
+	}
+
+	@Patch (
+			requiredAttributes = "fromClass"
+	)
+	public void replaceMethod(CtMethod method, Map<String, String> attributes) {
+		String fromClass = attributes.get("fromClass");
+		String fromMethod = attributes.get("fromMethod");
+		if (fromMethod == null) {
+			fromMethod = method.getName();
+		}
+		try {
+			ClassMap classMap = new ClassMap();
+			classMap.put(fromClass, method.getDeclaringClass().getName());
+			method.setBody(ClassPool.getDefault().getMethod(fromClass, fromMethod), classMap);
+		} catch (Exception e) {
+			Log.severe("Failed to replace " + new MethodDescription(method).getMCPName() + " with " + fromMethod, e);
+		}
+	}
+
+	@Patch (
+			name = "public"
+	)
+	public void makePublic(CtMethod ctMethod) {
+		ctMethod.setModifiers(Modifier.setPublic(ctMethod.getModifiers()));
+	}
+
+	@Patch (
+			requiredAttributes = "field,class"
+	)
+	public void newInitializer(CtClass ctClass, Map<String, String> attributes) throws NotFoundException, CannotCompileException, IOException {
+		String field = attributes.get("field");
+		String clazz = attributes.get("class");
+		String initialise = "{ " + field + " = new " + clazz + "(); }";
+		ctClass.getDeclaredField(field);
+		for (CtConstructor ctConstructor : ctClass.getConstructors()) {
+			Log.info("newInitializer: Patched constructor " + ctConstructor.getLongName());
+			ctConstructor.insertAfter(initialise);
+		}
+		classRegistry.add(classRegistry.getLocation(ctClass.getName()), clazz, ClassPool.getDefault().getCtClass(clazz).toBytecode());
+	}
+
 	@Patch
 	public void synchronize(CtMethod method) {
 		int currentModifiers = method.getModifiers();

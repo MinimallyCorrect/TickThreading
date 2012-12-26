@@ -1,6 +1,7 @@
 package me.nallar.tickthreading.minecraft.tickcallables;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import me.nallar.tickthreading.Log;
@@ -20,8 +21,9 @@ public class EntityTickCallable<T> extends TickCallable {
 	public void doTick() {
 		try {
 			IChunkProvider chunkProvider = world.getChunkProvider();
-			int regionSize = manager.regionSize;
-			for (Entity entity : entityList) {
+			Iterator<Entity> entitiesIterator = entityList.iterator();
+			while (entitiesIterator.hasNext()) {
+				Entity entity = entitiesIterator.next();
 				if (entity.ridingEntity != null) {
 					if (!entity.ridingEntity.isDead && entity.ridingEntity.riddenByEntity == entity) {
 						continue;
@@ -37,18 +39,18 @@ public class EntityTickCallable<T> extends TickCallable {
 
 				if (entity.isDead) {
 					int entityX = entity.chunkCoordX;
-					int entityY = entity.chunkCoordZ;
+					int entityZ = entity.chunkCoordZ;
 
-					if (entity.addedToChunk && chunkProvider.chunkExists(entityX, entityY)) {
-						world.getChunkFromChunkCoords(entityX, entityY).removeEntity(entity);
+					if (entity.addedToChunk && chunkProvider.chunkExists(entityX, entityZ)) {
+						world.getChunkFromChunkCoords(entityX, entityZ).removeEntity(entity);
 					}
 
-					manager.remove(entity);
-				}
-
-				if (manager.getHashCode(entity) != hashCode) {
-					this.remove(entity);
+					entitiesIterator.remove();
+					manager.removed(entity);
+				} else if (manager.getHashCode(entity) != hashCode) {
+					entitiesIterator.remove();
 					manager.add(entity);
+					//Log.severe("Inconsistent state: " + entity + " is in the wrong TickCallable.");
 				}
 			}
 		} catch (Exception exception) {

@@ -180,7 +180,7 @@
 		<delete dir="${classes.dir}/META-INF"/>
 
 		<path id="class.path">
-			<fileset dir="${lib.dir}">
+			<fileset dir="${mcp.dir}/lib">
 				<include name="**/*.jar"/>
 			</fileset>
 		</path>

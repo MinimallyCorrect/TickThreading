@@ -1,6 +1,5 @@
 package me.nallar.tickthreading.mappings;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +12,8 @@ public abstract class Mappings {
 				mappedThings.add(map((MethodDescription) thing));
 			} else if (thing instanceof ClassDescription) {
 				mappedThings.add(map((ClassDescription) thing));
+			} else if (thing instanceof FieldDescription) {
+				mappedThings.add(map((FieldDescription) thing));
 			} else {
 				throw new IllegalArgumentException("Must be mappable: " + thing + "isn't!");
 			}
@@ -20,15 +21,9 @@ public abstract class Mappings {
 		return mappedThings;
 	}
 
-	public MethodDescription map(Method method) {
-		return map(new MethodDescription(method));
-	}
-
 	public abstract MethodDescription map(MethodDescription methodDescription);
 
-	public ClassDescription map(Class clazz) {
-		return map(new ClassDescription(clazz));
-	}
-
 	public abstract ClassDescription map(ClassDescription classDescription);
+
+	public abstract FieldDescription map(FieldDescription fieldDescription);
 }

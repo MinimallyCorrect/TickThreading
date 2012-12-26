@@ -8,8 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.tickcallables.EntityTickCallable;
@@ -30,12 +31,14 @@ public class TickManager {
 	private final Map<Integer, TileEntityTickCallable> tileEntityCallables = new HashMap<Integer, TileEntityTickCallable>();
 	private final Map<Integer, EntityTickCallable> entityCallables = new HashMap<Integer, EntityTickCallable>();
 	private final List<TickCallable<Object>> tickCallables = new ArrayList<TickCallable<Object>>();
-	private final ExecutorService tickExecutor = Executors.newCachedThreadPool();
+	private final ThreadPoolExecutor tickExecutor = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().availableProcessors(), 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
 	public final World world;
+	public final List<Entity> entityList = new ArrayList<Entity>();
 
 	public TickManager(World world, int regionSize) {
 		this.world = world;
 		this.regionSize = regionSize;
+		tickExecutor.allowCoreThreadTimeOut(true);
 	}
 
 	public void setVariableTickRate(boolean variableTickRate) {
@@ -95,37 +98,35 @@ public class TickManager {
 
 	private synchronized void processChanges() {
 		try {
-			synchronized (tickLock) {
-				for (TileEntity tileEntity : toRemoveTileEntities) {
-					getOrCreateCallable(tileEntity).remove(tileEntity);
-				}
-				for (TileEntity tileEntity : toAddTileEntities) {
-					getOrCreateCallable(tileEntity).add(tileEntity);
-				}
-				for (Entity entity : toRemoveEntities) {
-					getOrCreateCallable(entity).remove(entity);
-				}
-				for (Entity entity : toAddEntities) {
-					getOrCreateCallable(entity).add(entity);
-				}
-				toAddEntities.clear();
-				toAddTileEntities.clear();
-				toRemoveEntities.clear();
-				toRemoveTileEntities.clear();
-				Iterator<TickCallable<Object>> iterator = tickCallables.iterator();
-				while (iterator.hasNext()) {
-					TickCallable<Object> tickCallable = iterator.next();
-					if (tickCallable.isEmpty()) {
-						iterator.remove();
-						if (tickCallable instanceof EntityTickCallable) {
-							entityCallables.remove(tickCallable.hashCode);
-						} else {
-							tileEntityCallables.remove(tickCallable.hashCode);
-						}
-						tickCallable.die();
+			for (TileEntity tileEntity : toAddTileEntities) {
+				getOrCreateCallable(tileEntity).add(tileEntity);
+			}
+			for (TileEntity tileEntity : toRemoveTileEntities) {
+				getOrCreateCallable(tileEntity).remove(tileEntity);
+			}
+			for (Entity entity : toAddEntities) {
+				getOrCreateCallable(entity).add(entity);
+			}
+			for (Entity entity : toRemoveEntities) {
+				getOrCreateCallable(entity).remove(entity);
+			}
+			toAddEntities.clear();
+			toAddTileEntities.clear();
+			toRemoveEntities.clear();
+			toRemoveTileEntities.clear();
+			Iterator<TickCallable<Object>> iterator = tickCallables.iterator();
+			while (iterator.hasNext()) {
+				TickCallable<Object> tickCallable = iterator.next();
+				if (tickCallable.isEmpty()) {
+					iterator.remove();
+					if (tickCallable instanceof EntityTickCallable) {
+						entityCallables.remove(tickCallable.hashCode);
 					} else {
-						tickCallable.processChanges();
+						tileEntityCallables.remove(tickCallable.hashCode);
 					}
+					tickCallable.die();
+				} else {
+					tickCallable.processChanges();
 				}
 			}
 		} catch (Exception e) {
@@ -139,6 +140,11 @@ public class TickManager {
 
 	public synchronized void add(Entity entity) {
 		toAddEntities.add(entity);
+		synchronized (entityList) {
+			if (!entityList.contains(entity)) {
+				entityList.add(entity);
+			}
+		}
 	}
 
 	public synchronized void remove(TileEntity tileEntity) {
@@ -147,22 +153,23 @@ public class TickManager {
 
 	public synchronized void remove(Entity entity) {
 		toRemoveEntities.add(entity);
+		removed(entity);
+	}
+
+	public void removed(Entity entity) {
+		synchronized (entityList) {
+			entityList.remove(entity);
+			world.releaseEntitySkin(entity);
+		}
 	}
 
 	public void doTick() {
-		synchronized (tickLock) {
-			try {
-				tickExecutor.invokeAll(tickCallables);
-			} catch (InterruptedException e) {
-				Log.warning("Interrupted while ticking: ", e);
-			}
+		try {
+			tickExecutor.invokeAll(tickCallables);
+		} catch (InterruptedException e) {
+			Log.warning("Interrupted while ticking: ", e);
 		}
-		tickExecutor.submit(new Runnable() {
-			@Override
-			public void run() {
-				processChanges();
-			}
-		});
+		processChanges();
 	}
 
 	public void unload() {
@@ -171,12 +178,10 @@ public class TickManager {
 
 	public float getTickTime() {
 		float maxTickTime = 0;
-		synchronized (tickLock) {
-			for (TickCallable<Object> tickCallable : tickCallables) {
-				float averageTickTime = tickCallable.getAverageTickTime();
-				if (averageTickTime > maxTickTime) {
-					maxTickTime = averageTickTime;
-				}
+		for (TickCallable<Object> tickCallable : tickCallables) {
+			float averageTickTime = tickCallable.getAverageTickTime();
+			if (averageTickTime > maxTickTime) {
+				maxTickTime = averageTickTime;
 			}
 		}
 		return (maxTickTime > 55) ? 55 : maxTickTime;
@@ -199,14 +204,12 @@ public class TickManager {
 		float averageAverageTickTime = 0;
 		float maxTickTime = 0;
 		SortedMap<Float, TickCallable<Object>> sortedTickCallables = new TreeMap<Float, TickCallable<Object>>();
-		synchronized (tickLock) {
-			for (TickCallable<Object> tickCallable : tickCallables) {
-				float averageTickTime = tickCallable.getAverageTickTime();
-				averageAverageTickTime += averageTickTime;
-				sortedTickCallables.put(averageTickTime, tickCallable);
-				if (averageTickTime > maxTickTime) {
-					maxTickTime = averageTickTime;
-				}
+		for (TickCallable<Object> tickCallable : tickCallables) {
+			float averageTickTime = tickCallable.getAverageTickTime();
+			averageAverageTickTime += averageTickTime;
+			sortedTickCallables.put(averageTickTime, tickCallable);
+			if (averageTickTime > maxTickTime) {
+				maxTickTime = averageTickTime;
 			}
 		}
 		Collection<TickCallable<Object>> var = sortedTickCallables.values();

@@ -26,6 +26,7 @@ import javassist.CtMethod;
 import javassist.NotFoundException;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.mappings.ClassDescription;
+import me.nallar.tickthreading.mappings.FieldDescription;
 import me.nallar.tickthreading.mappings.Mappings;
 import me.nallar.tickthreading.mappings.MethodDescription;
 import me.nallar.tickthreading.util.DomUtil;
@@ -40,7 +41,7 @@ import org.xml.sax.SAXException;
 
 public class PatchManager {
 	private Document configDocument;
-	private Patches patchTypes;
+	private Object patchTypes;
 	// Patch name -> patch method descriptor
 	private Map<String, PatchMethodDescriptor> patches = new HashMap<String, PatchMethodDescriptor>();
 	public final ClassRegistry classRegistry = new ClassRegistry();
@@ -52,7 +53,7 @@ public class PatchManager {
 
 	public void loadPatches(Class<Patches> patchClass) {
 		try {
-			patchTypes = patchClass.newInstance();
+			patchTypes = patchClass.getDeclaredConstructors()[0].newInstance(classRegistry);
 		} catch (Exception e) {
 			Log.severe("Failed to instantiate patch class", e);
 		}
@@ -90,6 +91,11 @@ public class PatchManager {
 			for (Element patchElement : DomUtil.elementList(patchElements)) {
 				if (!patchElement.getTextContent().isEmpty()) {
 					patchElement.setTextContent(MethodDescription.toListString(mappings.map(MethodDescription.fromListString(deobfuscatedClass.name, patchElement.getTextContent()))));
+				}
+				String field = patchElement.getAttribute("field");
+				if (!field.isEmpty()) {
+					Log.info(new FieldDescription(className, field).toString());
+					patchElement.setAttribute("field", mappings.map(new FieldDescription(className, field)).name);
 				}
 			}
 		}
@@ -198,14 +204,19 @@ public class PatchManager {
 
 		public void run(Element patchElement, CtClass ctClass) {
 			Log.fine("Patching " + ctClass.getName() + " with " + this.name);
+			Map<String, String> attributes = getAttributes(patchElement);
+			if (!attributes.keySet().containsAll(requiredAttributes)) {
+				Log.severe("Missing required attributes " + requiredAttributes.toString() + " when patching " + ctClass.getName());
+				return;
+			}
 			if (patchElement.getTextContent().isEmpty()) {
-				run(ctClass);
+				run(ctClass, attributes);
 			} else {
 				List<MethodDescription> methodDescriptions = MethodDescription.fromListString(ctClass.getName(), patchElement.getTextContent());
 				Log.fine("Patching methods " + methodDescriptions.toString());
 				for (MethodDescription methodDescription : methodDescriptions) {
 					try {
-						run(methodDescription.inClass(ctClass));
+						run(methodDescription.inClass(ctClass), attributes);
 					} catch (Exception e) {
 						Log.severe("Error patching " + methodDescription.getMCPName() + " in " + ctClass, e);
 					}
@@ -213,17 +224,25 @@ public class PatchManager {
 			}
 		}
 
-		private void run(CtClass clazz) {
+		private void run(CtClass clazz, Map<String, String> attributes) {
 			try {
-				patchMethod.invoke(patchTypes, clazz);
+				if (requiredAttributes.size() == 0) {
+					patchMethod.invoke(patchTypes, clazz);
+				} else {
+					patchMethod.invoke(patchTypes, clazz, attributes);
+				}
 			} catch (Exception e) {
 				Log.severe("Failed to invoke class patch " + this, e);
 			}
 		}
 
-		private void run(CtMethod method) {
+		private void run(CtMethod method, Map<String, String> attributes) {
 			try {
-				patchMethod.invoke(patchTypes, method);
+				if (requiredAttributes.size() == 0) {
+					patchMethod.invoke(patchTypes, method);
+				} else {
+					patchMethod.invoke(patchTypes, method, attributes);
+				}
 			} catch (Exception e) {
 				Log.severe("Failed to invoke method patch " + this, e);
 			}

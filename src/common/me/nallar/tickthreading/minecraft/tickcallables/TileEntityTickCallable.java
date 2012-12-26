@@ -63,6 +63,7 @@ public class TileEntityTickCallable<T> extends TickCallable {
 				//Yes, this is correct. Can't be simplified to else if, as it may be invalidated during updateEntity
 				if (tileEntity.isInvalid()) {
 					tileEntitiesIterator.remove();
+					tileEntity.onChunkUnload();
 					Log.fine("Removed invalid tile: " + tileEntity.xCoord + ", " + tileEntity.yCoord + ", " + tileEntity.zCoord + "\ttype:" + tileEntity.getClass().toString());
 					if (chunkProvider.chunkExists(tileEntity.xCoord >> 4, tileEntity.zCoord >> 4)) {
 						Chunk chunk = world.getChunkFromChunkCoords(tileEntity.xCoord >> 4, tileEntity.zCoord >> 4);

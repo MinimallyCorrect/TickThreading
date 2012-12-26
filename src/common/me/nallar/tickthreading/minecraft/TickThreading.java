@@ -21,6 +21,7 @@ import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.commands.TPSCommand;
 import me.nallar.tickthreading.minecraft.commands.TicksCommand;
 import me.nallar.tickthreading.minecraft.entitylist.EntityList;
+import me.nallar.tickthreading.minecraft.entitylist.LoadedEntityList;
 import me.nallar.tickthreading.minecraft.entitylist.LoadedTileEntityList;
 import me.nallar.tickthreading.patcher.PatchManager;
 import me.nallar.tickthreading.util.EnumerableWrapper;
@@ -121,9 +122,8 @@ public class TickThreading {
 			Field loadedTileEntityField = FieldUtil.getFields(World.class, List.class)[loadedTileEntityFieldIndex];
 			Field loadedEntityField = FieldUtil.getFields(World.class, List.class)[loadedEntityFieldIndex];
 			new LoadedTileEntityList<TileEntity>(event.world, loadedTileEntityField, manager);
+			new LoadedEntityList<TileEntity>(event.world, loadedEntityField, manager);
 			Log.info("Threading initialised for world " + Log.name(event.world));
-			// TODO: Enable entity tick threading
-			//new LoadedEntityList<TileEntity>(event.world, loadedEntityField, manager);
 			managers.put(event.world, manager);
 		} catch (Exception e) {
 			Log.severe("Failed to initialise threading for world " + Log.name(event.world), e);
@@ -138,6 +138,13 @@ public class TickThreading {
 			Object loadedTileEntityList = loadedTileEntityField.get(event.world);
 			if (loadedTileEntityList instanceof EntityList) {
 				((EntityList) loadedTileEntityList).unload();
+			} else {
+				Log.severe("Looks like another mod broke TickThreading in world: " + Log.name(event.world));
+			}
+			Field loadedEntityField = FieldUtil.getFields(World.class, List.class)[loadedEntityFieldIndex];
+			Object loadedEntityList = loadedEntityField.get(event.world);
+			if (loadedEntityList instanceof EntityList) {
+				((EntityList) loadedEntityList).unload();
 			} else {
 				Log.severe("Looks like another mod broke TickThreading in world: " + Log.name(event.world));
 			}

@@ -35,11 +35,16 @@ public class ClassRegistry {
 	private Map<String, File> classNameToLocation = new HashMap<String, File>();
 	private Map<File, Integer> locationToPatchHash = new HashMap<File, Integer>();
 	private Map<File, Integer> expectedPatchHashes = new HashMap<File, Integer>();
+	private Map<File, Map<String, byte[]>> additionalClasses = new HashMap<File, Map<String, byte[]>>();
 	private Set<File> updatedFiles = new HashSet<File>();
 	private Set<String> unsafeClassNames = new HashSet<String>();
 	private Set<ClassPath> classPathSet = new HashSet<ClassPath>();
 	private Map<String, byte[]> replacementFiles = new HashMap<String, byte[]>();
 	private ClassPool classes = new ClassPool(false);
+
+	{
+		classes.appendSystemPath();
+	}
 
 	public void loadJars(File folder) throws IOException {
 		if (!folder.isDirectory()) {
@@ -91,6 +96,23 @@ public class ClassRegistry {
 		replacementFiles.put(className, replacement);
 	}
 
+	public Map<String, byte[]> getAdditionalClasses(File file) {
+		Map<String, byte[]> additionalClasses = this.additionalClasses.get(file);
+		if (additionalClasses == null) {
+			additionalClasses = new HashMap<String, byte[]>();
+			this.additionalClasses.put(file, additionalClasses);
+		}
+		return additionalClasses;
+	}
+
+	public void add(File file, String className, byte[] byteCode) {
+		getAdditionalClasses(file).put(className.replace('.', '/') + ".class", byteCode);
+	}
+
+	public File getLocation(String className) {
+		return classNameToLocation.get(className);
+	}
+
 	public static void copy(InputStream input, OutputStream output) throws IOException {
 		for (int read = input.read(BUFFER); read > -1; read = input.read(BUFFER)) {
 			output.write(BUFFER, 0, read);
@@ -126,9 +148,10 @@ public class ClassRegistry {
 					zout = new ZipOutputStream(new FileOutputStream(zipFile));
 				}
 				Set<String> replacements = new HashSet<String>();
+				Map<String, byte[]> additionalClasses = getAdditionalClasses(zipFile);
 				ZipEntry zipEntry;
 				while ((zipEntry = zin.getNextEntry()) != null) {
-					if (zipEntry.getName().equals(hashFileName)) {
+					if (zipEntry.getName().equals(hashFileName) || additionalClasses.containsKey(zipEntry.getName())) {
 						// Skip
 					} else if (replacementFiles.containsKey(zipEntry.getName())) {
 						replacements.add(zipEntry.getName());
@@ -141,6 +164,11 @@ public class ClassRegistry {
 				for (String name : replacements) {
 					zout.putNextEntry(isJar(zipFile) ? new JarEntry(name) : new ZipEntry(name));
 					zout.write(replacementFiles.get(name));
+					zout.closeEntry();
+				}
+				for (String name : additionalClasses.keySet()) {
+					zout.putNextEntry(isJar(zipFile) ? new JarEntry(name) : new ZipEntry(name));
+					zout.write(additionalClasses.get(name));
 					zout.closeEntry();
 				}
 				zout.putNextEntry(isJar(zipFile) ? new JarEntry(hashFileName) : new ZipEntry(hashFileName));

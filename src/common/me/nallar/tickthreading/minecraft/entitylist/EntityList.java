@@ -48,6 +48,15 @@ public abstract class EntityList<T> extends ArrayList<T> {
 	}
 
 	@Override
+	public boolean removeAll(Collection c) {
+		boolean changed = false;
+		for (Object t : c) {
+			changed |= remove(t);
+		}
+		return changed;
+	}
+
+	@Override
 	public abstract boolean remove(Object o);
 
 	public void unload() {
