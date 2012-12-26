@@ -40,7 +40,7 @@ public class MCPMappings extends Mappings {
 	public void parse(File mcpDir) throws IOException {
 		loadCsv(new File(mcpDir, "methods.csv"), methodSeargeMappings);
 		loadCsv(new File(mcpDir, "fields.csv"), fieldSeargeMappings);
-		loadSrg(new File(mcpDir, "joined.srg"));
+		loadSrg(new File(mcpDir, "packaged.srg"));
 		methodSeargeMappings.clear();
 		fieldSeargeMappings.clear();
 	}

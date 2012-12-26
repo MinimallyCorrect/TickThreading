@@ -94,8 +94,10 @@ public class PatchManager {
 				}
 				String field = patchElement.getAttribute("field");
 				if (!field.isEmpty()) {
-					Log.info(new FieldDescription(className, field).toString());
-					patchElement.setAttribute("field", mappings.map(new FieldDescription(className, field)).name);
+					FieldDescription obfuscatedField = mappings.map(new FieldDescription(className, field));
+					if (obfuscatedField != null) {
+						patchElement.setAttribute("field", obfuscatedField.name);
+					}
 				}
 			}
 		}

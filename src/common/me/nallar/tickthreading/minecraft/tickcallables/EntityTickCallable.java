@@ -51,6 +51,8 @@ public class EntityTickCallable<T> extends TickCallable {
 					entitiesIterator.remove();
 					manager.add(entity);
 					//Log.severe("Inconsistent state: " + entity + " is in the wrong TickCallable.");
+					// Note to self for when I decide this is wrong later:
+					// Entities are supposed to move, of course this will happen!
 				}
 			}
 		} catch (Exception exception) {

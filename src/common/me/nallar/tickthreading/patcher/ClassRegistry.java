@@ -106,6 +106,9 @@ public class ClassRegistry {
 	}
 
 	public void add(File file, String className, byte[] byteCode) {
+		if (className.startsWith("java.")) {
+			return;
+		}
 		getAdditionalClasses(file).put(className.replace('.', '/') + ".class", byteCode);
 	}
 
@@ -175,6 +178,7 @@ public class ClassRegistry {
 				String patchHash = String.valueOf(expectedPatchHashes.get(zipFile));
 				zout.write(patchHash.getBytes("UTF-8"));
 				Log.info("Patched " + replacements.size() + " classes in " + zipFile.getName() + ", patchHash: " + patchHash);
+				Log.info("Added " + additionalClasses.size() + " classes required by patches.");
 				zin.close();
 				zout.close();
 				tempFile.delete();

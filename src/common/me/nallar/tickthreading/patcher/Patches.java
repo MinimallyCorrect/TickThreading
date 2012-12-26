@@ -10,7 +10,9 @@ import javassist.ClassMap;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtConstructor;
+import javassist.CtField;
 import javassist.CtMethod;
+import javassist.CtNewMethod;
 import javassist.Modifier;
 import javassist.NotFoundException;
 import javassist.expr.Cast;
@@ -70,6 +72,35 @@ public class Patches {
 			ctConstructor.insertAfter(initialise);
 		}
 		classRegistry.add(classRegistry.getLocation(ctClass.getName()), clazz, ClassPool.getDefault().getCtClass(clazz).toBytecode());
+	}
+
+	@Patch (
+			requiredAttributes = "field,class"
+	)
+	public void newField(CtClass ctClass, Map<String, String> attributes) throws NotFoundException, CannotCompileException, IOException {
+		String field = attributes.get("field");
+		String clazz = attributes.get("class");
+		String initialise = attributes.get("code");
+		if (initialise.isEmpty()) {
+			initialise = "new " + clazz + "();";
+		}
+		CtClass newType = classRegistry.getClass(clazz);
+		CtField ctField = new CtField(newType, field, ctClass);
+		CtField.Initializer initializer = CtField.Initializer.byExpr(initialise);
+		ctClass.addField(ctField, initializer);
+		classRegistry.add(classRegistry.getLocation(ctClass.getName()), clazz, ClassPool.getDefault().getCtClass(clazz).toBytecode());
+	}
+
+	@Patch (
+			requiredAttributes = "field"
+	)
+	public void lock(CtMethod ctMethod, Map<String, String> attributes) throws NotFoundException, CannotCompileException, IOException {
+		String field = attributes.get("field");
+		CtClass ctClass = ctMethod.getDeclaringClass();
+		CtMethod replacement = CtNewMethod.copy(ctMethod, ctClass, null);
+		ctMethod.setName(ctMethod.getName() + "_nolock");
+		replacement.setBody("{ " + field + ".lock(); try { return $proceed($$); } finally { " + field + ".unlock(); } }");
+		ctClass.addMethod(replacement);
 	}
 
 	@Patch

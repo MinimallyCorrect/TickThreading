@@ -1,22 +1,30 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <mods>
 	<minecraftCommon>
-		<class id="net.minecraft.src.WorldServer">
+		<class id="net.minecraft.world.WorldServer">
 			<!-- Fixes an issue where the tickNextTickLists would become out of sync -->
 			<synchronize>func_82740_a,scheduleBlockUpdateFromLoad,getPendingBlockUpdates</synchronize>
 		</class>
-		<class id="net.minecraft.src.Vec3Pool">
+		<class id="net.minecraft.util.Vec3Pool">
 			<!-- This prevents entities in multiple threads using the same Vec3 for collisions. -->
 			<synchronize>getVecFromPool</synchronize>
 		</class>
-		<class id="net.minecraft.src.World">
+		<class id="net.minecraft.world.World">
 			<!-- Same list was used by multiple threads -->
 			<replaceMethod fromClass="me.nallar.tickthreading.patched.PatchWorld">getEntitiesWithinAABBExcludingEntity</replaceMethod>
 			<replaceMethod fromClass="me.nallar.tickthreading.patched.PatchWorld">getCollidingBoundingBoxes</replaceMethod>
 			<public>releaseEntitySkin</public>
 		</class>
-		<class id="net.minecraft.src.EntityPlayerMP">
+		<class id="net.minecraft.entity.player.EntityPlayerMP">
+			<!-- Concurrent access during iteration = boom -->
 			<newInitializer field="destroyedItemsNetCache" class="me.nallar.tickthreading.collections.ConcurrentLinkedQueueList"/>
+		</class>
+		<class id="net.minecraft.world.chunk.Chunk">
+			<newField field="entityListReadWriteLock" class="java.util.concurrent.locks.ReentrantReadWriteLock"/>
+			<newField field="entityListWriteLock" class="java.util.concurrent.locks.Lock" code="entityListReadWriteLock.write();"/>
+			<newField field="entityListReadLock" class="java.util.concurrent.locks.Lock" code="entityListReadWriteLock.read();"/>
+			<lock field="entityListWriteLock">onChunkLoad,onChunkUnload,removeEntityAtIndex,addEntity</lock>
+			<lock field="entityListReadLock">getEntitiesWithinAABBForEntity,getEntitiesOfTypeWithinAAAB</lock>
 		</class>
 	</minecraftCommon>
 	<factorization>
