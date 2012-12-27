@@ -6,6 +6,15 @@ Optionally, allows for automatically variable tick rate per tick region.
 Copyright &copy; 2012, nallar <rallan.pcl+gt@gmail.com>
 TickThreading is licensed under the [N Open License, Version 1][License]
 
+Compatibility with other mods
+-----
+Things will break! I don't expect other mod developers to try to make things threadsafe, the patcher takes care of it.
+
+What you can't do:
+
+* Access the loadedTileEntityList. It just won't work, and if you grab its iterator everything tick. I may try write compatibility for this later.
+* Call removeAll on loadedEntityList without also setting its tickAccess field to false after, else .size() will return 0 for the next call to it.
+
 Source
 ------
 The latest and greatest source of TickThreading can be found right here.  
