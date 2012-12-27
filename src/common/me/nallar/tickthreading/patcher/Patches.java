@@ -16,6 +16,7 @@ import javassist.CtMethod;
 import javassist.CtNewMethod;
 import javassist.Modifier;
 import javassist.NotFoundException;
+import javassist.bytecode.BadBytecode;
 import javassist.expr.Cast;
 import javassist.expr.ConstructorCall;
 import javassist.expr.ExprEditor;
@@ -124,6 +125,23 @@ public class Patches {
 		} else {
 			method.setModifiers(currentModifiers | Modifier.SYNCHRONIZED);
 		}
+	}
+
+	@Patch
+	public void ignoreExceptions(CtMethod ctMethod, Map<String, String> attributes) throws CannotCompileException, NotFoundException {
+		String returnCode = attributes.get("code");
+		if (returnCode == null) {
+			returnCode = "return;";
+		}
+		ctMethod.addCatch("{ " + returnCode + "}", classRegistry.getClass("java.lang.Exception"));
+	}
+
+	@Patch (
+			requiredAttributes = "code"
+	)
+	public void replaceBody(CtMethod ctMethod, Map<String, String> attributes) throws CannotCompileException, BadBytecode {
+		String body = attributes.get("code");
+		ctMethod.setBody(body);
 	}
 
 	@Patch

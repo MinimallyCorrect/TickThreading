@@ -52,6 +52,7 @@ public class PatchMain {
 	}
 
 	public static void patcher(String[] args) {
+		boolean forcePatching = args.length >= 2 && args[1].equalsIgnoreCase("force");
 		PatchManager patchManager;
 		try {
 			patchManager = new PatchManager(PatchMain.class.getResourceAsStream("/patches.xml"), Patches.class);
@@ -63,6 +64,7 @@ public class PatchMain {
 			File modDirectory = new File(new File("."), "mods").getAbsoluteFile();
 			File minecraftJar = new File(args[0]);
 			File[] filesToLoad = new File[]{modDirectory, minecraftJar};
+			patchManager.classRegistry.forcePatching = forcePatching;
 			patchManager.loadBackups(filesToLoad);
 			patchManager.classRegistry.loadFiles(filesToLoad);
 			patchManager.runPatches();

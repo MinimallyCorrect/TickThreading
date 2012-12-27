@@ -29,11 +29,11 @@ import javassist.ClassPool;
 import javassist.CtBehavior;
 import javassist.CtClass;
 import javassist.NotFoundException;
+import javassist.bytecode.MethodInfo;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.util.EnumerableWrapper;
 
 public class ClassRegistry {
-	private static final byte[] BUFFER = new byte[1024 * 1024];
 	private static final String hashFileName = "TickThreading.hash";
 	private final Map<String, File> classNameToLocation = new HashMap<String, File>();
 	private final Map<File, Integer> locationToPatchHash = new HashMap<File, Integer>();
@@ -45,8 +45,10 @@ public class ClassRegistry {
 	private final Map<String, byte[]> replacementFiles = new HashMap<String, byte[]>();
 	private final ClassPool classes = new ClassPool(false);
 	public boolean disableJavassistLoading = false;
+	public boolean forcePatching = false;
 
 	{
+		MethodInfo.doPreverify = true;
 		classes.appendSystemPath();
 	}
 
@@ -191,13 +193,14 @@ public class ClassRegistry {
 				Map<String, byte[]> additionalClasses = getAdditionalClasses(zipFile);
 				ZipEntry zipEntry;
 				while ((zipEntry = zin.getNextEntry()) != null) {
-					if (zipEntry.getName().equals(hashFileName) || additionalClasses.containsKey(zipEntry.getName())) {
+					String entryName = zipEntry.getName();
+					if (entryName.equals(hashFileName) || additionalClasses.containsKey(entryName) || (entryName.startsWith("META-INF") && !entryName.contains("MANIFEST.mf"))) {
 						// Skip
-					} else if (replacementFiles.containsKey(zipEntry.getName())) {
-						replacements.add(zipEntry.getName());
+					} else if (replacementFiles.containsKey(entryName)) {
+						replacements.add(entryName);
 					} else {
 						// TODO: Ignore meta-inf?
-						zout.putNextEntry(isJar(zipFile) ? new JarEntry(zipEntry.getName()) : new ZipEntry(zipEntry.getName()));
+						zout.putNextEntry(isJar(zipFile) ? new JarEntry(entryName) : new ZipEntry(entryName));
 						ByteStreams.copy(zin, zout);
 					}
 				}
@@ -257,7 +260,7 @@ public class ClassRegistry {
 	}
 
 	public boolean shouldPatch(File file) {
-		return !(expectedPatchHashes.get(file).equals(locationToPatchHash.get(file)));
+		return forcePatching || !(expectedPatchHashes.get(file).equals(locationToPatchHash.get(file)));
 	}
 
 	public boolean shouldPatch() {
@@ -276,7 +279,7 @@ public class ClassRegistry {
 			if (actualHash == null) {
 				continue;
 			}
-			if (!actualHash.equals(expectedHash)) {
+			if (forcePatching || !actualHash.equals(expectedHash)) {
 				file.delete();
 				try {
 					Files.copy(new File(backupDirectory, file.getName()), file);

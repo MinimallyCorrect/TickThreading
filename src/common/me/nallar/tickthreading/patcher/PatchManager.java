@@ -16,6 +16,7 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -221,7 +222,11 @@ public class PatchManager {
 
 		public PatchMethodDescriptor(Method method, Patch patch) {
 			this.name = patch.name();
-			this.requiredAttributes = ListUtil.split(patch.requiredAttributes());
+			if (Arrays.asList(method.getParameterTypes()).contains(Map.class)) {
+				this.requiredAttributes = ListUtil.split(patch.requiredAttributes());
+			} else {
+				this.requiredAttributes = null;
+			}
 			if (this.name == null || this.name.isEmpty()) {
 				this.name = method.getName();
 			}
@@ -231,7 +236,7 @@ public class PatchManager {
 		public void run(Element patchElement, CtClass ctClass) {
 			Log.fine("Patching " + ctClass.getName() + " with " + this.name);
 			Map<String, String> attributes = getAttributes(patchElement);
-			if (!attributes.keySet().containsAll(requiredAttributes)) {
+			if (requiredAttributes != null && !attributes.keySet().containsAll(requiredAttributes)) {
 				Log.severe("Missing required attributes " + requiredAttributes.toString() + " when patching " + ctClass.getName());
 				return;
 			}
@@ -252,7 +257,7 @@ public class PatchManager {
 
 		private void run(CtClass clazz, Map<String, String> attributes) {
 			try {
-				if (requiredAttributes.size() == 0) {
+				if (requiredAttributes == null) {
 					patchMethod.invoke(patchTypes, clazz);
 				} else {
 					patchMethod.invoke(patchTypes, clazz, attributes);
@@ -267,7 +272,7 @@ public class PatchManager {
 
 		private void run(CtMethod method, Map<String, String> attributes) {
 			try {
-				if (requiredAttributes.size() == 0) {
+				if (requiredAttributes == null) {
 					patchMethod.invoke(patchTypes, method);
 				} else {
 					patchMethod.invoke(patchTypes, method, attributes);
