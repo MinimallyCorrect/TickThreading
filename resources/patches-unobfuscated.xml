@@ -21,8 +21,8 @@
 		</class>
 		<class id="net.minecraft.world.chunk.Chunk">
 			<newField field="entityListReadWriteLock" class="java.util.concurrent.locks.ReentrantReadWriteLock"/>
-			<newField field="entityListWriteLock" class="java.util.concurrent.locks.Lock" code="entityListReadWriteLock.write();"/>
-			<newField field="entityListReadLock" class="java.util.concurrent.locks.Lock" code="entityListReadWriteLock.read();"/>
+			<newField field="entityListWriteLock" class="java.util.concurrent.locks.Lock" code="this.entityListReadWriteLock.writeLock();"/>
+			<newField field="entityListReadLock" class="java.util.concurrent.locks.Lock" code="this.entityListReadWriteLock.readLock();"/>
 			<lock field="entityListWriteLock">onChunkLoad,onChunkUnload,removeEntityAtIndex,addEntity</lock>
 			<lock field="entityListReadLock">getEntitiesWithinAABBForEntity,getEntitiesOfTypeWithinAAAB</lock>
 		</class>

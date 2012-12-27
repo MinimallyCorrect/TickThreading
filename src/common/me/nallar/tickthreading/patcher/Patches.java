@@ -81,7 +81,7 @@ public class Patches {
 		String field = attributes.get("field");
 		String clazz = attributes.get("class");
 		String initialise = attributes.get("code");
-		if (initialise.isEmpty()) {
+		if (initialise == null) {
 			initialise = "new " + clazz + "();";
 		}
 		CtClass newType = classRegistry.getClass(clazz);
@@ -99,7 +99,7 @@ public class Patches {
 		CtClass ctClass = ctMethod.getDeclaringClass();
 		CtMethod replacement = CtNewMethod.copy(ctMethod, ctClass, null);
 		ctMethod.setName(ctMethod.getName() + "_nolock");
-		replacement.setBody("{ " + field + ".lock(); try { return $proceed($$); } finally { " + field + ".unlock(); } }");
+		replacement.setBody("{ this." + field + ".lock(); try { return " + ctMethod.getName() + "($$); } finally { this." + field + ".unlock(); } }");
 		ctClass.addMethod(replacement);
 	}
 
