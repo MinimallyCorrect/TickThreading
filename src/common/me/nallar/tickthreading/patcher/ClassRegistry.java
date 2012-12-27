@@ -50,13 +50,23 @@ public class ClassRegistry {
 		classes.appendSystemPath();
 	}
 
-	public void loadJars(File folder) throws IOException {
-		if (!folder.isDirectory()) {
-			throw new IllegalArgumentException(folder + " isn't a directory");
-		}
-		for (File file : folder.listFiles()) {
-			if (file.getName().toLowerCase().endsWith(".jar")) {
+	public void clearClassInfo() {
+		finishModifications();
+		classNameToLocation.clear();
+		additionalClasses.clear();
+		updatedFiles.clear();
+		unsafeClassNames.clear();
+		replacementFiles.clear();
+	}
+
+	public void loadFiles(File[] filesToLoad) throws IOException {
+		for (File file : filesToLoad) {
+			if (file.isDirectory()) {
+				loadFiles(file.listFiles());
+			} else if (file.getName().toLowerCase().endsWith(".jar")) {
 				loadJar(new JarFile(file));
+			} else {
+				loadZip(new ZipFile(file));
 			}
 		}
 	}
@@ -148,6 +158,7 @@ public class ClassRegistry {
 		for (ClassPath classPath : classPathSet) {
 			classes.removeClassPath(classPath);
 		}
+		classPathSet.clear();
 	}
 
 	public void save(File backupDirectory) throws IOException {
@@ -155,6 +166,7 @@ public class ClassRegistry {
 		File tempFile = null, renameFile = null;
 		ZipInputStream zin = null;
 		ZipOutputStream zout = null;
+		backupDirectory.mkdir();
 		try {
 			for (File zipFile : updatedFiles) {
 				File backupFile = new File(backupDirectory, zipFile.getName());
@@ -240,13 +252,39 @@ public class ClassRegistry {
 		}
 	}
 
+	public boolean shouldPatch(String className) {
+		return shouldPatch(classNameToLocation.get(className));
+	}
+
+	public boolean shouldPatch(File file) {
+		return !(expectedPatchHashes.get(file).equals(locationToPatchHash.get(file)));
+	}
+
 	public boolean shouldPatch() {
 		for (File file : expectedPatchHashes.keySet()) {
-			if (!(expectedPatchHashes.get(file).equals(locationToPatchHash.get(file)))) {
+			if (shouldPatch(file)) {
 				return true;
 			}
 		}
 		return false;
+	}
+
+	public void restoreBackups(File backupDirectory) {
+		for (File file : locationToPatchHash.keySet()) {
+			Integer expectedHash = expectedPatchHashes.get(file);
+			Integer actualHash = locationToPatchHash.get(file);
+			if (actualHash == null) {
+				continue;
+			}
+			if (!actualHash.equals(expectedHash)) {
+				file.delete();
+				try {
+					Files.copy(new File(backupDirectory, file.getName()), file);
+				} catch (IOException e) {
+					Log.severe("Failed to restore unpatched backup before patching.");
+				}
+			}
+		}
 	}
 
 	private static boolean isJar(File file) {

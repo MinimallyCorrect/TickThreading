@@ -55,6 +55,19 @@ public class PatchManager {
 		backupDirectory = new File(LocationUtil.directoryOf(patchClass).getParentFile(), "TickThreadingBackups");
 	}
 
+	public void loadBackups(File[] filesToLoad) {
+		try {
+			classRegistry.disableJavassistLoading = true;
+			classRegistry.loadFiles(filesToLoad);
+			classRegistry.loadPatchHashes(this);
+			classRegistry.restoreBackups(backupDirectory);
+			classRegistry.clearClassInfo();
+			classRegistry.disableJavassistLoading = false;
+		} catch (IOException e) {
+			Log.severe("Failed to load jars for backup restore");
+		}
+	}
+
 	public void loadPatches(Class<Patches> patchClass) {
 		try {
 			patchTypes = patchClass.getDeclaredConstructors()[0].newInstance(classRegistry);
@@ -121,11 +134,13 @@ public class PatchManager {
 	public static boolean shouldPatch(File serverLocation) {
 		try {
 			PatchManager patchManager = new PatchManager(PatchMain.class.getResourceAsStream("/patches.xml"), Patches.class);
-			patchManager.classRegistry.loadJars(new File(serverLocation.getParentFile(), "mods"));
+			patchManager.classRegistry.loadFiles(new File(serverLocation.getParentFile(), "mods").listFiles());
 			patchManager.classRegistry.loadJar(new JarFile(serverLocation));
 			patchManager.classRegistry.finishModifications();
 			patchManager.classRegistry.loadPatchHashes(patchManager);
-			return patchManager.classRegistry.shouldPatch();
+			boolean result = patchManager.classRegistry.shouldPatch();
+			patchManager.classRegistry.clearClassInfo();
+			return result;
 		} catch (Exception e) {
 			Log.severe("Failed to determine whether patches should run", e);
 		}
@@ -136,11 +151,16 @@ public class PatchManager {
 		List<Element> modElements = DomUtil.elementList(configDocument.getDocumentElement().getChildNodes());
 		for (Element modElement : modElements) {
 			for (Element classElement : DomUtil.getElementsByTag(modElement, "class")) {
+				String className = classElement.getAttribute("id");
+				if (!classRegistry.shouldPatch(className)) {
+					Log.info(className + " is already patched, skipping.");
+					continue;
+				}
 				CtClass ctClass;
 				try {
-					ctClass = classRegistry.getClass(classElement.getAttribute("id"));
+					ctClass = classRegistry.getClass(className);
 				} catch (NotFoundException e) {
-					Log.info("Not patching " + classElement.getAttribute("id") + ", not found or already patched.");
+					Log.info("Not patching " + className + ", not found.");
 					continue;
 				}
 				List<Element> patchElements = DomUtil.elementList(classElement.getChildNodes());
@@ -160,9 +180,9 @@ public class PatchManager {
 				}
 				if (patched) {
 					try {
-						classRegistry.update(classElement.getAttribute("id"), ctClass.toBytecode());
+						classRegistry.update(className, ctClass.toBytecode());
 					} catch (Exception e) {
-						Log.severe("Javassist failed to save " + ctClass.getName(), e);
+						Log.severe("Javassist failed to save " + className, e);
 					}
 				}
 			}

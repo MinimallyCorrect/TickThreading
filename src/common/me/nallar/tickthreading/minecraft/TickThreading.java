@@ -1,7 +1,6 @@
 package me.nallar.tickthreading.minecraft;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -9,8 +8,11 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+
+import com.google.common.io.Files;
 
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
@@ -176,17 +178,17 @@ public class TickThreading {
 
 	private void writePatchRunners() throws IOException {
 		String java = System.getProperties().getProperty("java.home") + File.separator + "bin" + File.separator + "java";
-		String TT = LocationUtil.locationOf(TickThreading.class).getAbsolutePath();
+		String CP = LocationUtil.locationOf(TickThreading.class).getAbsolutePath();
 		String MS = LocationUtil.locationOf(MinecraftServer.class).getAbsolutePath();
 
-		ZipFile zipFile = new ZipFile(new File(TT));
+		ZipFile zipFile = new ZipFile(new File(CP));
+		CP += File.pathSeparator + new File(LocationUtil.directoryOf(MinecraftServer.class), "lib/guava-12.0.1.jar").getAbsolutePath();
+
 		for (ZipEntry zipEntry : new EnumerableWrapper<ZipEntry>((Enumeration<ZipEntry>) zipFile.entries())) {
 			if (zipEntry.getName().startsWith("patchrun/") && !zipEntry.getName().endsWith("/")) {
-				String data = new java.util.Scanner(zipFile.getInputStream(zipEntry)).useDelimiter("\\A").next();
-				FileWriter fileWriter = new FileWriter(new File(getServerDirectory(), zipEntry.getName().replace("patchrun/", "")));
-				data = data.replace("%JAVA%", java).replace("%TT%", TT).replace("%MS%", MS);
-				fileWriter.write(data);
-				fileWriter.close();
+				String data = new Scanner(zipFile.getInputStream(zipEntry), "UTF-8").useDelimiter("\\A").next();
+				data = data.replace("%JAVA%", java).replace("%CP%", CP).replace("%MS%", MS).replace("\r\n", "\n");
+				Files.write(data.getBytes("UTF-8"), new File(getServerDirectory(), zipEntry.getName().replace("patchrun/", "")));
 			}
 		}
 		zipFile.close();

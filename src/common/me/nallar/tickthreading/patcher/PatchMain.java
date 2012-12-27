@@ -4,7 +4,6 @@ import javax.xml.transform.TransformerException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.jar.JarFile;
 
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.mappings.MCPMappings;
@@ -61,9 +60,11 @@ public class PatchMain {
 			return;
 		}
 		try {
-			patchManager.classRegistry.loadJars(new File(new File("."), "mods").getAbsoluteFile());
-			patchManager.classRegistry.loadJar(new JarFile(new File(args[0].trim())));
-			patchManager.classRegistry.loadPatchHashes(patchManager);
+			File modDirectory = new File(new File("."), "mods").getAbsoluteFile();
+			File minecraftJar = new File(args[0]);
+			File[] filesToLoad = new File[]{modDirectory, minecraftJar};
+			patchManager.loadBackups(filesToLoad);
+			patchManager.classRegistry.loadFiles(filesToLoad);
 			patchManager.runPatches();
 		} catch (IOException e) {
 			Log.severe("Failed to load jars", e);
