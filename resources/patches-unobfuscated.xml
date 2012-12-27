@@ -20,6 +20,7 @@
 			<newInitializer field="destroyedItemsNetCache" class="me.nallar.tickthreading.collections.ConcurrentLinkedQueueList"/>
 		</class>
 		<class id="net.minecraft.world.chunk.Chunk">
+			<!-- The entity list could be accessed from multiple threads, as usual causes problems during iteration -->
 			<newField field="entityListReadWriteLock" class="java.util.concurrent.locks.ReentrantReadWriteLock"/>
 			<newField field="entityListWriteLock" class="java.util.concurrent.locks.Lock" code="this.entityListReadWriteLock.writeLock();"/>
 			<newField field="entityListReadLock" class="java.util.concurrent.locks.Lock" code="this.entityListReadWriteLock.readLock();"/>
@@ -29,6 +30,7 @@
 	</minecraftCommon>
 	<factorization>
 		<class id="factorization.common.TileEntityWrathLamp">
+			<!-- ಠ_ಠ -->
 			<synchronize>findLightAirParent</synchronize>
 		</class>
 	</factorization>
