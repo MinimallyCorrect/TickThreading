@@ -10,12 +10,12 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
 public class MCPMappings extends Mappings {
-	Map<String, String> methodSeargeMappings = new HashMap<String, String>();
-	Map<String, String> fieldSeargeMappings = new HashMap<String, String>();
-	BiMap<ClassDescription, ClassDescription> classMappings = HashBiMap.create();
-	Map<MethodDescription, MethodDescription> methodMappings = new HashMap<MethodDescription, MethodDescription>();
-	Map<FieldDescription, FieldDescription> fieldMappings = new HashMap<FieldDescription, FieldDescription>();
-	Map<String, MethodDescription> parameterlessMethodMappings = new HashMap<String, MethodDescription>();
+	final Map<String, String> methodSeargeMappings = new HashMap<String, String>();
+	final Map<String, String> fieldSeargeMappings = new HashMap<String, String>();
+	final BiMap<ClassDescription, ClassDescription> classMappings = HashBiMap.create();
+	final Map<MethodDescription, MethodDescription> methodMappings = new HashMap<MethodDescription, MethodDescription>();
+	final Map<FieldDescription, FieldDescription> fieldMappings = new HashMap<FieldDescription, FieldDescription>();
+	final Map<String, MethodDescription> parameterlessMethodMappings = new HashMap<String, MethodDescription>();
 
 	public MethodDescription map(MethodDescription methodDescription) {
 		MethodDescription obfuscated = methodMappings.get(methodDescription);

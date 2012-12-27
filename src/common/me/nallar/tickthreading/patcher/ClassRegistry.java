@@ -22,8 +22,10 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import javassist.CannotCompileException;
 import javassist.ClassPath;
 import javassist.ClassPool;
+import javassist.CtBehavior;
 import javassist.CtClass;
 import javassist.NotFoundException;
 import me.nallar.tickthreading.Log;
@@ -32,15 +34,15 @@ import me.nallar.tickthreading.util.EnumerableWrapper;
 public class ClassRegistry {
 	private static final byte[] BUFFER = new byte[1024 * 1024];
 	private static final String hashFileName = "TickThreading.hash";
-	private Map<String, File> classNameToLocation = new HashMap<String, File>();
-	private Map<File, Integer> locationToPatchHash = new HashMap<File, Integer>();
-	private Map<File, Integer> expectedPatchHashes = new HashMap<File, Integer>();
-	private Map<File, Map<String, byte[]>> additionalClasses = new HashMap<File, Map<String, byte[]>>();
-	private Set<File> updatedFiles = new HashSet<File>();
-	private Set<String> unsafeClassNames = new HashSet<String>();
-	private Set<ClassPath> classPathSet = new HashSet<ClassPath>();
-	private Map<String, byte[]> replacementFiles = new HashMap<String, byte[]>();
-	private ClassPool classes = new ClassPool(false);
+	private final Map<String, File> classNameToLocation = new HashMap<String, File>();
+	private final Map<File, Integer> locationToPatchHash = new HashMap<File, Integer>();
+	private final Map<File, Integer> expectedPatchHashes = new HashMap<File, Integer>();
+	private final Map<File, Map<String, byte[]>> additionalClasses = new HashMap<File, Map<String, byte[]>>();
+	private final Set<File> updatedFiles = new HashSet<File>();
+	private final Set<String> unsafeClassNames = new HashSet<String>();
+	private final Set<ClassPath> classPathSet = new HashSet<ClassPath>();
+	private final Map<String, byte[]> replacementFiles = new HashMap<String, byte[]>();
+	private final ClassPool classes = new ClassPool(false);
 
 	{
 		classes.appendSystemPath();
@@ -103,6 +105,24 @@ public class ClassRegistry {
 			this.additionalClasses.put(file, additionalClasses);
 		}
 		return additionalClasses;
+	}
+
+	public void add(Object requires, String additionalClassName) throws NotFoundException, IOException, CannotCompileException {
+		if (additionalClassName.startsWith("java.")) {
+			return;
+		}
+		String requiringClassName = null;
+		if (requires instanceof CtBehavior) {
+			requiringClassName = ((CtBehavior) requires).getDeclaringClass().getName();
+		} else if (requires instanceof CtClass) {
+			requiringClassName = ((CtClass) requires).getName();
+		}
+		if (requiringClassName == null) {
+			Log.severe("Can't add " + additionalClassName + " as a class required by unknown type: " + requires.getClass().getCanonicalName());
+			return;
+		}
+		File location = classNameToLocation.get(requiringClassName);
+		add(location, additionalClassName, getClass(additionalClassName).toBytecode());
 	}
 
 	public void add(File file, String className, byte[] byteCode) {
@@ -187,7 +207,7 @@ public class ClassRegistry {
 		} catch (ZipException e) {
 			zin.close();
 			zout.close();
-			if (renameFile != null && tempFile != null) {
+			if (renameFile != null) {
 				tempFile.renameTo(renameFile);
 			}
 			throw e;

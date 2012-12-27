@@ -23,7 +23,6 @@ import net.minecraft.world.World;
 public class TickManager {
 	public final int regionSize;
 	public boolean variableTickRate;
-	private final Object tickLock = new Object();
 	private final List<TileEntity> toRemoveTileEntities = new ArrayList<TileEntity>();
 	private final List<Entity> toRemoveEntities = new ArrayList<Entity>();
 	private final List<TileEntity> toAddTileEntities = new ArrayList<TileEntity>();

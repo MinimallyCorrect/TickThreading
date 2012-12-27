@@ -8,6 +8,7 @@ import java.util.Map;
 import javassist.CannotCompileException;
 import javassist.ClassMap;
 import javassist.ClassPool;
+import javassist.CtBehavior;
 import javassist.CtClass;
 import javassist.CtConstructor;
 import javassist.CtField;
@@ -67,11 +68,11 @@ public class Patches {
 		String clazz = attributes.get("class");
 		String initialise = "{ " + field + " = new " + clazz + "(); }";
 		ctClass.getDeclaredField(field);
+		// Return value ignored - just used to cause a NotFoundException if the field doestn't exist.
 		for (CtConstructor ctConstructor : ctClass.getConstructors()) {
-			Log.info("newInitializer: Patched constructor " + ctConstructor.getLongName());
 			ctConstructor.insertAfter(initialise);
 		}
-		classRegistry.add(classRegistry.getLocation(ctClass.getName()), clazz, ClassPool.getDefault().getCtClass(clazz).toBytecode());
+		classRegistry.add(ctClass, clazz);
 	}
 
 	@Patch (
@@ -88,7 +89,19 @@ public class Patches {
 		CtField ctField = new CtField(newType, field, ctClass);
 		CtField.Initializer initializer = CtField.Initializer.byExpr(initialise);
 		ctClass.addField(ctField, initializer);
-		classRegistry.add(classRegistry.getLocation(ctClass.getName()), clazz, ClassPool.getDefault().getCtClass(clazz).toBytecode());
+		classRegistry.add(ctClass, clazz);
+	}
+
+	@Patch (
+			requiredAttributes = "code"
+	)
+	public void insertBefore(CtMethod ctMethod, Map<String, String> attributes) throws NotFoundException, CannotCompileException, IOException {
+		String clazz = attributes.get("class");
+		String code = attributes.get("code");
+		if (clazz != null) {
+			classRegistry.add(ctMethod, clazz);
+		}
+		ctMethod.insertBefore(code);
 	}
 
 	@Patch (
@@ -114,19 +127,13 @@ public class Patches {
 	}
 
 	@Patch
-	public void replaceInstantiations(CtClass clazz, Map<String, String> attributes) {
-
+	public void replaceInstantiations(Object object, Map<String, String> attributes) {
 	}
 
-	@Patch
-	public void replaceInstantiations(CtMethod method, Map<String, String> attributes) {
-
-	}
-
-	public void replaceInstantiationsImplementation(CtMethod method, final Map<String, List<String>> replacementClasses) throws CannotCompileException {
-		// TODO: Learn to use ASM, javassist isn't nice. :(
+	public void replaceInstantiationsImplementation(CtBehavior ctBehavior, final Map<String, List<String>> replacementClasses) throws CannotCompileException {
+		// TODO: Learn to use ASM, javassist isn't nice for some things. :(
 		final Map<Integer, String> newExprType = new HashMap<Integer, String>();
-		method.instrument(new ExprEditor() {
+		ctBehavior.instrument(new ExprEditor() {
 			NewExpr lastNewExpr;
 			int newPos = 0;
 
@@ -179,7 +186,7 @@ public class Patches {
 				lastNewExpr = null;
 			}
 		});
-		method.instrument(new ExprEditor() {
+		ctBehavior.instrument(new ExprEditor() {
 			int newPos = 0;
 
 			@Override

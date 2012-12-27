@@ -10,10 +10,10 @@ public class ListUtil {
 		return split(input, ",");
 	}
 
-	public static List<String> split(String input, String delimeter) {
+	public static List<String> split(String input, String delimiter) {
 		if (input == null || input.isEmpty()) {
 			return Collections.emptyList();
 		}
-		return new ArrayList<String>(Arrays.asList(input.split(delimeter)));
+		return new ArrayList<String>(Arrays.asList(input.split(delimiter)));
 	}
 }

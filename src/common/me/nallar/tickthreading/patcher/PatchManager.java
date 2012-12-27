@@ -43,7 +43,7 @@ public class PatchManager {
 	private Document configDocument;
 	private Object patchTypes;
 	// Patch name -> patch method descriptor
-	private Map<String, PatchMethodDescriptor> patches = new HashMap<String, PatchMethodDescriptor>();
+	private final Map<String, PatchMethodDescriptor> patches = new HashMap<String, PatchMethodDescriptor>();
 	public final ClassRegistry classRegistry = new ClassRegistry();
 
 	public PatchManager(InputStream configStream, Class<Patches> patchClass) throws IOException, SAXException {
@@ -192,8 +192,8 @@ public class PatchManager {
 
 	public class PatchMethodDescriptor {
 		public String name;
-		public List<String> requiredAttributes;
-		public Method patchMethod;
+		public final List<String> requiredAttributes;
+		public final Method patchMethod;
 
 		public PatchMethodDescriptor(Method method, Patch patch) {
 			this.name = patch.name();

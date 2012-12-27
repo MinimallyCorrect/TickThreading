@@ -12,7 +12,6 @@ import me.nallar.tickthreading.util.ListUtil;
 
 public class MethodDescription {
 	public final String clazz;
-	public final ClassDescription classDescription;
 	public final String returnType;
 	public final String parameters;
 	public final String name;
@@ -20,7 +19,6 @@ public class MethodDescription {
 
 	public MethodDescription(String clazz, String name, String returnType, String parameters) {
 		this.clazz = clazz;
-		this.classDescription = new ClassDescription(clazz);
 		this.returnType = returnType;
 		this.parameters = parameters;
 		this.name = name;
