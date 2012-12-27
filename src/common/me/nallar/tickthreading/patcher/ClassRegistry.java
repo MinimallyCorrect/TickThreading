@@ -43,6 +43,7 @@ public class ClassRegistry {
 	private final Set<ClassPath> classPathSet = new HashSet<ClassPath>();
 	private final Map<String, byte[]> replacementFiles = new HashMap<String, byte[]>();
 	private final ClassPool classes = new ClassPool(false);
+	public boolean disableJavassistLoading = false;
 
 	{
 		classes.appendSystemPath();
@@ -64,10 +65,19 @@ public class ClassRegistry {
 		// TODO: Remove code signing?
 	}
 
+	public ClassPath appendClassPatch(String path) throws NotFoundException {
+		if (disableJavassistLoading) {
+			return null;
+		}
+		ClassPath classPath = classes.appendClassPath(path);
+		classPathSet.add(classPath);
+		return classPath;
+	}
+
 	public void loadZip(ZipFile zip) throws IOException {
 		File file = new File(zip.getName());
 		try {
-			classPathSet.add(classes.appendClassPath(file.getAbsolutePath()));
+			appendClassPatch(file.getAbsolutePath());
 		} catch (Exception e) {
 			Log.severe("Javassist could not load " + file, e);
 		}
@@ -126,9 +136,6 @@ public class ClassRegistry {
 	}
 
 	public void add(File file, String className, byte[] byteCode) {
-		if (className.startsWith("java.")) {
-			return;
-		}
 		getAdditionalClasses(file).put(className.replace('.', '/') + ".class", byteCode);
 	}
 
@@ -205,8 +212,12 @@ public class ClassRegistry {
 				renameFile = null;
 			}
 		} catch (ZipException e) {
-			zin.close();
-			zout.close();
+			if (zin != null) {
+				zin.close();
+			}
+			if (zout != null) {
+				zout.close();
+			}
 			if (renameFile != null) {
 				tempFile.renameTo(renameFile);
 			}

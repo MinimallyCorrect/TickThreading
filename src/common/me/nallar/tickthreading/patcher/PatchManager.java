@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
@@ -234,6 +235,9 @@ public class PatchManager {
 					patchMethod.invoke(patchTypes, clazz, attributes);
 				}
 			} catch (Exception e) {
+				if (e instanceof InvocationTargetException) {
+					e = (Exception) e.getCause();
+				}
 				Log.severe("Failed to invoke class patch " + this, e);
 			}
 		}
@@ -246,6 +250,9 @@ public class PatchManager {
 					patchMethod.invoke(patchTypes, method, attributes);
 				}
 			} catch (Exception e) {
+				if (e instanceof InvocationTargetException) {
+					e = (Exception) e.getCause();
+				}
 				Log.severe("Failed to invoke method patch " + this, e);
 			}
 		}
