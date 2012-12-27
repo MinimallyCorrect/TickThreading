@@ -5,8 +5,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,6 +19,9 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+
+import com.google.common.io.ByteStreams;
+import com.google.common.io.Files;
 
 import javassist.CannotCompileException;
 import javassist.ClassPath;
@@ -91,7 +92,7 @@ public class ClassRegistry {
 				classNameToLocation.put(className, file);
 			} else if (name.equals(hashFileName)) {
 				ByteArrayOutputStream output = new ByteArrayOutputStream();
-				copy(zip.getInputStream(zipEntry), output);
+				ByteStreams.copy(zip.getInputStream(zipEntry), output);
 				int hash = Integer.valueOf(new String(output.toByteArray(), "UTF-8"));
 				locationToPatchHash.put(file, hash);
 			}
@@ -143,25 +144,22 @@ public class ClassRegistry {
 		return classNameToLocation.get(className);
 	}
 
-	public static void copy(InputStream input, OutputStream output) throws IOException {
-		for (int read = input.read(BUFFER); read > -1; read = input.read(BUFFER)) {
-			output.write(BUFFER, 0, read);
-		}
-	}
-
 	public void finishModifications() {
 		for (ClassPath classPath : classPathSet) {
 			classes.removeClassPath(classPath);
 		}
 	}
 
-	public void save() throws IOException {
+	public void save(File backupDirectory) throws IOException {
 		finishModifications();
 		File tempFile = null, renameFile = null;
 		ZipInputStream zin = null;
 		ZipOutputStream zout = null;
 		try {
 			for (File zipFile : updatedFiles) {
+				File backupFile = new File(backupDirectory, zipFile.getName());
+				backupFile.delete();
+				Files.copy(zipFile, backupFile);
 				tempFile = File.createTempFile(zipFile.getName(), null);
 				tempFile.delete();
 				if (zipFile.renameTo(tempFile)) {
@@ -188,7 +186,7 @@ public class ClassRegistry {
 					} else {
 						// TODO: Ignore meta-inf?
 						zout.putNextEntry(isJar(zipFile) ? new JarEntry(zipEntry.getName()) : new ZipEntry(zipEntry.getName()));
-						copy(zin, zout);
+						ByteStreams.copy(zin, zout);
 					}
 				}
 				for (String name : replacements) {

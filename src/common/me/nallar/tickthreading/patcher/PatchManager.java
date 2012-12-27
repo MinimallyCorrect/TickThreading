@@ -32,6 +32,7 @@ import me.nallar.tickthreading.mappings.Mappings;
 import me.nallar.tickthreading.mappings.MethodDescription;
 import me.nallar.tickthreading.util.DomUtil;
 import me.nallar.tickthreading.util.ListUtil;
+import me.nallar.tickthreading.util.LocationUtil;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -46,10 +47,12 @@ public class PatchManager {
 	// Patch name -> patch method descriptor
 	private final Map<String, PatchMethodDescriptor> patches = new HashMap<String, PatchMethodDescriptor>();
 	public final ClassRegistry classRegistry = new ClassRegistry();
+	public final File backupDirectory;
 
 	public PatchManager(InputStream configStream, Class<Patches> patchClass) throws IOException, SAXException {
 		loadPatches(patchClass);
 		configDocument = loadConfig(configStream);
+		backupDirectory = new File(LocationUtil.directoryOf(patchClass).getParentFile(), "TickThreadingBackups");
 	}
 
 	public void loadPatches(Class<Patches> patchClass) {
@@ -165,7 +168,7 @@ public class PatchManager {
 			}
 		}
 		try {
-			classRegistry.save();
+			classRegistry.save(backupDirectory);
 		} catch (IOException e) {
 			Log.severe("Failed to save patched classes", e);
 		}
