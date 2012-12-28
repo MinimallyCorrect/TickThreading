@@ -37,7 +37,7 @@
 	<liteLoader>
 		<class id="com.mumfrey.liteloader.core.HookProfiler">
 			<!-- BAAADD, LiteLoader, BAAAD. You don't take a threadsafe profiler and replace it with one which isn't. :/ -->
-			<synchronize>a()V,b()V</synchronize>
+			<synchronize>a(Ljava/lang/String;)V,b()V</synchronize>
 		</class>
 	</liteLoader>
 </mods>
