@@ -30,13 +30,22 @@ public class TickManager {
 	private final Map<Integer, TileEntityTickCallable> tileEntityCallables = new HashMap<Integer, TileEntityTickCallable>();
 	private final Map<Integer, EntityTickCallable> entityCallables = new HashMap<Integer, EntityTickCallable>();
 	private final List<TickCallable<Object>> tickCallables = new ArrayList<TickCallable<Object>>();
-	private final ThreadPoolExecutor tickExecutor = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().availableProcessors(), 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
+	private final ThreadPoolExecutor tickExecutor;
 	public final World world;
 	public final List<Entity> entityList = new ArrayList<Entity>();
 
-	public TickManager(World world, int regionSize) {
+	public TickManager(World world, int regionSize, int minThreads, int maxThreads) {
+		int cores = Runtime.getRuntime().availableProcessors();
+		minThreads = minThreads == 0 ? cores : minThreads;
+		maxThreads = maxThreads == 0 ? cores : maxThreads;
+		if (maxThreads < minThreads) {
+			int t = maxThreads;
+			maxThreads = minThreads;
+			minThreads = t;
+		}
 		this.world = world;
 		this.regionSize = regionSize;
+		tickExecutor = new ThreadPoolExecutor(minThreads, maxThreads, 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
 		tickExecutor.allowCoreThreadTimeOut(true);
 	}
 

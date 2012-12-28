@@ -4,8 +4,11 @@ import java.io.File;
 import java.net.URL;
 
 import me.nallar.tickthreading.Log;
+import net.minecraft.server.MinecraftServer;
 
-public class LocationUtil {
+public enum LocationUtil {
+	;
+
 	public static File directoryOf(Class clazz) {
 		File location = locationOf(clazz);
 		if (location.isDirectory()) {
@@ -26,5 +29,10 @@ public class LocationUtil {
 			Log.severe("", e);
 			return new File(path);
 		}
+	}
+
+	public static File getServerDirectory() {
+		File jarPath = directoryOf(MinecraftServer.class);
+		return MinecraftServer.getServer().isDedicatedServer() ? jarPath : jarPath.getParentFile();
 	}
 }

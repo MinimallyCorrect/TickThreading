@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class FieldUtil {
+public enum FieldUtil {
+	;
+
 	public static Field[] getFields(Class<?> clazz, Class<?> fieldType) {
 		List<Field> listFields = new ArrayList<Field>();
 		List<Field> fields = Arrays.asList(clazz.getDeclaredFields());

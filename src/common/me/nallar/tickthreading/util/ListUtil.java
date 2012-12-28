@@ -5,7 +5,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class ListUtil {
+public enum ListUtil {
+	;
+
 	public static List<String> split(String input) {
 		return split(input, ",");
 	}

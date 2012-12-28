@@ -63,11 +63,13 @@ public class ClassRegistry {
 
 	public void loadFiles(File[] filesToLoad) throws IOException {
 		for (File file : filesToLoad) {
+			String extension = file.getName().toLowerCase();
+			extension = extension.substring(extension.lastIndexOf('.') + 1);
 			if (file.isDirectory()) {
 				loadFiles(file.listFiles());
-			} else if (file.getName().toLowerCase().endsWith(".jar")) {
+			} else if (extension.equals("jar")) {
 				loadJar(new JarFile(file));
-			} else {
+			} else if (extension.equals("zip") || extension.equals("litemod")) {
 				loadZip(new ZipFile(file));
 			}
 		}
@@ -260,6 +262,7 @@ public class ClassRegistry {
 	}
 
 	public boolean shouldPatch(File file) {
+		Log.severe("shouldPatch: " + file);
 		return forcePatching || !(expectedPatchHashes.get(file).equals(locationToPatchHash.get(file)));
 	}
 

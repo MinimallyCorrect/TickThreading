@@ -15,7 +15,9 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-public class DomUtil {
+public enum DomUtil {
+	;
+
 	public static List<Element> getElementsByTag(Element element, String tagName) {
 		return elementList(element.getElementsByTagName(tagName));
 	}

@@ -1,18 +1,11 @@
 package me.nallar.tickthreading.minecraft;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-
-import com.google.common.io.Files;
 
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
@@ -26,9 +19,9 @@ import me.nallar.tickthreading.minecraft.entitylist.EntityList;
 import me.nallar.tickthreading.minecraft.entitylist.LoadedEntityList;
 import me.nallar.tickthreading.minecraft.entitylist.LoadedTileEntityList;
 import me.nallar.tickthreading.patcher.PatchManager;
-import me.nallar.tickthreading.util.EnumerableWrapper;
 import me.nallar.tickthreading.util.FieldUtil;
 import me.nallar.tickthreading.util.LocationUtil;
+import me.nallar.tickthreading.util.PatchUtil;
 import net.minecraft.command.ServerCommandManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
@@ -46,10 +39,13 @@ public class TickThreading {
 	private final int loadedTileEntityFieldIndex = 2;
 	private final int loadedEntityFieldIndex = 0;
 	public final boolean enabled;
+	private int minimumTickThreads = 0;
+	private int maximumTickThreads = 0;
+	private boolean enableEntityTickThreading = true;
+	private boolean enableTileEntityTickThreading = true;
 	private int regionSize = 16;
 	private boolean variableTickRate = true;
 	private boolean requirePatched = true;
-	private static File configurationDirectory;
 	final Map<World, TickManager> managers = new HashMap<World, TickManager>();
 	private static TickThreading instance;
 
@@ -57,9 +53,9 @@ public class TickThreading {
 		if (requirePatched && PatchManager.shouldPatch(LocationUtil.locationOf(MinecraftServer.class))) {
 			enabled = false;
 			try {
-				writePatchRunners();
+				PatchUtil.writePatchRunners();
 			} catch (IOException e) {
-				Log.severe("Failed to write patchrunners", e);
+				Log.severe("Failed to write patch runners", e);
 			}
 		} else {
 			enabled = true;
@@ -76,10 +72,17 @@ public class TickThreading {
 
 	@Mod.PreInit
 	public void preInit(FMLPreInitializationEvent event) {
-		configurationDirectory = event.getSuggestedConfigurationFile().getParentFile();
 		Configuration config = new Configuration(event.getSuggestedConfigurationFile());
 		config.load();
-		Property regionSizeProperty = config.get(Configuration.CATEGORY_GENERAL, "regionSize", String.valueOf(regionSize));
+		Property minimumTickThreadsProperty = config.get(Configuration.CATEGORY_GENERAL, "minimumTickThreads", minimumTickThreads);
+		minimumTickThreadsProperty.comment = "minimum number of threads to use to tick. 0 = automatic";
+		Property maximumTickThreadsProperty = config.get(Configuration.CATEGORY_GENERAL, "maximumTickThreads", maximumTickThreads);
+		maximumTickThreadsProperty.comment = "maximum number of threads to use to tick. 0 = automatic";
+		Property enableEntityTickThreadingProperty = config.get(Configuration.CATEGORY_GENERAL, "enableEntityTickThreading", enableEntityTickThreading);
+		enableEntityTickThreadingProperty.comment = "Whether entity ticks should be threaded";
+		Property enableTileEntityTickThreadingProperty = config.get(Configuration.CATEGORY_GENERAL, "enableEntityTickThreading", enableTileEntityTickThreading);
+		enableTileEntityTickThreadingProperty.comment = "Whether tile entity ticks should be threaded";
+		Property regionSizeProperty = config.get(Configuration.CATEGORY_GENERAL, "regionSize", regionSize);
 		regionSizeProperty.comment = "width/length of tick regions, specified in blocks.";
 		Property variableTickRateProperty = config.get(Configuration.CATEGORY_GENERAL, "variableRegionTickRate", variableTickRate);
 		variableTickRateProperty.comment = "Allows tick rate to vary per region so that each region uses at most 50ms on average per tick.";
@@ -91,6 +94,10 @@ public class TickThreading {
 		tpsCommandName.comment = "If the server must be patched to run with TickThreading";
 		config.save();
 
+		minimumTickThreads = minimumTickThreadsProperty.getInt(minimumTickThreads);
+		maximumTickThreads = maximumTickThreadsProperty.getInt(maximumTickThreads);
+		enableEntityTickThreading = enableEntityTickThreadingProperty.getBoolean(enableEntityTickThreading);
+		enableTileEntityTickThreading = enableTileEntityTickThreadingProperty.getBoolean(enableTileEntityTickThreading);
 		regionSize = regionSizeProperty.getInt(regionSize);
 		variableTickRate = variableTickRateProperty.getBoolean(variableTickRate);
 		TicksCommand.name = ticksCommandName.value;
@@ -113,13 +120,17 @@ public class TickThreading {
 
 	@ForgeSubscribe
 	public void onWorldLoad(WorldEvent.Load event) {
-		TickManager manager = new TickManager(event.world, regionSize);
+		TickManager manager = new TickManager(event.world, regionSize, minimumTickThreads, maximumTickThreads);
 		manager.setVariableTickRate(variableTickRate);
 		try {
-			Field loadedTileEntityField = FieldUtil.getFields(World.class, List.class)[loadedTileEntityFieldIndex];
-			Field loadedEntityField = FieldUtil.getFields(World.class, List.class)[loadedEntityFieldIndex];
-			new LoadedTileEntityList<TileEntity>(event.world, loadedTileEntityField, manager);
-			new LoadedEntityList<TileEntity>(event.world, loadedEntityField, manager);
+			if (enableTileEntityTickThreading) {
+				Field loadedTileEntityField = FieldUtil.getFields(World.class, List.class)[loadedTileEntityFieldIndex];
+				new LoadedTileEntityList<TileEntity>(event.world, loadedTileEntityField, manager);
+			}
+			if (enableEntityTickThreading) {
+				Field loadedEntityField = FieldUtil.getFields(World.class, List.class)[loadedEntityFieldIndex];
+				new LoadedEntityList<TileEntity>(event.world, loadedEntityField, manager);
+			}
 			Log.info("Threading initialised for world " + Log.name(event.world));
 			managers.put(event.world, manager);
 		} catch (Exception e) {
@@ -131,19 +142,23 @@ public class TickThreading {
 	public void onWorldUnload(WorldEvent.Unload event) {
 		managers.remove(event.world);
 		try {
-			Field loadedTileEntityField = FieldUtil.getFields(World.class, List.class)[loadedTileEntityFieldIndex];
-			Object loadedTileEntityList = loadedTileEntityField.get(event.world);
-			if (loadedTileEntityList instanceof EntityList) {
-				((EntityList) loadedTileEntityList).unload();
-			} else {
-				Log.severe("Looks like another mod broke TickThreading in world: " + Log.name(event.world));
+			if (enableTileEntityTickThreading) {
+				Field loadedTileEntityField = FieldUtil.getFields(World.class, List.class)[loadedTileEntityFieldIndex];
+				Object loadedTileEntityList = loadedTileEntityField.get(event.world);
+				if (loadedTileEntityList instanceof EntityList) {
+					((EntityList) loadedTileEntityList).unload();
+				} else {
+					Log.severe("Looks like another mod broke TickThreading in world: " + Log.name(event.world));
+				}
 			}
-			Field loadedEntityField = FieldUtil.getFields(World.class, List.class)[loadedEntityFieldIndex];
-			Object loadedEntityList = loadedEntityField.get(event.world);
-			if (loadedEntityList instanceof EntityList) {
-				((EntityList) loadedEntityList).unload();
-			} else {
-				Log.severe("Looks like another mod broke TickThreading in world: " + Log.name(event.world));
+			if (enableEntityTickThreading) {
+				Field loadedEntityField = FieldUtil.getFields(World.class, List.class)[loadedEntityFieldIndex];
+				Object loadedEntityList = loadedEntityField.get(event.world);
+				if (loadedEntityList instanceof EntityList) {
+					((EntityList) loadedEntityList).unload();
+				} else {
+					Log.severe("Looks like another mod broke TickThreading in world: " + Log.name(event.world));
+				}
 			}
 		} catch (Exception e) {
 			Log.severe("Probable memory leak, failed to unload threading for world " + Log.name(event.world), e);
@@ -160,32 +175,5 @@ public class TickThreading {
 
 	public static TickThreading instance() {
 		return instance;
-	}
-
-	public static File getServerDirectory() {
-		File jarPath = LocationUtil.directoryOf(MinecraftServer.class);
-		return MinecraftServer.getServer().isDedicatedServer() ? jarPath : jarPath.getParentFile();
-	}
-
-	public static File getDataDirectory() {
-		return configurationDirectory;
-	}
-
-	private void writePatchRunners() throws IOException {
-		String java = System.getProperties().getProperty("java.home") + File.separator + "bin" + File.separator + "java";
-		String CP = LocationUtil.locationOf(TickThreading.class).getAbsolutePath();
-		String MS = LocationUtil.locationOf(MinecraftServer.class).getAbsolutePath();
-
-		ZipFile zipFile = new ZipFile(new File(CP));
-		CP += File.pathSeparator + new File(LocationUtil.directoryOf(MinecraftServer.class), "lib/guava-12.0.1.jar").getAbsolutePath();
-
-		for (ZipEntry zipEntry : new EnumerableWrapper<ZipEntry>((Enumeration<ZipEntry>) zipFile.entries())) {
-			if (zipEntry.getName().startsWith("patchrun/") && !zipEntry.getName().endsWith("/")) {
-				String data = new Scanner(zipFile.getInputStream(zipEntry), "UTF-8").useDelimiter("\\A").next();
-				data = data.replace("%JAVA%", java).replace("%CP%", CP).replace("%MS%", MS).replace("\r\n", "\n");
-				Files.write(data.getBytes("UTF-8"), new File(getServerDirectory(), zipEntry.getName().replace("patchrun/", "")));
-			}
-		}
-		zipFile.close();
 	}
 }
