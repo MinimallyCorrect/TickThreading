@@ -54,17 +54,12 @@ public class TickThreading {
 	private static TickThreading instance;
 
 	public TickThreading() {
-		if (requirePatched) {
-			MinecraftServer.class.getProtectionDomain().getCodeSource().getLocation();
-			if (PatchManager.shouldPatch(LocationUtil.locationOf(MinecraftServer.class))) {
-				enabled = false;
-				try {
-					writePatchRunners();
-				} catch (IOException e) {
-					Log.severe("Failed to write patchrunners", e);
-				}
-			} else {
-				enabled = true;
+		if (requirePatched && PatchManager.shouldPatch(LocationUtil.locationOf(MinecraftServer.class))) {
+			enabled = false;
+			try {
+				writePatchRunners();
+			} catch (IOException e) {
+				Log.severe("Failed to write patchrunners", e);
 			}
 		} else {
 			enabled = true;

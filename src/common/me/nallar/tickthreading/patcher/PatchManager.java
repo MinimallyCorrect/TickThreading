@@ -135,7 +135,7 @@ public class PatchManager {
 	public static boolean shouldPatch(File serverLocation) {
 		try {
 			PatchManager patchManager = new PatchManager(PatchMain.class.getResourceAsStream("/patches.xml"), Patches.class);
-			patchManager.classRegistry.loadFiles(new File(serverLocation.getParentFile(), "mods").listFiles());
+			patchManager.classRegistry.loadFiles(LocationUtil.directoryOf(PatchMain.class).listFiles());
 			patchManager.classRegistry.loadJar(new JarFile(serverLocation));
 			patchManager.classRegistry.finishModifications();
 			patchManager.classRegistry.loadPatchHashes(patchManager);
