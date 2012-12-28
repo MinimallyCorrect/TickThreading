@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -61,12 +62,12 @@ public class ClassRegistry {
 		replacementFiles.clear();
 	}
 
-	public void loadFiles(File[] filesToLoad) throws IOException {
+	public void loadFiles(Iterable<File> filesToLoad) throws IOException {
 		for (File file : filesToLoad) {
 			String extension = file.getName().toLowerCase();
 			extension = extension.substring(extension.lastIndexOf('.') + 1);
 			if (file.isDirectory()) {
-				loadFiles(file.listFiles());
+				loadFiles(Arrays.asList(file.listFiles()));
 			} else if (extension.equals("jar")) {
 				loadJar(new JarFile(file));
 			} else if (extension.equals("zip") || extension.equals("litemod")) {
@@ -102,8 +103,9 @@ public class ClassRegistry {
 				String className = name.replace('/', '.').substring(0, name.lastIndexOf('.'));
 				if (classNameToLocation.containsKey(className)) {
 					unsafeClassNames.add(className);
+				} else {
+					classNameToLocation.put(className, file);
 				}
-				classNameToLocation.put(className, file);
 			} else if (name.equals(hashFileName)) {
 				ByteArrayOutputStream output = new ByteArrayOutputStream();
 				ByteStreams.copy(zip.getInputStream(zipEntry), output);
@@ -262,7 +264,6 @@ public class ClassRegistry {
 	}
 
 	public boolean shouldPatch(File file) {
-		Log.severe("shouldPatch: " + file);
 		return forcePatching || !(expectedPatchHashes.get(file).equals(locationToPatchHash.get(file)));
 	}
 

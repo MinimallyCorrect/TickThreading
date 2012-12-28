@@ -8,7 +8,7 @@ import java.util.List;
 import javassist.CtClass;
 import javassist.CtMethod;
 import me.nallar.tickthreading.Log;
-import me.nallar.tickthreading.util.ListUtil;
+import me.nallar.tickthreading.util.CollectionsUtil;
 
 public class MethodDescription {
 	public final String clazz;
@@ -130,7 +130,7 @@ public class MethodDescription {
 
 	public static List<MethodDescription> fromListString(String clazz, String methodList) {
 		ArrayList<MethodDescription> methodDescriptions = new ArrayList<MethodDescription>();
-		for (String methodString : ListUtil.split(methodList)) {
+		for (String methodString : CollectionsUtil.split(methodList)) {
 			methodDescriptions.add(fromString(clazz, methodString));
 		}
 		return methodDescriptions;

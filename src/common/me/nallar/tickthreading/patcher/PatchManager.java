@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.jar.JarFile;
 
 import javassist.CtClass;
 import javassist.CtMethod;
@@ -31,8 +30,8 @@ import me.nallar.tickthreading.mappings.ClassDescription;
 import me.nallar.tickthreading.mappings.FieldDescription;
 import me.nallar.tickthreading.mappings.Mappings;
 import me.nallar.tickthreading.mappings.MethodDescription;
+import me.nallar.tickthreading.util.CollectionsUtil;
 import me.nallar.tickthreading.util.DomUtil;
-import me.nallar.tickthreading.util.ListUtil;
 import me.nallar.tickthreading.util.LocationUtil;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -56,7 +55,7 @@ public class PatchManager {
 		backupDirectory = new File(LocationUtil.directoryOf(patchClass).getParentFile(), "TickThreadingBackups");
 	}
 
-	public void loadBackups(File[] filesToLoad) {
+	public void loadBackups(Iterable<File> filesToLoad) {
 		try {
 			classRegistry.disableJavassistLoading = true;
 			classRegistry.loadFiles(filesToLoad);
@@ -132,11 +131,10 @@ public class PatchManager {
 		return hashes;
 	}
 
-	public static boolean shouldPatch(File serverLocation) {
+	public static boolean shouldPatch(Iterable<File> files) {
 		try {
 			PatchManager patchManager = new PatchManager(PatchMain.class.getResourceAsStream("/patches.xml"), Patches.class);
-			patchManager.classRegistry.loadFiles(LocationUtil.directoryOf(PatchMain.class).listFiles());
-			patchManager.classRegistry.loadJar(new JarFile(serverLocation));
+			patchManager.classRegistry.loadFiles(files);
 			patchManager.classRegistry.finishModifications();
 			patchManager.classRegistry.loadPatchHashes(patchManager);
 			boolean result = patchManager.classRegistry.shouldPatch();
@@ -223,7 +221,7 @@ public class PatchManager {
 		public PatchMethodDescriptor(Method method, Patch patch) {
 			this.name = patch.name();
 			if (Arrays.asList(method.getParameterTypes()).contains(Map.class)) {
-				this.requiredAttributes = ListUtil.split(patch.requiredAttributes());
+				this.requiredAttributes = CollectionsUtil.split(patch.requiredAttributes());
 			} else {
 				this.requiredAttributes = null;
 			}

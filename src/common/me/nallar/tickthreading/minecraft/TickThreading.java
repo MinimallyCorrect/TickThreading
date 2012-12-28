@@ -23,7 +23,6 @@ import me.nallar.tickthreading.util.FieldUtil;
 import me.nallar.tickthreading.util.LocationUtil;
 import me.nallar.tickthreading.util.PatchUtil;
 import net.minecraft.command.ServerCommandManager;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.Configuration;
@@ -50,7 +49,7 @@ public class TickThreading {
 	private static TickThreading instance;
 
 	public TickThreading() {
-		if (requirePatched && PatchManager.shouldPatch(LocationUtil.locationOf(MinecraftServer.class))) {
+		if (requirePatched && PatchManager.shouldPatch(LocationUtil.getJarLocations())) {
 			enabled = false;
 			try {
 				PatchUtil.writePatchRunners();

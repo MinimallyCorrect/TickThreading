@@ -9,7 +9,7 @@ import javassist.CtClass;
 import javassist.CtMethod;
 import javassist.Loader;
 import me.nallar.tickthreading.patcher.Patches;
-import me.nallar.tickthreading.util.ListUtil;
+import me.nallar.tickthreading.util.CollectionsUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -18,7 +18,7 @@ public class PatcherTests {
 	@Test
 	public void testReplaceInstantiations() throws Exception {
 		Map<String, List<String>> replacementClasses = new HashMap<String, List<String>>();
-		replacementClasses.put("java.util.HashMap", ListUtil.split("java.util.concurrent.ConcurrentHashMap,me.nallar.tickthreading.collections.CHashMap"));
+		replacementClasses.put("java.util.HashMap", CollectionsUtil.split("java.util.concurrent.ConcurrentHashMap,me.nallar.tickthreading.collections.CHashMap"));
 		Patches patches = new Patches(classRegistry);
 
 		CtClass ctClass = ClassPool.getDefault().get("me.nallar.tickthreading.tests.patches.PatcherTests");

@@ -8,6 +8,7 @@ import java.util.Arrays;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.mappings.MCPMappings;
 import me.nallar.tickthreading.mappings.Mappings;
+import me.nallar.tickthreading.util.CollectionsUtil;
 import org.xml.sax.SAXException;
 
 public class PatchMain {
@@ -61,9 +62,7 @@ public class PatchMain {
 			return;
 		}
 		try {
-			File modDirectory = new File(new File("."), "mods").getAbsoluteFile();
-			File minecraftJar = new File(args[0]);
-			File[] filesToLoad = new File[]{modDirectory, minecraftJar};
+			Iterable<File> filesToLoad = (Iterable<File>) CollectionsUtil.toObjects(CollectionsUtil.split(args[0]), File.class);
 			patchManager.classRegistry.forcePatching = forcePatching;
 			patchManager.loadBackups(filesToLoad);
 			patchManager.classRegistry.loadFiles(filesToLoad);
