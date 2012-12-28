@@ -79,7 +79,7 @@ public class TickThreading {
 		maximumTickThreadsProperty.comment = "maximum number of threads to use to tick. 0 = automatic";
 		Property enableEntityTickThreadingProperty = config.get(Configuration.CATEGORY_GENERAL, "enableEntityTickThreading", enableEntityTickThreading);
 		enableEntityTickThreadingProperty.comment = "Whether entity ticks should be threaded";
-		Property enableTileEntityTickThreadingProperty = config.get(Configuration.CATEGORY_GENERAL, "enableEntityTickThreading", enableTileEntityTickThreading);
+		Property enableTileEntityTickThreadingProperty = config.get(Configuration.CATEGORY_GENERAL, "enableTileEntityTickThreading", enableTileEntityTickThreading);
 		enableTileEntityTickThreadingProperty.comment = "Whether tile entity ticks should be threaded";
 		Property regionSizeProperty = config.get(Configuration.CATEGORY_GENERAL, "regionSize", regionSize);
 		regionSizeProperty.comment = "width/length of tick regions, specified in blocks.";
@@ -90,7 +90,7 @@ public class TickThreading {
 		Property tpsCommandName = config.get(Configuration.CATEGORY_GENERAL, "tpsCommandName", TPSCommand.name);
 		tpsCommandName.comment = "Name of the command to be used for TPS reports.";
 		Property requirePatchedProperty = config.get(Configuration.CATEGORY_GENERAL, "requirePatched", requirePatched);
-		tpsCommandName.comment = "If the server must be patched to run with TickThreading";
+		requirePatchedProperty.comment = "If the server must be patched to run with TickThreading";
 		config.save();
 
 		minimumTickThreads = minimumTickThreadsProperty.getInt(minimumTickThreads);
