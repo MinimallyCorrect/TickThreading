@@ -7,7 +7,7 @@
     "version": "@MOD_VERSION@",
     "mcversion": "@MC_VERSION@",
     "url": "http://nallar.me/minecraft/",
-    "updateUrl": "",
+    "updateUrl": "http://nallar.me/buildservice/job/TickThreading/lastSuccessfulBuild/artifact/target/",
     "authors": [ "nallar" ],
     "credits": "Authored by nallar"
   }]

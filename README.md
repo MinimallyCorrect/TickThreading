@@ -12,7 +12,7 @@ Things will break! I don't expect other mod developers to try to make things thr
 
 What you can't do:
 
-* Access the loadedTileEntityList. It just won't work, and if you grab its iterator everything tick. I may try write compatibility for this later.
+* Access the loadedTileEntityList. It just won't work, and if you grab its iterator everything will be ticked. I may try to write compatibility for this later.
 * Call removeAll on loadedEntityList without also setting its tickAccess field to false after, else .size() will return 0 for the next call to it.
 
 Source

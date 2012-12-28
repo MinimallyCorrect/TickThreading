@@ -17,6 +17,7 @@ public class Log {
 			// Ignored, just means we aren't running under minecraft.
 		}
 		LOGGER.setLevel(Level.ALL);
+		LOGGER.setUseParentHandlers(true);
 	}
 
 	public static void severe(String msg) {
