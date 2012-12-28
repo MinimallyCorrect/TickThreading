@@ -72,5 +72,10 @@ public class PatchMain {
 		} catch (Exception e) {
 			Log.severe("Unhandled patching failure", e);
 		}
+		try {
+			Log.info("Done. Press enter to exit.");
+			System.console().readLine();
+		} catch (Exception ignored) {
+		}
 	}
 }

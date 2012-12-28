@@ -34,10 +34,10 @@
 			<synchronize>findLightAirParent</synchronize>
 		</class>
 	</factorization>
-	<forestry>
-		<class id="forestry.arboriculture.items.ItemGermlingGE">
-			<!-- Rendering crash fix -->
-			<ignoreExceptions code="return 2;">getIconIndex</ignoreExceptions>
+	<liteLoader>
+		<class id="com.mumfrey.liteloader.core.HookProfiler">
+			<!-- BAAADD, LiteLoader, BAAAD. You don't take a threadsafe profiler and replace it with one which isn't. :/ -->
+			<synchronize>a()V,b()V</synchronize>
 		</class>
-	</forestry>
+	</liteLoader>
 </mods>
