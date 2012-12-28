@@ -194,7 +194,7 @@ public class ClassRegistry {
 				ZipEntry zipEntry;
 				while ((zipEntry = zin.getNextEntry()) != null) {
 					String entryName = zipEntry.getName();
-					if (entryName.equals(hashFileName) || additionalClasses.containsKey(entryName) || (entryName.startsWith("META-INF") && !entryName.toLowerCase().contains("manifest.mf"))) {
+					if (entryName.equals(hashFileName) || additionalClasses.containsKey(entryName) || entryName.startsWith("META-INF")) {
 						// Skip
 					} else if (replacementFiles.containsKey(entryName)) {
 						replacements.add(entryName);
