@@ -77,6 +77,6 @@ public class Log {
 	}
 
 	public static String name(World world) {
-		return world.getWorldInfo().getWorldName() + "/" + world.provider.getDimensionName() + "/" + world.provider.field_82913_c + (world.isRemote ? "-r" : "");
+		return world.getWorldInfo().getWorldName() + "/" + world.provider.getDimensionName() + world.getProviderName() + (world.isRemote ? "-r" : "");
 	}
 }
