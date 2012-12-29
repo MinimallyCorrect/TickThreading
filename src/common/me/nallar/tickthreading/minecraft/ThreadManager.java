@@ -15,7 +15,7 @@ public class ThreadManager {
 	private final String namePrefix;
 	private final Set<Thread> workThreads = new HashSet<Thread>();
 	private final Object readyLock = new Object();
-	private final AtomicInteger waiting = new AtomicInteger(0);
+	private final AtomicInteger waiting = new AtomicInteger();
 	private final Runnable killTask = new Runnable() {
 		@Override
 		public void run() {

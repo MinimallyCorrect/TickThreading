@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import javassist.CtBehavior;
 import javassist.CtClass;
-import javassist.CtMethod;
 import javassist.NotFoundException;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.mappings.ClassDescription;
@@ -217,6 +217,7 @@ public class PatchManager {
 		public String name;
 		public final List<String> requiredAttributes;
 		public final Method patchMethod;
+		public final boolean isClassPatch;
 
 		public PatchMethodDescriptor(Method method, Patch patch) {
 			this.name = patch.name();
@@ -228,6 +229,7 @@ public class PatchManager {
 			if (this.name == null || this.name.isEmpty()) {
 				this.name = method.getName();
 			}
+			isClassPatch = method.getParameterTypes()[0].equals(CtClass.class);
 			patchMethod = method;
 		}
 
@@ -238,8 +240,10 @@ public class PatchManager {
 				Log.severe("Missing required attributes " + requiredAttributes.toString() + " when patching " + ctClass.getName());
 				return;
 			}
-			if (patchElement.getTextContent().isEmpty()) {
+			if (isClassPatch) {
 				run(ctClass, attributes);
+			} else if (patchElement.getTextContent().isEmpty()) {
+				run(ctClass.getConstructors()[0], attributes);
 			} else {
 				List<MethodDescription> methodDescriptions = MethodDescription.fromListString(ctClass.getName(), patchElement.getTextContent());
 				Log.fine("Patching methods " + methodDescriptions.toString());
@@ -253,12 +257,12 @@ public class PatchManager {
 			}
 		}
 
-		private void run(CtClass clazz, Map<String, String> attributes) {
+		private void run(CtClass ctClass, Map<String, String> attributes) {
 			try {
 				if (requiredAttributes == null) {
-					patchMethod.invoke(patchTypes, clazz);
+					patchMethod.invoke(patchTypes, ctClass);
 				} else {
-					patchMethod.invoke(patchTypes, clazz, attributes);
+					patchMethod.invoke(patchTypes, ctClass, attributes);
 				}
 			} catch (Exception e) {
 				if (e instanceof InvocationTargetException) {
@@ -268,12 +272,12 @@ public class PatchManager {
 			}
 		}
 
-		private void run(CtMethod method, Map<String, String> attributes) {
+		private void run(CtBehavior ctBehavior, Map<String, String> attributes) {
 			try {
 				if (requiredAttributes == null) {
-					patchMethod.invoke(patchTypes, method);
+					patchMethod.invoke(patchTypes, ctBehavior);
 				} else {
-					patchMethod.invoke(patchTypes, method, attributes);
+					patchMethod.invoke(patchTypes, ctBehavior, attributes);
 				}
 			} catch (Exception e) {
 				if (e instanceof InvocationTargetException) {

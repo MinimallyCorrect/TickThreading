@@ -94,13 +94,25 @@ public class Patches {
 	@Patch (
 			requiredAttributes = "code"
 	)
-	public void insertBefore(CtMethod ctMethod, Map<String, String> attributes) throws NotFoundException, CannotCompileException, IOException {
-		String clazz = attributes.get("class");
+	public void insertBefore(CtBehavior ctBehavior, Map<String, String> attributes) throws NotFoundException, CannotCompileException, IOException {
+		String field = attributes.get("field");
 		String code = attributes.get("code");
-		if (clazz != null) {
-			classRegistry.add(ctMethod, clazz);
+		if (field != null) {
+			code = code.replace("$field", field);
 		}
-		ctMethod.insertBefore(code);
+		ctBehavior.insertBefore(code);
+	}
+
+	@Patch (
+			requiredAttributes = "code"
+	)
+	public void insertAfter(CtBehavior ctBehavior, Map<String, String> attributes) throws NotFoundException, CannotCompileException, IOException {
+		String field = attributes.get("field");
+		String code = attributes.get("code");
+		if (field != null) {
+			code = code.replace("$field", field);
+		}
+		ctBehavior.insertAfter(code);
 	}
 
 	@Patch (

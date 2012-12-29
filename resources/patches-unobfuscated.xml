@@ -5,6 +5,20 @@
 			<!-- Fixes an issue where the tickNextTickLists would become out of sync -->
 			<synchronize>func_82740_a,scheduleBlockUpdateFromLoad,getPendingBlockUpdates,addBlockEvent</synchronize>
 		</class>
+		<class id="net.minecraft.world.World">
+			<!-- Same list was used by multiple threads -->
+			<replaceMethod fromClass="me.nallar.tickthreading.patched.PatchWorld">getEntitiesWithinAABBExcludingEntity</replaceMethod>
+			<replaceMethod fromClass="me.nallar.tickthreading.patched.PatchWorld">getCollidingBoundingBoxes</replaceMethod>
+			<public>releaseEntitySkin</public>
+		</class>
+		<class id="net.minecraft.world.chunk.Chunk">
+			<!-- The entity list could be accessed from multiple threads, as usual causes problems during iteration -->
+			<newField field="entityListReadWriteLock" class="java.util.concurrent.locks.ReentrantReadWriteLock"/>
+			<newField field="entityListWriteLock" class="java.util.concurrent.locks.Lock" code="this.entityListReadWriteLock.writeLock();"/>
+			<newField field="entityListReadLock" class="java.util.concurrent.locks.Lock" code="this.entityListReadWriteLock.readLock();"/>
+			<lock field="entityListWriteLock">onChunkLoad,onChunkUnload,removeEntityAtIndex,addEntity</lock>
+			<lock field="entityListReadLock">getEntitiesWithinAABBForEntity,getEntitiesOfTypeWithinAAAB</lock>
+		</class>
 		<class id="net.minecraft.util.Vec3Pool">
 			<!-- This prevents entities in multiple threads using the same Vec3 for collisions. -->
 			<synchronize>getVecFromPool</synchronize>
@@ -20,23 +34,21 @@
 			<synchronize>addOrModifyAABBInPool</synchronize>
 		</class>
 		-->
-		<class id="net.minecraft.world.World">
-			<!-- Same list was used by multiple threads -->
-			<replaceMethod fromClass="me.nallar.tickthreading.patched.PatchWorld">getEntitiesWithinAABBExcludingEntity</replaceMethod>
-			<replaceMethod fromClass="me.nallar.tickthreading.patched.PatchWorld">getCollidingBoundingBoxes</replaceMethod>
-			<public>releaseEntitySkin</public>
-		</class>
 		<class id="net.minecraft.entity.player.EntityPlayerMP">
 			<!-- Concurrent access during iteration = boom -->
 			<newInitializer field="destroyedItemsNetCache" class="me.nallar.tickthreading.collections.ConcurrentLinkedQueueList"/>
 		</class>
-		<class id="net.minecraft.world.chunk.Chunk">
-			<!-- The entity list could be accessed from multiple threads, as usual causes problems during iteration -->
-			<newField field="entityListReadWriteLock" class="java.util.concurrent.locks.ReentrantReadWriteLock"/>
-			<newField field="entityListWriteLock" class="java.util.concurrent.locks.Lock" code="this.entityListReadWriteLock.writeLock();"/>
-			<newField field="entityListReadLock" class="java.util.concurrent.locks.Lock" code="this.entityListReadWriteLock.readLock();"/>
-			<lock field="entityListWriteLock">onChunkLoad,onChunkUnload,removeEntityAtIndex,addEntity</lock>
-			<lock field="entityListReadLock">getEntitiesWithinAABBForEntity,getEntitiesOfTypeWithinAAAB</lock>
+		<class id="net.minecraft.entity.Entity">
+			<newField field="nextEntityID_" class="java.util.concurrent.atomic.AtomicInteger"/>
+			<insertAfter field="entityId" code="this.$field = this.nextEntityID_.getAndIncrement();"/>
+		</class>
+		<class id="net.minecraft.entity.EntityTracker">
+			<!-- Yet more comodification exceptions -->
+			<newField field="readWriteLock" class="java.util.concurrent.locks.ReentrantReadWriteLock"/>
+			<newField field="writeLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>
+			<newField field="readLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.readLock();"/>
+			<lock field="writeLock">addEntityToTracker(Lnet/minecraft/entity/Entity;IIZ)V,removeEntityFromAllTrackingPlayers</lock>
+			<lock field="readLock">updateTrackedEntities,removeAllTrackingPlayers,func_85172_a,addEntityToTracker(Lnet/minecraft/entity/Entity;)V</lock>
 		</class>
 		<class id="net.minecraft.village.VillageCollection">
 			<!-- Literally the most useless collection. Locking instead of voiding in case it ever does something useful in future -->
