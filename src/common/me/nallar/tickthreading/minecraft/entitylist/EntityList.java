@@ -58,8 +58,4 @@ public abstract class EntityList<T> extends ArrayList<T> {
 
 	@Override
 	public abstract boolean remove(Object o);
-
-	public void unload() {
-		manager.unload();
-	}
 }

@@ -1,13 +1,12 @@
 package me.nallar.tickthreading.minecraft.tickcallables;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import me.nallar.tickthreading.minecraft.TickManager;
 import net.minecraft.world.World;
 
-public abstract class TickCallable<T> implements Callable<T> {
+public abstract class TickCallable implements Runnable {
 	volatile Lock thisLock = new ReentrantLock();
 	volatile Lock xPlusLock = null;
 	volatile Lock xMinusLock = null;
@@ -73,13 +72,12 @@ public abstract class TickCallable<T> implements Callable<T> {
 		}
 	}
 
-	public T call() {
+	public void run() {
 		if (shouldTick()) {
 			long startTime = System.currentTimeMillis();
 			doTick();
 			averageTickTime = ((averageTickTime * 100) + (System.currentTimeMillis() - startTime)) / 101;
 		}
-		return null;
 	}
 
 	boolean shouldTick() {

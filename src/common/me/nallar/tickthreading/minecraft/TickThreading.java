@@ -38,8 +38,7 @@ public class TickThreading {
 	private final int loadedTileEntityFieldIndex = 2;
 	private final int loadedEntityFieldIndex = 0;
 	public final boolean enabled;
-	private int minimumTickThreads = 0;
-	private int maximumTickThreads = 0;
+	private int tickThreads = 0;
 	private boolean enableEntityTickThreading = true;
 	private boolean enableTileEntityTickThreading = true;
 	private int regionSize = 16;
@@ -73,10 +72,8 @@ public class TickThreading {
 	public void preInit(FMLPreInitializationEvent event) {
 		Configuration config = new Configuration(event.getSuggestedConfigurationFile());
 		config.load();
-		Property minimumTickThreadsProperty = config.get(Configuration.CATEGORY_GENERAL, "minimumTickThreads", minimumTickThreads);
-		minimumTickThreadsProperty.comment = "minimum number of threads to use to tick. 0 = automatic";
-		Property maximumTickThreadsProperty = config.get(Configuration.CATEGORY_GENERAL, "maximumTickThreads", maximumTickThreads);
-		maximumTickThreadsProperty.comment = "maximum number of threads to use to tick. 0 = automatic";
+		Property tickThreadsProperty = config.get(Configuration.CATEGORY_GENERAL, "tickThreads", tickThreads);
+		tickThreadsProperty.comment = "number of threads to use to tick. 0 = automatic (number of cores)";
 		Property enableEntityTickThreadingProperty = config.get(Configuration.CATEGORY_GENERAL, "enableEntityTickThreading", enableEntityTickThreading);
 		enableEntityTickThreadingProperty.comment = "Whether entity ticks should be threaded";
 		Property enableTileEntityTickThreadingProperty = config.get(Configuration.CATEGORY_GENERAL, "enableTileEntityTickThreading", enableTileEntityTickThreading);
@@ -93,8 +90,7 @@ public class TickThreading {
 		requirePatchedProperty.comment = "If the server must be patched to run with TickThreading";
 		config.save();
 
-		minimumTickThreads = minimumTickThreadsProperty.getInt(minimumTickThreads);
-		maximumTickThreads = maximumTickThreadsProperty.getInt(maximumTickThreads);
+		tickThreads = tickThreadsProperty.getInt(tickThreads);
 		enableEntityTickThreading = enableEntityTickThreadingProperty.getBoolean(enableEntityTickThreading);
 		enableTileEntityTickThreading = enableTileEntityTickThreadingProperty.getBoolean(enableTileEntityTickThreading);
 		regionSize = regionSizeProperty.getInt(regionSize);
@@ -119,7 +115,7 @@ public class TickThreading {
 
 	@ForgeSubscribe
 	public void onWorldLoad(WorldEvent.Load event) {
-		TickManager manager = new TickManager(event.world, regionSize, minimumTickThreads, maximumTickThreads);
+		TickManager manager = new TickManager(event.world, regionSize, tickThreads);
 		manager.setVariableTickRate(variableTickRate);
 		try {
 			if (enableTileEntityTickThreading) {
@@ -139,24 +135,21 @@ public class TickThreading {
 
 	@ForgeSubscribe
 	public void onWorldUnload(WorldEvent.Unload event) {
-		managers.remove(event.world);
 		try {
+			managers.get(event.world).unload();
+			managers.remove(event.world);
 			if (enableTileEntityTickThreading) {
 				Field loadedTileEntityField = FieldUtil.getFields(World.class, List.class)[loadedTileEntityFieldIndex];
 				Object loadedTileEntityList = loadedTileEntityField.get(event.world);
-				if (loadedTileEntityList instanceof EntityList) {
-					((EntityList) loadedTileEntityList).unload();
-				} else {
-					Log.severe("Looks like another mod broke TickThreading in world: " + Log.name(event.world));
+				if (!(loadedTileEntityList instanceof EntityList)) {
+					Log.severe("Looks like another mod broke TickThreaded tile entities in world: " + Log.name(event.world));
 				}
 			}
 			if (enableEntityTickThreading) {
 				Field loadedEntityField = FieldUtil.getFields(World.class, List.class)[loadedEntityFieldIndex];
 				Object loadedEntityList = loadedEntityField.get(event.world);
-				if (loadedEntityList instanceof EntityList) {
-					((EntityList) loadedEntityList).unload();
-				} else {
-					Log.severe("Looks like another mod broke TickThreading in world: " + Log.name(event.world));
+				if (!(loadedEntityList instanceof EntityList)) {
+					Log.severe("Looks like another mod broke TickThreaded entities in world: " + Log.name(event.world));
 				}
 			}
 		} catch (Exception e) {

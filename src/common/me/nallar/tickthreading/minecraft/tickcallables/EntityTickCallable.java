@@ -1,8 +1,8 @@
 package me.nallar.tickthreading.minecraft.tickcallables;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickManager;
@@ -10,8 +10,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunkProvider;
 
-public class EntityTickCallable<T> extends TickCallable {
-	private final List<Entity> entityList = new ArrayList<Entity>();
+public class EntityTickCallable extends TickCallable {
+	private final Set<Entity> entitySet = new LinkedHashSet<Entity>();
 
 	public EntityTickCallable(World world, TickManager manager, int regionX, int regionZ) {
 		super(world, manager, regionX, regionZ);
@@ -21,7 +21,7 @@ public class EntityTickCallable<T> extends TickCallable {
 	public void doTick() {
 		try {
 			IChunkProvider chunkProvider = world.getChunkProvider();
-			Iterator<Entity> entitiesIterator = entityList.iterator();
+			Iterator<Entity> entitiesIterator = entitySet.iterator();
 			while (entitiesIterator.hasNext()) {
 				Entity entity = entitiesIterator.next();
 				if (entity.ridingEntity != null) {
@@ -61,13 +61,11 @@ public class EntityTickCallable<T> extends TickCallable {
 	}
 
 	public void add(Entity entity) {
-		if (!entityList.contains(entity)) {
-			entityList.add(entity);
-		}
+		entitySet.add(entity);
 	}
 
 	public boolean remove(Entity entity) {
-		return entityList.remove(entity);
+		return entitySet.remove(entity);
 	}
 
 	@Override
@@ -77,6 +75,12 @@ public class EntityTickCallable<T> extends TickCallable {
 
 	@Override
 	public boolean isEmpty() {
-		return entityList.isEmpty();
+		return entitySet.isEmpty();
+	}
+
+	@Override
+	public void die() {
+		super.die();
+		entitySet.clear();
 	}
 }

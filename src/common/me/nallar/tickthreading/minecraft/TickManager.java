@@ -8,9 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.tickcallables.EntityTickCallable;
@@ -29,24 +26,15 @@ public class TickManager {
 	private final List<Entity> toAddEntities = new ArrayList<Entity>();
 	private final Map<Integer, TileEntityTickCallable> tileEntityCallables = new HashMap<Integer, TileEntityTickCallable>();
 	private final Map<Integer, EntityTickCallable> entityCallables = new HashMap<Integer, EntityTickCallable>();
-	private final List<TickCallable<Object>> tickCallables = new ArrayList<TickCallable<Object>>();
-	private final ThreadPoolExecutor tickExecutor;
+	private final List<TickCallable> tickCallables = new ArrayList<TickCallable>();
+	private final ThreadManager threadManager;
 	public final World world;
 	public final List<Entity> entityList = new ArrayList<Entity>();
 
-	public TickManager(World world, int regionSize, int minThreads, int maxThreads) {
-		int cores = Runtime.getRuntime().availableProcessors();
-		minThreads = minThreads == 0 ? cores : minThreads;
-		maxThreads = maxThreads == 0 ? cores : maxThreads;
-		if (maxThreads < minThreads) {
-			int t = maxThreads;
-			maxThreads = minThreads;
-			minThreads = t;
-		}
+	public TickManager(World world, int regionSize, int threads) {
+		threadManager = new ThreadManager(threads == 0 ? Runtime.getRuntime().availableProcessors() : threads);
 		this.world = world;
 		this.regionSize = regionSize;
-		tickExecutor = new ThreadPoolExecutor(minThreads, maxThreads, 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
-		tickExecutor.allowCoreThreadTimeOut(true);
 	}
 
 	public void setVariableTickRate(boolean variableTickRate) {
@@ -62,7 +50,7 @@ public class TickManager {
 		int hashCode = getHashCode(tileEntity);
 		TileEntityTickCallable callable = tileEntityCallables.get(hashCode);
 		if (callable == null) {
-			callable = new TileEntityTickCallable<Object>(world, this, tileEntity.xCoord / regionSize, tileEntity.zCoord / regionSize);
+			callable = new TileEntityTickCallable(world, this, tileEntity.xCoord / regionSize, tileEntity.zCoord / regionSize);
 			tileEntityCallables.put(hashCode, callable);
 			tickCallables.add(callable);
 		}
@@ -80,7 +68,7 @@ public class TickManager {
 		int hashCode = getHashCodeFromRegionCoords(regionX, regionZ);
 		EntityTickCallable callable = entityCallables.get(hashCode);
 		if (callable == null) {
-			callable = new EntityTickCallable<Object>(world, this, regionX, regionZ);
+			callable = new EntityTickCallable(world, this, regionX, regionZ);
 			entityCallables.put(hashCode, callable);
 			tickCallables.add(callable);
 		}
@@ -122,9 +110,9 @@ public class TickManager {
 			toAddTileEntities.clear();
 			toRemoveEntities.clear();
 			toRemoveTileEntities.clear();
-			Iterator<TickCallable<Object>> iterator = tickCallables.iterator();
+			Iterator<TickCallable> iterator = tickCallables.iterator();
 			while (iterator.hasNext()) {
-				TickCallable<Object> tickCallable = iterator.next();
+				TickCallable tickCallable = iterator.next();
 				if (tickCallable.isEmpty()) {
 					iterator.remove();
 					if (tickCallable instanceof EntityTickCallable) {
@@ -144,6 +132,7 @@ public class TickManager {
 
 	public synchronized void add(TileEntity tileEntity) {
 		toAddTileEntities.add(tileEntity);
+		toRemoveTileEntities.remove(tileEntity);
 	}
 
 	public synchronized void add(Entity entity) {
@@ -153,14 +142,17 @@ public class TickManager {
 				entityList.add(entity);
 			}
 		}
+		toRemoveEntities.remove(entity);
 	}
 
 	public synchronized void remove(TileEntity tileEntity) {
 		toRemoveTileEntities.add(tileEntity);
+		toAddTileEntities.remove(tileEntity);
 	}
 
 	public synchronized void remove(Entity entity) {
 		toRemoveEntities.add(entity);
+		toAddEntities.remove(entity);
 		removed(entity);
 	}
 
@@ -172,21 +164,22 @@ public class TickManager {
 	}
 
 	public void doTick() {
-		try {
-			tickExecutor.invokeAll(tickCallables);
-		} catch (InterruptedException e) {
-			Log.warning("Interrupted while ticking: ", e);
-		}
+		threadManager.run(tickCallables);
 		processChanges();
 	}
 
 	public void unload() {
-		tickExecutor.shutdown();
+		threadManager.stop();
+		for (TickCallable tickCallable : tickCallables) {
+			tickCallable.die();
+		}
+		tickCallables.clear();
+		entityList.clear();
 	}
 
 	public float getTickTime() {
 		float maxTickTime = 0;
-		for (TickCallable<Object> tickCallable : tickCallables) {
+		for (TickCallable tickCallable : tickCallables) {
 			float averageTickTime = tickCallable.getAverageTickTime();
 			if (averageTickTime > maxTickTime) {
 				maxTickTime = averageTickTime;
@@ -211,8 +204,8 @@ public class TickManager {
 		stats.append("---- Slowest tick regions ----").append("\n");
 		float averageAverageTickTime = 0;
 		float maxTickTime = 0;
-		SortedMap<Float, TickCallable<Object>> sortedTickCallables = new TreeMap<Float, TickCallable<Object>>();
-		for (TickCallable<Object> tickCallable : tickCallables) {
+		SortedMap<Float, TickCallable> sortedTickCallables = new TreeMap<Float, TickCallable>();
+		for (TickCallable tickCallable : tickCallables) {
 			float averageTickTime = tickCallable.getAverageTickTime();
 			averageAverageTickTime += averageTickTime;
 			sortedTickCallables.put(averageTickTime, tickCallable);
@@ -220,7 +213,7 @@ public class TickManager {
 				maxTickTime = averageTickTime;
 			}
 		}
-		Collection<TickCallable<Object>> var = sortedTickCallables.values();
+		Collection<TickCallable> var = sortedTickCallables.values();
 		TickCallable[] sortedTickCallablesArray = var.toArray(new TickCallable[var.size()]);
 		for (int i = sortedTickCallablesArray.length - 1; i >= sortedTickCallablesArray.length - 6; i--) {
 			if (sortedTickCallablesArray[i].getAverageTickTime() > 3) {

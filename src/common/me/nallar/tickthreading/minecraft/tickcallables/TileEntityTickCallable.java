@@ -1,8 +1,8 @@
 package me.nallar.tickthreading.minecraft.tickcallables;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickManager;
@@ -11,8 +11,8 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
 
-public class TileEntityTickCallable<T> extends TickCallable {
-	private final List<TileEntity> tileEntityList = new ArrayList<TileEntity>();
+public class TileEntityTickCallable extends TickCallable {
+	private final Set<TileEntity> tileEntitySet = new LinkedHashSet<TileEntity>();
 
 	public TileEntityTickCallable(World world, TickManager manager, int regionX, int regionY) {
 		super(world, manager, regionX, regionY);
@@ -30,7 +30,7 @@ public class TileEntityTickCallable<T> extends TickCallable {
 		boolean xPlusLocked = false;
 		boolean zMinusLocked = false;
 		boolean zPlusLocked = false;
-		Iterator<TileEntity> tileEntitiesIterator = tileEntityList.iterator();
+		Iterator<TileEntity> tileEntitiesIterator = tileEntitySet.iterator();
 		while (tileEntitiesIterator.hasNext()) {
 			TileEntity tileEntity = tileEntitiesIterator.next();
 			try {
@@ -100,13 +100,17 @@ public class TileEntityTickCallable<T> extends TickCallable {
 	}
 
 	public void add(TileEntity tileEntity) {
-		if (!tileEntityList.contains(tileEntity)) {
-			tileEntityList.add(tileEntity);
-		}
+		tileEntitySet.add(tileEntity);
 	}
 
 	public boolean remove(TileEntity tileEntity) {
-		return tileEntityList.remove(tileEntity);
+		return tileEntitySet.remove(tileEntity);
+	}
+
+	@Override
+	public void die() {
+		super.die();
+		tileEntitySet.clear();
 	}
 
 	@Override
@@ -116,6 +120,6 @@ public class TileEntityTickCallable<T> extends TickCallable {
 
 	@Override
 	public boolean isEmpty() {
-		return tileEntityList.isEmpty();
+		return tileEntitySet.isEmpty();
 	}
 }

@@ -41,12 +41,23 @@ public class LoadedEntityList<T> extends EntityList<T> {
 	}
 
 	@Override
+	public boolean containsAll(Collection<?> c) {
+		return manager.entityList.containsAll(c);
+	}
+
+	@Override
+	public boolean retainAll(Collection<?> c) {
+		return manager.entityList.retainAll(c);
+	}
+
+	@Override
+	public String toString() {
+		return manager.entityList.toString();
+	}
+
+	@Override
 	public boolean removeAll(Collection c) {
 		tickAccess = true;
-		boolean changed = false;
-		for (Object t : c) {
-			changed |= remove(t);
-		}
-		return changed;
+		return super.removeAll(c);
 	}
 }
