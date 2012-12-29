@@ -7,7 +7,6 @@ import java.util.Map;
 
 import javassist.CannotCompileException;
 import javassist.ClassMap;
-import javassist.ClassPool;
 import javassist.CtBehavior;
 import javassist.CtClass;
 import javassist.CtConstructor;
@@ -39,19 +38,18 @@ public class Patches {
 	@Patch (
 			requiredAttributes = "fromClass"
 	)
-	public void replaceMethod(CtMethod method, Map<String, String> attributes) {
+	public void replaceMethod(CtMethod method, Map<String, String> attributes) throws NotFoundException, CannotCompileException, BadBytecode {
 		String fromClass = attributes.get("fromClass");
 		String fromMethod = attributes.get("fromMethod");
-		if (fromMethod == null) {
-			fromMethod = method.getName();
-		}
-		try {
-			ClassMap classMap = new ClassMap();
-			classMap.put(fromClass, method.getDeclaringClass().getName());
-			method.setBody(ClassPool.getDefault().getMethod(fromClass, fromMethod), classMap);
-		} catch (Exception e) {
-			Log.severe("Failed to replace " + new MethodDescription(method).getMCPName() + " with " + fromMethod, e);
-		}
+		CtMethod replacingMethod = fromMethod == null ?
+				classRegistry.getClass(fromClass).getDeclaredMethod(method.getName(), method.getParameterTypes())
+				: MethodDescription.fromString(fromClass, fromMethod).inClass(classRegistry.getClass(fromClass));
+		Log.info("Replacing " + new MethodDescription(method).getMCPName() + " with " + new MethodDescription(replacingMethod).getMCPName());
+		ClassMap classMap = new ClassMap();
+		classMap.put(fromClass, method.getDeclaringClass().getName());
+		method.setBody(replacingMethod, classMap);
+		method.getMethodInfo().rebuildStackMap(classRegistry.classes);
+		method.getMethodInfo().rebuildStackMapForME(classRegistry.classes);
 	}
 
 	@Patch (

@@ -44,7 +44,7 @@ public class ClassRegistry {
 	private final Set<String> unsafeClassNames = new HashSet<String>();
 	private final Set<ClassPath> classPathSet = new HashSet<ClassPath>();
 	private final Map<String, byte[]> replacementFiles = new HashMap<String, byte[]>();
-	private final ClassPool classes = new ClassPool(false);
+	public final ClassPool classes = new ClassPool(false);
 	public boolean disableJavassistLoading = false;
 	public boolean forcePatching = false;
 
