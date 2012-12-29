@@ -12,6 +12,7 @@ import me.nallar.tickthreading.Log;
 
 public class ThreadManager {
 	private final BlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<Runnable>();
+	private final String namePrefix;
 	private final Set<Thread> workThreads = new HashSet<Thread>();
 	private final Object readyLock = new Object();
 	private final AtomicInteger waiting = new AtomicInteger(0);
@@ -21,13 +22,18 @@ public class ThreadManager {
 		}
 	};
 
+	private void newThread(String name) {
+		Thread workThread = new WorkThread();
+		workThread.setName(name);
+		workThread.setDaemon(true);
+		workThread.start();
+		workThreads.add(workThread);
+	}
+
 	public ThreadManager(int threads, String name) {
+		namePrefix = name;
 		for (int i = 0; i < threads; i++) {
-			Thread workThread = new WorkThread();
-			workThread.setName(name + " - " + (i + 1));
-			workThread.setDaemon(true);
-			workThread.start();
-			workThreads.add(workThread);
+			newThread(namePrefix + " - " + (i + 1));
 		}
 	}
 
@@ -75,11 +81,21 @@ public class ThreadManager {
 		}
 	}
 
-	public void stop() {
-		for (Thread thread : workThreads) {
+	private void addThreads(int number) {
+		number += workThreads.size();
+		for (int i = workThreads.size() + 1; i <= number; i++) {
+			newThread(namePrefix + " - " + i);
+		}
+	}
+
+	private void killThreads(int number) {
+		for (int i = 0; i < number; i++) {
 			taskQueue.add(killTask);
 		}
-		workThreads.clear();
+	}
+
+	public void stop() {
+		killThreads(workThreads.size());
 	}
 
 	private class WorkThread extends Thread {
@@ -92,6 +108,7 @@ public class ThreadManager {
 						runnable = taskQueue.take();
 					}
 					if (runnable == killTask) {
+						workThreads.remove(this);
 						return;
 					}
 					runnable.run();
