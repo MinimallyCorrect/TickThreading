@@ -9,6 +9,17 @@
 			<!-- This prevents entities in multiple threads using the same Vec3 for collisions. -->
 			<synchronize>getVecFromPool</synchronize>
 		</class>
+		<class id="net.minecraft.util.AxisAlignedBB">
+			<!-- Improves performance -->
+			<replaceMethod fromClass="me.nallar.tickthreading.patched.PatchAxisAlignedBB">intersectsWith</replaceMethod>
+		</class>
+		<!--
+		<class id="net.minecraft.util.AABBPool">
+			Prevent multiple threads accessing the same AABB
+			Probably not necessary due to pool, unless MC devs messed up.
+			<synchronize>addOrModifyAABBInPool</synchronize>
+		</class>
+		-->
 		<class id="net.minecraft.world.World">
 			<!-- Same list was used by multiple threads -->
 			<replaceMethod fromClass="me.nallar.tickthreading.patched.PatchWorld">getEntitiesWithinAABBExcludingEntity</replaceMethod>

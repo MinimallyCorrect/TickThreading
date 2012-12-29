@@ -8,6 +8,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import me.nallar.tickthreading.Log;
+import net.minecraft.util.AxisAlignedBB;
 
 public class ThreadManager {
 	private final BlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<Runnable>();
@@ -56,6 +57,8 @@ public class ThreadManager {
 				while ((c = index.getAndIncrement()) < size) {
 					tasks.get(c).run();
 				}
+				// TODO: Move this?
+				AxisAlignedBB.getAABBPool().cleanPool();
 			}
 		};
 		for (int i = 0, len = workThreads.size(); i < len; i++) {
