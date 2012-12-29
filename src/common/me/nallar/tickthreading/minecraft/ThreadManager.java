@@ -1,6 +1,5 @@
 package me.nallar.tickthreading.minecraft;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -46,10 +45,11 @@ public class ThreadManager {
 		}
 	}
 
-	public void run(final List<? extends Runnable> tasks) {
+	public void runList(final List<? extends Runnable> tasks) {
 		Runnable arrayRunnable = new Runnable() {
 			private final AtomicInteger index = new AtomicInteger(0);
 			private final int size = tasks.size();
+
 			@Override
 			public void run() {
 				int c;
@@ -58,13 +58,17 @@ public class ThreadManager {
 				}
 			}
 		};
+		Log.info("Waiting " + waiting.get());
+		Log.info("Starting array tasks" + workThreads.size());
 		for (int i = 0, len = workThreads.size(); i < len; i++) {
 			runBackground(arrayRunnable);
 		}
+		Log.info("Waiting" + waiting.get());
 		waitForCompletion();
+		Log.info("Done!");
 	}
 
-	public void run(Collection<? extends Runnable> tasks) {
+	public void run(Iterable<? extends Runnable> tasks) {
 		for (Runnable runnable : tasks) {
 			runBackground(runnable);
 		}
@@ -102,9 +106,11 @@ public class ThreadManager {
 			while (true) {
 				try {
 					Runnable runnable;
+					Log.info(getName() + " waiting for runnable.");
 					synchronized (taskQueue) {
 						runnable = taskQueue.take();
 					}
+					Log.info("got " + runnable);
 					if (runnable == killTask) {
 						workThreads.remove(this);
 						return;

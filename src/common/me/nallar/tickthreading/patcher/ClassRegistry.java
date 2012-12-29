@@ -198,7 +198,7 @@ public class ClassRegistry {
 				ZipEntry zipEntry;
 				while ((zipEntry = zin.getNextEntry()) != null) {
 					String entryName = zipEntry.getName();
-					if (entryName.equals(hashFileName) || additionalClasses.containsKey(entryName) || entryName.startsWith("META-INF")) {
+					if (entryName.equals(hashFileName) || additionalClasses.containsKey(entryName) || (entryName.startsWith("META-INF") && !entryName.endsWith("MANIFEST.MF"))) {
 						// Skip
 					} else if (replacementFiles.containsKey(entryName)) {
 						replacements.add(entryName);
@@ -264,7 +264,7 @@ public class ClassRegistry {
 	}
 
 	public boolean shouldPatch(File file) {
-		return forcePatching || !(expectedPatchHashes.get(file).equals(locationToPatchHash.get(file)));
+		return forcePatching || file == null || !(expectedPatchHashes.get(file).equals(locationToPatchHash.get(file)));
 	}
 
 	public boolean shouldPatch() {
