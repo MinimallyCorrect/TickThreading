@@ -209,6 +209,7 @@ public class TickManager {
 		StringBuilder stats = new StringBuilder();
 		stats.append("World: ").append(Log.name(world)).append("\n");
 		stats.append("---- Slowest tick regions ----").append("\n");
+		// TODO: Rewrite this
 		float averageAverageTickTime = 0;
 		float maxTickTime = 0;
 		SortedMap<Float, TickCallable> sortedTickCallables = new TreeMap<Float, TickCallable>();
@@ -223,7 +224,7 @@ public class TickManager {
 		Collection<TickCallable> var = sortedTickCallables.values();
 		TickCallable[] sortedTickCallablesArray = var.toArray(new TickCallable[var.size()]);
 		for (int i = sortedTickCallablesArray.length - 1; i >= sortedTickCallablesArray.length - 6; i--) {
-			if (sortedTickCallablesArray[i].getAverageTickTime() > 3) {
+			if (i >= 0 && sortedTickCallablesArray[i].getAverageTickTime() > 3) {
 				stats.append(sortedTickCallablesArray[i].getStats()).append("\n");
 			}
 		}
