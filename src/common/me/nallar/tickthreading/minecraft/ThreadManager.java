@@ -32,9 +32,7 @@ public class ThreadManager {
 
 	public ThreadManager(int threads, String name) {
 		namePrefix = name;
-		for (int i = 0; i < threads; i++) {
-			newThread(namePrefix + " - " + (i + 1));
-		}
+		addThreads(threads);
 	}
 
 	public void waitForCompletion() {
