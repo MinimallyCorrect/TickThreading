@@ -39,20 +39,20 @@
 			<newInitializer field="destroyedItemsNetCache" class="me.nallar.tickthreading.collections.ConcurrentLinkedQueueList"/>
 		</class>
 		<class id="net.minecraft.entity.Entity">
-			<newField field="nextEntityID_" class="java.util.concurrent.atomic.AtomicInteger"/>
+			<newField static="" field="nextEntityID_" class="java.util.concurrent.atomic.AtomicInteger"/>
 			<insertAfter field="entityId" code="this.$field = this.nextEntityID_.getAndIncrement();"/>
 		</class>
 		<class id="net.minecraft.entity.EntityTracker">
 			<!-- Yet more comodification exceptions -->
-			<newField field="readWriteLock" class="java.util.concurrent.locks.ReentrantReadWriteLock"/>
+			<newField field="readWriteLock" class="me.nallar.tickthreading.util.TwoWayReentrantReadWriteLock"/>
 			<newField field="writeLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>
 			<newField field="readLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.readLock();"/>
-			<lock field="writeLock">addEntityToTracker(Lnet/minecraft/entity/Entity;IIZ)V,removeEntityFromAllTrackingPlayers</lock>
-			<lock field="readLock">updateTrackedEntities,removeAllTrackingPlayers,func_85172_a,addEntityToTracker(Lnet/minecraft/entity/Entity;)V</lock>
+			<lock field="writeLock">addEntityToTracker(Lnet/minecraft/entity/Entity;)V,addEntityToTracker(Lnet/minecraft/entity/Entity;IIZ)V,removeEntityFromAllTrackingPlayers</lock>
+			<lock field="readLock">updateTrackedEntities,removeAllTrackingPlayers,func_85172_a</lock>
 		</class>
 		<class id="net.minecraft.village.VillageCollection">
 			<!-- Literally the most useless collection. Locking instead of voiding in case it ever does something useful in future -->
-			<newField field="readWriteLock" class="java.util.concurrent.locks.ReentrantReadWriteLock"/>
+			<newField field="readWriteLock" class="me.nallar.tickthreading.util.TwoWayReentrantReadWriteLock"/>
 			<newField field="writeLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>
 			<newField field="readLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.readLock();"/>
 			<lock field="writeLock">addVillagerPosition</lock>

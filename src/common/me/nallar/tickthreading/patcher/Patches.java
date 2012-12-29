@@ -86,6 +86,9 @@ public class Patches {
 		}
 		CtClass newType = classRegistry.getClass(clazz);
 		CtField ctField = new CtField(newType, field, ctClass);
+		if (attributes.get("static") != null) {
+			ctField.setModifiers(ctField.getModifiers() | Modifier.STATIC | Modifier.PUBLIC);
+		}
 		CtField.Initializer initializer = CtField.Initializer.byExpr(initialise);
 		ctClass.addField(ctField, initializer);
 		classRegistry.add(ctClass, clazz);
