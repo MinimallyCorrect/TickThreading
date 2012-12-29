@@ -58,14 +58,10 @@ public class ThreadManager {
 				}
 			}
 		};
-		Log.info("Waiting " + waiting.get());
-		Log.info("Starting array tasks" + workThreads.size());
 		for (int i = 0, len = workThreads.size(); i < len; i++) {
 			runBackground(arrayRunnable);
 		}
-		Log.info("Waiting" + waiting.get());
 		waitForCompletion();
-		Log.info("Done!");
 	}
 
 	public void run(Iterable<? extends Runnable> tasks) {
@@ -106,11 +102,9 @@ public class ThreadManager {
 			while (true) {
 				try {
 					Runnable runnable;
-					Log.info(getName() + " waiting for runnable.");
 					synchronized (taskQueue) {
 						runnable = taskQueue.take();
 					}
-					Log.info("got " + runnable);
 					if (runnable == killTask) {
 						workThreads.remove(this);
 						return;
