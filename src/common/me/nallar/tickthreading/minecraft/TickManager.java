@@ -28,11 +28,12 @@ public class TickManager {
 	private final Map<Integer, EntityTickCallable> entityCallables = new HashMap<Integer, EntityTickCallable>();
 	private final List<TickCallable> tickCallables = new ArrayList<TickCallable>();
 	private final ThreadManager threadManager;
+	private final Object processChangesLock = new Object();
 	public final World world;
 	public final List<Entity> entityList = new ArrayList<Entity>();
 
 	public TickManager(World world, int regionSize, int threads) {
-		threadManager = new ThreadManager(threads == 0 ? Runtime.getRuntime().availableProcessors() : threads);
+		threadManager = new ThreadManager(threads == 0 ? Runtime.getRuntime().availableProcessors() : threads, "Tick Thread for " + Log.name(world));
 		this.world = world;
 		this.regionSize = regionSize;
 	}
@@ -92,7 +93,7 @@ public class TickManager {
 		return x + (z << 16);
 	}
 
-	private synchronized void processChanges() {
+	private void processChanges() {
 		try {
 			for (TileEntity tileEntity : toAddTileEntities) {
 				getOrCreateCallable(tileEntity).add(tileEntity);
@@ -121,8 +122,6 @@ public class TickManager {
 						tileEntityCallables.remove(tickCallable.hashCode);
 					}
 					tickCallable.die();
-				} else {
-					tickCallable.processChanges();
 				}
 			}
 		} catch (Exception e) {
@@ -164,8 +163,17 @@ public class TickManager {
 	}
 
 	public void doTick() {
-		threadManager.run(tickCallables);
-		processChanges();
+		synchronized (processChangesLock) {
+			threadManager.run(tickCallables);
+		}
+		threadManager.runBackground(new Runnable() {
+			@Override
+			public void run() {
+				synchronized (processChangesLock) {
+					processChanges();
+				}
+			}
+		});
 	}
 
 	public void unload() {

@@ -86,14 +86,6 @@ public abstract class TickCallable implements Runnable {
 
 	protected abstract void doTick();
 
-	/**
-	 * Called in processChanges thread, to be used for data processing
-	 * and anything else which is not part of a tick
-	 */
-	public void processChanges() {
-
-	}
-
 	public float getAverageTickTime() {
 		return averageTickTime;
 	}
