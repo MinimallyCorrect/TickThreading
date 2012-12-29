@@ -13,7 +13,7 @@ public class ThreadManager {
 	private final BlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<Runnable>();
 	private final Set<Thread> workThreads = new HashSet<Thread>();
 	private final Object readyLock = new Object();
-	private final AtomicInteger completed = new AtomicInteger(0);
+	private final AtomicInteger waiting = new AtomicInteger(0);
 
 	public ThreadManager(int threads, String name) {
 		for (int i = 0; i < threads; i++) {
@@ -25,10 +25,8 @@ public class ThreadManager {
 		}
 	}
 
-	public void run(Collection<? extends Runnable> tasks) {
-		completed.addAndGet(-tasks.size());
-		taskQueue.addAll(tasks);
-		while (completed.get() < 0) {
+	public void waitForCompletion() {
+		while (waiting.get() > 0) {
 			try {
 				synchronized (readyLock) {
 					readyLock.wait(0, 100);
@@ -38,19 +36,22 @@ public class ThreadManager {
 		}
 	}
 
+	public void run(Collection<? extends Runnable> tasks) {
+		for (Runnable runnable : tasks) {
+			runBackground(runnable);
+		}
+		waitForCompletion();
+	}
+
 	public void runBackground(Runnable runnable) {
-		completed.decrementAndGet();
-		taskQueue.add(runnable);
+		if (taskQueue.add(runnable)) {
+			waiting.incrementAndGet();
+		} else {
+			Log.severe("Failed to add " + runnable);
+		}
 	}
 
 	public void stop() {
-		for (Thread thread : workThreads) {
-			taskQueue.add(null);
-		}
-		try {
-			Thread.sleep(50);
-		} catch (InterruptedException ignored) {
-		}
 		for (Thread thread : workThreads) {
 			thread.stop();
 		}
@@ -66,9 +67,6 @@ public class ThreadManager {
 					synchronized (taskQueue) {
 						runnable = taskQueue.take();
 					}
-					if (runnable == null) {
-						return;
-					}
 					runnable.run();
 				} catch (InterruptedException ignored) {
 				} catch (ThreadDeath rethrown) {
@@ -76,7 +74,7 @@ public class ThreadManager {
 				} catch (Exception e) {
 					Log.severe("Unhandled exception in worker thread", e);
 				}
-				if (completed.incrementAndGet() == 0) {
+				if (waiting.decrementAndGet() == 0) {
 					synchronized (readyLock) {
 						readyLock.notify();
 					}

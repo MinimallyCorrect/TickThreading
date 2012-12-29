@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -26,7 +28,7 @@ public class TickManager {
 	private final List<Entity> toAddEntities = new ArrayList<Entity>();
 	private final Map<Integer, TileEntityTickCallable> tileEntityCallables = new HashMap<Integer, TileEntityTickCallable>();
 	private final Map<Integer, EntityTickCallable> entityCallables = new HashMap<Integer, EntityTickCallable>();
-	private final List<TickCallable> tickCallables = new ArrayList<TickCallable>();
+	private final Set<TickCallable> tickCallables = new LinkedHashSet<TickCallable>();
 	private final ThreadManager threadManager;
 	private final Object processChangesLock = new Object();
 	public final World world;
@@ -93,7 +95,7 @@ public class TickManager {
 		return x + (z << 16);
 	}
 
-	private void processChanges() {
+	private synchronized void processChanges() {
 		try {
 			for (TileEntity tileEntity : toAddTileEntities) {
 				getOrCreateCallable(tileEntity).add(tileEntity);

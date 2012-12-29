@@ -100,11 +100,6 @@ public abstract class TickCallable implements Runnable {
 	}
 
 	@Override
-	public int hashCode() {
-		return hashCode;
-	}
-
-	@Override
 	public boolean equals(Object other) {
 		if (this == other) {
 			return true;
