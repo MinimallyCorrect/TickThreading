@@ -15,6 +15,11 @@ public class ThreadManager {
 	private final Set<Thread> workThreads = new HashSet<Thread>();
 	private final Object readyLock = new Object();
 	private final AtomicInteger waiting = new AtomicInteger(0);
+	private final Runnable killTask = new Runnable() {
+		@Override
+		public void run() {
+		}
+	};
 
 	public ThreadManager(int threads, String name) {
 		for (int i = 0; i < threads; i++) {
@@ -39,7 +44,7 @@ public class ThreadManager {
 
 	public void run(final List<? extends Runnable> tasks) {
 		Runnable arrayRunnable = new Runnable() {
-			private AtomicInteger index = new AtomicInteger(0);
+			private final AtomicInteger index = new AtomicInteger(0);
 			private final int size = tasks.size();
 			@Override
 			public void run() {
@@ -72,7 +77,7 @@ public class ThreadManager {
 
 	public void stop() {
 		for (Thread thread : workThreads) {
-			thread.stop();
+			taskQueue.add(killTask);
 		}
 		workThreads.clear();
 	}
@@ -86,10 +91,11 @@ public class ThreadManager {
 					synchronized (taskQueue) {
 						runnable = taskQueue.take();
 					}
+					if (runnable == killTask) {
+						return;
+					}
 					runnable.run();
 				} catch (InterruptedException ignored) {
-				} catch (ThreadDeath rethrown) {
-					throw rethrown;
 				} catch (Exception e) {
 					Log.severe("Unhandled exception in worker thread", e);
 				}
