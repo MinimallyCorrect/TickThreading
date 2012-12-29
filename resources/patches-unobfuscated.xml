@@ -38,6 +38,14 @@
 			<lock field="entityListWriteLock">onChunkLoad,onChunkUnload,removeEntityAtIndex,addEntity</lock>
 			<lock field="entityListReadLock">getEntitiesWithinAABBForEntity,getEntitiesOfTypeWithinAAAB</lock>
 		</class>
+		<class id="net.minecraft.village.VillageCollection">
+			<!-- Literally the most useless collection. Locking instead of voiding in case it ever does something useful in future -->
+			<newField field="readWriteLock" class="java.util.concurrent.locks.ReentrantReadWriteLock"/>
+			<newField field="writeLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>
+			<newField field="readLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.readLock();"/>
+			<lock field="writeLock">addVillagerPosition</lock>
+			<lock field="readLock">findNearestVillage,func_82566_a</lock>
+		</class>
 	</minecraftCommon>
 	<factorization>
 		<class id="factorization.common.TileEntityWrathLamp">
