@@ -2,6 +2,7 @@ package me.nallar.tickthreading.minecraft;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -34,6 +35,24 @@ public class ThreadManager {
 			} catch (InterruptedException ignored) {
 			}
 		}
+	}
+
+	public void run(final List<? extends Runnable> tasks) {
+		Runnable arrayRunnable = new Runnable() {
+			private AtomicInteger index = new AtomicInteger(0);
+			private final int size = tasks.size();
+			@Override
+			public void run() {
+				int c;
+				while ((c = index.getAndIncrement()) < size) {
+					tasks.get(c).run();
+				}
+			}
+		};
+		for (int i = 0, len = workThreads.size(); i < len; i++) {
+			runBackground(arrayRunnable);
+		}
+		waitForCompletion();
 	}
 
 	public void run(Collection<? extends Runnable> tasks) {

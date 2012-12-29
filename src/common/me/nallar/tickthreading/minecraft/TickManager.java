@@ -22,13 +22,13 @@ import net.minecraft.world.World;
 public class TickManager {
 	public final int regionSize;
 	public boolean variableTickRate;
-	private final List<TileEntity> toRemoveTileEntities = new ArrayList<TileEntity>();
-	private final List<Entity> toRemoveEntities = new ArrayList<Entity>();
-	private final List<TileEntity> toAddTileEntities = new ArrayList<TileEntity>();
-	private final List<Entity> toAddEntities = new ArrayList<Entity>();
+	private final ArrayList<TileEntity> toRemoveTileEntities = new ArrayList<TileEntity>();
+	private final ArrayList<Entity> toRemoveEntities = new ArrayList<Entity>();
+	private final ArrayList<TileEntity> toAddTileEntities = new ArrayList<TileEntity>();
+	private final ArrayList<Entity> toAddEntities = new ArrayList<Entity>();
 	private final Map<Integer, TileEntityTickCallable> tileEntityCallables = new HashMap<Integer, TileEntityTickCallable>();
 	private final Map<Integer, EntityTickCallable> entityCallables = new HashMap<Integer, EntityTickCallable>();
-	private final Set<TickCallable> tickCallables = new LinkedHashSet<TickCallable>();
+	private final ArrayList<TickCallable> tickCallables = new ArrayList<TickCallable>();
 	private final ThreadManager threadManager;
 	private final Object processChangesLock = new Object();
 	public final World world;
@@ -95,24 +95,26 @@ public class TickManager {
 		return x + (z << 16);
 	}
 
-	private synchronized void processChanges() {
+	private void processChanges() {
 		try {
-			for (TileEntity tileEntity : toAddTileEntities) {
-				getOrCreateCallable(tileEntity).add(tileEntity);
+			synchronized (this) {
+				for (TileEntity tileEntity : toRemoveTileEntities) {
+					getOrCreateCallable(tileEntity).remove(tileEntity);
+				}
+				for (TileEntity tileEntity : toAddTileEntities) {
+					getOrCreateCallable(tileEntity).add(tileEntity);
+				}
+				for (Entity entity : toRemoveEntities) {
+					getOrCreateCallable(entity).remove(entity);
+				}
+				for (Entity entity : toAddEntities) {
+					getOrCreateCallable(entity).add(entity);
+				}
+				toAddEntities.clear();
+				toAddTileEntities.clear();
+				toRemoveEntities.clear();
+				toRemoveTileEntities.clear();
 			}
-			for (TileEntity tileEntity : toRemoveTileEntities) {
-				getOrCreateCallable(tileEntity).remove(tileEntity);
-			}
-			for (Entity entity : toAddEntities) {
-				getOrCreateCallable(entity).add(entity);
-			}
-			for (Entity entity : toRemoveEntities) {
-				getOrCreateCallable(entity).remove(entity);
-			}
-			toAddEntities.clear();
-			toAddTileEntities.clear();
-			toRemoveEntities.clear();
-			toRemoveTileEntities.clear();
 			Iterator<TickCallable> iterator = tickCallables.iterator();
 			while (iterator.hasNext()) {
 				TickCallable tickCallable = iterator.next();
