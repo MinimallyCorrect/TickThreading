@@ -28,7 +28,6 @@ public class TickManager {
 	private final Map<Integer, EntityTickRegion> entityCallables = new HashMap<Integer, EntityTickRegion>();
 	private final ArrayList<TickRegion> tickRegions = new ArrayList<TickRegion>();
 	private final ThreadManager threadManager;
-	private final Object processChangesLock = new Object();
 	public final World world;
 	public final List<Entity> entityList = new ArrayList<Entity>();
 

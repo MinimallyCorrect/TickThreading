@@ -63,7 +63,7 @@ public class Patches {
 			method.setBody(replacingMethod, classMap);
 			method.getMethodInfo().rebuildStackMap(classRegistry.classes);
 			method.getMethodInfo().rebuildStackMapForME(classRegistry.classes);
-		} else if(code != null) {
+		} else if (code != null) {
 			Log.info("Replacing " + new MethodDescription(method).getMCPName() + " with " + code);
 			method.setBody(code);
 		} else {

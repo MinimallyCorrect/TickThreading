@@ -37,7 +37,8 @@ public enum LocationUtil {
 		return directoryOf(PatchMain.class).getParentFile();
 	}
 
-	public static File getModsDirectory() {
+	public
+	static File getModsDirectory() {
 		return new File(getServerDirectory(), "mods");
 	}
 
@@ -53,9 +54,5 @@ public enum LocationUtil {
 		jarLocations.add(minecraftJar);
 		jarLocations.add(getModsDirectory());
 		return jarLocations;
-	}
-
-	public static Set<String> getJarLocationSet() {
-		return (Set<String>) CollectionsUtil.stringify(getJarLocations(), new HashSet<String>());
 	}
 }

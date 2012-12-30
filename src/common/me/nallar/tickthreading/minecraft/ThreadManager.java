@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import me.nallar.tickthreading.Log;
 import net.minecraft.util.AxisAlignedBB;
 
-public class ThreadManager {
+class ThreadManager {
 	private final BlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<Runnable>();
 	private final String namePrefix;
 	private final Set<Thread> workThreads = new HashSet<Thread>();

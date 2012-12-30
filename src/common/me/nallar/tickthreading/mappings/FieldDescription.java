@@ -1,9 +1,5 @@
 package me.nallar.tickthreading.mappings;
 
-import java.lang.reflect.Field;
-
-import javassist.CtField;
-
 public class FieldDescription {
 	public final String className;
 	public final String name;
@@ -16,14 +12,6 @@ public class FieldDescription {
 
 	public FieldDescription(String MCPName) {
 		this(MCPName.substring(0, MCPName.lastIndexOf('/')).replace('/', '.'), MCPName.substring(MCPName.lastIndexOf('/') + 1));
-	}
-
-	public FieldDescription(Field field) {
-		this(field.getDeclaringClass().getName(), field.getName());
-	}
-
-	public FieldDescription(CtField ctField) {
-		this(ctField.getDeclaringClass().getName(), ctField.getName());
 	}
 
 	@Override

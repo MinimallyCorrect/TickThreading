@@ -28,9 +28,9 @@ public class PatchMain {
 		}
 	}
 
-	public static void obfuscator(String[] args) {
+	private static void obfuscator(String[] args) {
 		String mcpConfigPath = args.length > 0 ? args[0] : "build/forge/mcp/conf";
-		String inputPatchPath = args.length > 1 ? args[1] : "resources/patches-unobfuscated.xml";
+		String inputPatchPath = args.length > 1 ? args[1] : "resources/patches-deobfuscated.xml";
 		String outputPatchPath = args.length > 2 ? args[2] : "build/classes/patches.xml";
 
 		Log.info("Obfuscating " + inputPatchPath + " to " + outputPatchPath + " via " + mcpConfigPath);
@@ -52,7 +52,7 @@ public class PatchMain {
 		}
 	}
 
-	public static void patcher(String[] args) {
+	private static void patcher(String[] args) {
 		boolean forcePatching = args.length >= 2 && args[1].equalsIgnoreCase("force");
 		PatchManager patchManager;
 		try {

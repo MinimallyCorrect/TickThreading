@@ -28,5 +28,5 @@ abstract class Command extends CommandBase {
 		processCommand(commandSender, new ArrayList<String>(Arrays.asList(argumentsArray)));
 	}
 
-	public abstract void processCommand(ICommandSender commandSender, List<String> arguments);
+	protected abstract void processCommand(ICommandSender commandSender, List<String> arguments);
 }

@@ -11,20 +11,20 @@ import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.util.CollectionsUtil;
 
 public class MethodDescription {
-	public final String clazz;
-	public final String returnType;
-	public final String parameters;
-	public final String name;
+	private final String clazz;
+	private final String returnType;
+	private final String parameters;
+	private final String name;
 	private Integer cachedHashCode = null;
 
-	public MethodDescription(String clazz, String name, String returnType, String parameters) {
+	private MethodDescription(String clazz, String name, String returnType, String parameters) {
 		this.clazz = clazz;
 		this.returnType = returnType;
 		this.parameters = parameters;
 		this.name = name;
 	}
 
-	public MethodDescription(Method method) {
+	private MethodDescription(Method method) {
 		this(method.getDeclaringClass().getCanonicalName(), method.getName(), getJVMName(method.getReturnType()), getParameterList(method));
 	}
 
@@ -67,7 +67,7 @@ public class MethodDescription {
 		return this == other || (other instanceof MethodDescription && other.hashCode() == this.hashCode()) || (other instanceof Method && new MethodDescription((Method) other).equals(this));
 	}
 
-	public boolean similar(Object other) {
+	boolean similar(Object other) {
 		return this == other || (other instanceof MethodDescription && ((MethodDescription) other).getShortName().equals(this.getShortName())) || (other instanceof Method && new MethodDescription((Method) other).similar(this));
 	}
 

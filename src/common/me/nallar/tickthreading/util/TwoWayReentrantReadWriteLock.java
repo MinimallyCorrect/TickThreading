@@ -2,6 +2,7 @@ package me.nallar.tickthreading.util;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -11,11 +12,11 @@ import java.util.concurrent.locks.ReadWriteLock;
  * Derived from http://tutorials.jenkov.com/java-concurrency/read-write-locks.html#full
  */
 public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
-	private final Map<Thread, Integer> readingThreads = new HashMap<Thread, Integer>();
+	private final Map<Thread, Integer> readingThreads = new ConcurrentHashMap<Thread, Integer>();
 	private int writeAccesses = 0;
 	private int writeRequests = 0;
 	private Thread writingThread = null;
-	private Lock readLock = new SimpleLock() {
+	private final Lock readLock = new SimpleLock() {
 		@Override
 		public void lock() {
 			TwoWayReentrantReadWriteLock.this.lockRead();
@@ -26,7 +27,7 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 			TwoWayReentrantReadWriteLock.this.unlockRead();
 		}
 	};
-	private Lock writeLock = new SimpleLock() {
+	private final Lock writeLock = new SimpleLock() {
 		@Override
 		public void lock() {
 			TwoWayReentrantReadWriteLock.this.lockWrite();
@@ -50,7 +51,7 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 
 	public synchronized void lockRead() {
 		Thread callingThread = Thread.currentThread();
-		while (!canGrantReadAccess(callingThread)) {
+		while (cantGrantReadAccess(callingThread)) {
 			try {
 				wait();
 			} catch (InterruptedException ignored) {
@@ -61,13 +62,13 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 				(getReadAccessCount(callingThread) + 1));
 	}
 
-	private boolean canGrantReadAccess(Thread callingThread) {
-		return isWriter(callingThread) || !hasWriter() && (isReader(callingThread) || !hasWriteRequests());
+	private boolean cantGrantReadAccess(Thread callingThread) {
+		return isNotWriter(callingThread) && (hasWriter() || (isNotReader(callingThread) && hasWriteRequests()));
 	}
 
 	public synchronized void unlockRead() {
 		Thread callingThread = Thread.currentThread();
-		if (!isReader(callingThread)) {
+		if (isNotReader(callingThread)) {
 			throw new IllegalMonitorStateException("Calling Thread does not" +
 					" hold a read lock on this ReadWriteLock");
 		}
@@ -83,7 +84,7 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 	public synchronized void lockWrite() {
 		writeRequests++;
 		Thread callingThread = Thread.currentThread();
-		while (!canGrantWriteAccess(callingThread)) {
+		while (cantGrantWriteAccess(callingThread)) {
 			try {
 				wait();
 			} catch (InterruptedException ignored) {
@@ -95,7 +96,7 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 	}
 
 	public synchronized void unlockWrite() {
-		if (!isWriter(Thread.currentThread())) {
+		if (isNotWriter(Thread.currentThread())) {
 			throw new IllegalMonitorStateException("Calling Thread does not" +
 					" hold the write lock on this ReadWriteLock");
 		}
@@ -106,8 +107,8 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 		notifyAll();
 	}
 
-	private boolean canGrantWriteAccess(Thread callingThread) {
-		return isOnlyReader(callingThread) || !hasReaders() && (writingThread == null || isWriter(callingThread));
+	private boolean cantGrantWriteAccess(Thread callingThread) {
+		return isNotOnlyReader(callingThread) && (hasReaders() || (writingThread != null && isNotWriter(callingThread)));
 	}
 
 	private int getReadAccessCount(Thread callingThread) {
@@ -115,28 +116,28 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 		if (accessCount == null) {
 			return 0;
 		}
-		return accessCount.intValue();
+		return accessCount;
 	}
 
 	private boolean hasReaders() {
 		return readingThreads.size() > 0;
 	}
 
-	private boolean isReader(Thread callingThread) {
-		return readingThreads.get(callingThread) != null;
+	private boolean isNotReader(Thread callingThread) {
+		return readingThreads.get(callingThread) == null;
 	}
 
-	private boolean isOnlyReader(Thread callingThread) {
-		return readingThreads.size() == 1 &&
-				readingThreads.get(callingThread) != null;
+	private boolean isNotOnlyReader(Thread callingThread) {
+		return readingThreads.size() != 1 ||
+				readingThreads.get(callingThread) == null;
 	}
 
 	private boolean hasWriter() {
 		return writingThread != null;
 	}
 
-	private boolean isWriter(Thread callingThread) {
-		return writingThread == callingThread;
+	private boolean isNotWriter(Thread callingThread) {
+		return writingThread != callingThread;
 	}
 
 	private boolean hasWriteRequests() {

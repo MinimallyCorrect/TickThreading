@@ -47,7 +47,7 @@ public class PatchManager {
 	// Patch name -> patch method descriptor
 	private final Map<String, PatchMethodDescriptor> patches = new HashMap<String, PatchMethodDescriptor>();
 	public final ClassRegistry classRegistry = new ClassRegistry();
-	public final File backupDirectory;
+	private final File backupDirectory;
 
 	public PatchManager(InputStream configStream, Class<Patches> patchClass) throws IOException, SAXException {
 		loadPatches(patchClass);
@@ -68,7 +68,7 @@ public class PatchManager {
 		}
 	}
 
-	public void loadPatches(Class<Patches> patchClass) {
+	void loadPatches(Class<Patches> patchClass) {
 		try {
 			patchTypes = patchClass.getDeclaredConstructors()[0].newInstance(classRegistry);
 		} catch (Exception e) {
@@ -84,7 +84,7 @@ public class PatchManager {
 		}
 	}
 
-	public static Document loadConfig(InputStream configInputStream) throws IOException, SAXException {
+	private static Document loadConfig(InputStream configInputStream) throws IOException, SAXException {
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 		try {
 			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
@@ -93,6 +93,8 @@ public class PatchManager {
 			//This exception is thrown, and no shorthand way of getting a DocumentBuilder without it.
 			//Should not be thrown, as we do not do anything to the DocumentBuilderFactory.
 			Log.severe("Java was bad, you shouldn't see this. DocBuilder instantiation via default docBuilderFactory failed", e);
+		} finally {
+			configInputStream.close();
 		}
 		return null;
 	}
@@ -204,7 +206,7 @@ public class PatchManager {
 		transformer.transform(input, output);
 	}
 
-	public static Map<String, String> getAttributes(Node node) {
+	private static Map<String, String> getAttributes(Node node) {
 		NamedNodeMap attributeMap = node.getAttributes();
 		HashMap<String, String> attributes = new HashMap<String, String>(attributeMap.getLength());
 		for (int i = 0; i < attributeMap.getLength(); i++) {

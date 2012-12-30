@@ -10,12 +10,12 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
 public class MCPMappings extends Mappings {
-	final Map<String, String> methodSeargeMappings = new HashMap<String, String>();
-	final Map<String, String> fieldSeargeMappings = new HashMap<String, String>();
-	final BiMap<ClassDescription, ClassDescription> classMappings = HashBiMap.create();
-	final Map<MethodDescription, MethodDescription> methodMappings = new HashMap<MethodDescription, MethodDescription>();
-	final Map<FieldDescription, FieldDescription> fieldMappings = new HashMap<FieldDescription, FieldDescription>();
-	final Map<String, MethodDescription> parameterlessMethodMappings = new HashMap<String, MethodDescription>();
+	private final Map<String, String> methodSeargeMappings = new HashMap<String, String>();
+	private final Map<String, String> fieldSeargeMappings = new HashMap<String, String>();
+	private final BiMap<ClassDescription, ClassDescription> classMappings = HashBiMap.create();
+	private final Map<MethodDescription, MethodDescription> methodMappings = new HashMap<MethodDescription, MethodDescription>();
+	private final Map<FieldDescription, FieldDescription> fieldMappings = new HashMap<FieldDescription, FieldDescription>();
+	private final Map<String, MethodDescription> parameterlessMethodMappings = new HashMap<String, MethodDescription>();
 
 	public MethodDescription map(MethodDescription methodDescription) {
 		MethodDescription obfuscated = methodMappings.get(methodDescription);
@@ -37,7 +37,7 @@ public class MCPMappings extends Mappings {
 		parse(mcpDir);
 	}
 
-	public void parse(File mcpDir) throws IOException {
+	void parse(File mcpDir) throws IOException {
 		loadCsv(new File(mcpDir, "methods.csv"), methodSeargeMappings);
 		loadCsv(new File(mcpDir, "fields.csv"), fieldSeargeMappings);
 		loadSrg(new File(mcpDir, "packaged.srg"));

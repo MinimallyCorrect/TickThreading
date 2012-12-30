@@ -76,24 +76,21 @@ public class ClassRegistry {
 		}
 	}
 
-	public void loadJar(JarFile jar) throws IOException {
+	void loadJar(JarFile jar) throws IOException {
 		loadZip(jar);
 		// TODO: Remove code signing?
 	}
 
-	public ClassPath appendClassPatch(String path) throws NotFoundException {
-		if (disableJavassistLoading) {
-			return null;
+	void appendClassPath(String path) throws NotFoundException {
+		if (!disableJavassistLoading) {
+			classPathSet.add(classes.appendClassPath(path));
 		}
-		ClassPath classPath = classes.appendClassPath(path);
-		classPathSet.add(classPath);
-		return classPath;
 	}
 
-	public void loadZip(ZipFile zip) throws IOException {
+	void loadZip(ZipFile zip) throws IOException {
 		File file = new File(zip.getName());
 		try {
-			appendClassPatch(file.getAbsolutePath());
+			appendClassPath(file.getAbsolutePath());
 		} catch (Exception e) {
 			Log.severe("Javassist could not load " + file, e);
 		}
@@ -125,7 +122,7 @@ public class ClassRegistry {
 		replacementFiles.put(className, replacement);
 	}
 
-	public Map<String, byte[]> getAdditionalClasses(File file) {
+	Map<String, byte[]> getAdditionalClasses(File file) {
 		Map<String, byte[]> additionalClasses = this.additionalClasses.get(file);
 		if (additionalClasses == null) {
 			additionalClasses = new HashMap<String, byte[]>();
@@ -152,7 +149,7 @@ public class ClassRegistry {
 		add(location, additionalClassName, getClass(additionalClassName).toBytecode());
 	}
 
-	public void add(File file, String className, byte[] byteCode) {
+	void add(File file, String className, byte[] byteCode) {
 		getAdditionalClasses(file).put(className.replace('.', '/') + ".class", byteCode);
 	}
 
@@ -263,7 +260,7 @@ public class ClassRegistry {
 		return shouldPatch(classNameToLocation.get(className));
 	}
 
-	public boolean shouldPatch(File file) {
+	boolean shouldPatch(File file) {
 		return forcePatching || file == null || !(expectedPatchHashes.get(file).equals(locationToPatchHash.get(file)));
 	}
 
