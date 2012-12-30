@@ -1,4 +1,4 @@
-package me.nallar.tickthreading.minecraft.tickcallables;
+package me.nallar.tickthreading.minecraft.tickregion;
 
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -10,10 +10,10 @@ import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunkProvider;
 
-public class EntityTickCallable extends TickCallable {
+public class EntityTickRegion extends TickRegion {
 	private final Set<Entity> entitySet = new LinkedHashSet<Entity>();
 
-	public EntityTickCallable(World world, TickManager manager, int regionX, int regionZ) {
+	public EntityTickRegion(World world, TickManager manager, int regionX, int regionZ) {
 		super(world, manager, regionX, regionZ);
 	}
 
@@ -50,7 +50,7 @@ public class EntityTickCallable extends TickCallable {
 				} else if (manager.getHashCode(entity) != hashCode) {
 					entitiesIterator.remove();
 					manager.add(entity);
-					//Log.severe("Inconsistent state: " + entity + " is in the wrong TickCallable.");
+					//Log.severe("Inconsistent state: " + entity + " is in the wrong TickRegion.");
 					// Note to self for when I decide this is wrong later:
 					// Entities are supposed to move, of course this will happen!
 				}
@@ -69,7 +69,7 @@ public class EntityTickCallable extends TickCallable {
 	}
 
 	@Override
-	protected TickCallable getCallable(int regionX, int regionY) {
+	protected TickRegion getCallable(int regionX, int regionY) {
 		return manager.getEntityCallable(TickManager.getHashCodeFromRegionCoords(regionX, regionY));
 	}
 

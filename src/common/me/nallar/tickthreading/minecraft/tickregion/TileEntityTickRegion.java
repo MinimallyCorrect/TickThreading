@@ -1,4 +1,4 @@
-package me.nallar.tickthreading.minecraft.tickcallables;
+package me.nallar.tickthreading.minecraft.tickregion;
 
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -11,10 +11,10 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
 
-public class TileEntityTickCallable extends TickCallable {
+public class TileEntityTickRegion extends TickRegion {
 	private final Set<TileEntity> tileEntitySet = new LinkedHashSet<TileEntity>();
 
-	public TileEntityTickCallable(World world, TickManager manager, int regionX, int regionY) {
+	public TileEntityTickRegion(World world, TickManager manager, int regionX, int regionY) {
 		super(world, manager, regionX, regionY);
 	}
 
@@ -74,7 +74,7 @@ public class TileEntityTickCallable extends TickCallable {
 				} else if (manager.getHashCode(tileEntity) != hashCode) {
 					tileEntitiesIterator.remove();
 					manager.add(tileEntity);
-					Log.severe("Inconsistent state: " + tileEntity + " is in the wrong TickCallable.");
+					Log.severe("Inconsistent state: " + tileEntity + " is in the wrong TickRegion.");
 				}
 			} catch (Exception exception) {
 				Log.severe("Exception during tile entity tick ");
@@ -114,7 +114,7 @@ public class TileEntityTickCallable extends TickCallable {
 	}
 
 	@Override
-	protected TickCallable getCallable(int regionX, int regionY) {
+	protected TickRegion getCallable(int regionX, int regionY) {
 		return manager.getTileEntityCallable(TickManager.getHashCodeFromRegionCoords(regionX, regionY));
 	}
 

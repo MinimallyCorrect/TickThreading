@@ -66,8 +66,8 @@ public class Patches {
 		String field = attributes.get("field");
 		String clazz = attributes.get("class");
 		String initialise = "{ " + field + " = new " + clazz + "(); }";
+		// Return value ignored - just used to cause a NotFoundException if the field doesn't exist.
 		ctClass.getDeclaredField(field);
-		// Return value ignored - just used to cause a NotFoundException if the field doestn't exist.
 		for (CtConstructor ctConstructor : ctClass.getConstructors()) {
 			ctConstructor.insertAfter(initialise);
 		}

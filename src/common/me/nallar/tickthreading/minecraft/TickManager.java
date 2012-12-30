@@ -10,9 +10,9 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import me.nallar.tickthreading.Log;
-import me.nallar.tickthreading.minecraft.tickcallables.EntityTickCallable;
-import me.nallar.tickthreading.minecraft.tickcallables.TickCallable;
-import me.nallar.tickthreading.minecraft.tickcallables.TileEntityTickCallable;
+import me.nallar.tickthreading.minecraft.tickregion.EntityTickRegion;
+import me.nallar.tickthreading.minecraft.tickregion.TickRegion;
+import me.nallar.tickthreading.minecraft.tickregion.TileEntityTickRegion;
 import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
@@ -24,9 +24,9 @@ public class TickManager {
 	private final ArrayList<Entity> toRemoveEntities = new ArrayList<Entity>();
 	private final ArrayList<TileEntity> toAddTileEntities = new ArrayList<TileEntity>();
 	private final ArrayList<Entity> toAddEntities = new ArrayList<Entity>();
-	private final Map<Integer, TileEntityTickCallable> tileEntityCallables = new HashMap<Integer, TileEntityTickCallable>();
-	private final Map<Integer, EntityTickCallable> entityCallables = new HashMap<Integer, EntityTickCallable>();
-	private final ArrayList<TickCallable> tickCallables = new ArrayList<TickCallable>();
+	private final Map<Integer, TileEntityTickRegion> tileEntityCallables = new HashMap<Integer, TileEntityTickRegion>();
+	private final Map<Integer, EntityTickRegion> entityCallables = new HashMap<Integer, EntityTickRegion>();
+	private final ArrayList<TickRegion> tickRegions = new ArrayList<TickRegion>();
 	private final ThreadManager threadManager;
 	private final Object processChangesLock = new Object();
 	public final World world;
@@ -42,36 +42,36 @@ public class TickManager {
 		this.variableTickRate = variableTickRate;
 	}
 
-	public TickCallable getTileEntityCallable(int hashCode) {
+	public TickRegion getTileEntityCallable(int hashCode) {
 		return tileEntityCallables.get(hashCode);
 	}
 
 	@SuppressWarnings ("NumericCastThatLosesPrecision")
-	private TileEntityTickCallable getOrCreateCallable(TileEntity tileEntity) {
+	private TileEntityTickRegion getOrCreateCallable(TileEntity tileEntity) {
 		int hashCode = getHashCode(tileEntity);
-		TileEntityTickCallable callable = tileEntityCallables.get(hashCode);
+		TileEntityTickRegion callable = tileEntityCallables.get(hashCode);
 		if (callable == null) {
-			callable = new TileEntityTickCallable(world, this, tileEntity.xCoord / regionSize, tileEntity.zCoord / regionSize);
+			callable = new TileEntityTickRegion(world, this, tileEntity.xCoord / regionSize, tileEntity.zCoord / regionSize);
 			tileEntityCallables.put(hashCode, callable);
-			tickCallables.add(callable);
+			tickRegions.add(callable);
 		}
 		return callable;
 	}
 
-	public TickCallable getEntityCallable(int hashCode) {
+	public TickRegion getEntityCallable(int hashCode) {
 		return entityCallables.get(hashCode);
 	}
 
 	@SuppressWarnings ("NumericCastThatLosesPrecision")
-	private EntityTickCallable getOrCreateCallable(Entity entity) {
+	private EntityTickRegion getOrCreateCallable(Entity entity) {
 		int regionX = (int) entity.posX / regionSize;
 		int regionZ = (int) entity.posZ / regionSize;
 		int hashCode = getHashCodeFromRegionCoords(regionX, regionZ);
-		EntityTickCallable callable = entityCallables.get(hashCode);
+		EntityTickRegion callable = entityCallables.get(hashCode);
 		if (callable == null) {
-			callable = new EntityTickCallable(world, this, regionX, regionZ);
+			callable = new EntityTickRegion(world, this, regionX, regionZ);
 			entityCallables.put(hashCode, callable);
-			tickCallables.add(callable);
+			tickRegions.add(callable);
 		}
 		return callable;
 	}
@@ -113,17 +113,17 @@ public class TickManager {
 				toRemoveEntities.clear();
 				toRemoveTileEntities.clear();
 			}
-			Iterator<TickCallable> iterator = tickCallables.iterator();
+			Iterator<TickRegion> iterator = tickRegions.iterator();
 			while (iterator.hasNext()) {
-				TickCallable tickCallable = iterator.next();
-				if (tickCallable.isEmpty()) {
+				TickRegion tickRegion = iterator.next();
+				if (tickRegion.isEmpty()) {
 					iterator.remove();
-					if (tickCallable instanceof EntityTickCallable) {
-						entityCallables.remove(tickCallable.hashCode);
+					if (tickRegion instanceof EntityTickRegion) {
+						entityCallables.remove(tickRegion.hashCode);
 					} else {
-						tileEntityCallables.remove(tickCallable.hashCode);
+						tileEntityCallables.remove(tickRegion.hashCode);
 					}
-					tickCallable.die();
+					tickRegion.die();
 				}
 			}
 		} catch (Exception e) {
@@ -166,7 +166,7 @@ public class TickManager {
 
 	public void doTick() {
 		threadManager.waitForCompletion();
-		threadManager.runList(tickCallables);
+		threadManager.runList(tickRegions);
 		threadManager.runBackground(new Runnable() {
 			@Override
 			public void run() {
@@ -177,17 +177,17 @@ public class TickManager {
 
 	public void unload() {
 		threadManager.stop();
-		for (TickCallable tickCallable : tickCallables) {
-			tickCallable.die();
+		for (TickRegion tickRegion : tickRegions) {
+			tickRegion.die();
 		}
-		tickCallables.clear();
+		tickRegions.clear();
 		entityList.clear();
 	}
 
 	public float getTickTime() {
 		float maxTickTime = 0;
-		for (TickCallable tickCallable : tickCallables) {
-			float averageTickTime = tickCallable.getAverageTickTime();
+		for (TickRegion tickRegion : tickRegions) {
+			float averageTickTime = tickRegion.getAverageTickTime();
 			if (averageTickTime > maxTickTime) {
 				maxTickTime = averageTickTime;
 			}
@@ -212,23 +212,23 @@ public class TickManager {
 		// TODO: Rewrite this
 		float averageAverageTickTime = 0;
 		float maxTickTime = 0;
-		SortedMap<Float, TickCallable> sortedTickCallables = new TreeMap<Float, TickCallable>();
-		for (TickCallable tickCallable : tickCallables) {
-			float averageTickTime = tickCallable.getAverageTickTime();
+		SortedMap<Float, TickRegion> sortedTickCallables = new TreeMap<Float, TickRegion>();
+		for (TickRegion tickRegion : tickRegions) {
+			float averageTickTime = tickRegion.getAverageTickTime();
 			averageAverageTickTime += averageTickTime;
-			sortedTickCallables.put(averageTickTime, tickCallable);
+			sortedTickCallables.put(averageTickTime, tickRegion);
 			if (averageTickTime > maxTickTime) {
 				maxTickTime = averageTickTime;
 			}
 		}
-		Collection<TickCallable> var = sortedTickCallables.values();
-		TickCallable[] sortedTickCallablesArray = var.toArray(new TickCallable[var.size()]);
+		Collection<TickRegion> var = sortedTickCallables.values();
+		TickRegion[] sortedTickCallablesArray = var.toArray(new TickRegion[var.size()]);
 		for (int i = sortedTickCallablesArray.length - 1; i >= sortedTickCallablesArray.length - 6; i--) {
 			if (i >= 0 && sortedTickCallablesArray[i].getAverageTickTime() > 3) {
 				stats.append(sortedTickCallablesArray[i].getStats()).append("\n");
 			}
 		}
-		averageAverageTickTime /= tickCallables.size();
+		averageAverageTickTime /= tickRegions.size();
 		stats.append("---- World stats ----").append("\n");
 		stats.append("Average tick time: ").append(averageAverageTickTime).append("\n");
 		stats.append("Max tick time: ").append(maxTickTime).append("\n");
