@@ -168,16 +168,9 @@ public class Patches {
 		ctMethod.addCatch("{ " + returnCode + "}", classRegistry.getClass("java.lang.Exception"));
 	}
 
-	@Patch (
-			requiredAttributes = "code"
-	)
-	public void replaceBody(CtMethod ctMethod, Map<String, String> attributes) throws CannotCompileException, BadBytecode {
-		String body = attributes.get("code");
-		ctMethod.setBody(body);
-	}
-
 	@Patch
-	public void replaceInstantiations(Object object, Map<String, String> attributes) {
+	public void replaceInstantiations(CtBehavior object, Map<String, String> attributes) {
+		// TODO: Implement this, change some newInitializer patches to use this
 	}
 
 	public void replaceInstantiationsImplementation(CtBehavior ctBehavior, final Map<String, List<String>> replacementClasses) throws CannotCompileException {
