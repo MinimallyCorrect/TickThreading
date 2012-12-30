@@ -48,21 +48,27 @@ public class Patches {
 		return newClass;
 	}
 
-	@Patch (
-			requiredAttributes = "fromClass"
-	)
+	@Patch
 	public void replaceMethod(CtMethod method, Map<String, String> attributes) throws NotFoundException, CannotCompileException, BadBytecode {
 		String fromClass = attributes.get("fromClass");
-		String fromMethod = attributes.get("fromMethod");
-		CtMethod replacingMethod = fromMethod == null ?
-				classRegistry.getClass(fromClass).getDeclaredMethod(method.getName(), method.getParameterTypes())
-				: MethodDescription.fromString(fromClass, fromMethod).inClass(classRegistry.getClass(fromClass));
-		Log.info("Replacing " + new MethodDescription(method).getMCPName() + " with " + new MethodDescription(replacingMethod).getMCPName());
-		ClassMap classMap = new ClassMap();
-		classMap.put(fromClass, method.getDeclaringClass().getName());
-		method.setBody(replacingMethod, classMap);
-		method.getMethodInfo().rebuildStackMap(classRegistry.classes);
-		method.getMethodInfo().rebuildStackMapForME(classRegistry.classes);
+		String code = attributes.get("code");
+		if (fromClass != null) {
+			String fromMethod = attributes.get("fromMethod");
+			CtMethod replacingMethod = fromMethod == null ?
+					classRegistry.getClass(fromClass).getDeclaredMethod(method.getName(), method.getParameterTypes())
+					: MethodDescription.fromString(fromClass, fromMethod).inClass(classRegistry.getClass(fromClass));
+			Log.info("Replacing " + new MethodDescription(method).getMCPName() + " with " + new MethodDescription(replacingMethod).getMCPName());
+			ClassMap classMap = new ClassMap();
+			classMap.put(fromClass, method.getDeclaringClass().getName());
+			method.setBody(replacingMethod, classMap);
+			method.getMethodInfo().rebuildStackMap(classRegistry.classes);
+			method.getMethodInfo().rebuildStackMapForME(classRegistry.classes);
+		} else if(code != null) {
+			Log.info("Replacing " + new MethodDescription(method).getMCPName() + " with " + code);
+			method.setBody(code);
+		} else {
+			Log.severe("Missing required attributes for replaceMethod");
+		}
 	}
 
 	@Patch (
