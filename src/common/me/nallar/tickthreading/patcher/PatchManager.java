@@ -171,8 +171,11 @@ public class PatchManager {
 						continue;
 					}
 					try {
-						patch.run(patchElement, ctClass);
+						Object result = patch.run(patchElement, ctClass);
 						patched = true;
+						if (result instanceof CtClass) {
+							ctClass = (CtClass) result;
+						}
 					} catch (Exception e) {
 						Log.severe("Failed to patch " + ctClass + " with " + patch.name + " :(");
 					}
@@ -233,15 +236,15 @@ public class PatchManager {
 			patchMethod = method;
 		}
 
-		public void run(Element patchElement, CtClass ctClass) {
+		public Object run(Element patchElement, CtClass ctClass) {
 			Log.fine("Patching " + ctClass.getName() + " with " + this.name);
 			Map<String, String> attributes = getAttributes(patchElement);
 			if (requiredAttributes != null && !attributes.keySet().containsAll(requiredAttributes)) {
 				Log.severe("Missing required attributes " + requiredAttributes.toString() + " when patching " + ctClass.getName());
-				return;
+				return null;
 			}
 			if (isClassPatch) {
-				run(ctClass, attributes);
+				return run(ctClass, attributes);
 			} else if (patchElement.getTextContent().isEmpty()) {
 				run(ctClass.getConstructors()[0], attributes);
 			} else {
@@ -255,35 +258,38 @@ public class PatchManager {
 					}
 				}
 			}
+			return null;
 		}
 
-		private void run(CtClass ctClass, Map<String, String> attributes) {
+		private Object run(CtClass ctClass, Map<String, String> attributes) {
 			try {
 				if (requiredAttributes == null) {
-					patchMethod.invoke(patchTypes, ctClass);
+					return patchMethod.invoke(patchTypes, ctClass);
 				} else {
-					patchMethod.invoke(patchTypes, ctClass, attributes);
+					return patchMethod.invoke(patchTypes, ctClass, attributes);
 				}
 			} catch (Exception e) {
 				if (e instanceof InvocationTargetException) {
 					e = (Exception) e.getCause();
 				}
 				Log.severe("Failed to invoke class patch " + this, e);
+				return null;
 			}
 		}
 
-		private void run(CtBehavior ctBehavior, Map<String, String> attributes) {
+		private Object run(CtBehavior ctBehavior, Map<String, String> attributes) {
 			try {
 				if (requiredAttributes == null) {
-					patchMethod.invoke(patchTypes, ctBehavior);
+					return patchMethod.invoke(patchTypes, ctBehavior);
 				} else {
-					patchMethod.invoke(patchTypes, ctBehavior, attributes);
+					return patchMethod.invoke(patchTypes, ctBehavior, attributes);
 				}
 			} catch (Exception e) {
 				if (e instanceof InvocationTargetException) {
 					e = (Exception) e.getCause();
 				}
 				Log.severe("Failed to invoke method patch " + this, e);
+				return null;
 			}
 		}
 	}

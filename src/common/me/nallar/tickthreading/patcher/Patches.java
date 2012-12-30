@@ -36,6 +36,19 @@ public class Patches {
 	}
 
 	@Patch (
+			requiredAttributes = "class"
+	)
+	public CtClass replace(CtClass clazz, Map<String, String> attributes) throws NotFoundException, CannotCompileException {
+		Log.info("Replacing " + clazz.getName() + " with " + attributes.get("class"));
+		String oldName = clazz.getName();
+		clazz.setName(oldName + "_old");
+		CtClass newClass = classRegistry.getClass(attributes.get("class"));
+		newClass.getClassFile2().setSuperclass(null);
+		newClass.setName(oldName);
+		return newClass;
+	}
+
+	@Patch (
 			requiredAttributes = "fromClass"
 	)
 	public void replaceMethod(CtMethod method, Map<String, String> attributes) throws NotFoundException, CannotCompileException, BadBytecode {

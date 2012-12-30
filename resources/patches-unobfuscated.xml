@@ -34,6 +34,9 @@
 			<synchronize>addOrModifyAABBInPool</synchronize>
 		</class>
 		-->
+		<class id="net.minecraft.util.LongHashMap">
+			<replace class="me.nallar.tickthreading.patched.LongHashMap"/>
+		</class>
 		<class id="net.minecraft.entity.player.EntityPlayerMP">
 			<!-- Concurrent access during iteration = boom -->
 			<newInitializer field="destroyedItemsNetCache" class="me.nallar.tickthreading.collections.ConcurrentLinkedQueueList"/>
