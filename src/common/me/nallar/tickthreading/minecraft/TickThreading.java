@@ -135,6 +135,7 @@ public class TickThreading {
 
 	@ForgeSubscribe
 	public void onWorldUnload(WorldEvent.Unload event) {
+		Log.severe("Unloading " + Log.name(event.world));
 		try {
 			managers.get(event.world).unload();
 			managers.remove(event.world);
