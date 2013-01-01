@@ -31,6 +31,6 @@ public class FieldDescription {
 
 	@Override
 	public String toString() {
-		return className + "." + name;
+		return className + '.' + name;
 	}
 }

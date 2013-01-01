@@ -10,7 +10,7 @@ public class UnsafeUtil {
 	private static final long baseOffset = $.arrayBaseOffset(Object[].class);
 	private static final int addressSize = $.addressSize();
 
-	public boolean arrayEquals(Object a, Object b) {
+	public static boolean arrayEquals(Object a, Object b) {
 		if (a == b) {
 			return true;
 		}

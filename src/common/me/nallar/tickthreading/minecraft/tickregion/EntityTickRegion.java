@@ -56,7 +56,7 @@ public class EntityTickRegion extends TickRegion {
 				}
 			}
 		} catch (Exception exception) {
-			Log.severe("Exception during entity tick at " + toString() + ":", exception);
+			Log.severe("Exception during entity tick at " + toString() + ':', exception);
 		}
 	}
 

@@ -143,7 +143,7 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 		return this.writeRequests > 0;
 	}
 
-	private abstract class SimpleLock implements Lock {
+	private abstract static class SimpleLock implements Lock {
 		@Override
 		public void lockInterruptibly() throws InterruptedException {
 			lock();

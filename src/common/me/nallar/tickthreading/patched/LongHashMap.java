@@ -128,7 +128,7 @@ public class LongHashMap extends net.minecraft.util.LongHashMap {
 		values = new Object[BUCKET_SIZE][];
 	}
 
-	private long keyIndex(long key) {
+	private static long keyIndex(long key) {
 		key ^= key >>> 33;
 		key *= 0xff51afd7ed558ccdL;
 		key ^= key >>> 33;

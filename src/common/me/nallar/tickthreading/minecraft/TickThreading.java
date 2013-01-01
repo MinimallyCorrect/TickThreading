@@ -35,8 +35,8 @@ import net.minecraftforge.event.world.WorldEvent;
 @Mod (modid = "TickThreading", name = "TickThreading", version = "1.0")
 @NetworkMod (clientSideRequired = false, serverSideRequired = false)
 public class TickThreading {
-	private final int loadedTileEntityFieldIndex = 2;
-	private final int loadedEntityFieldIndex = 0;
+	private static final int loadedTileEntityFieldIndex = 2;
+	private static final int loadedEntityFieldIndex = 0;
 	public final boolean enabled;
 	private int tickThreads = 0;
 	private boolean enableEntityTickThreading = true;

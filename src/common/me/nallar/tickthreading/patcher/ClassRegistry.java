@@ -40,6 +40,7 @@ public class ClassRegistry {
 	private final Map<File, Integer> locationToPatchHash = new HashMap<File, Integer>();
 	private final Map<File, Integer> expectedPatchHashes = new HashMap<File, Integer>();
 	private final Map<File, Map<String, byte[]>> additionalClasses = new HashMap<File, Map<String, byte[]>>();
+	private final Set<File> loadedFiles = new HashSet<File>();
 	private final Set<File> updatedFiles = new HashSet<File>();
 	private final Set<String> unsafeClassNames = new HashSet<String>();
 	private final Set<ClassPath> classPathSet = new HashSet<ClassPath>();
@@ -60,6 +61,7 @@ public class ClassRegistry {
 		updatedFiles.clear();
 		unsafeClassNames.clear();
 		replacementFiles.clear();
+		loadedFiles.clear();
 	}
 
 	public void loadFiles(Iterable<File> filesToLoad) throws IOException {
@@ -89,6 +91,9 @@ public class ClassRegistry {
 
 	void loadZip(ZipFile zip) throws IOException {
 		File file = new File(zip.getName());
+		if (!loadedFiles.add(file)) {
+			return;
+		}
 		try {
 			appendClassPath(file.getAbsolutePath());
 		} catch (Exception e) {
@@ -210,9 +215,9 @@ public class ClassRegistry {
 					zout.write(replacementFiles.get(name));
 					zout.closeEntry();
 				}
-				for (String name : additionalClasses.keySet()) {
-					zout.putNextEntry(isJar(zipFile) ? new JarEntry(name) : new ZipEntry(name));
-					zout.write(additionalClasses.get(name));
+				for (Map.Entry<String, byte[]> stringEntry : additionalClasses.entrySet()) {
+					zout.putNextEntry(isJar(zipFile) ? new JarEntry(stringEntry.getKey()) : new ZipEntry(stringEntry.getKey()));
+					zout.write(stringEntry.getValue());
 					zout.closeEntry();
 				}
 				zout.putNextEntry(isJar(zipFile) ? new JarEntry(hashFileName) : new ZipEntry(hashFileName));
@@ -245,12 +250,12 @@ public class ClassRegistry {
 
 	public void loadPatchHashes(PatchManager patchManager) {
 		Map<String, Integer> patchHashes = patchManager.getHashes();
-		for (String clazz : patchHashes.keySet()) {
-			File location = classNameToLocation.get(clazz);
+		for (Map.Entry<String, Integer> stringIntegerEntry : patchHashes.entrySet()) {
+			File location = classNameToLocation.get(stringIntegerEntry.getKey());
 			if (location == null) {
 				continue;
 			}
-			int hash = patchHashes.get(clazz);
+			int hash = stringIntegerEntry.getValue();
 			Integer currentHash = expectedPatchHashes.get(location);
 			expectedPatchHashes.put(location, (currentHash == null) ? hash : currentHash * 31 + hash);
 		}
@@ -274,16 +279,16 @@ public class ClassRegistry {
 	}
 
 	public void restoreBackups(File backupDirectory) {
-		for (File file : locationToPatchHash.keySet()) {
-			Integer expectedHash = expectedPatchHashes.get(file);
-			Integer actualHash = locationToPatchHash.get(file);
+		for (Map.Entry<File, Integer> fileIntegerEntry : locationToPatchHash.entrySet()) {
+			Integer expectedHash = expectedPatchHashes.get(fileIntegerEntry.getKey());
+			Integer actualHash = fileIntegerEntry.getValue();
 			if (actualHash == null) {
 				continue;
 			}
 			if (forcePatching || !actualHash.equals(expectedHash)) {
-				file.delete();
+				fileIntegerEntry.getKey().delete();
 				try {
-					Files.copy(new File(backupDirectory, file.getName()), file);
+					Files.copy(new File(backupDirectory, fileIntegerEntry.getKey().getName()), fileIntegerEntry.getKey());
 				} catch (IOException e) {
 					Log.severe("Failed to restore unpatched backup before patching.");
 				}

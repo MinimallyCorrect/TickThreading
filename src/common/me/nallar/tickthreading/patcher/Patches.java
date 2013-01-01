@@ -28,6 +28,7 @@ import javassist.expr.NewExpr;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.mappings.MethodDescription;
 
+@SuppressWarnings ("MethodMayBeStatic")
 public class Patches {
 	private final ClassRegistry classRegistry;
 
@@ -165,7 +166,7 @@ public class Patches {
 		if (returnCode == null) {
 			returnCode = "return;";
 		}
-		ctMethod.addCatch("{ " + returnCode + "}", classRegistry.getClass("java.lang.Exception"));
+		ctMethod.addCatch("{ " + returnCode + '}', classRegistry.getClass("java.lang.Exception"));
 	}
 
 	@Patch
@@ -194,7 +195,7 @@ public class Patches {
 				NewExpr myLastNewExpr = lastNewExpr;
 				lastNewExpr = null;
 				if (myLastNewExpr != null) {
-					Log.fine("(" + myLastNewExpr.getSignature() + ") " + myLastNewExpr.getClassName() + " at " + myLastNewExpr.getFileName() + ":" + myLastNewExpr.getLineNumber() + ":" + newPos);
+					Log.fine('(' + myLastNewExpr.getSignature() + ") " + myLastNewExpr.getClassName() + " at " + myLastNewExpr.getFileName() + ':' + myLastNewExpr.getLineNumber() + ':' + newPos);
 					newExprType.put(newPos, classSignatureToName(e.getSignature()));
 				}
 			}
@@ -236,10 +237,10 @@ public class Patches {
 			public void edit(NewExpr e) throws CannotCompileException {
 				newPos++;
 				try {
-					Log.fine(e.getFileName() + ":" + e.getLineNumber() + ", pos: " + newPos);
+					Log.fine(e.getFileName() + ':' + e.getLineNumber() + ", pos: " + newPos);
 					if (newExprType.containsKey(newPos)) {
 						String replacementType = null, assignedType = newExprType.get(newPos);
-						Log.fine(assignedType + " at " + e.getFileName() + ":" + e.getLineNumber());
+						Log.fine(assignedType + " at " + e.getFileName() + ':' + e.getLineNumber());
 						Class<?> assignTo = Class.forName(assignedType);
 						for (String replacementClass : replacementClasses.get(e.getClassName())) {
 							if (assignTo.isAssignableFrom(Class.forName(replacementClass))) {
@@ -251,7 +252,7 @@ public class Patches {
 							return;
 						}
 						String block = "{$_=new " + replacementType + "($$);}";
-						Log.fine("Replaced with " + block + ", " + replacementType.length() + ":" + assignedType.length());
+						Log.fine("Replaced with " + block + ", " + replacementType.length() + ':' + assignedType.length());
 						e.replace(block);
 					}
 				} catch (ClassNotFoundException el) {

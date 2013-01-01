@@ -38,11 +38,11 @@ public class MethodDescription {
 	}
 
 	public String getShortName() {
-		return clazz + "/" + name;
+		return clazz + '/' + name;
 	}
 
 	public String getMCPName() {
-		return "(" + parameters + ")" + returnType;
+		return '(' + parameters + ')' + returnType;
 	}
 
 	@Override
@@ -106,7 +106,7 @@ public class MethodDescription {
 				return "C";
 			}
 		}
-		return "L" + clazz.getCanonicalName() + ";";
+		return 'L' + clazz.getCanonicalName() + ';';
 	}
 
 	private static String getParameterList(Method method) {

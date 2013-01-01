@@ -78,7 +78,7 @@ public class TileEntityTickRegion extends TickRegion {
 				}
 			} catch (Exception exception) {
 				Log.severe("Exception during tile entity tick ");
-				Log.severe("Tick region: " + toString() + ":", exception);
+				Log.severe("Tick region: " + toString() + ':', exception);
 			} finally {
 				if (locked) {
 					if (xMinusLocked) {

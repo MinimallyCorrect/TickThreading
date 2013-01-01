@@ -206,8 +206,8 @@ public class TickManager {
 
 	public String getDetailedStats() {
 		StringBuilder stats = new StringBuilder();
-		stats.append("World: ").append(Log.name(world)).append("\n");
-		stats.append("---- Slowest tick regions ----").append("\n");
+		stats.append("World: ").append(Log.name(world)).append('\n');
+		stats.append("---- Slowest tick regions ----").append('\n');
 		// TODO: Rewrite this
 		float averageAverageTickTime = 0;
 		float maxTickTime = 0;
@@ -224,14 +224,14 @@ public class TickManager {
 		TickRegion[] sortedTickCallablesArray = var.toArray(new TickRegion[var.size()]);
 		for (int i = sortedTickCallablesArray.length - 1; i >= sortedTickCallablesArray.length - 6; i--) {
 			if (i >= 0 && sortedTickCallablesArray[i].getAverageTickTime() > 3) {
-				stats.append(sortedTickCallablesArray[i].getStats()).append("\n");
+				stats.append(sortedTickCallablesArray[i].getStats()).append('\n');
 			}
 		}
 		averageAverageTickTime /= tickRegions.size();
-		stats.append("---- World stats ----").append("\n");
-		stats.append("Average tick time: ").append(averageAverageTickTime).append("\n");
-		stats.append("Max tick time: ").append(maxTickTime).append("\n");
-		stats.append("Effective tick time: ").append((maxTickTime > 55) ? 55 : maxTickTime).append("\n");
+		stats.append("---- World stats ----").append('\n');
+		stats.append("Average tick time: ").append(averageAverageTickTime).append('\n');
+		stats.append("Max tick time: ").append(maxTickTime).append('\n');
+		stats.append("Effective tick time: ").append((maxTickTime > 55) ? 55 : maxTickTime).append('\n');
 		return stats.toString();
 	}
 }

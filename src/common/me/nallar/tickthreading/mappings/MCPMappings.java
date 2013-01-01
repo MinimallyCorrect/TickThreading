@@ -94,7 +94,7 @@ public class MCPMappings extends Mappings {
 		}
 	}
 
-	private void loadCsv(File mappingsCsv, Map<String, String> seargeMappings) throws IOException {
+	private static void loadCsv(File mappingsCsv, Map<String, String> seargeMappings) throws IOException {
 		Scanner in = new Scanner(mappingsCsv);
 		try {
 			in.useDelimiter(",");
