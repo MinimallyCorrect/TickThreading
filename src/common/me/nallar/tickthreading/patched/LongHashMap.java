@@ -62,12 +62,15 @@ public class LongHashMap extends net.minecraft.util.LongHashMap {
 			int i;
 			for (i = 0; i < innerKeys.length; i++) {
 				// found an empty spot in the chain to put this
-				if (innerKeys[i] == EMPTY_KEY) {
+				long currentKey = innerKeys[i];
+				if (currentKey == EMPTY_KEY) {
 					size++;
 				}
-				innerKeys[i] = key;
-				innerValues[i] = value;
-				return;
+				if (currentKey == EMPTY_KEY || currentKey == key) {
+					innerKeys[i] = key;
+					innerValues[i] = value;
+					return;
+				}
 			}
 
 			// chain is full, resize it and add our new entry
