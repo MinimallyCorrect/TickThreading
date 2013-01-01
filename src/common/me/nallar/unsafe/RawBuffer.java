@@ -44,6 +44,7 @@ public class RawBuffer {
 			this.address = address;
 		}
 
+		@Override
 		public void run() {
 			$.freeMemory(address);
 		}

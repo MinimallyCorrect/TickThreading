@@ -15,6 +15,7 @@ public class TPSCommand extends Command {
 		return name;
 	}
 
+	@Override
 	public boolean canCommandSenderUseCommand(ICommandSender par1ICommandSender) {
 		return true;
 	}

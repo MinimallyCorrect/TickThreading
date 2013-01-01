@@ -17,6 +17,7 @@ public class MCPMappings extends Mappings {
 	private final Map<FieldDescription, FieldDescription> fieldMappings = new HashMap<FieldDescription, FieldDescription>();
 	private final Map<String, MethodDescription> parameterlessMethodMappings = new HashMap<String, MethodDescription>();
 
+	@Override
 	public MethodDescription map(MethodDescription methodDescription) {
 		MethodDescription obfuscated = methodMappings.get(methodDescription);
 		if (obfuscated == null) {
@@ -25,10 +26,12 @@ public class MCPMappings extends Mappings {
 		return obfuscated;
 	}
 
+	@Override
 	public ClassDescription map(ClassDescription classDescription) {
 		return classMappings.get(classDescription);
 	}
 
+	@Override
 	public FieldDescription map(FieldDescription fieldDescription) {
 		return fieldMappings.get(fieldDescription);
 	}

@@ -18,6 +18,7 @@ public abstract class PatchWorld extends World {
 		super(par1ISaveHandler, par2Str, par3WorldProvider, par4WorldSettings, par5Profiler);
 	}
 
+	@Override
 	public List getCollidingBoundingBoxes(Entity par1Entity, AxisAlignedBB par2AxisAlignedBB) {
 		List collidingBoundingBoxes = (List) ThreadLocals.collidingBoundingBoxes.get();
 		collidingBoundingBoxes.clear();
@@ -62,6 +63,7 @@ public abstract class PatchWorld extends World {
 		return collidingBoundingBoxes;
 	}
 
+	@Override
 	public List getEntitiesWithinAABBExcludingEntity(Entity par1Entity, AxisAlignedBB par2AxisAlignedBB) {
 		List entitiesWithinAABBExcludingEntity = (List) ThreadLocals.entitiesWithinAABBExcludingEntity.get();
 		entitiesWithinAABBExcludingEntity.clear();

@@ -18,14 +18,17 @@ public class LongHashMap extends net.minecraft.util.LongHashMap {
 		initialize();
 	}
 
+	@Override
 	public int getNumHashElements() {
 		return size;
 	}
 
+	@Override
 	public boolean containsItem(long key) {
 		return getValueByKey(key) != null;
 	}
 
+	@Override
 	public Object getValueByKey(long key) {
 		int index = (int) (keyIndex(key) & (BUCKET_SIZE - 1));
 		long[] inner = keys[index];
@@ -45,6 +48,7 @@ public class LongHashMap extends net.minecraft.util.LongHashMap {
 		return null;
 	}
 
+	@Override
 	public void add(long key, Object value) {
 		int index = (int) (keyIndex(key) & (BUCKET_SIZE - 1));
 		long[] innerKeys = keys[index];
@@ -83,6 +87,7 @@ public class LongHashMap extends net.minecraft.util.LongHashMap {
 		}
 	}
 
+	@Override
 	public Object remove(long key) {
 		int index = (int) (keyIndex(key) & (BUCKET_SIZE - 1));
 		long[] inner = keys[index];
