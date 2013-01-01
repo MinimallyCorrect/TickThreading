@@ -8,7 +8,7 @@ public class ReportingThread extends Thread {
 		super();
 		this.setDaemon(true);
 		this.setName("me.nallar error reporter");
-		this.run();
+		this.start();
 	}
 
 	private final LinkedBlockingQueue<Throwable> issues = new LinkedBlockingQueue<Throwable>();
