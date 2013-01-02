@@ -151,12 +151,21 @@ public class Patches {
 	}
 
 	@Patch
-	public void synchronize(CtMethod method) {
-		int currentModifiers = method.getModifiers();
-		if (Modifier.isSynchronized(currentModifiers)) {
-			Log.warning("Method: " + method.getLongName() + " is already synchronized");
+	public void synchronize(CtMethod ctMethod, Map<String, String> attributes) throws CannotCompileException {
+		String field = attributes.get("field");
+		if (field == null) {
+			int currentModifiers = ctMethod.getModifiers();
+			if (Modifier.isSynchronized(currentModifiers)) {
+				Log.warning("Method: " + ctMethod.getLongName() + " is already synchronized");
+			} else {
+				ctMethod.setModifiers(currentModifiers | Modifier.SYNCHRONIZED);
+			}
 		} else {
-			method.setModifiers(currentModifiers | Modifier.SYNCHRONIZED);
+			CtClass ctClass = ctMethod.getDeclaringClass();
+			CtMethod replacement = CtNewMethod.copy(ctMethod, ctClass, null);
+			ctMethod.setName(ctMethod.getName() + "_nosynchronize");
+			replacement.setBody("{ synchronized(this." + field + ") { return " + ctMethod.getName() + "($$); }");
+			ctClass.addMethod(replacement);
 		}
 	}
 

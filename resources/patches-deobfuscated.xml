@@ -74,4 +74,9 @@
 			<synchronize>a(Ljava/lang/String;)V,b()V</synchronize>
 		</class>
 	</liteLoader>
+	<buildCraftTransport>
+		<class id="buildcraft.transport.TileGenericPipe">
+			<synchronize field="tileBuffer">initialize,blockCreated,getBlockId,getTile,computeConnections</synchronize>
+		</class>
+	</buildCraftTransport>
 </mods>
