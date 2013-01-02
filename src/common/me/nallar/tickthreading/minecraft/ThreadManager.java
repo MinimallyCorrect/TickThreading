@@ -8,6 +8,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import me.nallar.tickthreading.Log;
+import net.minecraft.server.ThreadMinecraftServer;
 import net.minecraft.util.AxisAlignedBB;
 
 class ThreadManager {
@@ -99,7 +100,11 @@ class ThreadManager {
 		killThreads(workThreads.size());
 	}
 
-	private class WorkThread extends Thread {
+	private class WorkThread extends ThreadMinecraftServer {
+		public WorkThread() {
+			super(null, "");
+		}
+
 		@Override
 		public void run() {
 			while (true) {
