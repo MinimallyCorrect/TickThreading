@@ -32,6 +32,7 @@ import javassist.CtClass;
 import javassist.NotFoundException;
 import javassist.bytecode.MethodInfo;
 import me.nallar.tickthreading.Log;
+import me.nallar.tickthreading.util.CollectionsUtil;
 import me.nallar.tickthreading.util.EnumerableWrapper;
 
 public class ClassRegistry {
@@ -42,7 +43,7 @@ public class ClassRegistry {
 	private final Map<File, Map<String, byte[]>> additionalClasses = new HashMap<File, Map<String, byte[]>>();
 	private final Set<File> loadedFiles = new HashSet<File>();
 	private final Set<File> updatedFiles = new HashSet<File>();
-	private final Set<String> unsafeClassNames = new HashSet<String>();
+	private final Map<String, Set<File>> unsafeClassNames = new HashMap<String, Set<File>>();
 	private final Set<ClassPath> classPathSet = new HashSet<ClassPath>();
 	private final Map<String, byte[]> replacementFiles = new HashMap<String, byte[]>();
 	public final ClassPool classes = new ClassPool(false);
@@ -104,7 +105,13 @@ public class ClassRegistry {
 			if (name.endsWith(".class")) {
 				String className = name.replace('/', '.').substring(0, name.lastIndexOf('.'));
 				if (classNameToLocation.containsKey(className)) {
-					unsafeClassNames.add(className);
+					Set<File> locations = unsafeClassNames.get(className);
+					if (locations == null) {
+						locations = new HashSet<File>();
+						locations.add(classNameToLocation.get(className));
+						unsafeClassNames.put(className, locations);
+					}
+					locations.add(file);
 				} else {
 					classNameToLocation.put(className, file);
 				}
@@ -119,8 +126,8 @@ public class ClassRegistry {
 	}
 
 	public void update(String className, byte[] replacement) {
-		if (unsafeClassNames.contains(className)) {
-			Log.severe(className + " is in multiple jars. Patching may not work correctly.");
+		if (unsafeClassNames.containsKey(className)) {
+			Log.severe(className + " is in multiple jars: " + CollectionsUtil.join(unsafeClassNames.get(className), ", "));
 		}
 		updatedFiles.add(classNameToLocation.get(className));
 		className = className.replace('.', '/') + ".class";
