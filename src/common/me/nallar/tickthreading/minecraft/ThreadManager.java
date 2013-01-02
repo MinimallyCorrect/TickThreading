@@ -7,11 +7,13 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import me.nallar.tickthreading.Log;
 import net.minecraft.server.ThreadMinecraftServer;
 import net.minecraft.util.AxisAlignedBB;
 
 class ThreadManager {
+	private final boolean isServer = FMLCommonHandler.instance().getEffectiveSide().isServer();
 	private final BlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<Runnable>();
 	private final String namePrefix;
 	private final Set<Thread> workThreads = new HashSet<Thread>();
@@ -22,9 +24,35 @@ class ThreadManager {
 		public void run() {
 		}
 	};
+	private final Runnable workerTask = new Runnable() {
+		@Override
+		public void run() {
+			while (true) {
+				try {
+					Runnable runnable;
+					synchronized (taskQueue) {
+						runnable = taskQueue.take();
+					}
+					if (runnable == killTask) {
+						workThreads.remove(this);
+						return;
+					}
+					runnable.run();
+				} catch (InterruptedException ignored) {
+				} catch (Exception e) {
+					Log.severe("Unhandled exception in worker thread", e);
+				}
+				if (waiting.decrementAndGet() == 0) {
+					synchronized (readyLock) {
+						readyLock.notify();
+					}
+				}
+			}
+		}
+	};
 
 	private void newThread(String name) {
-		Thread workThread = new WorkThread();
+		Thread workThread = isServer ? new ServerWorkThread() : new Thread(workerTask);
 		workThread.setName(name);
 		workThread.setDaemon(true);
 		workThread.start();
@@ -100,34 +128,14 @@ class ThreadManager {
 		killThreads(workThreads.size());
 	}
 
-	private class WorkThread extends ThreadMinecraftServer {
-		public WorkThread() {
+	private class ServerWorkThread extends ThreadMinecraftServer {
+		public ServerWorkThread() {
 			super(null, "");
 		}
 
 		@Override
 		public void run() {
-			while (true) {
-				try {
-					Runnable runnable;
-					synchronized (taskQueue) {
-						runnable = taskQueue.take();
-					}
-					if (runnable == killTask) {
-						workThreads.remove(this);
-						return;
-					}
-					runnable.run();
-				} catch (InterruptedException ignored) {
-				} catch (Exception e) {
-					Log.severe("Unhandled exception in worker thread", e);
-				}
-				if (waiting.decrementAndGet() == 0) {
-					synchronized (readyLock) {
-						readyLock.notify();
-					}
-				}
-			}
+			workerTask.run();
 		}
 	}
 }
