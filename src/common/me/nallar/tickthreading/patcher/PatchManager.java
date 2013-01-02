@@ -253,11 +253,7 @@ public class PatchManager {
 				List<MethodDescription> methodDescriptions = MethodDescription.fromListString(ctClass.getName(), patchElement.getTextContent());
 				Log.fine("Patching methods " + methodDescriptions.toString());
 				for (MethodDescription methodDescription : methodDescriptions) {
-					try {
-						run(methodDescription.inClass(ctClass), attributes);
-					} catch (Exception e) {
-						Log.severe("Error patching " + methodDescription.getMCPName() + " in " + ctClass, e);
-					}
+					run(methodDescription.inClass(ctClass), attributes);
 				}
 			}
 			return null;
@@ -274,7 +270,7 @@ public class PatchManager {
 				if (e instanceof InvocationTargetException) {
 					e = (Exception) e.getCause();
 				}
-				Log.severe("Failed to invoke class patch " + this, e);
+				Log.severe("Error patching " + ctClass.getName() + " with " + toString(), e);
 				return null;
 			}
 		}
@@ -290,7 +286,7 @@ public class PatchManager {
 				if (e instanceof InvocationTargetException) {
 					e = (Exception) e.getCause();
 				}
-				Log.severe("Failed to invoke method patch " + this, e);
+				Log.severe("Error patching " + ctBehavior.getLongName() + " in " + ctBehavior.getDeclaringClass().getName() + " with " + toString(), e);
 				return null;
 			}
 		}
