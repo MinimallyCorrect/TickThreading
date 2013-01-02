@@ -146,7 +146,7 @@ public class Patches {
 		CtClass ctClass = ctMethod.getDeclaringClass();
 		CtMethod replacement = CtNewMethod.copy(ctMethod, ctClass, null);
 		ctMethod.setName(ctMethod.getName() + "_nolock");
-		replacement.setBody("{ this." + field + ".lock(); try { return " + ctMethod.getName() + "($$); } finally { this." + field + ".unlock(); } }");
+		replacement.setBody("{ this." + field + ".lock(); try { return $proceed($$); } finally { this." + field + ".unlock(); } }", "this", ctMethod.getName());
 		ctClass.addMethod(replacement);
 	}
 
@@ -164,7 +164,7 @@ public class Patches {
 			CtClass ctClass = ctMethod.getDeclaringClass();
 			CtMethod replacement = CtNewMethod.copy(ctMethod, ctClass, null);
 			ctMethod.setName(ctMethod.getName() + "_nosynchronize");
-			replacement.setBody("synchronized(this." + field + ") { return " + ctMethod.getName() + "($$); }");
+			replacement.setBody("synchronized(this." + field + ") { return $proceed($$); }", "this", ctMethod.getName());
 			ctClass.addMethod(replacement);
 		}
 	}
