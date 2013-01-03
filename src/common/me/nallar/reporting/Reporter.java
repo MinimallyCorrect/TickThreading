@@ -3,9 +3,11 @@ package me.nallar.reporting;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 
+import me.nallar.tickthreading.minecraft.ThreadManager;
+
 public class Reporter {
 	private static final Set<Long> reportedHashes = new ConcurrentSkipListSet<Long>();
-	private static ReportingThread reportingThread;
+	private static ThreadManager reportingThreadManager = new ThreadManager(1, "me.nallar error reporting thread");
 
 	static {
 		reportedHashes.add(0L);
@@ -15,21 +17,27 @@ public class Reporter {
 		if (reportedHashes.size() > 20 || !reportedHashes.add(hashCode(e))) {
 			return;
 		}
-		getReportingThread().addIssue(e);
-	}
-
-	private static synchronized ReportingThread getReportingThread() {
-		if (reportingThread == null) {
-			reportingThread = new ReportingThread();
-		}
-		return reportingThread;
+		reportingThreadManager.runBackground(new Report(e));
 	}
 
 	private static long hashCode(Throwable e) {
 		if (e == null) {
-			return 0;
+			throw new IllegalArgumentException("Throwable can not be null");
 		}
 		StackTraceElement stackTraceElement = e.getStackTrace()[0];
 		return e.getLocalizedMessage().hashCode() + stackTraceElement.getClassName().hashCode() + stackTraceElement.hashCode() + hashCode(e.getCause());
+	}
+
+	private static class Report implements Runnable {
+		private final Throwable throwable;
+
+		public Report(Throwable throwable) {
+			this.throwable = throwable;
+		}
+
+		@Override
+		public void run() {
+			// TODO: Actually report the issue
+		}
 	}
 }

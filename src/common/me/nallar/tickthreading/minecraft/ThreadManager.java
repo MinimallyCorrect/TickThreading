@@ -12,7 +12,7 @@ import me.nallar.tickthreading.Log;
 import net.minecraft.server.ThreadMinecraftServer;
 import net.minecraft.util.AxisAlignedBB;
 
-class ThreadManager {
+public class ThreadManager {
 	private final boolean isServer = FMLCommonHandler.instance().getEffectiveSide().isServer();
 	private final BlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<Runnable>();
 	private final String namePrefix;
