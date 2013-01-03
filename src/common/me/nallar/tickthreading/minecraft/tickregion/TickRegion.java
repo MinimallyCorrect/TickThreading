@@ -77,7 +77,7 @@ public abstract class TickRegion implements Runnable {
 		if (shouldTick()) {
 			long startTime = System.currentTimeMillis();
 			doTick();
-			averageTickTime = ((averageTickTime * 511) + (System.currentTimeMillis() - startTime)) / 512;
+			averageTickTime = ((averageTickTime * 127) + (System.currentTimeMillis() - startTime)) / 128;
 		}
 	}
 

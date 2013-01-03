@@ -25,8 +25,7 @@ public class TPSCommand extends Command {
 		StringBuilder tpsReport = new StringBuilder();
 		tpsReport.append("---- TPS Report ----\n");
 		for (TickManager tickManager : TickThreading.instance().getManagers()) {
-			tpsReport.append(Log.name(tickManager.world)).append(": ").append(1000 / tickManager.getEffectiveTickTime()).append("tps, load: ");
-			tpsReport.append(tickManager.getTickTime() / 2).append("%\n");
+			tpsReport.append(tickManager.getBasicStats());
 		}
 		sendChat(commandSender, tpsReport.toString());
 	}

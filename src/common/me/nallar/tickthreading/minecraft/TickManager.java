@@ -204,6 +204,10 @@ public class TickManager {
 		return tickTime;
 	}
 
+	public String getBasicStats() {
+		return Log.name(world) + ": " + (1000 / this.getEffectiveTickTime()) + "tps, " + entityList.size() + " entities, load: " + (this.getTickTime() / 2) + "%\n";
+	}
+
 	public String getDetailedStats() {
 		StringBuilder stats = new StringBuilder();
 		stats.append("World: ").append(Log.name(world)).append('\n');
