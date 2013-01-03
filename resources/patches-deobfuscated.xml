@@ -79,4 +79,13 @@
 			<synchronize field="facadeBlocks">initialize,blockCreated,getBlockId,getTile,computeConnections</synchronize>
 		</class>
 	</buildCraftTransport>
+	<thermalExpansion>
+		<class id="thermalexpansion.transport.GridEnergy">
+			<newField field="readWriteLock" class="me.nallar.tickthreading.util.TwoWayReentrantReadWriteLock"/>
+			<newField field="writeLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>
+			<newField field="readLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.readLock();"/>
+			<lock field="writeLock">addConduit,addNode,removeConduit,removeNode,addEnergy,changeMode,transferEnergy,increaseTracker,setNewGrid,recalcProvider</lock>
+			<lock field="readLock">destroy,getNodeEnergy,contains,isFirst,updateRender</lock>
+		</class>
+	</thermalExpansion>
 </mods>
