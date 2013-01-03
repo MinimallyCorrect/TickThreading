@@ -76,7 +76,7 @@
 	</liteLoader>
 	<buildCraftTransport>
 		<class id="buildcraft.transport.TileGenericPipe">
-			<synchronize field="tileBuffer">initialize,blockCreated,getBlockId,getTile,computeConnections</synchronize>
+			<synchronize field="facadeBlocks">initialize,blockCreated,getBlockId,getTile,computeConnections</synchronize>
 		</class>
 	</buildCraftTransport>
 </mods>

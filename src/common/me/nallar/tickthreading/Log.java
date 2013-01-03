@@ -4,6 +4,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import cpw.mods.fml.common.FMLLog;
+import me.nallar.reporting.Reporter;
 import net.minecraft.world.World;
 
 @SuppressWarnings ("UnusedDeclaration")
@@ -46,6 +47,13 @@ public class Log {
 
 	public static void finest(String msg) {
 		LOGGER.finest(msg);
+	}
+
+	public static void severe(String msg, Throwable t, boolean report) {
+		if (report) {
+			Reporter.report(t);
+		}
+		severe(msg, t);
 	}
 
 	public static void severe(String msg, Throwable t) {

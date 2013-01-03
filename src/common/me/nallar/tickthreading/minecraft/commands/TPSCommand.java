@@ -2,7 +2,6 @@ package me.nallar.tickthreading.minecraft.commands;
 
 import java.util.List;
 
-import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import net.minecraft.command.ICommandSender;
