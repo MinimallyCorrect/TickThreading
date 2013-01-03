@@ -223,6 +223,7 @@ public class PatchManager {
 		public final List<String> requiredAttributes;
 		public final Method patchMethod;
 		public final boolean isClassPatch;
+		public final boolean emptyConstructor;
 
 		public PatchMethodDescriptor(Method method, Patch patch) {
 			this.name = patch.name();
@@ -234,6 +235,7 @@ public class PatchManager {
 			if (this.name == null || this.name.isEmpty()) {
 				this.name = method.getName();
 			}
+			emptyConstructor = patch.emptyConstructor();
 			isClassPatch = method.getParameterTypes()[0].equals(CtClass.class);
 			patchMethod = method;
 		}
@@ -245,7 +247,7 @@ public class PatchManager {
 				Log.severe("Missing required attributes " + requiredAttributes.toString() + " when patching " + ctClass.getName());
 				return null;
 			}
-			if (isClassPatch) {
+			if (isClassPatch || (!emptyConstructor && patchElement.getTextContent().isEmpty())) {
 				return run(ctClass, attributes);
 			} else if (patchElement.getTextContent().isEmpty()) {
 				run(ctClass.getConstructors()[0], attributes);

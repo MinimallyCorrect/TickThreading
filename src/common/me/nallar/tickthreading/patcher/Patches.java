@@ -37,6 +37,23 @@ public class Patches {
 	}
 
 	@Patch (
+			name = "volatile"
+	)
+	public void volatile_(CtClass ctClass, Map<String, String> attributes) throws NotFoundException {
+		String field = attributes.get("field");
+		if (field == null) {
+			for (CtField ctField : ctClass.getDeclaredFields()) {
+				if (ctField.getType().isPrimitive()) {
+					ctField.setModifiers(ctField.getModifiers() | Modifier.VOLATILE);
+				}
+			}
+		} else {
+			CtField ctField = ctClass.getDeclaredField(field);
+			ctField.setModifiers(ctField.getModifiers() | Modifier.VOLATILE);
+		}
+	}
+
+	@Patch (
 			requiredAttributes = "class"
 	)
 	public CtClass replace(CtClass clazz, Map<String, String> attributes) throws NotFoundException, CannotCompileException {
@@ -150,9 +167,20 @@ public class Patches {
 		ctClass.addMethod(replacement);
 	}
 
-	@Patch
-	public void synchronize(CtMethod ctMethod, Map<String, String> attributes) throws CannotCompileException {
-		String field = attributes.get("field");
+	@Patch(
+			emptyConstructor = false
+	)
+	public void synchronize(Object o, Map<String, String> attributes) throws CannotCompileException {
+		if (o instanceof CtMethod) {
+			synchronize((CtMethod) o, attributes.get("field"));
+		} else {
+			for (CtMethod ctMethod : ((CtClass) o).getDeclaredMethods()) {
+				synchronize(ctMethod, attributes.get("field"));
+			}
+		}
+	}
+
+	private void synchronize(CtMethod ctMethod, String field) throws CannotCompileException {
 		if (field == null) {
 			int currentModifiers = ctMethod.getModifiers();
 			if (Modifier.isSynchronized(currentModifiers)) {
