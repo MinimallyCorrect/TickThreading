@@ -15,12 +15,11 @@ public class DeadLockDetector {
 		deadlockThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				while (true) {
+				while (checkForDeadlocks()) {
 					try {
 						Thread.sleep(4000);
 					} catch (InterruptedException ignored) {
 					}
-					checkForDeadlocks();
 				}
 			}
 		});
@@ -29,13 +28,13 @@ public class DeadLockDetector {
 		deadlockThread.start();
 	}
 
-	public void checkForDeadlocks() {
+	public boolean checkForDeadlocks() {
 		long lastRunTime = 0;
 		for (TickManager tickManager : managerMap.values()) {
 			lastRunTime = Math.max(lastRunTime, tickManager.lastStartTime);
 		}
 		if (lastRunTime == 0) {
-			return;
+			return true;
 		}
 		int deadTime = (int) (System.currentTimeMillis() - lastRunTime);
 		if (deadTime > 10000) {
@@ -53,6 +52,8 @@ public class DeadLockDetector {
 				}
 			}
 			Log.severe(sb.toString());
+			return false;
 		}
+		return true;
 	}
 }
