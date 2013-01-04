@@ -9,6 +9,8 @@ import java.util.Scanner;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
+import me.nallar.tickthreading.Log;
+
 public class MCPMappings extends Mappings {
 	private final Map<String, String> methodSeargeMappings = new HashMap<String, String>();
 	private final Map<String, String> fieldSeargeMappings = new HashMap<String, String>();
@@ -22,6 +24,11 @@ public class MCPMappings extends Mappings {
 		MethodDescription obfuscated = methodMappings.get(methodDescription);
 		if (obfuscated == null) {
 			obfuscated = parameterlessMethodMappings.get(methodDescription.getShortName());
+			if (methodDescription.isExact()) {
+				Log.info("Failed to directly map " + methodDescription
+						+ "\n would map to " + obfuscated);
+				obfuscated = methodDescription;
+			}
 		}
 		return obfuscated;
 	}

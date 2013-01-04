@@ -67,8 +67,12 @@ public class MethodDescription {
 		return this == other || (other instanceof MethodDescription && other.hashCode() == this.hashCode()) || (other instanceof Method && new MethodDescription((Method) other).equals(this));
 	}
 
-	boolean similar(Object other) {
+	public boolean similar(Object other) {
 		return this == other || (other instanceof MethodDescription && ((MethodDescription) other).getShortName().equals(this.getShortName())) || (other instanceof Method && new MethodDescription((Method) other).similar(this));
+	}
+
+	public boolean isExact() {
+		return !this.parameters.isEmpty() || !this.returnType.isEmpty();
 	}
 
 	public CtMethod inClass(CtClass ctClass) {
@@ -77,7 +81,7 @@ public class MethodDescription {
 				return ctMethod;
 			}
 		}
-		if (!this.parameters.isEmpty() || !this.returnType.isEmpty()) {
+		if (isExact()) {
 			Log.warning("Failed to find exact match for " + this.getMCPName() + ", trying to find similar methods.");
 		}
 		for (CtMethod ctMethod : ctClass.getDeclaredMethods()) {
@@ -119,11 +123,14 @@ public class MethodDescription {
 	}
 
 	public static MethodDescription fromString(String clazz, String methodString) {
-		try {
-			String methodName = methodString.substring(0, methodString.indexOf('('));
-			return new MethodDescription(clazz, methodName, methodString.substring(methodString.indexOf('(')));
-		} catch (Exception ignored) {
-
+		if (methodString.contains("(")) {
+			try {
+				String methodName = methodString.substring(0, methodString.indexOf('('));
+				methodString = methodString.replace('.', '/');
+				return new MethodDescription(clazz, methodName, methodString.substring(methodString.indexOf('(')));
+			} catch (Exception e) {
+				Log.severe("Failed to parse " + methodString, e);
+			}
 		}
 		return new MethodDescription(clazz, methodString, "", "");
 	}

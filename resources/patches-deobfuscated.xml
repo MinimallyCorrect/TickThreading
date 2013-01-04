@@ -10,7 +10,7 @@
 			<newField field="readWriteLock" class="me.nallar.tickthreading.util.TwoWayReentrantReadWriteLock"/>
 			<newField field="writeLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>
 			<newField field="readLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.readLock();"/>
-			<lock field="writeLock">addTileEntity(Ljava.util.Collection;)V,setBlockTileEntity,addTileEntity(Lnet.minecraft.tileentity.TileEntity;)V</lock>
+			<lock field="writeLock">addTileEntity(Ljava/util/Collection;)V,setBlockTileEntity,addTileEntity(Lnet/minecraft/tileentity/TileEntity;)V</lock>
 			<lock field="readLock">getBlockTileEntity</lock>
 			<!-- Same list was used by multiple threads -->
 			<replaceMethod fromClass="me.nallar.tickthreading.patched.PatchWorld">getEntitiesWithinAABBExcludingEntity</replaceMethod>
@@ -93,4 +93,10 @@
 			<synchronize field="facadeBlocks">initialize,blockCreated,getBlockId,getTile,computeConnections</synchronize>
 		</class>
 	</buildCraftTransport>
+	<thermalExpansionTransport>
+		<class id="thermalexpansion.transport.tileentity.TileConduitEnergy">
+			<newField field="tickLock" class="java.lang.Object" static=""/>
+			<synchronize field="tickLock">g</synchronize>
+		</class>
+	</thermalExpansionTransport>
 </mods>

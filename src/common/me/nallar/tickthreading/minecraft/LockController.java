@@ -53,17 +53,19 @@ public class LockController {
 			Log.severe("Failed to read lockedClasses", e);
 		}
 		locks.clear();
-		String[] lockedClassesList = lockedClasses.split(",\\s*");
-		Class clazz;
-		for (String lockedClass : lockedClassesList) {
-			try {
-				clazz = Class.forName(lockedClass);
-			} catch (ClassNotFoundException e) {
-				Log.info("Class " + lockedClass + " not found, not locking.");
-				continue;
+		if (!lockedClasses.isEmpty()) {
+			String[] lockedClassesList = lockedClasses.split(",\\s*");
+			Class clazz;
+			for (String lockedClass : lockedClassesList) {
+				try {
+					clazz = Class.forName(lockedClass);
+				} catch (ClassNotFoundException e) {
+					Log.info("Class " + lockedClass + " not found, not locking.");
+					continue;
+				}
+				locks.put(clazz, new ReentrantLock());
+				Log.info("Added class lock for " + clazz);
 			}
-			locks.put(clazz, new ReentrantLock());
-			Log.info("Added class lock for " + clazz);
 		}
 	}
 

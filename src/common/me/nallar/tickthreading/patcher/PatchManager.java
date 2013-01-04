@@ -288,7 +288,7 @@ public class PatchManager {
 				if (e instanceof InvocationTargetException) {
 					e = (Exception) e.getCause();
 				}
-				Log.severe("Error patching " + ctBehavior.getLongName() + " in " + ctBehavior.getDeclaringClass().getName() + " with " + toString(), e);
+				Log.severe("Error patching " + ctBehavior.getName() + " in " + ctBehavior.getDeclaringClass().getName() + " with " + toString(), e);
 				return null;
 			}
 		}

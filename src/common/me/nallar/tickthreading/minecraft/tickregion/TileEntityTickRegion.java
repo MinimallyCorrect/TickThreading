@@ -3,10 +3,8 @@ package me.nallar.tickthreading.minecraft.tickregion;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.concurrent.locks.Lock;
 
 import me.nallar.tickthreading.Log;
-import me.nallar.tickthreading.minecraft.LockController;
 import me.nallar.tickthreading.minecraft.TickManager;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
@@ -32,12 +30,12 @@ public class TileEntityTickRegion extends TickRegion {
 		boolean xPlusLocked = false;
 		boolean zMinusLocked = false;
 		boolean zPlusLocked = false;
-		Lock classLock = null;
+		//Lock classLock = null;
 		Iterator<TileEntity> tileEntitiesIterator = tileEntitySet.iterator();
 		while (tileEntitiesIterator.hasNext()) {
 			TileEntity tileEntity = tileEntitiesIterator.next();
 			try {
-				classLock = null;
+				//classLock = null;
 				relativeXPos = (tileEntity.xCoord % regionSize) / 2;
 				relativeZPos = (tileEntity.zCoord % regionSize) / 2;
 				xMinusLocked = relativeXPos == 0 && this.xMinusLock != null;
@@ -61,7 +59,7 @@ public class TileEntityTickRegion extends TickRegion {
 						this.xMinusLock.lock();
 					}
 				}
-				classLock = LockController.lock(tileEntity);
+				//classLock = LockController.lock(tileEntity);
 				if (!tileEntity.isInvalid() && tileEntity.func_70309_m() && world.blockExists(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord)) {
 					tileEntity.updateEntity();
 				}
@@ -86,9 +84,9 @@ public class TileEntityTickRegion extends TickRegion {
 						+ "ticking: " + tileEntity.getClass() + " at x,y,z:" + tileEntity.xCoord + ',' + tileEntity.yCoord + ',' + tileEntity.zCoord
 						+ "Tick region: " + toString() + ':', exception);
 			} finally {
-				if (classLock != null) {
-					classLock.unlock();
-				}
+				//if (classLock != null) {
+				//	classLock.unlock();
+				//}
 				if (locked) {
 					if (xMinusLocked) {
 						this.xMinusLock.unlock();
