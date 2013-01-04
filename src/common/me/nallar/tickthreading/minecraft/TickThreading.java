@@ -45,6 +45,7 @@ public class TickThreading {
 	private boolean variableTickRate = true;
 	private boolean requirePatched = true;
 	final Map<World, TickManager> managers = new HashMap<World, TickManager>();
+	private DeadLockDetector deadLockDetector = null;
 	private static TickThreading instance;
 
 	public TickThreading() {
@@ -130,6 +131,9 @@ public class TickThreading {
 			managers.put(event.world, manager);
 		} catch (Exception e) {
 			Log.severe("Failed to initialise threading for world " + Log.name(event.world), e);
+		}
+		if (deadLockDetector == null) {
+			deadLockDetector = new DeadLockDetector(managers);
 		}
 	}
 

@@ -20,7 +20,8 @@ import net.minecraft.world.World;
 public class TickManager {
 	public final int regionSize;
 	public boolean variableTickRate;
-	public long lastTickTime = 0;
+	public int lastTickLength = 0;
+	public long lastStartTime = 0;
 	private final ArrayList<TileEntity> toRemoveTileEntities = new ArrayList<TileEntity>();
 	private final ArrayList<Entity> toRemoveEntities = new ArrayList<Entity>();
 	private final ArrayList<TileEntity> toAddTileEntities = new ArrayList<TileEntity>();
@@ -165,7 +166,8 @@ public class TickManager {
 	}
 
 	public void doTick() {
-		long startTime = System.currentTimeMillis();
+		DeadLockDetector.lastJob = Log.name(world);
+		lastStartTime = System.currentTimeMillis();
 		threadManager.waitForCompletion();
 		threadManager.runList(tickRegions);
 		threadManager.runBackground(new Runnable() {
@@ -174,7 +176,7 @@ public class TickManager {
 				processChanges();
 			}
 		});
-		lastTickTime = System.currentTimeMillis() - startTime;
+		lastTickLength = (int) (System.currentTimeMillis() - lastStartTime);
 	}
 
 	public void unload() {
@@ -198,7 +200,7 @@ public class TickManager {
 	}
 
 	public String getBasicStats() {
-		return Log.name(world) + ": " + Math.min(1000 / lastTickTime, 20) + "tps, " + entityList.size() + " entities, load: " + (this.getTickTime() / 0.5) + "%\n";
+		return Log.name(world) + ": " + Math.min(1000 / lastTickLength, 20) + "tps, " + entityList.size() + " entities, load: " + (this.getTickTime() / 0.5) + "%\n";
 	}
 
 	public String getDetailedStats() {
@@ -226,9 +228,9 @@ public class TickManager {
 		}
 		averageAverageTickTime /= tickRegions.size();
 		stats.append("---- World stats ----").append('\n');
-		stats.append("Average tick time: ").append(averageAverageTickTime).append('\n');
-		stats.append("Max tick time: ").append(maxTickTime).append('\n');
-		stats.append("Effective tick time: ").append((maxTickTime > 55) ? 55 : maxTickTime).append('\n');
+		stats.append("Average tick time: ").append(averageAverageTickTime).append("ms\n");
+		stats.append("Max tick time: ").append(maxTickTime).append("ms\n");
+		stats.append("Effective tick time: ").append(lastTickLength).append("ms");
 		return stats.toString();
 	}
 }

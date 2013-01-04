@@ -26,7 +26,7 @@ public class TPSCommand extends Command {
 		long usedTime = 0;
 		for (TickManager tickManager : TickThreading.instance().getManagers()) {
 			tpsReport.append(tickManager.getBasicStats());
-			usedTime += tickManager.lastTickTime;
+			usedTime += tickManager.lastTickLength;
 		}
 		tpsReport.append("\nOverall TPS: ").append(Math.min(20, 1000 / usedTime))
 				.append("\nOverall load: ").append(usedTime / 0.5).append('%');
