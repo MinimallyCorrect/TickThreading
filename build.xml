@@ -170,6 +170,7 @@
 
 		<!-- Reset src dir to post-forge-install state -->
 		<delete dir="${mcpsrc.dir}/minecraft/me/nallar"/>
+		<delete dir="${mcpsrc.dir}/minecraft/javassist/is/faulty"/>
 
 	</target>
 

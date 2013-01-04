@@ -46,6 +46,7 @@ public class ClassRegistry {
 	private final Map<String, Set<File>> unsafeClassNames = new HashMap<String, Set<File>>();
 	private final Set<ClassPath> classPathSet = new HashSet<ClassPath>();
 	private final Map<String, byte[]> replacementFiles = new HashMap<String, byte[]>();
+	private final Map<String, Set<File>> packageLocations = new HashMap<String, Set<File>>();
 	public final ClassPool classes = new ClassPool(false);
 	public boolean disableJavassistLoading = false;
 	public boolean forcePatching = false;
@@ -104,6 +105,13 @@ public class ClassRegistry {
 			String name = zipEntry.getName();
 			if (name.endsWith(".class")) {
 				String className = name.replace('/', '.').substring(0, name.lastIndexOf('.'));
+				String packageName = getPackage(className);
+				Set<File> packageLocation = packageLocations.get(packageName);
+				if (packageLocation == null) {
+					packageLocation = new HashSet<File>();
+					packageLocations.put(packageName, packageLocation);
+				}
+				packageLocation.add(file);
 				if (classNameToLocation.containsKey(className)) {
 					Set<File> locations = unsafeClassNames.get(className);
 					if (locations == null) {
@@ -128,6 +136,16 @@ public class ClassRegistry {
 	public void update(String className, byte[] replacement) {
 		if (unsafeClassNames.containsKey(className)) {
 			Log.severe(className + " is in multiple jars: " + CollectionsUtil.join(unsafeClassNames.get(className), ", "));
+		}
+		String packageName = getPackage(className);
+		File location = classNameToLocation.get(className);
+		if (packageLocations.containsKey(packageName)) {
+			for (Map.Entry<String, Set<File>> entry : packageLocations.entrySet()) {
+				if (entry.getValue().contains(location)) {
+					updatedFiles.addAll(packageLocations.get(entry.getKey()));
+				}
+			}
+			updatedFiles.addAll(packageLocations.get(packageName));
 		}
 		updatedFiles.add(classNameToLocation.get(className));
 		className = className.replace('.', '/') + ".class";
@@ -227,11 +245,17 @@ public class ClassRegistry {
 					zout.write(stringEntry.getValue());
 					zout.closeEntry();
 				}
-				zout.putNextEntry(isJar(zipFile) ? new JarEntry(hashFileName) : new ZipEntry(hashFileName));
-				String patchHash = String.valueOf(expectedPatchHashes.get(zipFile));
-				zout.write(patchHash.getBytes("UTF-8"));
-				Log.info("Patched " + replacements.size() + " classes in " + zipFile.getName() + ", patchHash: " + patchHash);
-				Log.info("Added " + additionalClasses.size() + " classes required by patches.");
+				if (expectedPatchHashes.containsKey(zipFile)) {
+					zout.putNextEntry(isJar(zipFile) ? new JarEntry(hashFileName) : new ZipEntry(hashFileName));
+					String patchHash = String.valueOf(expectedPatchHashes.get(zipFile));
+					zout.write(patchHash.getBytes("UTF-8"));
+					Log.info("Patched " + replacements.size() + " classes in " + zipFile.getName() + ", patchHash: " + patchHash);
+				} else {
+					Log.info("Removed signing info from " + zipFile.getName());
+				}
+				if (additionalClasses.size() > 0) {
+					Log.info("Added " + additionalClasses.size() + " classes required by patches.");
+				}
 				zin.close();
 				zout.close();
 				tempFile.delete();
@@ -305,5 +329,9 @@ public class ClassRegistry {
 
 	private static boolean isJar(File file) {
 		return file.getName().toLowerCase().endsWith(".jar");
+	}
+
+	private static String getPackage(String className) {
+		return className.substring(0, className.contains(".") ? className.lastIndexOf('.') : 0);
 	}
 }

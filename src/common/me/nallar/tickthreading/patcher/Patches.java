@@ -36,6 +36,11 @@ public class Patches {
 		this.classRegistry = classRegistry;
 	}
 
+	@Patch
+	public void markDirty(CtClass ctClass) {
+		// A NOOP patch to make sure META-INF is removed
+	}
+
 	@Patch (
 			name = "volatile"
 	)
@@ -87,6 +92,27 @@ public class Patches {
 		} else {
 			Log.severe("Missing required attributes for replaceMethod");
 		}
+	}
+
+	@Patch (
+			requiredAttributes = "field,threadLocalField"
+	)
+	public void threadLocal(CtClass ctClass, Map<String, String> attributes) throws CannotCompileException {
+		final String field = attributes.get("field");
+		final String threadLocalField = attributes.get("threadLocalField");
+		Log.info(field + " -> " + threadLocalField);
+		ctClass.instrument(new ExprEditor() {
+			@Override
+			public void edit(FieldAccess e) throws CannotCompileException {
+				if (e.getFieldName().equals(field)) {
+					if (e.isReader()) {
+						e.replace("$_ = " + threadLocalField + ".get();");
+					} else if (e.isWriter()) {
+						e.replace(threadLocalField + ".set($1);");
+					}
+				}
+			}
+		});
 	}
 
 	@Patch (

@@ -101,8 +101,7 @@
 	</thermalExpansionTransport>
 	<redPowerCore>
 		<class id="com.eloraam.redpower.core.RedPowerLib">
-			<!-- TODO: See if this can be made concurrent -->
-			<synchronize>updateCurrent</synchronize>
+			<threadLocal field="blockUpdates" threadLocalField="javassist.is.faulty.ThreadLocals.redPowerBlockUpdateSet"/>
 		</class>
 	</redPowerCore>
 </mods>

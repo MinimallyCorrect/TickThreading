@@ -2,6 +2,7 @@ package me.nallar.tickthreading.patched;
 
 import java.util.List;
 
+import javassist.is.faulty.ThreadLocals;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.profiler.Profiler;
