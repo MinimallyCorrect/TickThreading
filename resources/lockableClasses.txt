@@ -1,1 +1,1 @@
-thermalexpansion.transport.TileConduitEnergy
+thermalexpansion.transport.tileentity.TileConduitEnergy
