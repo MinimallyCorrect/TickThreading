@@ -99,4 +99,10 @@
 			<synchronize field="tickLock">g</synchronize>
 		</class>
 	</thermalExpansionTransport>
+	<redPowerCore>
+		<class id="com.eloraam.redpower.core.RedPowerLib">
+			<!-- TODO: See if this can be made concurrent -->
+			<synchronize>updateCurrent</synchronize>
+		</class>
+	</redPowerCore>
 </mods>
