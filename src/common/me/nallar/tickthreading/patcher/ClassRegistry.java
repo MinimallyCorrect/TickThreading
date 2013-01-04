@@ -34,6 +34,7 @@ import javassist.bytecode.MethodInfo;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.util.CollectionsUtil;
 import me.nallar.tickthreading.util.EnumerableWrapper;
+import me.nallar.tickthreading.util.LocationUtil;
 
 public class ClassRegistry {
 	private static final String hashFileName = "TickThreading.hash";
@@ -64,18 +65,23 @@ public class ClassRegistry {
 		unsafeClassNames.clear();
 		replacementFiles.clear();
 		loadedFiles.clear();
+		packageLocations.clear();
 	}
 
 	public void loadFiles(Iterable<File> filesToLoad) throws IOException {
 		for (File file : filesToLoad) {
 			String extension = file.getName().toLowerCase();
 			extension = extension.substring(extension.lastIndexOf('.') + 1);
-			if (file.isDirectory()) {
-				loadFiles(Arrays.asList(file.listFiles()));
-			} else if (extension.equals("jar")) {
-				loadJar(new JarFile(file));
-			} else if (extension.equals("zip") || extension.equals("litemod")) {
-				loadZip(new ZipFile(file));
+			try {
+				if (file.isDirectory()) {
+					loadFiles(Arrays.asList(file.listFiles()));
+				} else if (extension.equals("jar")) {
+					loadJar(new JarFile(file));
+				} else if (extension.equals("zip") || extension.equals("litemod")) {
+					loadZip(new ZipFile(file));
+				}
+			} catch (ZipException e) {
+				throw new ZipException(e.getMessage() + " file: " + file);
 			}
 		}
 	}
@@ -135,14 +141,20 @@ public class ClassRegistry {
 
 	public void update(String className, byte[] replacement) {
 		if (unsafeClassNames.containsKey(className)) {
-			Log.severe(className + " is in multiple jars: " + CollectionsUtil.join(unsafeClassNames.get(className), ", "));
+			Log.warning(className + " is in multiple jars: " + CollectionsUtil.join(unsafeClassNames.get(className), ", "));
 		}
 		String packageName = getPackage(className);
 		File location = classNameToLocation.get(className);
 		if (packageLocations.containsKey(packageName)) {
+			if (!packageName.isEmpty()) {
+				Log.fine("Marking files for " + packageName + " as dirty");
+			}
 			for (Map.Entry<String, Set<File>> entry : packageLocations.entrySet()) {
 				if (entry.getValue().contains(location)) {
 					updatedFiles.addAll(packageLocations.get(entry.getKey()));
+					if (packageLocations.get(entry.getKey()).contains(LocationUtil.locationOf(PatchMain.class))) {
+						Log.severe(packageName + " -> " + entry.getKey() + " tried to add TT jar to updated list!");
+					}
 				}
 			}
 			updatedFiles.addAll(packageLocations.get(packageName));
@@ -200,6 +212,7 @@ public class ClassRegistry {
 		ZipInputStream zin = null;
 		ZipOutputStream zout = null;
 		backupDirectory.mkdir();
+		updatedFiles.remove(LocationUtil.locationOf(PatchMain.class));
 		try {
 			for (File zipFile : updatedFiles) {
 				File backupFile = new File(backupDirectory, zipFile.getName());

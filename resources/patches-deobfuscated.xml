@@ -101,7 +101,7 @@
 	</thermalExpansionTransport>
 	<redPowerCore>
 		<class id="com.eloraam.redpower.core.RedPowerLib">
-			<threadLocal field="blockUpdates" threadLocalField="javassist.is.faulty.ThreadLocals.redPowerBlockUpdateSet"/>
+			<threadLocal field="blockUpdates" type="java.util.HashSet" threadLocalField="javassist.is.faulty.ThreadLocals.redPowerBlockUpdateSet"/>
 		</class>
 	</redPowerCore>
 </mods>

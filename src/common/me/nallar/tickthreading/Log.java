@@ -1,6 +1,8 @@
 package me.nallar.tickthreading;
 
+import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import cpw.mods.fml.common.FMLLog;
@@ -14,11 +16,28 @@ public class Log {
 	static {
 		try {
 			LOGGER.setParent(FMLLog.getLogger());
+			LOGGER.setUseParentHandlers(true);
 		} catch (NoClassDefFoundError ignored) {
+			LOGGER.setUseParentHandlers(false);
+			LOGGER.addHandler(new Handler() {
+				private LogFormatter logFormatter = new LogFormatter();
+
+				@Override
+				public void publish(LogRecord record) {
+					System.out.print(logFormatter.format(record));
+				}
+
+				@Override
+				public void flush() {
+				}
+
+				@Override
+				public void close() throws SecurityException {
+				}
+			});
 			// Ignored, just means we aren't running under minecraft.
 		}
 		LOGGER.setLevel(Level.ALL);
-		LOGGER.setUseParentHandlers(true);
 	}
 
 	public static void severe(String msg) {

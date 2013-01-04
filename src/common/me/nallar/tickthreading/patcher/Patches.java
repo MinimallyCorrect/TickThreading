@@ -95,20 +95,21 @@ public class Patches {
 	}
 
 	@Patch (
-			requiredAttributes = "field,threadLocalField"
+			requiredAttributes = "field,threadLocalField,type"
 	)
 	public void threadLocal(CtClass ctClass, Map<String, String> attributes) throws CannotCompileException {
 		final String field = attributes.get("field");
 		final String threadLocalField = attributes.get("threadLocalField");
+		final String type = attributes.get("type");
 		Log.info(field + " -> " + threadLocalField);
 		ctClass.instrument(new ExprEditor() {
 			@Override
 			public void edit(FieldAccess e) throws CannotCompileException {
 				if (e.getFieldName().equals(field)) {
 					if (e.isReader()) {
-						e.replace("$_ = " + threadLocalField + ".get();");
+						e.replace("{ $_ = (" + type + ") " + threadLocalField + ".get(); }");
 					} else if (e.isWriter()) {
-						e.replace(threadLocalField + ".set($1);");
+						e.replace("{ " + threadLocalField + ".set((" + type + ") $1); }");
 					}
 				}
 			}
