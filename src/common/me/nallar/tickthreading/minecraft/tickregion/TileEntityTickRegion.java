@@ -86,6 +86,9 @@ public class TileEntityTickRegion extends TickRegion {
 						+ "ticking: " + tileEntity.getClass() + " at x,y,z:" + tileEntity.xCoord + ',' + tileEntity.yCoord + ',' + tileEntity.zCoord
 						+ "Tick region: " + toString() + ':', exception);
 			} finally {
+				if (classLock != null) {
+					classLock.unlock();
+				}
 				if (locked) {
 					if (xMinusLocked) {
 						this.xMinusLock.unlock();
@@ -100,9 +103,6 @@ public class TileEntityTickRegion extends TickRegion {
 					if (xPlusLocked) {
 						this.xPlusLock.unlock();
 					}
-				}
-				if (classLock != null) {
-					classLock.unlock();
 				}
 			}
 		}
