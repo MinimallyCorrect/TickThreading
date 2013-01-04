@@ -40,15 +40,15 @@ public class DeadLockDetector {
 		if (deadTime > 10000) {
 			StringBuilder sb = new StringBuilder();
 			sb.append("The server appears to have deadlocked!")
-					.append("\nTicking: ").append(lastJob);
+					.append("\nTicking: ").append(lastJob).append('\n');
 			Map<Thread, StackTraceElement[]> traces = Thread.getAllStackTraces();
 			for (Map.Entry<Thread, StackTraceElement[]> entry : traces.entrySet()) {
 				Thread thread = entry.getKey();
-				sb.append("Current Thread: ").append(thread.getName()).append("    PID: ").append(thread.getId())
+				sb.append("Current Thread: ").append(thread.getName()).append('\n').append("    PID: ").append(thread.getId())
 						.append(" | Alive: ").append(thread.isAlive()).append(" | State: ").append(thread.getState())
-						.append("    Stack:");
+						.append("    Stack:").append('\n');
 				for (StackTraceElement stackTraceElement : entry.getValue()) {
-					sb.append("        ").append(stackTraceElement.toString());
+					sb.append("        ").append(stackTraceElement.toString()).append('\n');
 				}
 			}
 			Log.severe(sb.toString());
