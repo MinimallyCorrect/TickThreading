@@ -20,6 +20,7 @@ import net.minecraft.world.World;
 public class TickManager {
 	public final int regionSize;
 	public boolean variableTickRate;
+	public long lastTickTime = 0;
 	private final ArrayList<TileEntity> toRemoveTileEntities = new ArrayList<TileEntity>();
 	private final ArrayList<Entity> toRemoveEntities = new ArrayList<Entity>();
 	private final ArrayList<TileEntity> toAddTileEntities = new ArrayList<TileEntity>();
@@ -164,6 +165,7 @@ public class TickManager {
 	}
 
 	public void doTick() {
+		long startTime = System.currentTimeMillis();
 		threadManager.waitForCompletion();
 		threadManager.runList(tickRegions);
 		threadManager.runBackground(new Runnable() {
@@ -172,6 +174,7 @@ public class TickManager {
 				processChanges();
 			}
 		});
+		lastTickTime = System.currentTimeMillis() - startTime;
 	}
 
 	public void unload() {
@@ -191,21 +194,11 @@ public class TickManager {
 				maxTickTime = averageTickTime;
 			}
 		}
-		return (maxTickTime > 55) ? 55 : maxTickTime;
-	}
-
-	public float getEffectiveTickTime() {
-		float tickTime = getTickTime();
-		if (tickTime < 50) {
-			tickTime = 50;
-		} else if (tickTime > 55 && variableTickRate) {
-			tickTime = 55;
-		}
-		return tickTime;
+		return (maxTickTime > 55 && variableTickRate) ? 55 : maxTickTime;
 	}
 
 	public String getBasicStats() {
-		return Log.name(world) + ": " + (1000 / this.getEffectiveTickTime()) + "tps, " + entityList.size() + " entities, load: " + (this.getTickTime() / 2) + "%\n";
+		return Log.name(world) + ": " + Math.min(1000 / lastTickTime, 20) + "tps, " + entityList.size() + " entities, load: " + (this.getTickTime() / 0.5) + "%\n";
 	}
 
 	public String getDetailedStats() {
