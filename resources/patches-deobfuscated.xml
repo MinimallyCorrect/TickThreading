@@ -74,23 +74,17 @@
 			<synchronize>a(Ljava/lang/String;)V,b()V</synchronize>
 		</class>
 	</liteLoader>
+	<!-- Might not be needed
 	<buildCraftAPI>
 		<class id="buildcraft.api.power.PowerProvider">
 			<volatile/>
 			<synchronize/>
 		</class>
 	</buildCraftAPI>
+	-->
 	<buildCraftTransport>
 		<class id="buildcraft.transport.TileGenericPipe">
 			<synchronize field="facadeBlocks">initialize,blockCreated,getBlockId,getTile,computeConnections</synchronize>
 		</class>
 	</buildCraftTransport>
-	<thermalExpansion>
-		<class id="thermalexpansion.transport.GridEnergy">
-			<synchronize/>
-		</class>
-		<class id="thermalexpansion.transport.PowerProviderGrid">
-			<synchronize/>
-		</class>
-	</thermalExpansion>
 </mods>

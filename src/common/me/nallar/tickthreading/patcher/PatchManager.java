@@ -292,5 +292,9 @@ public class PatchManager {
 				return null;
 			}
 		}
+
+		public String toString() {
+			return name;
+		}
 	}
 }

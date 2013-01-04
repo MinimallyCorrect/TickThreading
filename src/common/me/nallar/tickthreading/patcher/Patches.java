@@ -167,7 +167,7 @@ public class Patches {
 		ctClass.addMethod(replacement);
 	}
 
-	@Patch(
+	@Patch (
 			emptyConstructor = false
 	)
 	public void synchronize(Object o, Map<String, String> attributes) throws CannotCompileException {
