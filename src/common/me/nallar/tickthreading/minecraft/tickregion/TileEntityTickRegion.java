@@ -35,8 +35,8 @@ public class TileEntityTickRegion extends TickRegion {
 		Lock classLock = null;
 		Iterator<TileEntity> tileEntitiesIterator = tileEntitySet.iterator();
 		while (tileEntitiesIterator.hasNext()) {
+			TileEntity tileEntity = tileEntitiesIterator.next();
 			try {
-				TileEntity tileEntity = tileEntitiesIterator.next();
 				classLock = null;
 				relativeXPos = (tileEntity.xCoord % regionSize) / 2;
 				relativeZPos = (tileEntity.zCoord % regionSize) / 2;
@@ -82,8 +82,9 @@ public class TileEntityTickRegion extends TickRegion {
 					Log.severe("Inconsistent state: " + tileEntity + " is in the wrong TickRegion.");
 				}
 			} catch (Exception exception) {
-				Log.severe("Exception during tile entity tick ");
-				Log.severe("Tick region: " + toString() + ':', exception);
+				Log.severe("Exception during tile entity tick\n"
+						+ "ticking: " + tileEntity.getClass() + " at x,y,z:" + tileEntity.xCoord + ',' + tileEntity.yCoord + ',' + tileEntity.zCoord
+						+ "Tick region: " + toString() + ':', exception);
 			} finally {
 				if (locked) {
 					if (xMinusLocked) {
