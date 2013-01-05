@@ -1,6 +1,7 @@
 package me.nallar.tickthreading.minecraft;
 
 import java.util.Map;
+import java.util.TreeMap;
 
 import me.nallar.tickthreading.Log;
 import net.minecraft.world.World;
@@ -38,16 +39,19 @@ public class DeadLockDetector {
 		}
 		int deadTime = (int) (System.currentTimeMillis() - lastRunTime);
 		if (deadTime > 10000) {
+			TreeMap<String, Thread> sortedThreads = new TreeMap<String, Thread>();
 			StringBuilder sb = new StringBuilder();
 			sb.append("The server appears to have deadlocked!")
 					.append("\nTicking: ").append(lastJob).append('\n');
 			Map<Thread, StackTraceElement[]> traces = Thread.getAllStackTraces();
-			for (Map.Entry<Thread, StackTraceElement[]> entry : traces.entrySet()) {
-				Thread thread = entry.getKey();
+			for (Thread thread : traces.keySet()) {
+				sortedThreads.put(thread.getName(), thread);
+			}
+			for (Thread thread : sortedThreads.values()) {
 				sb.append("Current Thread: ").append(thread.getName()).append('\n').append("    PID: ").append(thread.getId())
 						.append(" | Alive: ").append(thread.isAlive()).append(" | State: ").append(thread.getState())
 						.append("    Stack:").append('\n');
-				for (StackTraceElement stackTraceElement : entry.getValue()) {
+				for (StackTraceElement stackTraceElement : thread.getStackTrace()) {
 					sb.append("        ").append(stackTraceElement.toString()).append('\n');
 				}
 			}
