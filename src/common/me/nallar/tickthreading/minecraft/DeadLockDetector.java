@@ -1,6 +1,7 @@
 package me.nallar.tickthreading.minecraft;
 
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -19,9 +20,11 @@ public class DeadLockDetector {
 	private final Map<World, TickManager> managerMap;
 	private final Thread deadlockThread;
 	private static final ITickHandler tickHandler = new ITickHandler() {
+		private EnumSet<TickType> tickTypes = EnumSet.of(TickType.SERVER, TickType.CLIENTGUI);
+
 		@Override
 		public void tickStart(EnumSet<TickType> type, Object... tickData) {
-			tick("Tick start");
+			tick("Server tick start");
 		}
 
 		@Override
@@ -30,15 +33,13 @@ public class DeadLockDetector {
 
 		@Override
 		public EnumSet<TickType> ticks() {
-			return null;
+			return tickTypes;
 		}
 
 		@Override
 		public String getLabel() {
-			return null;
+			return "TickThreading Deadlock Detector";
 		}
-
-		;
 	};
 
 	public DeadLockDetector(Map<World, TickManager> managerMap) {
@@ -90,7 +91,7 @@ public class DeadLockDetector {
 				}
 			}
 			Log.severe(sb.toString());
-			for (World world : managerMap.keySet()) {
+			for (World world : new HashMap<World, TickManager>(managerMap).keySet()) {
 				TickThreading.instance().onWorldUnload(new WorldEvent.Unload(world));
 			}
 			if (TickThreading.instance().exitOnDeadlock) {
