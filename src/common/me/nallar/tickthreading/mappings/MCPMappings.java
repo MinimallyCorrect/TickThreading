@@ -28,6 +28,7 @@ public class MCPMappings extends Mappings {
 				Log.info("Failed to directly map " + methodDescription
 						+ "\n would map to " + obfuscated);
 				obfuscated = methodDescription;
+				obfuscated.obfuscateClasses();
 			}
 		}
 		return obfuscated;

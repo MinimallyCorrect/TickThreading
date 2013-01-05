@@ -91,6 +91,9 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 		}
 		writeRequests--;
 		writeAccesses++;
+		if (writingThread != null) {
+			throw new IllegalStateException("Writing thread was already set when granting write access");
+		}
 		writingThread = callingThread;
 	}
 

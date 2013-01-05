@@ -154,4 +154,8 @@ public class MethodDescription {
 		}
 		return stringBuilder.toString();
 	}
+
+	public void obfuscateClasses() {
+		// TODO: obfuscate parameters and return type
+	}
 }
