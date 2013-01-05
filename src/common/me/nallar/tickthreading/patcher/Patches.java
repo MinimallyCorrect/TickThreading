@@ -190,7 +190,7 @@ public class Patches {
 		CtClass ctClass = ctMethod.getDeclaringClass();
 		CtMethod replacement = CtNewMethod.copy(ctMethod, ctClass, null);
 		ctMethod.setName(ctMethod.getName() + "_nolock");
-		replacement.setBody("{ this." + field + ".lock(); try { return $proceed($$); } finally { this." + field + ".unlock(); } }", "this", ctMethod.getName());
+		replacement.setBody("{ this." + field + ".lock(); try { return " + (attributes.get("methodcall") == null ? "$proceed" : ctMethod.getName()) + "($$); } finally { this." + field + ".unlock(); } }", "this", ctMethod.getName());
 		ctClass.addMethod(replacement);
 	}
 

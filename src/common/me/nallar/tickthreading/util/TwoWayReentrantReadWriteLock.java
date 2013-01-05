@@ -52,7 +52,7 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 		Thread callingThread = Thread.currentThread();
 		while (cantGrantReadAccess(callingThread)) {
 			try {
-				wait();
+				wait(0, 100);
 			} catch (InterruptedException ignored) {
 			}
 		}
@@ -85,7 +85,7 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 		Thread callingThread = Thread.currentThread();
 		while (cantGrantWriteAccess(callingThread)) {
 			try {
-				wait();
+				wait(0, 100);
 			} catch (InterruptedException ignored) {
 			}
 		}
