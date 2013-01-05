@@ -38,7 +38,7 @@ public class DeadLockDetector {
 			return true;
 		}
 		int deadTime = (int) (System.currentTimeMillis() - lastRunTime);
-		if (deadTime > 10000) {
+		if (deadTime > 30000) {
 			TreeMap<String, Thread> sortedThreads = new TreeMap<String, Thread>();
 			StringBuilder sb = new StringBuilder();
 			sb.append("The server appears to have deadlocked!")
@@ -56,6 +56,7 @@ public class DeadLockDetector {
 				}
 			}
 			Log.severe(sb.toString());
+			System.exit(1);
 			return false;
 		}
 		return true;
