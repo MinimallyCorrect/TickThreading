@@ -101,6 +101,8 @@ public class Patches {
 		final String field = attributes.get("field");
 		final String threadLocalField = attributes.get("threadLocalField");
 		final String type = attributes.get("type");
+		String setExpression_ = attributes.get("setExpression");
+		final String setExpression = setExpression_ == null ? '(' + type + ") $1" : setExpression_;
 		Log.info(field + " -> " + threadLocalField);
 		ctClass.instrument(new ExprEditor() {
 			@Override
@@ -109,7 +111,7 @@ public class Patches {
 					if (e.isReader()) {
 						e.replace("{ $_ = (" + type + ") " + threadLocalField + ".get(); }");
 					} else if (e.isWriter()) {
-						e.replace("{ " + threadLocalField + ".set((" + type + ") $1); }");
+						e.replace("{ " + threadLocalField + ".set(" + setExpression + "); }");
 					}
 				}
 			}
