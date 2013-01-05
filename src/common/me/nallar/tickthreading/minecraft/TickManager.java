@@ -20,6 +20,7 @@ import net.minecraft.world.World;
 public class TickManager {
 	public final int regionSize;
 	public boolean variableTickRate;
+	public float averageTickLength = 0;
 	public int lastTickLength = 0;
 	public long lastStartTime = 0;
 	private final ArrayList<TileEntity> toRemoveTileEntities = new ArrayList<TileEntity>();
@@ -177,6 +178,7 @@ public class TickManager {
 			}
 		});
 		lastTickLength = (int) (System.currentTimeMillis() - lastStartTime);
+		averageTickLength = ((averageTickLength * 127) + lastTickLength) / 128;
 	}
 
 	public void unload() {
@@ -200,7 +202,7 @@ public class TickManager {
 	}
 
 	public String getBasicStats() {
-		return Log.name(world) + ": " + Math.min(1000 / lastTickLength, 20) + "tps, " + entityList.size() + " entities, load: " + (this.getTickTime() * 2) + "%\n";
+		return Log.name(world) + ": " + Math.min(1000 / averageTickLength, 20) + "tps, " + entityList.size() + " entities, load: " + (this.getTickTime() * 2) + "%\n";
 	}
 
 	public String getDetailedStats() {
@@ -231,6 +233,7 @@ public class TickManager {
 		stats.append("Average tick time: ").append(averageAverageTickTime).append("ms\n");
 		stats.append("Max tick time: ").append(maxTickTime).append("ms\n");
 		stats.append("Effective tick time: ").append(lastTickLength).append("ms");
+		stats.append("Average effective tick time: ").append(averageTickLength).append("ms");
 		return stats.toString();
 	}
 }
