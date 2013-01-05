@@ -28,8 +28,8 @@ public class TPSCommand extends Command {
 			tpsReport.append(tickManager.getBasicStats());
 			usedTime += tickManager.lastTickLength;
 		}
-		tpsReport.append("\nOverall TPS: ").append(Math.min(20, 1000 / usedTime))
-				.append("\nOverall load: ").append(usedTime / 0.5).append('%');
+		tpsReport.append("\nOverall TPS: ").append(Math.min(20, 1000 / (usedTime == 0 ? 1 : usedTime)))
+				.append("\nOverall load: ").append(usedTime * 2).append('%');
 		sendChat(commandSender, tpsReport.toString());
 	}
 }
