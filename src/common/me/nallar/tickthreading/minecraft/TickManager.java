@@ -200,7 +200,7 @@ public class TickManager {
 	}
 
 	public String getBasicStats() {
-		return Log.name(world) + ": " + Math.min(1000 / lastTickLength, 20) + "tps, " + entityList.size() + " entities, load: " + (this.getTickTime() / 0.5) + "%\n";
+		return Log.name(world) + ": " + Math.min(1000 / lastTickLength, 20) + "tps, " + entityList.size() + " entities, load: " + (this.getTickTime() * 2) + "%\n";
 	}
 
 	public String getDetailedStats() {
