@@ -44,6 +44,7 @@ public class TickThreading {
 	private int regionSize = 16;
 	private boolean variableTickRate = true;
 	private boolean requirePatched = true;
+	public boolean exitOnDeadlock = false;
 	final Map<World, TickManager> managers = new HashMap<World, TickManager>();
 	private DeadLockDetector deadLockDetector = null;
 	private static TickThreading instance;
@@ -89,6 +90,8 @@ public class TickThreading {
 		tpsCommandName.comment = "Name of the command to be used for TPS reports.";
 		Property requirePatchedProperty = config.get(Configuration.CATEGORY_GENERAL, "requirePatched", requirePatched);
 		requirePatchedProperty.comment = "If the server must be patched to run with TickThreading";
+		Property exitOnDeadlockProperty = config.get(Configuration.CATEGORY_GENERAL, "exitOnDeadlock", exitOnDeadlock);
+		exitOnDeadlockProperty.comment = "If the server should shut down when a deadlock is detected";
 		config.save();
 
 		tickThreads = tickThreadsProperty.getInt(tickThreads);
@@ -99,6 +102,7 @@ public class TickThreading {
 		TicksCommand.name = ticksCommandName.value;
 		TPSCommand.name = tpsCommandName.value;
 		requirePatched = requirePatchedProperty.getBoolean(requirePatched);
+		exitOnDeadlock = exitOnDeadlockProperty.getBoolean(exitOnDeadlock);
 	}
 
 	@Mod.ServerStarting

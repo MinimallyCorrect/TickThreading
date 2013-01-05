@@ -167,8 +167,7 @@ public class TickManager {
 	}
 
 	public void doTick() {
-		DeadLockDetector.lastJob = Log.name(world);
-		lastStartTime = System.currentTimeMillis();
+		lastStartTime = DeadLockDetector.tick("TickManager.doTick: " + Log.name(world));
 		threadManager.waitForCompletion();
 		threadManager.runList(tickRegions);
 		threadManager.waitForCompletion();
