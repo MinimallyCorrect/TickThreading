@@ -87,7 +87,9 @@
 	-->
 	<buildCraftTransport>
 		<class id="buildcraft.transport.TileGenericPipe">
-			<synchronize field="facadeBlocks">initialize,getBlockId,getTile,computeConnections</synchronize>
+			<newField field="staticLock" class="java.lang.Object" static=""/>
+			<synchronize field="staticLock">initialize</synchronize>
+			<synchronize field="facadeBlocks">blockCreated,getBlockId,getTile,computeConnections</synchronize>
 		</class>
 		<class id="buildcraft.transport.PipeTransportItems">
 			<!--
@@ -99,7 +101,7 @@
 	<thermalExpansionTransport>
 		<class id="thermalexpansion.transport.tileentity.TileConduitEnergy">
 			<newField field="tickLock" class="java.lang.Object" static=""/>
-			<synchronize field="tickLock">g</synchronize>
+			<synchronize field="tickLock">updateGridIfNull</synchronize>
 		</class>
 	</thermalExpansionTransport>
 	<redPowerCore>
