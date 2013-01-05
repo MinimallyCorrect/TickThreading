@@ -12,9 +12,9 @@ import java.util.concurrent.locks.ReadWriteLock;
  */
 public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 	private final Map<Thread, Integer> readingThreads = new ConcurrentHashMap<Thread, Integer>();
-	private int writeAccesses = 0;
-	private int writeRequests = 0;
-	private Thread writingThread = null;
+	private volatile int writeAccesses = 0;
+	private volatile int writeRequests = 0;
+	private volatile Thread writingThread = null;
 	private final Lock readLock = new SimpleLock() {
 		@Override
 		public void lock() {
