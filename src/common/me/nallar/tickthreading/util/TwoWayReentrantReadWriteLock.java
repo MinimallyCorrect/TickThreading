@@ -85,7 +85,7 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 
 	public synchronized void lockWrite() {
 		writeRequests++;
-		debug("lockwrite");
+		//debug("lockwrite");
 		Thread callingThread = Thread.currentThread();
 		while (cantGrantWriteAccess(callingThread)) {
 			try {
@@ -111,7 +111,7 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 			writingThread = null;
 		}
 		notifyAll();
-		debug("unlockwrite");
+		//debug("unlockwrite");
 	}
 
 	private boolean cantGrantWriteAccess(Thread callingThread) {
