@@ -22,7 +22,7 @@ public class Log {
 		try {
 			LOGGER.setParent(FMLLog.getLogger());
 			LOGGER.setUseParentHandlers(true);
-			saveToFile(new File("tickthreading.log"), FMLLog.getLogger(), LOGGER);
+			saveToFile(new File("tickthreading.log"), LOGGER);
 		} catch (NoClassDefFoundError ignored) {
 			// Not running under forge
 			LOGGER.setUseParentHandlers(false);
