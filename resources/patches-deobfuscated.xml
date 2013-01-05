@@ -92,6 +92,12 @@
 		<class id="buildcraft.transport.TileGenericPipe">
 			<synchronize field="facadeBlocks">initialize,blockCreated,getBlockId,getTile,computeConnections</synchronize>
 		</class>
+		<class id="buildcraft.transport.PipeTransportItems">
+			<!--
+			<synchronize field="travelingEntities">moveSolids,entityEntering</synchronize>
+			-->
+			<newInitializer field="travelingEntities" class="java.util.concurrent.ConcurrentHashMap"/>
+		</class>
 	</buildCraftTransport>
 	<thermalExpansionTransport>
 		<class id="thermalexpansion.transport.tileentity.TileConduitEnergy">
