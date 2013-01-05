@@ -17,7 +17,7 @@ public class Reporter {
 		if (reportedHashes.size() > 20 || !reportedHashes.add(hashCode(e))) {
 			return;
 		}
-		reportingThreadManager.runBackground(new Report(e));
+		reportingThreadManager.run(new Report(e));
 	}
 
 	private static long hashCode(Throwable e) {

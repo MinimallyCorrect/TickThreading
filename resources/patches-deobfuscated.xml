@@ -90,7 +90,7 @@
 	-->
 	<buildCraftTransport>
 		<class id="buildcraft.transport.TileGenericPipe">
-			<synchronize field="facadeBlocks">initialize,blockCreated,getBlockId,getTile,computeConnections</synchronize>
+			<synchronize field="facadeBlocks">initialize,getBlockId,getTile,computeConnections</synchronize>
 		</class>
 		<class id="buildcraft.transport.PipeTransportItems">
 			<!--

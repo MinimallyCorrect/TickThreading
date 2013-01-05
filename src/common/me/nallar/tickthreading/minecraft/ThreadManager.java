@@ -91,19 +91,17 @@ public class ThreadManager {
 			}
 		};
 		for (int i = 0, len = workThreads.size(); i < len; i++) {
-			runBackground(arrayRunnable);
+			run(arrayRunnable);
 		}
-		waitForCompletion();
 	}
 
 	public void run(Iterable<? extends Runnable> tasks) {
 		for (Runnable runnable : tasks) {
-			runBackground(runnable);
+			run(runnable);
 		}
-		waitForCompletion();
 	}
 
-	public void runBackground(Runnable runnable) {
+	public void run(Runnable runnable) {
 		if (taskQueue.add(runnable)) {
 			waiting.incrementAndGet();
 		} else {

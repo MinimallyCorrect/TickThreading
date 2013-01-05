@@ -171,7 +171,8 @@ public class TickManager {
 		lastStartTime = System.currentTimeMillis();
 		threadManager.waitForCompletion();
 		threadManager.runList(tickRegions);
-		threadManager.runBackground(new Runnable() {
+		threadManager.waitForCompletion();
+		threadManager.run(new Runnable() {
 			@Override
 			public void run() {
 				processChanges();
