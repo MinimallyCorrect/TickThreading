@@ -14,7 +14,7 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 	private final Map<Thread, Integer> readingThreads = new HashMap<Thread, Integer>();
 	private volatile int writeAccesses = 0;
 	private volatile int writeRequests = 0;
-	protected boolean unfair = false;
+	protected boolean fair = true;
 	private volatile Thread writingThread = null;
 	private final Lock readLock = new SimpleLock() {
 		@Override
@@ -63,7 +63,7 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 	}
 
 	private boolean cantGrantReadAccess(Thread callingThread) {
-		return isNotWriter(callingThread) && (hasWriter() || (isNotReader(callingThread) && (unfair || hasWriteRequests())));
+		return isNotWriter(callingThread) && (hasWriter() || (isNotReader(callingThread) && (fair && hasWriteRequests())));
 	}
 
 	public synchronized void unlockRead() {
