@@ -50,6 +50,7 @@ public class TickThreading {
 	private static TickThreading instance;
 
 	public TickThreading() {
+		Log.LOGGER.getLevel(); // Force log class to load
 		if (requirePatched && PatchManager.shouldPatch(LocationUtil.getJarLocations())) {
 			enabled = false;
 			try {

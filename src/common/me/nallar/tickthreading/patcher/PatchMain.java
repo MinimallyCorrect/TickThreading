@@ -53,6 +53,7 @@ public class PatchMain {
 	}
 
 	private static void patcher(String[] args) {
+		Log.saveToFile(new File("patcher.log"), Log.LOGGER);
 		boolean forcePatching = args.length >= 2 && "force".equalsIgnoreCase(args[1]);
 		PatchManager patchManager;
 		try {
