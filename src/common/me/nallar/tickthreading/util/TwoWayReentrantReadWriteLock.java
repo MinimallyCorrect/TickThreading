@@ -7,6 +7,8 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 
+import me.nallar.tickthreading.Log;
+
 /**
  * Derived from http://tutorials.jenkov.com/java-concurrency/read-write-locks.html#full
  */
@@ -83,6 +85,7 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 
 	public synchronized void lockWrite() {
 		writeRequests++;
+		debug("lockwrite");
 		Thread callingThread = Thread.currentThread();
 		while (cantGrantWriteAccess(callingThread)) {
 			try {
@@ -108,6 +111,7 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 			writingThread = null;
 		}
 		notifyAll();
+		debug("unlockwrite");
 	}
 
 	private boolean cantGrantWriteAccess(Thread callingThread) {
@@ -145,6 +149,10 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 
 	private boolean hasWriteRequests() {
 		return this.writeRequests > 0;
+	}
+
+	private void debug(String pos) {
+		Log.info(pos + ", r: " + readingThreads.size() + ", w: " + (writingThread == null) + ", wa: " + writeAccesses + ", wr: " + writeRequests);
 	}
 
 	private abstract static class SimpleLock implements Lock {
