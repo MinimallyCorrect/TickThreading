@@ -59,6 +59,17 @@ public class TileEntityTickRegion extends TickRegion {
 						this.xMinusLock.lock();
 					}
 				}
+				if (manager.getHashCode(tileEntity) != hashCode) {
+					tileEntitiesIterator.remove();
+					manager.add(tileEntity);
+					if (hashCode != 0) {
+						Log.severe("Inconsistent state, a tile entity is in the wrong TickRegion"
+								+ "\n entity: " + tileEntity.getClass() + " at x,y,z:" + tileEntity.xCoord + ',' + tileEntity.yCoord + ',' + tileEntity.zCoord
+								+ "\n Has hashcode: " + manager.getHashCode(tileEntity)
+								+ "\n Region: " + toString());
+					}
+					continue;
+				}
 				//classLock = LockController.lock(tileEntity);
 				if (!tileEntity.isInvalid() && tileEntity.func_70309_m() && world.blockExists(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord)) {
 					tileEntity.updateEntity();
@@ -74,15 +85,11 @@ public class TileEntityTickRegion extends TickRegion {
 							chunk.cleanChunkBlockTileEntity(tileEntity.xCoord & 0xf, tileEntity.yCoord, tileEntity.zCoord & 0xf);
 						}
 					}
-				} else if (manager.getHashCode(tileEntity) != hashCode) {
-					tileEntitiesIterator.remove();
-					manager.add(tileEntity);
-					Log.severe("Inconsistent state: " + tileEntity + " is in the wrong TickRegion.");
 				}
 			} catch (Exception exception) {
-				Log.severe("Exception during tile entity tick\n"
-						+ "ticking: " + tileEntity.getClass() + " at x,y,z:" + tileEntity.xCoord + ',' + tileEntity.yCoord + ',' + tileEntity.zCoord
-						+ "Tick region: " + toString() + ':', exception);
+				Log.severe("Exception during tile entity tick"
+						+ "\nticking: " + tileEntity.getClass() + " at x,y,z:" + tileEntity.xCoord + ',' + tileEntity.yCoord + ',' + tileEntity.zCoord
+						+ "\nTick region: " + toString() + ':', exception);
 			} finally {
 				//if (classLock != null) {
 				//	classLock.unlock();
@@ -107,11 +114,33 @@ public class TileEntityTickRegion extends TickRegion {
 	}
 
 	public void add(TileEntity tileEntity) {
-		tileEntitySet.add(tileEntity);
+		synchronized (tickStateLock) {
+			if (ticking) {
+				toAdd.add(tileEntity);
+			} else {
+				tileEntitySet.add(tileEntity);
+			}
+		}
 	}
 
 	public boolean remove(TileEntity tileEntity) {
-		return tileEntitySet.remove(tileEntity);
+		synchronized (tickStateLock) {
+			if (ticking) {
+				return toRemove.add(tileEntity);
+			} else {
+				return tileEntitySet.remove(tileEntity);
+			}
+		}
+	}
+
+	@Override
+	public void processChanges() {
+		synchronized (tickStateLock) {
+			tileEntitySet.addAll(toAdd);
+			tileEntitySet.removeAll(toRemove);
+			toAdd.clear();
+			toRemove.clear();
+		}
 	}
 
 	@Override

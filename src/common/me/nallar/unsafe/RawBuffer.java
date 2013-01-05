@@ -40,7 +40,7 @@ public class RawBuffer {
 	private static class UnsafeDeallocator implements Runnable {
 		private final long address;
 
-		private UnsafeDeallocator(long address) {
+		UnsafeDeallocator(long address) {
 			this.address = address;
 		}
 

@@ -7,7 +7,7 @@ import me.nallar.tickthreading.minecraft.ThreadManager;
 
 public class Reporter {
 	private static final Set<Long> reportedHashes = new ConcurrentSkipListSet<Long>();
-	private static ThreadManager reportingThreadManager = new ThreadManager(1, "me.nallar error reporting thread");
+	private static final ThreadManager reportingThreadManager = new ThreadManager(1, "me.nallar error reporting thread");
 
 	static {
 		reportedHashes.add(0L);

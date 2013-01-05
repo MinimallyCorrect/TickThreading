@@ -19,9 +19,9 @@ public class PatchMain {
 		}
 		String type = argv[0];
 		String[] args = Arrays.copyOfRange(argv, 1, argv.length);
-		if (type.equalsIgnoreCase("obfuscator")) {
+		if ("obfuscator".equalsIgnoreCase(type)) {
 			obfuscator(args);
-		} else if (type.equalsIgnoreCase("patcher")) {
+		} else if ("patcher".equalsIgnoreCase(type)) {
 			patcher(args);
 		} else {
 			Log.severe(type + " is not a valid action.");
@@ -53,7 +53,7 @@ public class PatchMain {
 	}
 
 	private static void patcher(String[] args) {
-		boolean forcePatching = args.length >= 2 && args[1].equalsIgnoreCase("force");
+		boolean forcePatching = args.length >= 2 && "force".equalsIgnoreCase(args[1]);
 		PatchManager patchManager;
 		try {
 			patchManager = new PatchManager(PatchMain.class.getResourceAsStream("/patches.xml"), Patches.class);

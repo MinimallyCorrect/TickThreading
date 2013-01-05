@@ -1,5 +1,7 @@
 package me.nallar.tickthreading.minecraft.tickregion;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -7,6 +9,10 @@ import me.nallar.tickthreading.minecraft.TickManager;
 import net.minecraft.world.World;
 
 public abstract class TickRegion implements Runnable {
+	protected final Object tickStateLock = new Object();
+	protected volatile boolean ticking = false;
+	protected final Set toRemove = new LinkedHashSet();
+	protected final Set toAdd = new LinkedHashSet();
 	volatile Lock thisLock = new ReentrantLock();
 	volatile Lock xPlusLock = null;
 	volatile Lock xMinusLock = null;
@@ -76,7 +82,13 @@ public abstract class TickRegion implements Runnable {
 	public void run() {
 		if (shouldTick()) {
 			long startTime = System.currentTimeMillis();
+			synchronized (tickStateLock) {
+				ticking = true;
+			}
 			doTick();
+			synchronized (tickStateLock) {
+				ticking = false;
+			}
 			averageTickTime = ((averageTickTime * 127) + (System.currentTimeMillis() - startTime)) / 128;
 		}
 	}
@@ -115,4 +127,6 @@ public abstract class TickRegion implements Runnable {
 	protected abstract TickRegion getCallable(int regionX, int regionZ);
 
 	public abstract boolean isEmpty();
+
+	public abstract void processChanges();
 }

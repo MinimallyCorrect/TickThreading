@@ -75,9 +75,9 @@ public class ClassRegistry {
 			try {
 				if (file.isDirectory()) {
 					loadFiles(Arrays.asList(file.listFiles()));
-				} else if (extension.equals("jar")) {
+				} else if ("jar".equals(extension)) {
 					loadJar(new JarFile(file));
-				} else if (extension.equals("zip") || extension.equals("litemod")) {
+				} else if ("zip".equals(extension) || "litemod".equals(extension)) {
 					loadZip(new ZipFile(file));
 				}
 			} catch (ZipException e) {

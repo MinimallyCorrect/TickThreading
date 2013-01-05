@@ -18,9 +18,8 @@ public class DeadLockDetector {
 	private static volatile String lastJob = "";
 	private static volatile long lastTickTime = 0;
 	private final Map<World, TickManager> managerMap;
-	private final Thread deadlockThread;
 	private static final ITickHandler tickHandler = new ITickHandler() {
-		private EnumSet<TickType> tickTypes = EnumSet.of(TickType.SERVER, TickType.CLIENTGUI);
+		private final EnumSet<TickType> tickTypes = EnumSet.of(TickType.SERVER, TickType.CLIENTGUI);
 
 		@Override
 		public void tickStart(EnumSet<TickType> type, Object... tickData) {
@@ -44,7 +43,7 @@ public class DeadLockDetector {
 
 	public DeadLockDetector(Map<World, TickManager> managerMap) {
 		this.managerMap = managerMap;
-		deadlockThread = new Thread(new Runnable() {
+		Thread deadlockThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				while (checkForDeadlocks()) {

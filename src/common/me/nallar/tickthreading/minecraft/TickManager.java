@@ -23,10 +23,6 @@ public class TickManager {
 	public float averageTickLength = 0;
 	public int lastTickLength = 0;
 	public long lastStartTime = 0;
-	private final ArrayList<TileEntity> toRemoveTileEntities = new ArrayList<TileEntity>();
-	private final ArrayList<Entity> toRemoveEntities = new ArrayList<Entity>();
-	private final ArrayList<TileEntity> toAddTileEntities = new ArrayList<TileEntity>();
-	private final ArrayList<Entity> toAddEntities = new ArrayList<Entity>();
 	private final Map<Integer, TileEntityTickRegion> tileEntityCallables = new HashMap<Integer, TileEntityTickRegion>();
 	private final Map<Integer, EntityTickRegion> entityCallables = new HashMap<Integer, EntityTickRegion>();
 	private final ArrayList<TickRegion> tickRegions = new ArrayList<TickRegion>();
@@ -51,13 +47,15 @@ public class TickManager {
 	@SuppressWarnings ("NumericCastThatLosesPrecision")
 	private TileEntityTickRegion getOrCreateCallable(TileEntity tileEntity) {
 		int hashCode = getHashCode(tileEntity);
-		TileEntityTickRegion callable = tileEntityCallables.get(hashCode);
-		if (callable == null) {
-			callable = new TileEntityTickRegion(world, this, tileEntity.xCoord / regionSize, tileEntity.zCoord / regionSize);
-			tileEntityCallables.put(hashCode, callable);
-			tickRegions.add(callable);
+		synchronized (tickRegions) {
+			TileEntityTickRegion callable = tileEntityCallables.get(hashCode);
+			if (callable == null) {
+				callable = new TileEntityTickRegion(world, this, tileEntity.xCoord / regionSize, tileEntity.zCoord / regionSize);
+				tileEntityCallables.put(hashCode, callable);
+				tickRegions.add(callable);
+			}
+			return callable;
 		}
-		return callable;
 	}
 
 	public TickRegion getEntityCallable(int hashCode) {
@@ -69,13 +67,15 @@ public class TickManager {
 		int regionX = (int) entity.posX / regionSize;
 		int regionZ = (int) entity.posZ / regionSize;
 		int hashCode = getHashCodeFromRegionCoords(regionX, regionZ);
-		EntityTickRegion callable = entityCallables.get(hashCode);
-		if (callable == null) {
-			callable = new EntityTickRegion(world, this, regionX, regionZ);
-			entityCallables.put(hashCode, callable);
-			tickRegions.add(callable);
+		synchronized (tickRegions) {
+			EntityTickRegion callable = entityCallables.get(hashCode);
+			if (callable == null) {
+				callable = new EntityTickRegion(world, this, regionX, regionZ);
+				entityCallables.put(hashCode, callable);
+				tickRegions.add(callable);
+			}
+			return callable;
 		}
-		return callable;
 	}
 
 	public int getHashCode(TileEntity tileEntity) {
@@ -97,35 +97,20 @@ public class TickManager {
 
 	private void processChanges() {
 		try {
-			synchronized (this) {
-				for (TileEntity tileEntity : toRemoveTileEntities) {
-					getOrCreateCallable(tileEntity).remove(tileEntity);
-				}
-				for (TileEntity tileEntity : toAddTileEntities) {
-					getOrCreateCallable(tileEntity).add(tileEntity);
-				}
-				for (Entity entity : toRemoveEntities) {
-					getOrCreateCallable(entity).remove(entity);
-				}
-				for (Entity entity : toAddEntities) {
-					getOrCreateCallable(entity).add(entity);
-				}
-				toAddEntities.clear();
-				toAddTileEntities.clear();
-				toRemoveEntities.clear();
-				toRemoveTileEntities.clear();
-			}
-			Iterator<TickRegion> iterator = tickRegions.iterator();
-			while (iterator.hasNext()) {
-				TickRegion tickRegion = iterator.next();
-				if (tickRegion.isEmpty()) {
-					iterator.remove();
-					if (tickRegion instanceof EntityTickRegion) {
-						entityCallables.remove(tickRegion.hashCode);
-					} else {
-						tileEntityCallables.remove(tickRegion.hashCode);
+			synchronized (tickRegions) {
+				Iterator<TickRegion> iterator = tickRegions.iterator();
+				while (iterator.hasNext()) {
+					TickRegion tickRegion = iterator.next();
+					tickRegion.processChanges();
+					if (tickRegion.isEmpty()) {
+						iterator.remove();
+						if (tickRegion instanceof EntityTickRegion) {
+							entityCallables.remove(tickRegion.hashCode);
+						} else {
+							tileEntityCallables.remove(tickRegion.hashCode);
+						}
+						tickRegion.die();
 					}
-					tickRegion.die();
 				}
 			}
 		} catch (Exception e) {
@@ -134,28 +119,24 @@ public class TickManager {
 	}
 
 	public synchronized void add(TileEntity tileEntity) {
-		toAddTileEntities.add(tileEntity);
-		toRemoveTileEntities.remove(tileEntity);
+		getOrCreateCallable(tileEntity).add(tileEntity);
 	}
 
 	public synchronized void add(Entity entity) {
-		toAddEntities.add(entity);
+		getOrCreateCallable(entity).add(entity);
 		synchronized (entityList) {
 			if (!entityList.contains(entity)) {
 				entityList.add(entity);
 			}
 		}
-		toRemoveEntities.remove(entity);
 	}
 
 	public synchronized void remove(TileEntity tileEntity) {
-		toRemoveTileEntities.add(tileEntity);
-		toAddTileEntities.remove(tileEntity);
+		getOrCreateCallable(tileEntity).remove(tileEntity);
 	}
 
 	public synchronized void remove(Entity entity) {
-		toRemoveEntities.add(entity);
-		toAddEntities.remove(entity);
+		getOrCreateCallable(entity).remove(entity);
 		removed(entity);
 	}
 

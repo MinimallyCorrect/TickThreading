@@ -34,7 +34,7 @@ public class ThreadManager {
 						runnable = taskQueue.take();
 					}
 					if (runnable == killTask) {
-						workThreads.remove(this);
+						workThreads.remove(Thread.currentThread());
 						return;
 					}
 					runnable.run();

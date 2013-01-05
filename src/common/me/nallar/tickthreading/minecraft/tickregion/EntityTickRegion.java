@@ -61,11 +61,33 @@ public class EntityTickRegion extends TickRegion {
 	}
 
 	public void add(Entity entity) {
-		entitySet.add(entity);
+		synchronized (tickStateLock) {
+			if (ticking) {
+				toAdd.add(entity);
+			} else {
+				entitySet.add(entity);
+			}
+		}
 	}
 
 	public boolean remove(Entity entity) {
-		return entitySet.remove(entity);
+		synchronized (tickStateLock) {
+			if (ticking) {
+				return toRemove.add(entity);
+			} else {
+				return entitySet.remove(entity);
+			}
+		}
+	}
+
+	@Override
+	public void processChanges() {
+		synchronized (tickStateLock) {
+			entitySet.addAll(toAdd);
+			entitySet.removeAll(toRemove);
+			toAdd.clear();
+			toRemove.clear();
+		}
 	}
 
 	@Override

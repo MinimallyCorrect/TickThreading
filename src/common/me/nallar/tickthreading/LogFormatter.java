@@ -10,7 +10,7 @@ import java.util.logging.LogRecord;
 
 public class LogFormatter extends Formatter {
 	private static final String lineSeparator = System.getProperty("line.separator");
-	private SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd HH:mm:ss");
+	private final SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd HH:mm:ss");
 
 	@Override
 	public String format(LogRecord record) {

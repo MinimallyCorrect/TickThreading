@@ -144,6 +144,9 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 	}
 
 	private abstract static class SimpleLock implements Lock {
+		SimpleLock() {
+		}
+
 		@Override
 		public void lockInterruptibly() throws InterruptedException {
 			lock();
