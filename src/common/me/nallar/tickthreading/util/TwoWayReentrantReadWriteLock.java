@@ -1,7 +1,7 @@
 package me.nallar.tickthreading.util;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -11,7 +11,7 @@ import java.util.concurrent.locks.ReadWriteLock;
  * Derived from http://tutorials.jenkov.com/java-concurrency/read-write-locks.html#full
  */
 public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
-	private final Map<Thread, Integer> readingThreads = new ConcurrentHashMap<Thread, Integer>();
+	private final Map<Thread, Integer> readingThreads = new HashMap<Thread, Integer>();
 	private volatile int writeAccesses = 0;
 	private volatile int writeRequests = 0;
 	private volatile Thread writingThread = null;
