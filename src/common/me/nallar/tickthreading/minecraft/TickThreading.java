@@ -3,9 +3,9 @@ package me.nallar.tickthreading.minecraft;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
@@ -45,7 +45,7 @@ public class TickThreading {
 	private boolean variableTickRate = true;
 	private boolean requirePatched = true;
 	public boolean exitOnDeadlock = false;
-	final Map<World, TickManager> managers = new HashMap<World, TickManager>();
+	final Map<World, TickManager> managers = new WeakHashMap<World, TickManager>();
 	private DeadLockDetector deadLockDetector = null;
 	private static TickThreading instance;
 

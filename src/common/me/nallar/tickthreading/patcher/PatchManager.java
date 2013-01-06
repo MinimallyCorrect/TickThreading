@@ -94,7 +94,9 @@ public class PatchManager {
 			//Should not be thrown, as we do not do anything to the DocumentBuilderFactory.
 			Log.severe("Java was bad, you shouldn't see this. DocBuilder instantiation via default docBuilderFactory failed", e);
 		} finally {
-			configInputStream.close();
+			if (configInputStream != null) {
+				configInputStream.close();
+			}
 		}
 		return null;
 	}

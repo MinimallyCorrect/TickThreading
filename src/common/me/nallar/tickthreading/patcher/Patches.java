@@ -126,18 +126,21 @@ public class Patches {
 	}
 
 	@Patch (
-			requiredAttributes = "field,class"
+			requiredAttributes = "field"
 	)
 	public void newInitializer(CtClass ctClass, Map<String, String> attributes) throws NotFoundException, CannotCompileException, IOException {
 		String field = attributes.get("field");
 		String clazz = attributes.get("class");
-		String initialise = "{ " + field + " = new " + clazz + "(); }";
+		String initialise = attributes.get("code");
+		initialise = "{ " + field + " = " + (initialise == null ? ("new " + clazz + "()") : initialise) + "; }";
 		// Return value ignored - just used to cause a NotFoundException if the field doesn't exist.
 		ctClass.getDeclaredField(field);
 		for (CtConstructor ctConstructor : ctClass.getConstructors()) {
 			ctConstructor.insertAfter(initialise);
 		}
-		classRegistry.add(ctClass, clazz);
+		if (clazz != null) {
+			classRegistry.add(ctClass, clazz);
+		}
 	}
 
 	@Patch (

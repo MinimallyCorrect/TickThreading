@@ -115,7 +115,13 @@
 	</redPowerCore>
 	<industrialCraft>
 		<class id="ic2.core.EnergyNet">
-			<synchronize>addTileEntity</synchronize>
+			<newInitializer field="energySourceToEnergyPathMap" code="java.util.Collections.synchronizedMap(new java.util.WeakHashMap&lt;Class, Object&gt;());"/>
+			<newInitializer field="entityLivingToShockEnergyMap" code="java.util.Collections.synchronizedMap(new java.util.WeakHashMap&lt;Class, Object&gt;());"/>
+			<newField field="readWriteLock" class="me.nallar.tickthreading.util.TwoWayReentrantReadWriteLock"/>
+			<newField field="writeLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>
+			<newField field="readLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.readLock();"/>
+			<lock field="writeLock">addTileEntity,removeTileEntity</lock>
+			<lock field="readLock">emitEnergyFrom</lock>
 		</class>
 	</industrialCraft>
 	<!--
