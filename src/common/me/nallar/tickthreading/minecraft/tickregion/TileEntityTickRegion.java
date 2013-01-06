@@ -86,10 +86,10 @@ public class TileEntityTickRegion extends TickRegion {
 						}
 					}
 				}
-			} catch (Exception exception) {
+			} catch (Throwable throwable) {
 				Log.severe("Exception during tile entity tick"
 						+ "\nticking: " + tileEntity.getClass() + " at x,y,z:" + tileEntity.xCoord + ',' + tileEntity.yCoord + ',' + tileEntity.zCoord
-						+ "\nTick region: " + toString() + ':', exception);
+						+ "\nTick region: " + toString() + ':', throwable);
 			} finally {
 				//if (classLock != null) {
 				//	classLock.unlock();

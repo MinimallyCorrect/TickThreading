@@ -55,8 +55,8 @@ public class EntityTickRegion extends TickRegion {
 					// Entities are supposed to move, of course this will happen!
 				}
 			}
-		} catch (Exception exception) {
-			Log.severe("Exception during entity tick at " + toString() + ':', exception);
+		} catch (Throwable throwable) {
+			Log.severe("Exception during entity tick at " + toString() + ':', throwable);
 		}
 	}
 
