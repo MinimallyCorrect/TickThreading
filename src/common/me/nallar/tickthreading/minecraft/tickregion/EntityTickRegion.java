@@ -47,6 +47,7 @@ public class EntityTickRegion extends TickRegion {
 
 					entitiesIterator.remove();
 					manager.removed(entity);
+					world.releaseEntitySkin(entity);
 				} else if (manager.getHashCode(entity) != hashCode) {
 					entitiesIterator.remove();
 					manager.add(entity);

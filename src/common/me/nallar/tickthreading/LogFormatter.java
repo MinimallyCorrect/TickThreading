@@ -40,7 +40,9 @@ public class LogFormatter extends Formatter {
 
 		formattedMessage.append(record.getMessage().replace("\r\n", "\n").replace("\n", lineSeparator).trim()).append(lineSeparator);
 
-		Throwable throwable = record.getThrown();
+		@SuppressWarnings ("ThrowableResultOfMethodCallIgnored")
+		// No need to throw this, we're in a log formatter!
+				Throwable throwable = record.getThrown();
 		if (throwable != null) {
 			StringWriter throwableDump = new StringWriter();
 			throwable.printStackTrace(new PrintWriter(throwableDump));

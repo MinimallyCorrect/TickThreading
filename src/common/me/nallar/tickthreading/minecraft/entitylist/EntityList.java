@@ -11,7 +11,7 @@ import net.minecraft.world.World;
 * Used to override World.loadedTileEntityList.
 * */
 public abstract class EntityList<T> extends ArrayList<T> {
-	final TickManager manager;
+	public final TickManager manager;
 
 	EntityList(World world, Field overriddenField, TickManager manager) {
 		this.manager = manager;

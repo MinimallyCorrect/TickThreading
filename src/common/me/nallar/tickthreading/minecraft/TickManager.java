@@ -23,12 +23,13 @@ public class TickManager {
 	public float averageTickLength = 0;
 	public int lastTickLength = 0;
 	public long lastStartTime = 0;
+	public final World world;
 	private final Map<Integer, TileEntityTickRegion> tileEntityCallables = new HashMap<Integer, TileEntityTickRegion>();
 	private final Map<Integer, EntityTickRegion> entityCallables = new HashMap<Integer, EntityTickRegion>();
 	private final ArrayList<TickRegion> tickRegions = new ArrayList<TickRegion>();
 	private final ThreadManager threadManager;
-	public final World world;
 	public final List<Entity> entityList = new ArrayList<Entity>();
+	private final Map<Class<?>, Integer> entityClassToCountMap = new HashMap<Class<?>, Integer>();
 
 	public TickManager(World world, int regionSize, int threads) {
 		threadManager = new ThreadManager(threads == 0 ? (Runtime.getRuntime().availableProcessors() * 3) / 2 : threads, "Tick Thread for " + Log.name(world));
@@ -127,6 +128,12 @@ public class TickManager {
 		synchronized (entityList) {
 			if (!entityList.contains(entity)) {
 				entityList.add(entity);
+				Class entityClass = entity.getClass();
+				Integer count = entityClassToCountMap.get(entityClass);
+				if (count == null) {
+					count = 0;
+				}
+				entityClassToCountMap.put(entityClass, count + 1);
 			}
 		}
 	}
@@ -143,7 +150,12 @@ public class TickManager {
 	public void removed(Entity entity) {
 		synchronized (entityList) {
 			entityList.remove(entity);
-			world.releaseEntitySkin(entity);
+			Class entityClass = entity.getClass();
+			Integer count = entityClassToCountMap.get(entityClass);
+			if (count == null) {
+				count = 0;
+			}
+			entityClassToCountMap.put(entityClass, count - 1);
 		}
 	}
 
@@ -169,6 +181,7 @@ public class TickManager {
 		}
 		tickRegions.clear();
 		entityList.clear();
+		entityClassToCountMap.clear();
 	}
 
 	public float getTickTime() {
@@ -216,5 +229,15 @@ public class TickManager {
 		stats.append("\nEffective tick time: ").append(lastTickLength).append("ms");
 		stats.append("\nAverage effective tick time: ").append(averageTickLength).append("ms");
 		return stats.toString();
+	}
+
+	public int getEntityCount(Class<?> clazz) {
+		int count = 0;
+		for (Map.Entry<Class<?>, Integer> entry : entityClassToCountMap.entrySet()) {
+			if (clazz.isAssignableFrom(entry.getKey())) {
+				count += entry.getValue();
+			}
+		}
+		return count;
 	}
 }

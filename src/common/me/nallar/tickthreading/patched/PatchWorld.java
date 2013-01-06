@@ -3,6 +3,8 @@ package me.nallar.tickthreading.patched;
 import java.util.List;
 
 import javassist.is.faulty.ThreadLocals;
+import me.nallar.tickthreading.Log;
+import me.nallar.tickthreading.minecraft.entitylist.EntityList;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.profiler.Profiler;
@@ -82,5 +84,16 @@ public abstract class PatchWorld extends World {
 		}
 
 		return entitiesWithinAABBExcludingEntity;
+	}
+
+	@Override
+	public int countEntities(Class entityType) {
+		try {
+			return ((EntityList) this.loadedEntityList).manager.getEntityCount(entityType);
+		} catch (ClassCastException ignored) {
+		} catch (Exception e) {
+			Log.severe("Failed to count entities", e);
+		}
+		return super.countEntities(entityType);
 	}
 }
