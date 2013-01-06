@@ -210,11 +210,11 @@ public class TickManager {
 			}
 		}
 		averageAverageTickTime /= tickRegions.size();
-		stats.append("---- World stats ----").append('\n');
-		stats.append("Average tick time: ").append(averageAverageTickTime).append("ms\n");
-		stats.append("Max tick time: ").append(maxTickTime).append("ms\n");
-		stats.append("Effective tick time: ").append(lastTickLength).append("ms");
-		stats.append("Average effective tick time: ").append(averageTickLength).append("ms");
+		stats.append("---- World stats ----");
+		stats.append("\nAverage tick time: ").append(averageAverageTickTime).append("ms");
+		stats.append("\nMax tick time: ").append(maxTickTime).append("ms");
+		stats.append("\nEffective tick time: ").append(lastTickLength).append("ms");
+		stats.append("\nAverage effective tick time: ").append(averageTickLength).append("ms");
 		return stats.toString();
 	}
 }
