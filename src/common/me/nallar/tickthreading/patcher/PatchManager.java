@@ -179,7 +179,7 @@ public class PatchManager {
 							ctClass = (CtClass) result;
 						}
 					} catch (Exception e) {
-						Log.severe("Failed to patch " + ctClass + " with " + patch.name + " :(");
+						Log.severe("Failed to patch " + ctClass.getName() + " with " + patch.name, e);
 					}
 				}
 				if (patched) {

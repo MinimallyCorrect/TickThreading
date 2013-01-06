@@ -76,7 +76,7 @@ public class TickThreading {
 		Configuration config = new Configuration(event.getSuggestedConfigurationFile());
 		config.load();
 		Property tickThreadsProperty = config.get(Configuration.CATEGORY_GENERAL, "tickThreads", tickThreads);
-		tickThreadsProperty.comment = "number of threads to use to tick. 0 = automatic (number of cores)";
+		tickThreadsProperty.comment = "number of threads to use to tick. 0 = automatic";
 		Property enableEntityTickThreadingProperty = config.get(Configuration.CATEGORY_GENERAL, "enableEntityTickThreading", enableEntityTickThreading);
 		enableEntityTickThreadingProperty.comment = "Whether entity ticks should be threaded";
 		Property enableTileEntityTickThreadingProperty = config.get(Configuration.CATEGORY_GENERAL, "enableTileEntityTickThreading", enableTileEntityTickThreading);

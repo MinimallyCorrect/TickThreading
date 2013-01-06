@@ -2,6 +2,8 @@ package me.nallar.tickthreading.minecraft.entitylist;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.ListIterator;
 
 import me.nallar.tickthreading.minecraft.TickManager;
 import net.minecraft.entity.Entity;
@@ -13,6 +15,21 @@ public class LoadedEntityList<T> extends EntityList<T> {
 	}
 
 	public boolean tickAccess = false;
+
+	@Override
+	public Iterator<T> iterator() {
+		return (Iterator<T>) manager.entityList.iterator();
+	}
+
+	@Override
+	public ListIterator<T> listIterator() {
+		return (ListIterator<T>) manager.entityList.listIterator();
+	}
+
+	@Override
+	public ListIterator<T> listIterator(int index) {
+		return (ListIterator<T>) manager.entityList.listIterator(index);
+	}
 
 	@Override
 	public boolean contains(Object o) {

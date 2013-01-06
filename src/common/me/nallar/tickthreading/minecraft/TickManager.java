@@ -31,7 +31,7 @@ public class TickManager {
 	public final List<Entity> entityList = new ArrayList<Entity>();
 
 	public TickManager(World world, int regionSize, int threads) {
-		threadManager = new ThreadManager(threads == 0 ? Runtime.getRuntime().availableProcessors() : threads, "Tick Thread for " + Log.name(world));
+		threadManager = new ThreadManager(threads == 0 ? (Runtime.getRuntime().availableProcessors() * 3) / 2 : threads, "Tick Thread for " + Log.name(world));
 		this.world = world;
 		this.regionSize = regionSize;
 	}

@@ -118,9 +118,17 @@
 			<synchronize>addTileEntity</synchronize>
 		</class>
 	</industrialCraft>
+	<!--
+	This does not appear to be needed.
 	<stevesCarts>
 		<class id="vswe.stevescarts.Carts.entMCBase">
-			<synchronize>addModuleClass</synchronize>
+			<newField field="staticLock" class="java.lang.Object" static=""/>
+			<synchronize field="staticLock">doUpdate,getCon</synchronize>
+			<synchronize>addModuleClass,d,k_</synchronize>
+		</class>
+		<class id="vswe.stevescarts.PacketHandler">
+			<logExceptions>receivePacketAtCart</logExceptions>
 		</class>
 	</stevesCarts>
+	-->
 </mods>
