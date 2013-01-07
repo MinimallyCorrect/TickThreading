@@ -64,6 +64,11 @@
 			<lock field="readLock">findNearestVillage,func_82566_a</lock>
 		</class>
 	</minecraftCommon>
+	<forgeModLoader>
+		<class id="cpw.mods.fml.common.FMLModContainer">
+			<replaceFieldUsage field="fingerprintNotPresent" readCode="$_ = false;"/>
+		</class>
+	</forgeModLoader>
 	<factorization>
 		<class id="factorization.common.TileEntityWrathLamp">
 			<!-- ಠ_ಠ -->

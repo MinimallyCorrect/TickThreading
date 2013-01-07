@@ -99,6 +99,30 @@ public class Patches {
 	}
 
 	@Patch (
+			requiredAttributes = "field"
+	)
+	public void replaceFieldUsage(CtBehavior ctBehavior, Map<String, String> attributes) throws CannotCompileException {
+		final String field = attributes.get("field");
+		final String readCode = attributes.get("readCode");
+		final String writeCode = attributes.get("writeCode");
+		if (readCode == null && writeCode == null) {
+			throw new IllegalArgumentException("readCode or writeCode must be set");
+		}
+		ctBehavior.instrument(new ExprEditor() {
+			@Override
+			public void edit(FieldAccess fieldAccess) throws CannotCompileException {
+				if (fieldAccess.getFieldName() == field) {
+					if (fieldAccess.isWriter() && writeCode != null) {
+						fieldAccess.replace(writeCode);
+					} else if (fieldAccess.isReader() && readCode != null) {
+						fieldAccess.replace(readCode);
+					}
+				}
+			}
+		});
+	}
+
+	@Patch (
 			requiredAttributes = "fromClass"
 	)
 	public void addAll(CtClass ctClass, Map<String, String> attributes) throws NotFoundException, CannotCompileException, BadBytecode {

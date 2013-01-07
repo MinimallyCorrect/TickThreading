@@ -73,6 +73,13 @@ public class TickThreading {
 
 	@Mod.PreInit
 	public void preInit(FMLPreInitializationEvent event) {
+		Log.severe("TickThreading is installed on this server!"
+				+ "\nIf anything breaks, check if it is still broken without TickThreading"
+				+ "\nWe don't want to annoy mod devs with issue reports caused by TickThreading."
+				+ "\nIf it's only broken with TickThreading, report it at"
+				+ "http://github.com/nallar/TickThreading"
+				+ "\n\nThe FML invalid fingerprint event has been disabled as some mods break if it is fired"
+				+ "\nEG, forestry as an attempt to stop tekkit from including it.");
 		Configuration config = new Configuration(event.getSuggestedConfigurationFile());
 		config.load();
 		Property tickThreadsProperty = config.get(Configuration.CATEGORY_GENERAL, "tickThreads", tickThreads);
