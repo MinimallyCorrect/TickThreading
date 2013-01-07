@@ -2,7 +2,7 @@
 <mods>
 	<minecraftCommon>
 		<class id="net.minecraft.profiler.Profiler">
-			<synchronize>startSection,endSection,endStartSection</synchronize>
+			<addAll fromClass="me.nallar.tickthreading.patched.PatchProfiler"/>
 		</class>
 		<class id="net.minecraft.network.packet.Packet51MapChunk">
 			<volatile field="chunkData"/>
