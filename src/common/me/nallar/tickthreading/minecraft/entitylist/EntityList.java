@@ -3,6 +3,9 @@ package me.nallar.tickthreading.minecraft.entitylist;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 
 import me.nallar.tickthreading.minecraft.TickManager;
 import net.minecraft.world.World;
@@ -12,9 +15,11 @@ import net.minecraft.world.World;
 * */
 public abstract class EntityList<T> extends ArrayList<T> {
 	public final TickManager manager;
+	public final List innerList;
 
-	EntityList(World world, Field overriddenField, TickManager manager) {
+	EntityList(World world, Field overriddenField, TickManager manager, List innerList) {
 		this.manager = manager;
+		this.innerList = innerList;
 		overriddenField.setAccessible(true);
 		try {
 			//This should hopefully avoid leaving the world in a bad state if something goes wrong.
@@ -26,17 +31,10 @@ public abstract class EntityList<T> extends ArrayList<T> {
 	}
 
 	@Override
-	public boolean contains(Object o) {
-		return false;
-	}
-
-	@Override
-	public int size() {
-		return 0;
-	}
-
-	@Override
 	public abstract boolean add(T t);
+
+	@Override
+	public abstract boolean remove(Object o);
 
 	@Override
 	public boolean addAll(Collection<? extends T> c) {
@@ -57,5 +55,47 @@ public abstract class EntityList<T> extends ArrayList<T> {
 	}
 
 	@Override
-	public abstract boolean remove(Object o);
+	public Iterator<T> iterator() {
+		return (Iterator<T>) manager.entityList.iterator();
+	}
+
+	@Override
+	public ListIterator<T> listIterator() {
+		return (ListIterator<T>) manager.entityList.listIterator();
+	}
+
+	@Override
+	public ListIterator<T> listIterator(int index) {
+		return (ListIterator<T>) manager.entityList.listIterator(index);
+	}
+
+	@Override
+	public boolean contains(Object o) {
+		return manager.entityList.contains(o);
+	}
+
+	@Override
+	public int size() {
+		return manager.entityList.size();
+	}
+
+	@Override
+	public T get(int index) {
+		return (T) manager.entityList.get(index);
+	}
+
+	@Override
+	public boolean containsAll(Collection<?> c) {
+		return manager.entityList.containsAll(c);
+	}
+
+	@Override
+	public boolean retainAll(Collection<?> c) {
+		return manager.entityList.retainAll(c);
+	}
+
+	@Override
+	public String toString() {
+		return manager.entityList.toString();
+	}
 }

@@ -28,6 +28,7 @@ public class TickManager {
 	private final Map<Integer, EntityTickRegion> entityCallables = new HashMap<Integer, EntityTickRegion>();
 	private final ArrayList<TickRegion> tickRegions = new ArrayList<TickRegion>();
 	private final ThreadManager threadManager;
+	public final List<TileEntity> tileEntityList = new ArrayList<TileEntity>();
 	public final List<Entity> entityList = new ArrayList<Entity>();
 	private final Map<Class<?>, Integer> entityClassToCountMap = new HashMap<Class<?>, Integer>();
 
@@ -121,6 +122,11 @@ public class TickManager {
 
 	public synchronized void add(TileEntity tileEntity) {
 		getOrCreateCallable(tileEntity).add(tileEntity);
+		synchronized (tileEntityList) {
+			if (!tileEntityList.contains(tileEntity)) {
+				tileEntityList.remove(tileEntity);
+			}
+		}
 	}
 
 	public synchronized void add(Entity entity) {
@@ -140,11 +146,18 @@ public class TickManager {
 
 	public synchronized void remove(TileEntity tileEntity) {
 		getOrCreateCallable(tileEntity).remove(tileEntity);
+		removed(tileEntity);
 	}
 
 	public synchronized void remove(Entity entity) {
 		getOrCreateCallable(entity).remove(entity);
 		removed(entity);
+	}
+
+	public void removed(TileEntity tileEntity) {
+		synchronized (tileEntityList) {
+			tileEntityList.remove(tileEntity);
+		}
 	}
 
 	public void removed(Entity entity) {

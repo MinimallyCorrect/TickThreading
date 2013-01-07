@@ -77,6 +77,7 @@ public class TileEntityTickRegion extends TickRegion {
 				//Yes, this is correct. Can't be simplified to else if, as it may be invalidated during updateEntity
 				if (tileEntity.isInvalid()) {
 					tileEntitiesIterator.remove();
+					manager.removed(tileEntity);
 					tileEntity.onChunkUnload();
 					//Log.fine("Removed tile entity: " + tileEntity.xCoord + ", " + tileEntity.yCoord + ", " + tileEntity.zCoord + "\ttype:" + tileEntity.getClass().toString());
 					if (chunkProvider.chunkExists(tileEntity.xCoord >> 4, tileEntity.zCoord >> 4)) {

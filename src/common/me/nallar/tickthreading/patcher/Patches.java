@@ -80,17 +80,44 @@ public class Patches {
 			CtMethod replacingMethod = fromMethod == null ?
 					classRegistry.getClass(fromClass).getDeclaredMethod(method.getName(), method.getParameterTypes())
 					: MethodDescription.fromString(fromClass, fromMethod).inClass(classRegistry.getClass(fromClass));
-			Log.info("Replacing " + new MethodDescription(method).getMCPName() + " with " + new MethodDescription(replacingMethod).getMCPName());
-			ClassMap classMap = new ClassMap();
-			classMap.put(fromClass, method.getDeclaringClass().getName());
-			method.setBody(replacingMethod, classMap);
-			method.getMethodInfo().rebuildStackMap(classRegistry.classes);
-			method.getMethodInfo().rebuildStackMapForME(classRegistry.classes);
+			replaceMethod(method, replacingMethod);
 		} else if (code != null) {
 			Log.info("Replacing " + new MethodDescription(method).getMCPName() + " with " + code);
 			method.setBody(code);
 		} else {
 			Log.severe("Missing required attributes for replaceMethod");
+		}
+	}
+
+	private void replaceMethod(CtMethod oldMethod, CtMethod newMethod) throws CannotCompileException, BadBytecode {
+		Log.info("Replacing " + new MethodDescription(oldMethod).getMCPName() + " with " + new MethodDescription(newMethod).getMCPName());
+		ClassMap classMap = new ClassMap();
+		classMap.put(newMethod.getClass().getName(), oldMethod.getDeclaringClass().getName());
+		oldMethod.setBody(newMethod, classMap);
+		oldMethod.getMethodInfo().rebuildStackMap(classRegistry.classes);
+		oldMethod.getMethodInfo().rebuildStackMapForME(classRegistry.classes);
+	}
+
+	@Patch (
+			requiredAttributes = "fromClass"
+	)
+	public void addAll(CtClass ctClass, Map<String, String> attributes) throws NotFoundException, CannotCompileException, BadBytecode {
+		String fromClass = attributes.get("fromClass");
+		CtClass from = classRegistry.getClass(fromClass);
+		ClassMap classMap = new ClassMap();
+		classMap.put(fromClass, ctClass.getName());
+		for (CtField ctField : from.getDeclaredFields()) {
+			Log.info("Added " + ctField);
+			ctClass.addField(new CtField(ctField, ctClass));
+		}
+		for (CtMethod newMethod : from.getDeclaredMethods()) {
+			Log.info("Replaced " + newMethod.getName());
+			try {
+				CtMethod oldMethod = ctClass.getDeclaredMethod(newMethod.getName(), newMethod.getParameterTypes());
+				replaceMethod(oldMethod, newMethod);
+			} catch (NotFoundException ignored) {
+				ctClass.addMethod(CtNewMethod.copy(newMethod, ctClass, classMap));
+			}
 		}
 	}
 

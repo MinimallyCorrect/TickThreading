@@ -121,6 +121,8 @@
 
 	<target name="compile" depends="initialize-version,setup,download-libs">
 
+		<replace file="${mcpsrc.dir}/minecraft/net/minecraft/world/World.java" token="    private " value="    protected "/>
+
 		<delete dir="${classes.dir}"/>
 		<mkdir dir="${classes.dir}"/>
 
@@ -179,6 +181,11 @@
 
 		<unzip dest="${classes.dir}/" src="${lib.dir}/javassist.jar"/>
 		<delete dir="${classes.dir}/META-INF"/>
+		<delete>
+			<fileset dir="${classes.dir}">
+				<include name="*.class"/>
+			</fileset>
+		</delete>
 
 		<path id="class.path">
 			<fileset dir="${mcp.dir}/lib">
