@@ -8,7 +8,12 @@
 			<volatile field="field_73587_e"/>
 		</class>
 		<class id="net.minecraft.world.gen.ChunkProviderServer">
-			<synchronize field="loadedChunkHashMap">loadChunk</synchronize>
+			<synchronize field="loadedChunkHashMap">safeLoadChunk,loadChunk,unload100OldestChunks</synchronize>
+		</class>
+		<class id="net.minecraft.entity.player.EntityPlayerMP">
+			<!-- TODO: Fix this with less locking -->
+			<newField field="staticLock" class="java.lang.Object" static=""/>
+			<synchronize field="staticLock">onUpdate</synchronize>
 		</class>
 		<class id="net.minecraft.world.WorldServer">
 			<!-- Fixes an issue where the tickNextTickLists would become out of sync -->
