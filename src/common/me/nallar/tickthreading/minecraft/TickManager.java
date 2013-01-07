@@ -124,7 +124,7 @@ public class TickManager {
 		getOrCreateCallable(tileEntity).add(tileEntity);
 		synchronized (tileEntityList) {
 			if (!tileEntityList.contains(tileEntity)) {
-				tileEntityList.remove(tileEntity);
+				tileEntityList.add(tileEntity);
 			}
 		}
 	}

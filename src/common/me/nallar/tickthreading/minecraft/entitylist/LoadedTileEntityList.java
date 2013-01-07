@@ -8,8 +8,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 
 public class LoadedTileEntityList<T> extends EntityList<T> {
-	private final Iterable<T> emptyList = Collections.emptyList();
-
 	public LoadedTileEntityList(World world, Field overriddenField, TickManager manager) {
 		super(world, overriddenField, manager, manager.tileEntityList);
 	}
