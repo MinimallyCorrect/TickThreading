@@ -1,7 +1,6 @@
 package me.nallar.tickthreading.minecraft.entitylist;
 
 import java.lang.reflect.Field;
-import java.util.Collections;
 
 import me.nallar.tickthreading.minecraft.TickManager;
 import net.minecraft.tileentity.TileEntity;

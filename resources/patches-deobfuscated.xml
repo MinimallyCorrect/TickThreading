@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <mods>
 	<minecraftCommon>
+		<class id="net.minecraft.network.packet.Packet51MapChunk">
+			<volatile field="chunkData"/>
+		</class>
+		<class id="net.minecraft.network.packet.Packet56MapChunks">
+			<volatile field="field_73587_e"/>
+		</class>
 		<class id="net.minecraft.world.WorldServer">
 			<!-- Fixes an issue where the tickNextTickLists would become out of sync -->
 			<synchronize>func_82740_a,scheduleBlockUpdateFromLoad,getPendingBlockUpdates,addBlockEvent</synchronize>
