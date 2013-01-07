@@ -56,46 +56,46 @@ public abstract class EntityList<T> extends ArrayList<T> {
 
 	@Override
 	public Iterator<T> iterator() {
-		return (Iterator<T>) manager.entityList.iterator();
+		return (Iterator<T>) innerList.iterator();
 	}
 
 	@Override
 	public ListIterator<T> listIterator() {
-		return (ListIterator<T>) manager.entityList.listIterator();
+		return (ListIterator<T>) innerList.listIterator();
 	}
 
 	@Override
 	public ListIterator<T> listIterator(int index) {
-		return (ListIterator<T>) manager.entityList.listIterator(index);
+		return (ListIterator<T>) innerList.listIterator(index);
 	}
 
 	@Override
 	public boolean contains(Object o) {
-		return manager.entityList.contains(o);
+		return innerList.contains(o);
 	}
 
 	@Override
 	public int size() {
-		return manager.entityList.size();
+		return innerList.size();
 	}
 
 	@Override
 	public T get(int index) {
-		return (T) manager.entityList.get(index);
+		return (T) innerList.get(index);
 	}
 
 	@Override
 	public boolean containsAll(Collection<?> c) {
-		return manager.entityList.containsAll(c);
+		return innerList.containsAll(c);
 	}
 
 	@Override
 	public boolean retainAll(Collection<?> c) {
-		return manager.entityList.retainAll(c);
+		return innerList.retainAll(c);
 	}
 
 	@Override
 	public String toString() {
-		return manager.entityList.toString();
+		return innerList.toString();
 	}
 }
