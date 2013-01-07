@@ -66,7 +66,7 @@
 	</minecraftCommon>
 	<forgeModLoader>
 		<class id="cpw.mods.fml.common.FMLModContainer">
-			<replaceFieldUsage field="fingerprintNotPresent" readCode="$_ = false;"/>
+			<replaceFieldUsage field="fingerprintNotPresent" readCode="$_ = false;">constructMod</replaceFieldUsage>
 		</class>
 	</forgeModLoader>
 	<factorization>
