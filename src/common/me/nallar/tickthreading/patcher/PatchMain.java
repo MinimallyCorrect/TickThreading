@@ -4,6 +4,7 @@ import javax.xml.transform.TransformerException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.logging.Level;
 
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.mappings.MCPMappings;
@@ -53,7 +54,7 @@ public class PatchMain {
 	}
 
 	private static void patcher(String[] args) {
-		Log.saveToFile(new File("patcher.log"), Log.LOGGER);
+		Log.saveToFile(new File("patcher.log"), Level.FINEST, Log.LOGGER);
 		boolean forcePatching = args.length >= 2 && "force".equalsIgnoreCase(args[1]);
 		PatchManager patchManager;
 		try {

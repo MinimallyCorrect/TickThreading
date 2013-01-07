@@ -22,7 +22,7 @@ public class Log {
 		try {
 			LOGGER.setParent(FMLLog.getLogger());
 			LOGGER.setUseParentHandlers(true);
-			saveToFile(new File("tickthreading.log"), LOGGER);
+			saveToFile(new File("tickthreading.log"), Level.INFO, LOGGER);
 		} catch (NoClassDefFoundError ignored) {
 			// Not running under forge
 			LOGGER.setUseParentHandlers(false);
@@ -46,7 +46,7 @@ public class Log {
 		LOGGER.setLevel(Level.ALL);
 	}
 
-	public static void saveToFile(final File file, Logger... loggers) {
+	public static void saveToFile(final File file, final Level minimumLevel, Logger... loggers) {
 		try {
 			RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw");
 			try {
@@ -61,7 +61,7 @@ public class Log {
 
 				@Override
 				public void publish(LogRecord record) {
-					if (record.getLevel().intValue() >= Level.INFO.intValue()) {
+					if (record.getLevel().intValue() >= minimumLevel.intValue()) {
 						try {
 							outputWriter.write(logFormatter.format(record));
 							count++;
