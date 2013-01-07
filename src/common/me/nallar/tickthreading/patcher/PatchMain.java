@@ -55,7 +55,8 @@ public class PatchMain {
 
 	private static void patcher(String[] args) {
 		Log.saveToFile(new File("patcher.log"), Level.FINEST, Log.LOGGER);
-		boolean forcePatching = args.length >= 2 && "force".equalsIgnoreCase(args[1]);
+		// TODO: Auto force-patch if Patches.class changes
+		boolean forcePatching = true || args.length >= 2 && "force".equalsIgnoreCase(args[1]);
 		PatchManager patchManager;
 		try {
 			patchManager = new PatchManager(PatchMain.class.getResourceAsStream("/patches.xml"), Patches.class);
