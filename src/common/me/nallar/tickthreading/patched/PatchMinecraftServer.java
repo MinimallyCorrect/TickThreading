@@ -11,8 +11,8 @@ import net.minecraft.util.ReportedException;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
 
-public abstract class PatchServer extends MinecraftServer {
-	public PatchServer(File par1File) {
+public abstract class PatchMinecraftServer extends MinecraftServer {
+	public PatchMinecraftServer(File par1File) {
 		super(par1File);
 	}
 

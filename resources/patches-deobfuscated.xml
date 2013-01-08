@@ -5,7 +5,7 @@
 			<newInitializer field="pathPoints" class="net.minecraft.pathfinding.PathPoint" arraySize="128"/>
 		</class>
 		<class id="net.minecraft.server.MinecraftServer">
-			<addAll fromClass="me.nallar.tickthreading.patched.PatchServer"/>
+			<addAll fromClass="me.nallar.tickthreading.patched.PatchMinecraftServer"/>
 		</class>
 		<class id="net.minecraft.profiler.Profiler">
 			<addAll fromClass="me.nallar.tickthreading.patched.PatchProfiler"/>
