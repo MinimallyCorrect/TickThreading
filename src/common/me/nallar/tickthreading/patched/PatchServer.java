@@ -16,27 +16,24 @@ public abstract class PatchServer extends MinecraftServer {
 		super(par1File);
 	}
 
-	public void updateTimeLightAndEntities()
-	{
+	@Override
+	public void updateTimeLightAndEntities() {
 		this.theProfiler.startSection("levels");
 		int var1;
 
 		Integer[] ids = DimensionManager.getIDs();
-		for (int x = 0; x < ids.length; x++)
-		{
+		for (int x = 0; x < ids.length; x++) {
 			int id = ids[x];
 			long var2 = System.nanoTime();
 
-			if (id == 0 || this.getAllowNether())
-			{
+			if (id == 0 || this.getAllowNether()) {
 				WorldServer var4 = DimensionManager.getWorld(id);
 				this.theProfiler.startSection(var4.getWorldInfo().getWorldName());
 				this.theProfiler.startSection("pools");
 				var4.getWorldVec3Pool().clear();
 				this.theProfiler.endSection();
 
-				if (this.tickCounter % 60 == 0)
-				{
+				if (this.tickCounter % 60 == 0) {
 					this.theProfiler.startSection("timeSync");
 					this.serverConfigManager.sendPacketToAllPlayersInDimension(new Packet4UpdateTime(var4.getTotalWorldTime(), var4.getWorldTime()), var4.provider.dimensionId);
 					this.theProfiler.endSection();
@@ -48,24 +45,18 @@ public abstract class PatchServer extends MinecraftServer {
 				CrashReport var6;
 
 				this.theProfiler.endStartSection("worldTick");
-				try
-				{
+				try {
 					var4.tick();
-				}
-				catch (Throwable var8)
-				{
+				} catch (Throwable var8) {
 					var6 = CrashReport.makeCrashReport(var8, "Exception ticking world");
 					var4.addWorldInfoToCrashReport(var6);
 					throw new ReportedException(var6);
 				}
 
 				this.theProfiler.endStartSection("entityTick");
-				try
-				{
+				try {
 					var4.updateEntities();
-				}
-				catch (Throwable var7)
-				{
+				} catch (Throwable var7) {
 					var6 = CrashReport.makeCrashReport(var7, "Exception ticking world entities");
 					var4.addWorldInfoToCrashReport(var6);
 					throw new ReportedException(var6);
@@ -91,9 +82,8 @@ public abstract class PatchServer extends MinecraftServer {
 		this.serverConfigManager.sendPlayerInfoToAllPlayers();
 		this.theProfiler.endStartSection("tickables");
 
-		for (var1 = 0; var1 < this.tickables.size(); ++var1)
-		{
-			((IUpdatePlayerListBox)this.tickables.get(var1)).update();
+		for (var1 = 0; var1 < this.tickables.size(); ++var1) {
+			((IUpdatePlayerListBox) this.tickables.get(var1)).update();
 		}
 
 		this.theProfiler.endSection();

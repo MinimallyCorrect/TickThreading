@@ -94,6 +94,9 @@
 		<class id="cpw.mods.fml.common.FMLModContainer">
 			<replaceFieldUsage field="fingerprintNotPresent" readCode="$_ = false;">constructMod</replaceFieldUsage>
 		</class>
+		<class id="cpw.mods.fml.common.FMLCommonHandler">
+			<addAll fromClass="me.nallar.tickthreading.patched.PatchFMLCommonHandler"/>
+		</class>
 	</forgeModLoader>
 	<factorization>
 		<class id="factorization.common.TileEntityWrathLamp">
