@@ -104,7 +104,7 @@ public abstract class TickRegion implements Runnable {
 	}
 
 	public String getStats() {
-		return "X: " + regionX * manager.regionSize + ", Z: " + regionZ * manager.regionSize + ", time: " + getAverageTickTime() + "ms";
+		return this.getClass().getSimpleName() + " - X: " + regionX * manager.regionSize + ", Z: " + regionZ * manager.regionSize + ", time: " + getAverageTickTime() + "ms";
 	}
 
 	@Override

@@ -241,6 +241,11 @@ public class Patches {
 		ctBehavior.insertAfter(code);
 	}
 
+	@Patch
+	public void insertSuper(CtBehavior ctBehavior) throws CannotCompileException {
+		ctBehavior.insertBefore("super." + ctBehavior.getName() + "($$);");
+	}
+
 	@Patch (
 			requiredAttributes = "field"
 	)

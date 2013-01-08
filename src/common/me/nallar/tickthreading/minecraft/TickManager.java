@@ -194,6 +194,10 @@ public class TickManager {
 		}
 	}
 
+	public void submitRunnable(Runnable runnable) {
+		threadManager.run(runnable);
+	}
+
 	public void unload() {
 		threadManager.stop();
 		for (TickRegion tickRegion : tickRegions) {

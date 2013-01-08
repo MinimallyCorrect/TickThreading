@@ -25,6 +25,8 @@
 		<class id="net.minecraft.world.WorldServer">
 			<!-- Fixes an issue where the tickNextTickLists would become out of sync -->
 			<synchronize>func_82740_a,scheduleBlockUpdateFromLoad,getPendingBlockUpdates,addBlockEvent</synchronize>
+			<addAll fromClass="me.nallar.tickthreading.patched.PatchWorldServer"/>
+			<insertSuper>tickBlocksAndAmbiance</insertSuper>
 		</class>
 		<class id="net.minecraft.world.World">
 			<!-- addedEntityList could be added to while looping -->

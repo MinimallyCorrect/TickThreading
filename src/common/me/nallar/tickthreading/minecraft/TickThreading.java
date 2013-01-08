@@ -48,6 +48,7 @@ public class TickThreading {
 	final Map<World, TickManager> managers = new WeakHashMap<World, TickManager>();
 	private DeadLockDetector deadLockDetector = null;
 	private static TickThreading instance;
+	public boolean enableChunkTickThreading = true;
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load
@@ -88,6 +89,8 @@ public class TickThreading {
 		enableEntityTickThreadingProperty.comment = "Whether entity ticks should be threaded";
 		Property enableTileEntityTickThreadingProperty = config.get(Configuration.CATEGORY_GENERAL, "enableTileEntityTickThreading", enableTileEntityTickThreading);
 		enableTileEntityTickThreadingProperty.comment = "Whether tile entity ticks should be threaded";
+		Property enableChunkTickThreadingProperty = config.get(Configuration.CATEGORY_GENERAL, "enableChunkTickThreading", enableChunkTickThreading);
+		enableChunkTickThreadingProperty.comment = "Whether chunk ticks should be threaded";
 		Property regionSizeProperty = config.get(Configuration.CATEGORY_GENERAL, "regionSize", regionSize);
 		regionSizeProperty.comment = "width/length of tick regions, specified in blocks.";
 		Property variableTickRateProperty = config.get(Configuration.CATEGORY_GENERAL, "variableRegionTickRate", variableTickRate);
@@ -111,6 +114,7 @@ public class TickThreading {
 		TPSCommand.name = tpsCommandName.value;
 		requirePatched = requirePatchedProperty.getBoolean(requirePatched);
 		exitOnDeadlock = exitOnDeadlockProperty.getBoolean(exitOnDeadlock);
+		enableChunkTickThreading = enableChunkTickThreadingProperty.getBoolean(enableChunkTickThreading);
 	}
 
 	@Mod.ServerStarting
