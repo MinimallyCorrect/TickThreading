@@ -126,6 +126,7 @@
 		<replace file="${mcpsrc.dir}/minecraft/net/minecraft/server/MinecraftServer.java" token="    private " value="    protected "/>
 
 		<replace file="${mcpsrc.dir}/minecraft/cpw/mods/fml/common/FMLCommonHandler.java" token="    private " value="    protected "/>
+		<replace file="${mcpsrc.dir}/minecraft/cpw/mods/fml/common/SingleIntervalHandler.java" token="    private " value="    protected "/>
 
 		<delete dir="${classes.dir}"/>
 		<mkdir dir="${classes.dir}"/>

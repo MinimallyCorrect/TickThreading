@@ -97,6 +97,9 @@
 		<class id="cpw.mods.fml.common.FMLCommonHandler">
 			<addAll fromClass="me.nallar.tickthreading.patched.PatchFMLCommonHandler"/>
 		</class>
+		<class id="cpw.mods.fml.common.SingleIntervalHandler">
+			<addAll fromClass="me.nallar.tickthreading.patched.PatchSingleIntervalHandler"/>
+		</class>
 	</forgeModLoader>
 	<factorization>
 		<class id="factorization.common.TileEntityWrathLamp">
@@ -146,8 +149,9 @@
 			<threadLocal field="blockUpdates" type="java.util.HashSet" threadLocalField="javassist.is.faulty.ThreadLocals.redPowerBlockUpdateSet"/>
 			<threadLocal field="powerSearchTest" type="java.util.HashSet" threadLocalField="javassist.is.faulty.ThreadLocals.redPowerPowerSearchTest"/>
 			<threadLocal field="powerSearch" type="java.util.LinkedList" threadLocalField="javassist.is.faulty.ThreadLocals.redPowerPowerSearch"/>
-			<!-- temporarily disabled - TODO: fix it.
-			 <threadLocal field="searching" type="boolean" setExpression="java.lang.Boolean.valueOf($1)" threadLocalField="javassist.is.faulty.ThreadLocals.redPowerIsSearching"/> -->
+			<!-- Still broken - crashes JVM!
+			<threadLocal field="searching" type="boolean" setExpression="java.lang.Boolean.valueOf($1)" threadLocalField="javassist.is.faulty.ThreadLocals.redPowerIsSearching"/>
+			-->
 		</class>
 	</redPowerCore>
 	<industrialCraft>
