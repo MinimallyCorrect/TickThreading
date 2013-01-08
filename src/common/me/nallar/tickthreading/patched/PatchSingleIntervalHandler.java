@@ -10,11 +10,9 @@ import net.minecraft.profiler.Profiler;
 
 public class PatchSingleIntervalHandler extends SingleIntervalHandler {
 	public static Profiler theProfiler = null;
-	public String name;
 
 	public PatchSingleIntervalHandler(ITickHandler handler) {
 		super(handler);
-		name = wrapped.getClass().getName().replace('.', '_');
 	}
 
 	@Override
@@ -22,14 +20,14 @@ public class PatchSingleIntervalHandler extends SingleIntervalHandler {
 		if (theProfiler == null) {
 			theProfiler = FMLCommonHandler.instance().getMinecraftServerInstance().theProfiler;
 		}
-		theProfiler.startSection(name);
+		theProfiler.startSection(wrapped.getClass().getName());
 		wrapped.tickStart(type, tickData);
 		theProfiler.endSection();
 	}
 
 	@Override
 	public void tickEnd(EnumSet<TickType> type, Object... tickData) {
-		theProfiler.startSection(name);
+		theProfiler.startSection(wrapped.getClass().getName());
 		wrapped.tickEnd(type, tickData);
 		theProfiler.endSection();
 	}

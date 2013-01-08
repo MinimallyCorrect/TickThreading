@@ -28,7 +28,7 @@ public class PatchFMLCommonHandler extends FMLCommonHandler {
 			EnumSet<TickType> ticksToRun = EnumSet.copyOf(Objects.firstNonNull(ticker.ticks(), EnumSet.noneOf(TickType.class)));
 			ticksToRun.retainAll(ticks);
 			if (!ticksToRun.isEmpty()) {
-				theProfiler.startSection(ticker.getClass().getName().replace('.', '_'));
+				theProfiler.startSection(ticker.getClass().getName());
 				ticker.tickStart(ticksToRun, data);
 				theProfiler.endSection();
 			}
@@ -46,7 +46,7 @@ public class PatchFMLCommonHandler extends FMLCommonHandler {
 			EnumSet<TickType> ticksToRun = EnumSet.copyOf(Objects.firstNonNull(ticker.ticks(), EnumSet.noneOf(TickType.class)));
 			ticksToRun.retainAll(ticks);
 			if (!ticksToRun.isEmpty()) {
-				theProfiler.startSection(ticker.getClass().getName().replace('.', '_'));
+				theProfiler.startSection(ticker.getClass().getName());
 				ticker.tickEnd(ticksToRun, data);
 				theProfiler.endSection();
 			}
