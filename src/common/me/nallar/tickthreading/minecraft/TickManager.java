@@ -14,6 +14,7 @@ import me.nallar.tickthreading.minecraft.tickregion.EntityTickRegion;
 import me.nallar.tickthreading.minecraft.tickregion.TickRegion;
 import me.nallar.tickthreading.minecraft.tickregion.TileEntityTickRegion;
 import net.minecraft.entity.Entity;
+import net.minecraft.profiler.Profiler;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 
@@ -173,6 +174,10 @@ public class TickManager {
 	}
 
 	public void doTick() {
+		boolean previousProfiling = world.theProfiler.profilingEnabled;
+		if (previousProfiling) {
+			world.theProfiler.profilingEnabled = false;
+		}
 		lastStartTime = DeadLockDetector.tick("TickManager.doTick: " + Log.name(world));
 		threadManager.waitForCompletion();
 		threadManager.runList(tickRegions);
@@ -185,6 +190,9 @@ public class TickManager {
 		});
 		lastTickLength = (int) (System.currentTimeMillis() - lastStartTime);
 		averageTickLength = ((averageTickLength * 127) + lastTickLength) / 128;
+		if (previousProfiling) {
+			world.theProfiler.profilingEnabled = true;
+		}
 	}
 
 	public void unload() {
