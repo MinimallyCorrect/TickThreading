@@ -2,7 +2,7 @@
 <mods>
 	<minecraftCommon>
 		<class id="net.minecraft.pathfinding.Path">
-			<newInitializer field="pathPoints" class="net.minecraft.pathfinding.PathPoint" arraySize="256"/>
+			<newInitializer field="pathPoints" class="net.minecraft.pathfinding.PathPoint" arraySize="128"/>
 		</class>
 		<class id="net.minecraft.server.MinecraftServer">
 			<addAll fromClass="me.nallar.tickthreading.patched.PatchServer"/>
