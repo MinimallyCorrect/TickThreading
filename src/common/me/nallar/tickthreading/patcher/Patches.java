@@ -113,8 +113,6 @@ public class Patches {
 		ctBehavior.instrument(new ExprEditor() {
 			@Override
 			public void edit(FieldAccess fieldAccess) throws CannotCompileException {
-				Log.finest("FieldAccess " + fieldAccess
-						+ '\n' + fieldAccess.getFieldName());
 				if (fieldAccess.getFieldName().equals(field)) {
 					if (fieldAccess.isWriter() && writeCode != null) {
 						fieldAccess.replace(writeCode);
