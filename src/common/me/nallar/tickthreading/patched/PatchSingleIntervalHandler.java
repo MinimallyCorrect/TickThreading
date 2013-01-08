@@ -8,7 +8,7 @@ import cpw.mods.fml.common.SingleIntervalHandler;
 import cpw.mods.fml.common.TickType;
 import net.minecraft.profiler.Profiler;
 
-public class PatchSingleIntervalHandler extends SingleIntervalHandler {
+public abstract class PatchSingleIntervalHandler extends SingleIntervalHandler {
 	public static Profiler theProfiler = null;
 
 	public PatchSingleIntervalHandler(ITickHandler handler) {

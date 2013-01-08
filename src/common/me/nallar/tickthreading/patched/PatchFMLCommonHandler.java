@@ -11,7 +11,7 @@ import cpw.mods.fml.common.TickType;
 import cpw.mods.fml.relauncher.Side;
 import net.minecraft.profiler.Profiler;
 
-public class PatchFMLCommonHandler extends FMLCommonHandler {
+public abstract class PatchFMLCommonHandler extends FMLCommonHandler {
 	public Profiler theProfiler = null;
 
 	@Override

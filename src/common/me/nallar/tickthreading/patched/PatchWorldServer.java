@@ -23,6 +23,7 @@ public abstract class PatchWorldServer extends WorldServer {
 
 	public long startTime = 0;
 
+	@Override
 	protected void tickBlocksAndAmbiance() {
 		final Iterator var3 = this.activeChunkSet.iterator();
 

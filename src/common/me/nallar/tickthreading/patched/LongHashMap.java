@@ -7,7 +7,7 @@ package me.nallar.tickthreading.patched;
 import java.util.Arrays;
 
 @SuppressWarnings ("unchecked")
-public class LongHashMap extends net.minecraft.util.LongHashMap {
+public abstract class LongHashMap extends net.minecraft.util.LongHashMap {
 	private static final long EMPTY_KEY = Long.MIN_VALUE;
 	private static final int BUCKET_SIZE = 4096;
 	private long[][] keys;
