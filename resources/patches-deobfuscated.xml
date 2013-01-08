@@ -2,7 +2,7 @@
 <mods>
 	<minecraftCommon>
 		<class id="net.minecraft.pathfinding.Path">
-			<newInitializer field="pathPoints" code="new net.minecraft.pathfinding.PathPoint[256];"/>
+			<newInitializer field="pathPoints" class="net.minecraft.pathfinding.PathPoint" arraySize="256"/>
 		</class>
 		<class id="net.minecraft.server.MinecraftServer">
 			<addAll fromClass="me.nallar.tickthreading.patched.PatchServer"/>
@@ -22,11 +22,6 @@
 			<synchronize field="loadedChunkHashMap">safeLoadChunk,loadChunk,unload100OldestChunks</synchronize>
 		</class>
 		-->
-		<class id="net.minecraft.entity.player.EntityPlayerMP">
-			<!-- TODO: Fix this with less locking -->
-			<newField field="staticLock" class="java.lang.Object" static=""/>
-			<synchronize field="staticLock">onUpdate</synchronize>
-		</class>
 		<class id="net.minecraft.world.WorldServer">
 			<!-- Fixes an issue where the tickNextTickLists would become out of sync -->
 			<synchronize>func_82740_a,scheduleBlockUpdateFromLoad,getPendingBlockUpdates,addBlockEvent</synchronize>
@@ -66,6 +61,9 @@
 			<replace class="me.nallar.tickthreading.patched.LongHashMap"/>
 		</class>
 		<class id="net.minecraft.entity.player.EntityPlayerMP">
+			<!-- TODO: Fix this with less locking -->
+			<newField field="staticLock" class="java.lang.Object" static=""/>
+			<synchronize field="staticLock">onUpdate</synchronize>
 			<!-- Concurrent access during iteration = boom -->
 			<newInitializer field="destroyedItemsNetCache" class="me.nallar.tickthreading.collections.ConcurrentLinkedQueueList"/>
 		</class>

@@ -187,7 +187,8 @@ public class Patches {
 		String field = attributes.get("field");
 		String clazz = attributes.get("class");
 		String initialise = attributes.get("code");
-		initialise = "{ " + field + " = " + (initialise == null ? ("new " + clazz + "()") : initialise) + "; }";
+		String arraySize = attributes.get("arraySize");
+		initialise = "{ " + field + " = " + (initialise == null ? ("new " + clazz + (arraySize == null ? "()" : '[' + arraySize + ']')) : initialise) + "; }";
 		// Return value ignored - just used to cause a NotFoundException if the field doesn't exist.
 		ctClass.getDeclaredField(field);
 		for (CtConstructor ctConstructor : ctClass.getConstructors()) {

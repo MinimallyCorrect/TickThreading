@@ -120,6 +120,13 @@ public class PatchManager {
 						patchElement.setAttribute("field", obfuscatedField.name);
 					}
 				}
+				String clazz = patchElement.getAttribute("class");
+				if (!clazz.isEmpty()) {
+					ClassDescription obfuscatedClazz = mappings.map(new ClassDescription(clazz));
+					if (obfuscatedClazz != null) {
+						patchElement.setAttribute("class", obfuscatedClazz.name);
+					}
+				}
 			}
 		}
 	}
