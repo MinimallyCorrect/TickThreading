@@ -123,6 +123,7 @@
 
 		<replace file="${mcpsrc.dir}/minecraft/net/minecraft/world/World.java" token="    private " value="    protected "/>
 		<replace file="${mcpsrc.dir}/minecraft/net/minecraft/profiler/Profiler.java" token="    private " value="    protected "/>
+		<replace file="${mcpsrc.dir}/minecraft/net/minecraft/server/MinecraftServer.java" token="    private " value="    protected "/>
 
 		<delete dir="${classes.dir}"/>
 		<mkdir dir="${classes.dir}"/>
@@ -182,6 +183,7 @@
 
 		<unzip dest="${classes.dir}/" src="${lib.dir}/javassist.jar"/>
 		<delete dir="${classes.dir}/META-INF"/>
+		<delete dir="${classes.dir}/net/minecraft"/>
 		<delete>
 			<fileset dir="${classes.dir}">
 				<include name="*.class"/>
