@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <mods>
 	<minecraftCommon>
+		<class id="net.minecraft.world.SpawnerAnimals">
+			<synchronize>findChunksForSpawning</synchronize>
+		</class>
 		<class id="net.minecraft.pathfinding.Path">
 			<newInitializer field="pathPoints" class="net.minecraft.pathfinding.PathPoint" arraySize="128"/>
 		</class>
 		<class id="net.minecraft.server.MinecraftServer">
 			<addAll fromClass="me.nallar.tickthreading.patched.PatchMinecraftServer"/>
+			<public field="mcServer"/>
 		</class>
 		<class id="net.minecraft.profiler.Profiler">
 			<addAll fromClass="me.nallar.tickthreading.patched.PatchProfiler"/>

@@ -1,5 +1,7 @@
 package me.nallar.tickthreading.patched;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Iterator;
 
 import me.nallar.tickthreading.minecraft.TickManager;
@@ -41,12 +43,7 @@ public abstract class PatchWorldServer extends WorldServer {
 		while (var3.hasNext()) {
 			final ChunkCoordIntPair chunkCoordIntPair = (ChunkCoordIntPair) var3.next();
 			if (concurrentTicks) {
-				tickManager.submitRunnable(new Runnable() {
-					@Override
-					public void run() {
-						tickBlocks(chunkCoordIntPair);
-					}
-				});
+				tickManager.submitRunnable(new TickRunnable(this, chunkCoordIntPair));
 			} else {
 				tickBlocks(chunkCoordIntPair);
 			}
@@ -129,6 +126,38 @@ public abstract class PatchWorldServer extends WorldServer {
 						var18.updateTick(this, var14 + xPos, var16 + var21.getYLocation(), var15 + yPos, this.rand);
 					}
 				}
+			}
+		}
+	}
+
+	public static class TickRunnable implements Runnable {
+		final Object worldServer;
+		final ChunkCoordIntPair chunkCoordIntPair;
+		static final Method method;
+
+		static {
+			Method tMethod = null;
+			for (Method method1 : WorldServer.class.getMethods()) {
+				if ("tickBlocks".equals(method1.getName())) {
+					tMethod = method1;
+				}
+			}
+			method = tMethod;
+		}
+
+		public TickRunnable(Object worldServer, ChunkCoordIntPair chunkCoordIntPair) {
+			this.worldServer = worldServer;
+			this.chunkCoordIntPair = chunkCoordIntPair;
+		}
+
+		@Override
+		public void run() {
+			try {
+				method.invoke(worldServer, chunkCoordIntPair);
+			} catch (IllegalAccessException e) {
+				throw new Error(e);
+			} catch (InvocationTargetException e) {
+				throw new Error(e);
 			}
 		}
 	}

@@ -122,6 +122,14 @@ public class ThreadManager {
 		}
 	}
 
+	public void setNumberOfThreads(int numberOfThreads) {
+		if (workThreads.size() > numberOfThreads) {
+			killThreads(workThreads.size() - numberOfThreads);
+		} else if (workThreads.size() < numberOfThreads) {
+			addThreads(numberOfThreads - workThreads.size());
+		}
+	}
+
 	public void stop() {
 		killThreads(workThreads.size());
 	}

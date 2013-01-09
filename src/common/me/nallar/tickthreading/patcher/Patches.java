@@ -68,6 +68,7 @@ public class Patches {
 		CtClass newClass = classRegistry.getClass(attributes.get("class"));
 		newClass.getClassFile2().setSuperclass(null);
 		newClass.setName(oldName);
+		newClass.setModifiers(newClass.getModifiers() & ~Modifier.ABSTRACT);
 		return newClass;
 	}
 
@@ -92,7 +93,7 @@ public class Patches {
 	private void replaceMethod(CtMethod oldMethod, CtMethod newMethod) throws CannotCompileException, BadBytecode {
 		Log.info("Replacing " + new MethodDescription(oldMethod).getMCPName() + " with " + new MethodDescription(newMethod).getMCPName());
 		ClassMap classMap = new ClassMap();
-		classMap.put(newMethod.getClass().getName(), oldMethod.getDeclaringClass().getName());
+		classMap.put(newMethod.getDeclaringClass().getName(), oldMethod.getDeclaringClass().getName());
 		oldMethod.setBody(newMethod, classMap);
 		oldMethod.getMethodInfo().rebuildStackMap(classRegistry.classes);
 		oldMethod.getMethodInfo().rebuildStackMapForME(classRegistry.classes);
@@ -137,12 +138,14 @@ public class Patches {
 			ctClass.addField(new CtField(ctField, ctClass));
 		}
 		for (CtMethod newMethod : from.getDeclaredMethods()) {
-			Log.info("Replaced " + newMethod.getName());
 			try {
 				CtMethod oldMethod = ctClass.getDeclaredMethod(newMethod.getName(), newMethod.getParameterTypes());
 				replaceMethod(oldMethod, newMethod);
+				Log.info("Replaced " + newMethod.getName());
 			} catch (NotFoundException ignored) {
-				ctClass.addMethod(CtNewMethod.copy(newMethod, ctClass, classMap));
+				CtMethod added = CtNewMethod.copy(newMethod, ctClass, classMap);
+				Log.info("Adding " + added);
+				ctClass.addMethod(added);
 			}
 		}
 	}
@@ -172,10 +175,19 @@ public class Patches {
 	}
 
 	@Patch (
-			name = "public"
+			name = "public",
+			emptyConstructor = false
 	)
-	public void makePublic(CtMethod ctMethod) {
-		ctMethod.setModifiers(Modifier.setPublic(ctMethod.getModifiers()));
+	public void makePublic(Object o, Map<String, String> attributes) throws NotFoundException {
+		String field = attributes.get("field");
+		if (field == null) {
+			CtBehavior ctBehavior = (CtBehavior) o;
+			ctBehavior.setModifiers(Modifier.setPublic(ctBehavior.getModifiers()));
+		} else {
+			CtClass ctClass = (CtClass) o;
+			CtField ctField = ctClass.getDeclaredField(field);
+			ctField.setModifiers(Modifier.setPublic(ctField.getModifiers()));
+		}
 	}
 
 	@Patch (

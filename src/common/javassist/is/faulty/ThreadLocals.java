@@ -1,6 +1,7 @@
 package javassist.is.faulty;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 
@@ -22,6 +23,13 @@ public class ThreadLocals {
 		@Override
 		protected Object initialValue() {
 			return new ArrayList();
+		}
+	}
+
+	private static class HashMapThreadLocal extends ThreadLocal {
+		@Override
+		protected Object initialValue() {
+			return new HashMap();
 		}
 	}
 
