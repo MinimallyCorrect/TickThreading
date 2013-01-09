@@ -50,6 +50,7 @@ public class TickThreading {
 	private static TickThreading instance;
 	public boolean enableChunkTickThreading = true;
 	public boolean enableWorldTickThreading = true;
+	public boolean requireOpForTicksCommand = true;
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load
@@ -106,6 +107,8 @@ public class TickThreading {
 		requirePatchedProperty.comment = "If the server must be patched to run with TickThreading";
 		Property exitOnDeadlockProperty = config.get(Configuration.CATEGORY_GENERAL, "exitOnDeadlock", exitOnDeadlock);
 		exitOnDeadlockProperty.comment = "If the server should shut down when a deadlock is detected";
+		Property requireOpForTicksCommandProperty = config.get(Configuration.CATEGORY_GENERAL, "exitOnDeadlock", requireOpForTicksCommand);
+		requireOpForTicksCommandProperty.comment = "If a player must be opped to use /ticks";
 		config.save();
 
 		tickThreads = tickThreadsProperty.getInt(tickThreads);
@@ -119,6 +122,7 @@ public class TickThreading {
 		exitOnDeadlock = exitOnDeadlockProperty.getBoolean(exitOnDeadlock);
 		enableChunkTickThreading = enableChunkTickThreadingProperty.getBoolean(enableChunkTickThreading);
 		enableWorldTickThreading = enableWorldTickThreadingProperty.getBoolean(enableWorldTickThreading);
+		requireOpForTicksCommand = requireOpForTicksCommandProperty.getBoolean(requireOpForTicksCommand);
 	}
 
 	@Mod.ServerStarting
