@@ -1,4 +1,4 @@
-package me.nallar.tickthreading.patched;
+package me.nallar.tickthreading.minecraft.patched;
 
 import java.util.EnumSet;
 

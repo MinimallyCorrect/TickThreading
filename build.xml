@@ -119,14 +119,15 @@
 
 	</target>
 
-	<target name="compile" depends="initialize-version,setup,download-libs">
+	<target name="prepatch">
+		<javac includeantruntime="false" srcdir="${src.dir}/nmsprepatcher" destdir="${classes.dir}" debug="on" source="1.6"/>
+		<java classpath="${classes.dir}" classname="me.nallar.nmsprepatcher.Main">
+			<arg value="${src.dir}/common/me/nallar/tickthreading/minecraft/patched"/>
+			<arg value="${mcpsrc.dir}/minecraft"/>
+		</java>
+	</target>
 
-		<replace file="${mcpsrc.dir}/minecraft/net/minecraft/world/World.java" token="    private " value="    protected "/>
-		<replace file="${mcpsrc.dir}/minecraft/net/minecraft/profiler/Profiler.java" token="    private " value="    protected "/>
-		<replace file="${mcpsrc.dir}/minecraft/net/minecraft/server/MinecraftServer.java" token="    private " value="    protected "/>
-
-		<replace file="${mcpsrc.dir}/minecraft/cpw/mods/fml/common/FMLCommonHandler.java" token="    private " value="    protected "/>
-		<replace file="${mcpsrc.dir}/minecraft/cpw/mods/fml/common/SingleIntervalHandler.java" token="    private " value="    protected "/>
+	<target name="compile" depends="initialize-version,setup,download-libs,prepatch">
 
 		<delete dir="${classes.dir}"/>
 		<mkdir dir="${classes.dir}"/>

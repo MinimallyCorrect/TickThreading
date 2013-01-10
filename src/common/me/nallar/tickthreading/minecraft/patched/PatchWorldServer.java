@@ -1,11 +1,11 @@
-package me.nallar.tickthreading.patched;
+package me.nallar.tickthreading.minecraft.patched;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Iterator;
 
+import me.nallar.tickthreading.minecraft.ThreadManager;
 import me.nallar.tickthreading.minecraft.TickManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
+import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.block.Block;
 import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.profiler.Profiler;
@@ -27,30 +27,42 @@ public abstract class PatchWorldServer extends WorldServer {
 
 	@Override
 	protected void tickBlocksAndAmbiance() {
-		final Iterator var3 = this.activeChunkSet.iterator();
+		TickThreading tickThreading = TickThreading.instance();
+		TickManager tickManager = tickThreading.getManager(this);
+		boolean concurrentTicks = tickThreading.enableChunkTickThreading;
+
+		if (concurrentTicks) {
+			tickManager.getThreadManager().waitForCompletion();
+		}
 
 		doneChunks.retainAll(activeChunkSet);
 		if (doneChunks.size() == activeChunkSet.size()) {
 			doneChunks.clear();
 		}
 
+		final Iterator var3 = this.activeChunkSet.iterator();
+
 		startTime = System.nanoTime();
 
-		TickThreading tickThreading = TickThreading.instance();
-		TickManager tickManager = tickThreading.getManager(this);
-		boolean concurrentTicks = tickThreading.enableChunkTickThreading;
-
-		while (var3.hasNext()) {
-			final ChunkCoordIntPair chunkCoordIntPair = (ChunkCoordIntPair) var3.next();
-			if (concurrentTicks) {
-				tickManager.submitRunnable(new TickRunnable(this, chunkCoordIntPair));
-			} else {
-				tickBlocks(chunkCoordIntPair);
+		if (concurrentTicks) {
+			ThreadManager threadManager = tickManager.getThreadManager();
+			for (int i = 0; i < threadManager.size(); i++) {
+				threadManager.run(new TickRunnable(this, var3));
 			}
+		} else {
+			tickBlocks(var3);
 		}
 	}
 
-	public void tickBlocks(ChunkCoordIntPair var4) {
+	@Declare
+	public boolean tickBlocks(Iterator chunkCoordIterator) {
+		ChunkCoordIntPair var4;
+		synchronized (chunkCoordIterator) {
+			if (!chunkCoordIterator.hasNext()) {
+				return false;
+			}
+			var4 = (ChunkCoordIntPair) chunkCoordIterator.next();
+		}
 		int xPos = var4.chunkXPos * 16;
 		int yPos = var4.chunkZPos * 16;
 		Chunk chunk = this.getChunkFromChunkCoords(var4.chunkXPos, var4.chunkZPos);
@@ -128,36 +140,21 @@ public abstract class PatchWorldServer extends WorldServer {
 				}
 			}
 		}
+		return true;
 	}
 
 	public static class TickRunnable implements Runnable {
-		final Object worldServer;
-		final ChunkCoordIntPair chunkCoordIntPair;
-		static final Method method;
+		final WorldServer worldServer;
+		final Iterator chunkCoordIterator;
 
-		static {
-			Method tMethod = null;
-			for (Method method1 : WorldServer.class.getMethods()) {
-				if ("tickBlocks".equals(method1.getName())) {
-					tMethod = method1;
-				}
-			}
-			method = tMethod;
-		}
-
-		public TickRunnable(Object worldServer, ChunkCoordIntPair chunkCoordIntPair) {
+		public TickRunnable(WorldServer worldServer, Iterator chunkCoordIterator) {
 			this.worldServer = worldServer;
-			this.chunkCoordIntPair = chunkCoordIntPair;
+			this.chunkCoordIterator = chunkCoordIterator;
 		}
 
 		@Override
 		public void run() {
-			try {
-				method.invoke(worldServer, chunkCoordIntPair);
-			} catch (IllegalAccessException e) {
-				throw new Error(e);
-			} catch (InvocationTargetException e) {
-				throw new Error(e);
+			while (worldServer.tickBlocks(chunkCoordIterator)) {
 			}
 		}
 	}

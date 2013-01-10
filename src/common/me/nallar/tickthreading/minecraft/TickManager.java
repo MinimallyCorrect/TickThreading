@@ -194,8 +194,8 @@ public class TickManager {
 		}
 	}
 
-	public void submitRunnable(Runnable runnable) {
-		threadManager.run(runnable);
+	public ThreadManager getThreadManager() {
+		return threadManager;
 	}
 
 	public void unload() {

@@ -1,12 +1,11 @@
-package me.nallar.tickthreading.patched;
+package me.nallar.tickthreading.minecraft.patched;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import me.nallar.tickthreading.minecraft.ThreadManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
+import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.network.packet.Packet4UpdateTime;
 import net.minecraft.server.MinecraftServer;
@@ -59,6 +58,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		this.theProfiler.endSection();
 	}
 
+	@Declare
 	public void tickWorld(int id) {
 		long var2 = System.nanoTime();
 
@@ -112,17 +112,6 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 	public static class TickRunnable implements Runnable {
 		final int id;
-		static final Method method;
-
-		static {
-			Method tMethod = null;
-			for (Method method1 : MinecraftServer.class.getMethods()) {
-				if ("tickWorld".equals(method1.getName())) {
-					tMethod = method1;
-				}
-			}
-			method = tMethod;
-		}
 
 		public TickRunnable(int id) {
 			this.id = id;
@@ -130,13 +119,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 		@Override
 		public void run() {
-			try {
-				method.invoke(mcServer, id);
-			} catch (IllegalAccessException e) {
-				throw new Error(e);
-			} catch (InvocationTargetException e) {
-				throw new Error(e);
-			}
+			mcServer.tickWorld(id);
 		}
 	}
 }

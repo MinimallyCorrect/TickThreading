@@ -8,11 +8,11 @@
 			<newInitializer field="pathPoints" class="net.minecraft.pathfinding.PathPoint" arraySize="128"/>
 		</class>
 		<class id="net.minecraft.server.MinecraftServer">
-			<addAll fromClass="me.nallar.tickthreading.patched.PatchMinecraftServer"/>
+			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchMinecraftServer"/>
 			<public field="mcServer"/>
 		</class>
 		<class id="net.minecraft.profiler.Profiler">
-			<addAll fromClass="me.nallar.tickthreading.patched.PatchProfiler"/>
+			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchProfiler"/>
 		</class>
 		<class id="net.minecraft.network.packet.Packet51MapChunk">
 			<volatile field="chunkData"/>
@@ -29,7 +29,7 @@
 		<class id="net.minecraft.world.WorldServer">
 			<!-- Fixes an issue where the tickNextTickLists would become out of sync -->
 			<synchronize>func_82740_a,scheduleBlockUpdateFromLoad,getPendingBlockUpdates,addBlockEvent</synchronize>
-			<addAll fromClass="me.nallar.tickthreading.patched.PatchWorldServer"/>
+			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchWorldServer"/>
 			<insertSuper>tickBlocksAndAmbiance</insertSuper>
 		</class>
 		<class id="net.minecraft.world.World">
@@ -37,7 +37,7 @@
 			<newField field="TELock" class="java.lang.Object"/>
 			<synchronize field="TELock">addTileEntity(Ljava/util/Collection;)V,setBlockTileEntity,addTileEntity(Lany;)V,getBlockTileEntity</synchronize>
 			<!-- Same list was used by multiple threads -->
-			<addAll fromClass="me.nallar.tickthreading.patched.PatchWorld"/>
+			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchWorld"/>
 			<public>releaseEntitySkin</public>
 		</class>
 		<class id="net.minecraft.world.chunk.Chunk">
@@ -54,7 +54,7 @@
 		</class>
 		<class id="net.minecraft.util.AxisAlignedBB">
 			<!-- Improves performance -->
-			<replaceMethod fromClass="me.nallar.tickthreading.patched.PatchAxisAlignedBB">intersectsWith</replaceMethod>
+			<replaceMethod fromClass="me.nallar.tickthreading.minecraft.patched.PatchAxisAlignedBB">intersectsWith</replaceMethod>
 		</class>
 		<!--
 		<class id="net.minecraft.util.AABBPool">
@@ -64,7 +64,7 @@
 		</class>
 		-->
 		<class id="net.minecraft.util.LongHashMap">
-			<replace class="me.nallar.tickthreading.patched.LongHashMap"/>
+			<replace class="me.nallar.tickthreading.minecraft.patched.LongHashMap"/>
 		</class>
 		<class id="net.minecraft.entity.player.EntityPlayerMP">
 			<!-- TODO: Fix this with less locking -->
@@ -76,6 +76,9 @@
 		<class id="net.minecraft.entity.Entity">
 			<newField static="" field="nextEntityID_" class="java.util.concurrent.atomic.AtomicInteger"/>
 			<insertAfter field="entityId" code="this.$field = this.nextEntityID_.getAndIncrement();"/>
+		</class>
+		<class id="net.minecraft.tileentity.TileEntity">
+			<setBody code="return super.toString() + &quot; x,y,x: &quot; + xCoord + &quot;, &quot; + yCoord + &quot;, &quot; + zCoord;">toString</setBody>
 		</class>
 		<class id="net.minecraft.entity.EntityTracker">
 			<!-- Yet more comodification exceptions -->
@@ -99,10 +102,10 @@
 			<replaceFieldUsage field="fingerprintNotPresent" readCode="$_ = false;">constructMod</replaceFieldUsage>
 		</class>
 		<class id="cpw.mods.fml.common.FMLCommonHandler">
-			<addAll fromClass="me.nallar.tickthreading.patched.PatchFMLCommonHandler"/>
+			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchFMLCommonHandler"/>
 		</class>
 		<class id="cpw.mods.fml.common.SingleIntervalHandler">
-			<addAll fromClass="me.nallar.tickthreading.patched.PatchSingleIntervalHandler"/>
+			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchSingleIntervalHandler"/>
 		</class>
 	</forgeModLoader>
 	<factorization>
