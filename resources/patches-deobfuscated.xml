@@ -116,7 +116,7 @@
 	</factorization>
 	<liteLoader>
 		<class id="com.mumfrey.liteloader.core.HookProfiler">
-			<!-- BAAADD, LiteLoader, BAAAD. You don't take a threadsafe profiler and replace it with one which isn't. :/ -->
+			<!-- LiteLoader makes the profiler not threadsafe - I may look into patching this better in future, but TT isn't really intended for clients -->
 			<synchronize>a(Ljava/lang/String;)V,b()V</synchronize>
 		</class>
 	</liteLoader>
