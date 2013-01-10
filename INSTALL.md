@@ -13,4 +13,4 @@ Extra Performance Hints For Servers
 ==========
 
 - Your start.bat/sh should look something like this (replace 8192 with the RAM the server should be allowed to use, in megabytes):
-- java -server -XX:useSSE=3 -XX:+UseConcMarkSweepGC -XX:+DisableExplicitGC -XX:+CMSIncrementalMode -XX:+CMSIncrementalPacing -XX:ParallelGCThreads=3 -XX:+UseCompressedOops -XX:+AggressiveOpts -Xmx8192M -jar server.jar nogui
+- java -server -XX:UseSSE=3 -XX:+UseConcMarkSweepGC -XX:+DisableExplicitGC -XX:+CMSIncrementalMode -XX:+CMSIncrementalPacing -XX:ParallelGCThreads=3 -XX:+UseCompressedOops -XX:+AggressiveOpts -Xmx8192M -jar server.jar nogui
