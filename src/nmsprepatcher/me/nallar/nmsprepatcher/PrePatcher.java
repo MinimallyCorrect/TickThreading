@@ -17,6 +17,7 @@ import me.nallar.tickthreading.Log;
 // add on an instance other than this
 public class PrePatcher {
 	private static final Logger log = Logger.getLogger("PatchLogger");
+	private static final Pattern privatePattern = Pattern.compile("^(\\s+?)private", Pattern.MULTILINE);
 	private static final Pattern extendsPattern = Pattern.compile("\\s+?extends\\s+?([\\S]+)[^\\{]+?\\{", Pattern.DOTALL | Pattern.MULTILINE);
 	private static final Pattern declarePattern = Pattern.compile("@Declare\\s+?" +
 			"(public\\s+?(\\S*?)\\s*?\\S+?\\s*?\\([^\\{]+\\) \\{)", Pattern.DOTALL | Pattern.MULTILINE);
@@ -72,8 +73,11 @@ public class PrePatcher {
 				}
 			}
 			source.append("\n}");
+			sourceString = source.toString();
+			Matcher privateMatcher = privatePattern.matcher(sourceString);
+			sourceString = privateMatcher.replaceAll("$1protected");
 			try {
-				writeFile(sourceFile, source.toString());
+				writeFile(sourceFile, sourceString);
 			} catch (IOException e) {
 				log.log(Level.SEVERE, "Failed to save " + sourceFile, e);
 			}
