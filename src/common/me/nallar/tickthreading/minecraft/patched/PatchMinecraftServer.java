@@ -85,9 +85,8 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			threadManager = new ThreadManager(8, "World Tick");
 		}
 
-		for (int x = 0; x < ids.length; x++) {
-			final int id = ids[x];
-			if (theProfiler.profilingEnabled || !TickThreading.instance.enableWorldTickThreading) {
+		for (final int id : ids) {
+			if (theProfiler.profilingEnabled || !TickThreading.instance.enableWorldTickThreading || tickCounter < 100) {
 				tickWorld(id);
 			} else {
 				threadManager.run(new TickRunnable(id));
