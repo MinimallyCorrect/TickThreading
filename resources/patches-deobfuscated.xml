@@ -188,4 +188,9 @@
 		</class>
 	</stevesCarts>
 	-->
+	<gregTech>
+		<class id="gregtechmod.GT_Mod">
+			<synchronize>readIDSUData,writeIDSUData</synchronize>
+		</class>
+	</gregTech>
 </mods>
