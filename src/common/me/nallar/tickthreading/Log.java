@@ -52,7 +52,7 @@ public class Log {
 	public static void setFileName(String name, final Level minimumLevel, Logger... loggers) {
 		logFolder.mkdir();
 		for (int i = numberOfLogFiles; i >= 0; i--) {
-			File currentFile = new File(logFolder, name + (i == 0 ? "" : '.' + i) + ".log");
+			File currentFile = new File(logFolder, name + (i == 0 ? "" : "." + i) + ".log");
 			if (currentFile.exists()) {
 				if (i == numberOfLogFiles) {
 					currentFile.delete();

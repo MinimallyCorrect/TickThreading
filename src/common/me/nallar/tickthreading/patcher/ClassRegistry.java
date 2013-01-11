@@ -74,7 +74,9 @@ public class ClassRegistry {
 			extension = extension.substring(extension.lastIndexOf('.') + 1);
 			try {
 				if (file.isDirectory()) {
-					loadFiles(Arrays.asList(file.listFiles()));
+					if (!".disabled".equals(file.getName())) {
+						loadFiles(Arrays.asList(file.listFiles()));
+					}
 				} else if ("jar".equals(extension)) {
 					loadJar(new JarFile(file));
 				} else if ("zip".equals(extension) || "litemod".equals(extension)) {
