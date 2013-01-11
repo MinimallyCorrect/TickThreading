@@ -71,18 +71,12 @@ public class Log {
 			handler = new Handler() {
 				private LogFormatter logFormatter = new LogFormatter();
 				private BufferedWriter outputWriter = new BufferedWriter(new FileWriter(saveFile));
-				private int count = 0;
 
 				@Override
 				public void publish(LogRecord record) {
 					if (record.getLevel().intValue() >= minimumLevel.intValue()) {
 						try {
 							outputWriter.write(logFormatter.format(record));
-							count++;
-							if (count > 200) {
-								count = 0;
-								outputWriter.flush();
-							}
 						} catch (IOException ignored) {
 							// Can't log here, might cause infinite recursion
 						}
