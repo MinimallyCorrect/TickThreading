@@ -17,6 +17,7 @@ import net.minecraft.world.World;
 @SuppressWarnings ("UnusedDeclaration")
 public class Log {
 	public static final Logger LOGGER = Logger.getLogger("TickThreading");
+	private static Handler handler;
 
 	static {
 		try {
@@ -54,7 +55,7 @@ public class Log {
 			} finally {
 				randomAccessFile.close();
 			}
-			Handler handler = new Handler() {
+			handler = new Handler() {
 				private LogFormatter logFormatter = new LogFormatter();
 				private BufferedWriter outputWriter = new BufferedWriter(new FileWriter(file));
 				private int count = 0;
@@ -98,6 +99,10 @@ public class Log {
 		} catch (IOException e) {
 			Log.severe("Can't write logs to disk", e);
 		}
+	}
+
+	public static void flush() {
+		handler.flush();
 	}
 
 	public static void severe(String msg) {

@@ -93,6 +93,7 @@ public class DeadLockDetector {
 			for (World world : new HashMap<World, TickManager>(managerMap).keySet()) {
 				TickThreading.instance.onWorldUnload(new WorldEvent.Unload(world));
 			}
+			Log.flush();
 			if (TickThreading.instance.exitOnDeadlock) {
 				MinecraftServer.getServer().save();
 				System.exit(1);
