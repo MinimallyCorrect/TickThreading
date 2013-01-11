@@ -48,7 +48,7 @@ public class DeadLockDetector {
 			public void run() {
 				while (checkForDeadlocks()) {
 					try {
-						Thread.sleep(4000);
+						Thread.sleep(6000);
 					} catch (InterruptedException ignored) {
 					}
 				}
@@ -67,11 +67,12 @@ public class DeadLockDetector {
 	}
 
 	public boolean checkForDeadlocks() {
+		Log.flush();
 		if (lastTickTime == 0) {
 			return true;
 		}
 		int deadTime = (int) (System.currentTimeMillis() - lastTickTime);
-		if (deadTime > 30000 && MinecraftServer.getServer().isServerRunning()) {
+		if (deadTime > (TickThreading.instance.deadLockTime * 1000) && MinecraftServer.getServer().isServerRunning()) {
 			TreeMap<String, Thread> sortedThreads = new TreeMap<String, Thread>();
 			StringBuilder sb = new StringBuilder();
 			sb.append("The server appears to have deadlocked.")
@@ -94,7 +95,6 @@ public class DeadLockDetector {
 			for (World world : new HashMap<World, TickManager>(managerMap).keySet()) {
 				TickThreading.instance.onWorldUnload(new WorldEvent.Unload(world));
 			}
-			Log.flush();
 			if (TickThreading.instance.exitOnDeadlock) {
 				MinecraftServer.getServer().save();
 				System.exit(1);

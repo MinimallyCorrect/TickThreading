@@ -52,6 +52,7 @@ public class TickThreading {
 	public boolean enableWorldTickThreading = true;
 	public boolean requireOpForTicksCommand = true;
 	public int saveInterval = 1800;
+	public int deadLockTime = 30;
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load
@@ -112,6 +113,8 @@ public class TickThreading {
 		requireOpForTicksCommandProperty.comment = "If a player must be opped to use /ticks";
 		Property saveIntervalProperty = config.get(Configuration.CATEGORY_GENERAL, "saveInterval", saveInterval);
 		saveIntervalProperty.comment = "Time between auto-saves, in ticks.";
+		Property deadLockTimeProperty = config.get(Configuration.CATEGORY_GENERAL, "deadLockTime", deadLockTime);
+		deadLockTimeProperty.comment = "The time(seconds) of being frozen which will trigger the DeadLockDetector.";
 		config.save();
 
 		TicksCommand.name = ticksCommandName.value;
@@ -119,6 +122,7 @@ public class TickThreading {
 		tickThreads = tickThreadsProperty.getInt(tickThreads);
 		regionSize = regionSizeProperty.getInt(regionSize);
 		saveInterval = saveIntervalProperty.getInt(saveInterval);
+		deadLockTime = deadLockTimeProperty.getInt(deadLockTime);
 		enableEntityTickThreading = enableEntityTickThreadingProperty.getBoolean(enableEntityTickThreading);
 		enableTileEntityTickThreading = enableTileEntityTickThreadingProperty.getBoolean(enableTileEntityTickThreading);
 		variableTickRate = variableTickRateProperty.getBoolean(variableTickRate);
