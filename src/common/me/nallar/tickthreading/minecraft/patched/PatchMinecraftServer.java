@@ -32,8 +32,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		FMLCommonHandler.instance().onPreServerTick();
 		++this.tickCounter;
 
-		if (this.startProfiling)
-		{
+		if (this.startProfiling) {
 			this.startProfiling = false;
 			this.theProfiler.profilingEnabled = true;
 			this.theProfiler.clearProfiling();
@@ -42,8 +41,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		this.theProfiler.startSection("root");
 		this.updateTimeLightAndEntities();
 
-		if (this.tickCounter % TickThreading.instance.saveInterval == 0)
-		{
+		if (this.tickCounter % TickThreading.instance.saveInterval == 0) {
 			this.theProfiler.startSection("save");
 			this.serverConfigManager.saveAllPlayerData();
 			this.saveAllWorlds(true);
@@ -63,13 +61,11 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		this.theProfiler.endSection();
 		this.theProfiler.startSection("snooper");
 
-		if (!this.usageSnooper.isSnooperRunning() && this.tickCounter > 100)
-		{
+		if (!this.usageSnooper.isSnooperRunning() && this.tickCounter > 100) {
 			this.usageSnooper.startSnooper();
 		}
 
-		if (this.tickCounter % 6000 == 0)
-		{
+		if (this.tickCounter % 6000 == 0) {
 			this.usageSnooper.addMemoryStatsToSnooper();
 		}
 
