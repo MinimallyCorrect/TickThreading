@@ -84,6 +84,7 @@ public class DeadLockDetector {
 			for (Thread thread : sortedThreads.values()) {
 				sb.append("Current Thread: ").append(thread.getName()).append('\n').append("    PID: ").append(thread.getId())
 						.append(" | Alive: ").append(thread.isAlive()).append(" | State: ").append(thread.getState())
+						.append(" | Daemon: ").append(thread.isDaemon()).append(" | Priority:").append(thread.getPriority())
 						.append("    Stack:").append('\n');
 				for (StackTraceElement stackTraceElement : thread.getStackTrace()) {
 					sb.append("        ").append(stackTraceElement.toString()).append('\n');
