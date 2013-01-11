@@ -47,10 +47,11 @@ public class TickThreading {
 	public boolean exitOnDeadlock = false;
 	final Map<World, TickManager> managers = new WeakHashMap<World, TickManager>();
 	private DeadLockDetector deadLockDetector = null;
-	private static TickThreading instance;
+	public static TickThreading instance;
 	public boolean enableChunkTickThreading = true;
 	public boolean enableWorldTickThreading = true;
 	public boolean requireOpForTicksCommand = true;
+	public int saveInterval = 900;
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load
@@ -64,6 +65,7 @@ public class TickThreading {
 		} else {
 			enabled = true;
 		}
+		instance = this;
 	}
 
 	@Mod.Init
@@ -71,7 +73,6 @@ public class TickThreading {
 		if (enabled) {
 			MinecraftForge.EVENT_BUS.register(this);
 		}
-		instance = this;
 	}
 
 	@Mod.PreInit
@@ -109,15 +110,18 @@ public class TickThreading {
 		exitOnDeadlockProperty.comment = "If the server should shut down when a deadlock is detected";
 		Property requireOpForTicksCommandProperty = config.get(Configuration.CATEGORY_GENERAL, "exitOnDeadlock", requireOpForTicksCommand);
 		requireOpForTicksCommandProperty.comment = "If a player must be opped to use /ticks";
+		Property saveIntervalProperty = config.get(Configuration.CATEGORY_GENERAL, "saveInterval", saveInterval);
+		saveIntervalProperty.comment = "Time between auto-saves, in ticks.";
 		config.save();
 
-		tickThreads = tickThreadsProperty.getInt(tickThreads);
-		enableEntityTickThreading = enableEntityTickThreadingProperty.getBoolean(enableEntityTickThreading);
-		enableTileEntityTickThreading = enableTileEntityTickThreadingProperty.getBoolean(enableTileEntityTickThreading);
-		regionSize = regionSizeProperty.getInt(regionSize);
-		variableTickRate = variableTickRateProperty.getBoolean(variableTickRate);
 		TicksCommand.name = ticksCommandName.value;
 		TPSCommand.name = tpsCommandName.value;
+		tickThreads = tickThreadsProperty.getInt(tickThreads);
+		regionSize = regionSizeProperty.getInt(regionSize);
+		saveInterval = saveIntervalProperty.getInt(saveInterval);
+		enableEntityTickThreading = enableEntityTickThreadingProperty.getBoolean(enableEntityTickThreading);
+		enableTileEntityTickThreading = enableTileEntityTickThreadingProperty.getBoolean(enableTileEntityTickThreading);
+		variableTickRate = variableTickRateProperty.getBoolean(variableTickRate);
 		requirePatched = requirePatchedProperty.getBoolean(requirePatched);
 		exitOnDeadlock = exitOnDeadlockProperty.getBoolean(exitOnDeadlock);
 		enableChunkTickThreading = enableChunkTickThreadingProperty.getBoolean(enableChunkTickThreading);
@@ -191,9 +195,5 @@ public class TickThreading {
 
 	public List<TickManager> getManagers() {
 		return new ArrayList<TickManager>(managers.values());
-	}
-
-	public static TickThreading instance() {
-		return instance;
 	}
 }

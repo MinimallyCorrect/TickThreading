@@ -27,7 +27,7 @@ public abstract class PatchWorldServer extends WorldServer {
 
 	@Override
 	protected void tickBlocksAndAmbiance() {
-		TickThreading tickThreading = TickThreading.instance();
+		TickThreading tickThreading = TickThreading.instance;
 		TickManager tickManager = tickThreading.getManager(this);
 		boolean concurrentTicks = tickThreading.enableChunkTickThreading;
 

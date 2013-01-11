@@ -24,7 +24,7 @@ public class TPSCommand extends Command {
 		StringBuilder tpsReport = new StringBuilder();
 		tpsReport.append("---- TPS Report ----\n");
 		long usedTime = 0;
-		for (TickManager tickManager : TickThreading.instance().getManagers()) {
+		for (TickManager tickManager : TickThreading.instance.getManagers()) {
 			tpsReport.append(tickManager.getBasicStats());
 			usedTime += tickManager.lastTickLength;
 		}

@@ -18,7 +18,7 @@ public class TicksCommand extends Command {
 
 	@Override
 	public boolean canCommandSenderUseCommand(ICommandSender commandSender) {
-		return !TickThreading.instance().requireOpForTicksCommand || super.canCommandSenderUseCommand(commandSender);
+		return !TickThreading.instance.requireOpForTicksCommand || super.canCommandSenderUseCommand(commandSender);
 	}
 
 	@Override
@@ -28,7 +28,7 @@ public class TicksCommand extends Command {
 			if (arguments.contains("all")) {
 
 			} else {
-				sendChat(commandSender, TickThreading.instance().getManager(world).getDetailedStats());
+				sendChat(commandSender, TickThreading.instance.getManager(world).getDetailedStats());
 			}
 		} else {
 			Log.info("/ticks must be used by an entity - it provides stats on the current world");

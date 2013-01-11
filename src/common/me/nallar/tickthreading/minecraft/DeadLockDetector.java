@@ -91,9 +91,9 @@ public class DeadLockDetector {
 			}
 			Log.severe(sb.toString());
 			for (World world : new HashMap<World, TickManager>(managerMap).keySet()) {
-				TickThreading.instance().onWorldUnload(new WorldEvent.Unload(world));
+				TickThreading.instance.onWorldUnload(new WorldEvent.Unload(world));
 			}
-			if (TickThreading.instance().exitOnDeadlock) {
+			if (TickThreading.instance.exitOnDeadlock) {
 				System.exit(1);
 			}
 			return false;

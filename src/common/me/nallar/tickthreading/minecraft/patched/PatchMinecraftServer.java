@@ -3,13 +3,16 @@ package me.nallar.tickthreading.minecraft.patched;
 import java.io.File;
 
 import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.relauncher.Side;
 import me.nallar.tickthreading.minecraft.ThreadManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.crash.CrashReport;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet4UpdateTime;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.gui.IUpdatePlayerListBox;
+import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.ReportedException;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
@@ -19,6 +22,60 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 	public PatchMinecraftServer(File par1File) {
 		super(par1File);
+	}
+
+	@Override
+	public void tick() {
+		FMLCommonHandler.instance().rescheduleTicks(Side.SERVER);
+		long var1 = System.nanoTime();
+		AxisAlignedBB.getAABBPool().cleanPool();
+		FMLCommonHandler.instance().onPreServerTick();
+		++this.tickCounter;
+
+		if (this.startProfiling)
+		{
+			this.startProfiling = false;
+			this.theProfiler.profilingEnabled = true;
+			this.theProfiler.clearProfiling();
+		}
+
+		this.theProfiler.startSection("root");
+		this.updateTimeLightAndEntities();
+
+		if (this.tickCounter % TickThreading.instance.saveInterval == 0)
+		{
+			this.theProfiler.startSection("save");
+			this.serverConfigManager.saveAllPlayerData();
+			this.saveAllWorlds(true);
+			this.theProfiler.endSection();
+		}
+
+		this.theProfiler.startSection("tallying");
+		this.tickTimeArray[this.tickCounter % 100] = System.nanoTime() - var1;
+		this.sentPacketCountArray[this.tickCounter % 100] = Packet.sentID - this.lastSentPacketID;
+		this.lastSentPacketID = Packet.sentID;
+		this.sentPacketSizeArray[this.tickCounter % 100] = Packet.sentSize - this.lastSentPacketSize;
+		this.lastSentPacketSize = Packet.sentSize;
+		this.receivedPacketCountArray[this.tickCounter % 100] = Packet.receivedID - this.lastReceivedID;
+		this.lastReceivedID = Packet.receivedID;
+		this.receivedPacketSizeArray[this.tickCounter % 100] = Packet.receivedSize - this.lastReceivedSize;
+		this.lastReceivedSize = Packet.receivedSize;
+		this.theProfiler.endSection();
+		this.theProfiler.startSection("snooper");
+
+		if (!this.usageSnooper.isSnooperRunning() && this.tickCounter > 100)
+		{
+			this.usageSnooper.startSnooper();
+		}
+
+		if (this.tickCounter % 6000 == 0)
+		{
+			this.usageSnooper.addMemoryStatsToSnooper();
+		}
+
+		this.theProfiler.endSection();
+		this.theProfiler.endSection();
+		FMLCommonHandler.instance().onPostServerTick();
 	}
 
 	@Override
@@ -34,7 +91,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 		for (int x = 0; x < ids.length; x++) {
 			final int id = ids[x];
-			if (theProfiler.profilingEnabled || !TickThreading.instance().enableWorldTickThreading) {
+			if (theProfiler.profilingEnabled || !TickThreading.instance.enableWorldTickThreading) {
 				tickWorld(id);
 			} else {
 				threadManager.run(new TickRunnable(id));
