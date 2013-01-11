@@ -51,7 +51,7 @@ public class TickThreading {
 	public boolean enableChunkTickThreading = true;
 	public boolean enableWorldTickThreading = true;
 	public boolean requireOpForTicksCommand = true;
-	public int saveInterval = 900;
+	public int saveInterval = 1800;
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load

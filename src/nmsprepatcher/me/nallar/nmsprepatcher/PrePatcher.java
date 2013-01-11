@@ -10,8 +10,6 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import me.nallar.tickthreading.Log;
-
 // The prepatcher adds method declarations in superclasses,
 // so javac can compile the patch classes if they need to use a method/field they
 // add on an instance other than this
@@ -19,8 +17,7 @@ public class PrePatcher {
 	private static final Logger log = Logger.getLogger("PatchLogger");
 	private static final Pattern privatePattern = Pattern.compile("^(\\s+?)private", Pattern.MULTILINE);
 	private static final Pattern extendsPattern = Pattern.compile("\\s+?extends\\s+?([\\S]+)[^\\{]+?\\{", Pattern.DOTALL | Pattern.MULTILINE);
-	private static final Pattern declarePattern = Pattern.compile("@Declare\\s+?" +
-			"(public\\s+?(\\S*?)\\s*?\\S+?\\s*?\\([^\\{]+\\) \\{)", Pattern.DOTALL | Pattern.MULTILINE);
+	private static final Pattern declarePattern = Pattern.compile("@Declare\\s+?(public\\s+?(\\S*?)\\s*?\\S+?\\s*?\\([^\\{]*\\)\\s*?\\{)", Pattern.DOTALL | Pattern.MULTILINE);
 
 	public static void patch(File patchDirectory, File sourceDirectory) {
 		if (!patchDirectory.isDirectory()) {
@@ -57,7 +54,7 @@ public class PrePatcher {
 			int previousIndex = sourceString.indexOf("\n//PREPATCH\n");
 			int cutIndex = previousIndex == -1 ? sourceString.lastIndexOf('}') : previousIndex;
 			StringBuilder source = new StringBuilder(sourceString.substring(0, cutIndex)).append("\n//PREPATCH\n");
-			Log.info("Prepatching declarations for " + className);
+			log.info("Prepatching declarations for " + className);
 			Matcher matcher = declarePattern.matcher(contents);
 			while (matcher.find()) {
 				String type = matcher.group(2);
@@ -68,6 +65,7 @@ public class PrePatcher {
 					ret = "";
 				}
 				String decl = matcher.group(1) + "return " + ret + ";}";
+				log.info("adding " + decl);
 				if (source.indexOf(decl) == -1) {
 					source.append(decl);
 				}

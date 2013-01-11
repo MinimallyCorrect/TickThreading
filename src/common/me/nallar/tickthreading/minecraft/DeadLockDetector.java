@@ -94,6 +94,7 @@ public class DeadLockDetector {
 				TickThreading.instance.onWorldUnload(new WorldEvent.Unload(world));
 			}
 			if (TickThreading.instance.exitOnDeadlock) {
+				MinecraftServer.getServer().save();
 				System.exit(1);
 			}
 			return false;

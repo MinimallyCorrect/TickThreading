@@ -163,6 +163,11 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		worldTickTimes.get(id)[this.tickCounter % 100] = System.nanoTime() - var2;
 	}
 
+	@Declare
+	public void save() {
+		this.saveAllWorlds(true);
+	}
+
 	public static class TickRunnable implements Runnable {
 		final int id;
 
