@@ -204,6 +204,9 @@ public class PatchManager {
 			classRegistry.save(backupDirectory);
 		} catch (IOException e) {
 			Log.severe("Failed to save patched classes", e);
+			if (e.getMessage().contains("Couldn't rename ")) {
+				Log.severe("Make sure the user you are running the patcher as has access to the temporary directory.");
+			}
 		}
 	}
 
