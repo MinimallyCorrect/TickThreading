@@ -58,8 +58,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		this.lastReceivedID = Packet.receivedID;
 		this.receivedPacketSizeArray[this.tickCounter % 100] = Packet.receivedSize - this.lastReceivedSize;
 		this.lastReceivedSize = Packet.receivedSize;
-		this.theProfiler.endSection();
-		this.theProfiler.startSection("snooper");
+		this.theProfiler.endStartSection("snooper");
 
 		if (!this.usageSnooper.isSnooperRunning() && this.tickCounter > 100) {
 			this.usageSnooper.startSnooper();

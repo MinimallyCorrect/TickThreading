@@ -54,7 +54,7 @@ public class PatchMain {
 	}
 
 	private static void patcher(String[] args) {
-		Log.saveToFile(new File("patcher.log"), Level.FINEST, Log.LOGGER);
+		Log.setFileName("patcher", Level.FINEST, Log.LOGGER);
 		// TODO: Auto force-patch if Patches.class changes
 		boolean forcePatching = true || args.length >= 2 && "force".equalsIgnoreCase(args[1]);
 		PatchManager patchManager;

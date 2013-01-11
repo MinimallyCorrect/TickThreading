@@ -18,12 +18,14 @@ import net.minecraft.world.World;
 public class Log {
 	public static final Logger LOGGER = Logger.getLogger("TickThreading");
 	private static Handler handler;
+	private static final int numberOfLogFiles = 5;
+	private static final File logFolder = new File("TickThreadingLogs");
 
 	static {
 		try {
 			LOGGER.setParent(FMLLog.getLogger());
 			LOGGER.setUseParentHandlers(true);
-			saveToFile(new File("tickthreading.log"), Level.INFO, LOGGER);
+			setFileName("tickthreading", Level.INFO, LOGGER);
 		} catch (NoClassDefFoundError ignored) {
 			// Not running under forge
 			LOGGER.setUseParentHandlers(false);
@@ -47,9 +49,20 @@ public class Log {
 		LOGGER.setLevel(Level.ALL);
 	}
 
-	public static void saveToFile(final File file, final Level minimumLevel, Logger... loggers) {
+	public static void setFileName(String name, final Level minimumLevel, Logger... loggers) {
+		for (int i = numberOfLogFiles; i >= 0; i--) {
+			File currentFile = new File(logFolder, name + (i == 0 ? "" : '.' + i) + ".log");
+			if (currentFile.exists()) {
+				if (i == numberOfLogFiles) {
+					currentFile.delete();
+				} else {
+					currentFile.renameTo(new File(logFolder, name + '.' + (i + 1) + ".log"));
+				}
+			}
+		}
+		final File saveFile = new File(logFolder, name + ".log");
 		try {
-			RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw");
+			RandomAccessFile randomAccessFile = new RandomAccessFile(saveFile, "rw");
 			try {
 				randomAccessFile.setLength(0);
 			} finally {
@@ -57,7 +70,7 @@ public class Log {
 			}
 			handler = new Handler() {
 				private LogFormatter logFormatter = new LogFormatter();
-				private BufferedWriter outputWriter = new BufferedWriter(new FileWriter(file));
+				private BufferedWriter outputWriter = new BufferedWriter(new FileWriter(saveFile));
 				private int count = 0;
 
 				@Override
