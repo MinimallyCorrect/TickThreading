@@ -30,6 +30,11 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	}
 
 	@Override
+	public String getServerModName() {
+		return "tickthreading-fml";
+	}
+
+	@Override
 	public void tick() {
 		FMLCommonHandler.instance().rescheduleTicks(Side.SERVER);
 		long var1 = System.nanoTime();
