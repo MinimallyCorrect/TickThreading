@@ -71,7 +71,7 @@ public class PrePatcher {
 				} else if ("int".equals(type)) {
 					ret = "0";
 				} else if ("float".equals(type)) {
-					ret = "0.0";
+					ret = "0f";
 				}
 				String decl = matcher.group(1) + "return " + ret + ";}";
 				log.info("adding " + type + " -> " + decl);
