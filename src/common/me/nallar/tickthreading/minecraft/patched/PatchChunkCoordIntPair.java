@@ -1,7 +1,5 @@
 package me.nallar.tickthreading.minecraft.patched;
 
-import java.lang.Override;
-
 import net.minecraft.world.ChunkCoordIntPair;
 
 public class PatchChunkCoordIntPair extends ChunkCoordIntPair {

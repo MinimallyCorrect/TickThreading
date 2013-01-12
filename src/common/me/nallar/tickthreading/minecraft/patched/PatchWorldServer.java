@@ -1,7 +1,6 @@
 package me.nallar.tickthreading.minecraft.patched;
 
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 
 import me.nallar.tickthreading.minecraft.ThreadManager;
 import me.nallar.tickthreading.minecraft.TickManager;

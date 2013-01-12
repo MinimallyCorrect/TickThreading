@@ -5,6 +5,7 @@ import java.util.List;
 import me.nallar.tickthreading.minecraft.TickManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.server.MinecraftServer;
 
 public class TPSCommand extends Command {
 	public static String name = "tps";
@@ -23,11 +24,10 @@ public class TPSCommand extends Command {
 	public void processCommand(ICommandSender commandSender, List<String> arguments) {
 		StringBuilder tpsReport = new StringBuilder();
 		tpsReport.append("---- TPS Report ----\n");
-		long usedTime = 0;
 		for (TickManager tickManager : TickThreading.instance.getManagers()) {
 			tpsReport.append(tickManager.getBasicStats());
-			usedTime += tickManager.lastTickLength;
 		}
+		int usedTime = MinecraftServer.getTickTime();
 		tpsReport.append("\nOverall TPS: ").append(Math.min(20, 1000 / (usedTime == 0 ? 1 : usedTime)))
 				.append("\nOverall load: ").append(usedTime * 2).append('%');
 		sendChat(commandSender, tpsReport.toString());

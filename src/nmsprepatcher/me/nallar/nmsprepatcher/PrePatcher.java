@@ -17,7 +17,7 @@ public class PrePatcher {
 	private static final Logger log = Logger.getLogger("PatchLogger");
 	private static final Pattern privatePattern = Pattern.compile("^(\\s+?)private", Pattern.MULTILINE);
 	private static final Pattern extendsPattern = Pattern.compile("\\s+?extends\\s+?([\\S]+)[^\\{]+?\\{", Pattern.DOTALL | Pattern.MULTILINE);
-	private static final Pattern declarePattern = Pattern.compile("@Declare\\s+?(public\\s+?(\\S*?)\\s*?\\S+?\\s*?\\([^\\{]*\\)\\s*?\\{)", Pattern.DOTALL | Pattern.MULTILINE);
+	private static final Pattern declarePattern = Pattern.compile("@Declare\\s+?(public\\s+?(\\S*?)(?:\\s+?(\\S*?))?\\s*?\\S+?\\s*?\\([^\\{]*\\)\\s*?\\{)", Pattern.DOTALL | Pattern.MULTILINE);
 
 	public static void patch(File patchDirectory, File sourceDirectory) {
 		if (!patchDirectory.isDirectory()) {

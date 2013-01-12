@@ -19,6 +19,7 @@ import net.minecraftforge.common.DimensionManager;
 
 public abstract class PatchMinecraftServer extends MinecraftServer {
 	public ThreadManager threadManager;
+	private static int tickTime = 0;
 
 	public PatchMinecraftServer(File par1File) {
 		super(par1File);
@@ -77,6 +78,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	public void updateTimeLightAndEntities() {
 		this.theProfiler.startSection("levels");
 		int var1;
+		long startTime = System.nanoTime();
 
 		Integer[] ids = DimensionManager.getIDs();
 
@@ -106,7 +108,13 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			((IUpdatePlayerListBox) this.tickables.get(var1)).update();
 		}
 
+		tickTime = (int) (((tickTime * 127) + (System.nanoTime() - startTime)) / 127);
 		this.theProfiler.endSection();
+	}
+
+	@Declare
+	public static int getTickTime() {
+		return tickTime;
 	}
 
 	@Declare
