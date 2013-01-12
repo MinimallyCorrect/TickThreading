@@ -108,7 +108,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			((IUpdatePlayerListBox) this.tickables.get(var1)).update();
 		}
 
-		tickTime = (int) (((tickTime * 127) + (System.nanoTime() - startTime)) / 127);
+		tickTime = (int) (((tickTime * 127) + (System.nanoTime() - startTime)) / 128);
 		this.theProfiler.endSection();
 	}
 
