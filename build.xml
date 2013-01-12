@@ -193,6 +193,12 @@
 		<delete dir="${mcpsrc.dir}/minecraft/me/nallar"/>
 		<delete dir="${mcpsrc.dir}/minecraft/javassist/is/faulty"/>
 
+		<fail message="MCP failed to build">
+			<condition>
+				<resourcecontains resource="${mcp.dir}/logs/client_compile.log" substring="error:"/>
+			</condition>
+		</fail>
+
 	</target>
 
 	<!-- Package the compiled files -->
