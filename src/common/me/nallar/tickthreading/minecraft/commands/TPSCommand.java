@@ -27,8 +27,9 @@ public class TPSCommand extends Command {
 		for (TickManager tickManager : TickThreading.instance.getManagers()) {
 			tpsReport.append(tickManager.getBasicStats());
 		}
-		int usedTime = MinecraftServer.getTickTime() / 1000000;
-		tpsReport.append("\nOverall TPS: ").append(Math.min(20, 1000 / (usedTime == 0 ? 1 : usedTime)))
+		int usedTime = MinecraftServer.getTickTime();
+		tpsReport.append("\nUsed time per tick: ").append(usedTime).append("ms")
+				.append("\nOverall TPS: ").append(Math.min(20, 1000 / (usedTime == 0 ? 1 : usedTime)))
 				.append("\nOverall load: ").append(usedTime * 2).append('%');
 		sendChat(commandSender, tpsReport.toString());
 	}

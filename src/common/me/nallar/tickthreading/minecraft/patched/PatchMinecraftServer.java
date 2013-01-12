@@ -108,7 +108,8 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			((IUpdatePlayerListBox) this.tickables.get(var1)).update();
 		}
 
-		tickTime = (int) (((tickTime * 127) + (System.nanoTime() - startTime)) / 128);
+		int usedTimeMilliseconds = (int) ((System.nanoTime() - startTime) / 1000000);
+		tickTime = (tickTime * 127 + usedTimeMilliseconds) / 128;
 		this.theProfiler.endSection();
 	}
 
@@ -171,7 +172,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 	@Declare
 	public void save() {
-		this.saveAllWorlds(true);
+		this.saveAllWorlds(false);
 	}
 
 	public static class TickRunnable implements Runnable {
