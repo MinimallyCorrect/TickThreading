@@ -1,6 +1,7 @@
 package me.nallar.tickthreading.minecraft.patched;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import me.nallar.tickthreading.minecraft.ThreadManager;
 import me.nallar.tickthreading.minecraft.TickManager;
@@ -57,11 +58,13 @@ public abstract class PatchWorldServer extends WorldServer {
 	@Declare
 	public boolean tickBlocks(Iterator chunkCoordIterator) {
 		ChunkCoordIntPair var4;
-		synchronized (chunkCoordIterator) {
-			if (!chunkCoordIterator.hasNext()) {
-				return false;
-			}
+		if (!chunkCoordIterator.hasNext()) {
+			return false;
+		}
+		try {
 			var4 = (ChunkCoordIntPair) chunkCoordIterator.next();
+		} catch(NoSuchElementException ignored) {
+			return false;
 		}
 		int xPos = var4.chunkXPos * 16;
 		int yPos = var4.chunkZPos * 16;

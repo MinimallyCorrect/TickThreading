@@ -98,6 +98,9 @@
 			<lock field="writeLock">addVillagerPosition</lock>
 			<lock field="readLock">findNearestVillage,func_82566_a</lock>
 		</class>
+		<class id="net.minecraft.world.ChunkCoordIntPair">
+			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchChunkCoordIntPair"/>
+		</class>
 	</minecraftCommon>
 	<forgeModLoader>
 		<class id="cpw.mods.fml.common.FMLModContainer">
