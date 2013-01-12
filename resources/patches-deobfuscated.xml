@@ -201,8 +201,8 @@
 		</class>
 	</gregTech>
 	<chickenChunks>
-		<class id="codechicken.chunkloader.PlayerChunkViewerManager">
-			<synchronize>update,closeViewer,isViewerOpen</synchronize>
+		<class id="codechicken.chunkloader.ChunkLoaderEventHandler">
+			<synchronize>tickEnd,onPlayerLogout,onWorldLoad,onWorldUnload,onChunkForce,onChunkUnForce</synchronize>
 		</class>
 	</chickenChunks>
 </mods>
