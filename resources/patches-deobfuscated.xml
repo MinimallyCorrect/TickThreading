@@ -32,7 +32,6 @@
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchWorldServer"/>
 			<insertSuper>tickBlocksAndAmbiance</insertSuper>
 			<newInitializer field="doneChunks" code="java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap());"/>
-			<newInitializer field="activeChunkSet" code="java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap());"/>
 		</class>
 		<class id="net.minecraft.world.World">
 			<!-- addedEntityList could be added to while looping -->
@@ -41,6 +40,7 @@
 			<!-- Same list was used by multiple threads -->
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchWorld"/>
 			<public>releaseEntitySkin</public>
+			<newInitializer field="activeChunkSet" code="java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap());"/>
 		</class>
 		<class id="net.minecraft.world.chunk.Chunk">
 			<!-- The entity list could be accessed from multiple threads, as usual causes problems during iteration -->
