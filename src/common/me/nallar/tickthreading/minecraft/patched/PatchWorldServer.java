@@ -58,13 +58,11 @@ public abstract class PatchWorldServer extends WorldServer {
 	@Declare
 	public boolean tickBlocks(Iterator chunkCoordIterator) {
 		ChunkCoordIntPair var4;
-		if (!chunkCoordIterator.hasNext()) {
-			return false;
-		}
-		try {
+		synchronized (chunkCoordIterator) {
+			if (!chunkCoordIterator.hasNext()) {
+				return false;
+			}
 			var4 = (ChunkCoordIntPair) chunkCoordIterator.next();
-		} catch(NoSuchElementException ignored) {
-			return false;
 		}
 		int xPos = var4.chunkXPos * 16;
 		int yPos = var4.chunkZPos * 16;
