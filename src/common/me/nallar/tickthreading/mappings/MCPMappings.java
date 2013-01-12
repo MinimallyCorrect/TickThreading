@@ -19,7 +19,7 @@ import me.nallar.tickthreading.Log;
 
 public class MCPMappings extends Mappings {
 	private static final Pattern extendsPattern = Pattern.compile("\\s+?extends\\s+?([\\S]+)[^\\{]+?\\{", Pattern.DOTALL | Pattern.MULTILINE);
-	private static final Pattern packagePattern = Pattern.compile("package\\s+?([^\\s;]*)[^;]+?;", Pattern.DOTALL | Pattern.MULTILINE);
+	private static final Pattern packagePattern = Pattern.compile("package\\s+?([^\\s;]+)[^;]*?;", Pattern.DOTALL | Pattern.MULTILINE);
 	private final Map<String, String> methodSeargeMappings = new HashMap<String, String>();
 	private final Map<String, String> fieldSeargeMappings = new HashMap<String, String>();
 	private final BiMap<ClassDescription, ClassDescription> classMappings = HashBiMap.create();
@@ -52,13 +52,15 @@ public class MCPMappings extends Mappings {
 	public FieldDescription map(FieldDescription fieldDescription) {
 		FieldDescription obfuscated = fieldMappings.get(fieldDescription);
 		if (obfuscated == null) {
+			String className;
 			do {
-				String className = classNameToSuperClassName.get(fieldDescription.className);
+				className = classNameToSuperClassName.get(fieldDescription.className);
 				Log.info(fieldDescription + " -> " + className);
 				if (className != null) {
-					obfuscated = fieldMappings.get(new FieldDescription(className, fieldDescription.name));
+					fieldDescription = new FieldDescription(className, fieldDescription.name);
+					obfuscated = fieldMappings.get(fieldDescription);
 				}
-			} while(obfuscated == null);
+			} while(obfuscated == null && className != null);
 		}
 		return obfuscated;
 	}
