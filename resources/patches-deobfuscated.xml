@@ -200,4 +200,9 @@
 			<synchronize>readIDSUData,writeIDSUData</synchronize>
 		</class>
 	</gregTech>
+	<chickenChunks>
+		<class id="codechicken.chunkloader.PlayerChunkViewerManager">
+			<synchronize>update,closeViewer,isViewerOpen</synchronize>
+		</class>
+	</chickenChunks>
 </mods>
