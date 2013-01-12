@@ -165,6 +165,9 @@
 			<threadLocal field="searching" type="boolean" setExpression="java.lang.Boolean.valueOf($1)" threadLocalField="javassist.is.faulty.ThreadLocals.redPowerIsSearching"/>
 			-->
 		</class>
+		<class id="com.eloraam.redpower.core.TubeFlow">
+			<synchronize>update,add</synchronize>
+		</class>
 	</redPowerCore>
 	<industrialCraft>
 		<class id="ic2.core.EnergyNet">
