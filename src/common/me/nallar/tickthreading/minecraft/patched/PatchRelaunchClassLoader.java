@@ -2,9 +2,9 @@ package me.nallar.tickthreading.minecraft.patched;
 
 import java.net.URL;
 
-import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.relauncher.IClassTransformer;
 import cpw.mods.fml.relauncher.RelaunchClassLoader;
+import me.nallar.tickthreading.Log;
 
 public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 	public PatchRelaunchClassLoader(URL[] sources) {
@@ -17,7 +17,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 			try {
 				basicClass = transformer.transform(name, basicClass);
 			} catch (Throwable throwable) {
-				FMLLog.warning("Failed to transform " + name, throwable);
+				Log.severe("Failed to transform " + name, throwable);
 			}
 		}
 		return basicClass;
