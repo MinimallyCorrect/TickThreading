@@ -146,6 +146,9 @@ public class Patches {
 				ctClass.addMethod(added);
 			}
 		}
+		for (CtClass CtInterface : from.getInterfaces()) {
+			ctClass.addInterface(CtInterface);
+		}
 	}
 
 	@Patch (
