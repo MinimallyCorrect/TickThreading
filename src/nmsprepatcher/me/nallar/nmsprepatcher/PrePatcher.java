@@ -17,7 +17,7 @@ public class PrePatcher {
 	private static final Logger log = Logger.getLogger("PatchLogger");
 	private static final Pattern privatePattern = Pattern.compile("^(\\s+?)private", Pattern.MULTILINE);
 	private static final Pattern extendsPattern = Pattern.compile("\\s+?extends\\s+?([\\S]+)[^\\{]+?\\{", Pattern.DOTALL | Pattern.MULTILINE);
-	private static final Pattern declarePattern = Pattern.compile("@Declare\\s+?(public\\s+?(\\S*?)(?:\\s+?(\\S*?))?\\s*?\\S+?\\s*?\\([^\\{]*\\)\\s*?\\{)", Pattern.DOTALL | Pattern.MULTILINE);
+	private static final Pattern declarePattern = Pattern.compile("@Declare\\s+?(public\\s+?(\\S*?)?\\s+?(\\S*?)\\s*?\\S+?\\s*?\\([^\\{]*\\)\\s*?\\{)", Pattern.DOTALL | Pattern.MULTILINE);
 
 	public static void patch(File patchDirectory, File sourceDirectory) {
 		if (!patchDirectory.isDirectory()) {
@@ -59,13 +59,18 @@ public class PrePatcher {
 			while (matcher.find()) {
 				String type = matcher.group(2);
 				String ret = "null"; // TODO: Add more types.
+				if ("static".equals(type)) {
+					type = matcher.group(3);
+				}
 				if ("boolean".equals(type)) {
 					ret = "false";
 				} else if ("void".equals(type)) {
 					ret = "";
+				} else if ("int".equals(type)) {
+					ret = "0";
 				}
 				String decl = matcher.group(1) + "return " + ret + ";}";
-				log.info("adding " + decl);
+				log.info("adding " + type + " -> " + decl);
 				if (source.indexOf(decl) == -1) {
 					source.append(decl);
 				}
