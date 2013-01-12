@@ -19,11 +19,7 @@ public class ThreadManager {
 	private final Set<Thread> workThreads = new HashSet<Thread>();
 	private final Object readyLock = new Object();
 	private final AtomicInteger waiting = new AtomicInteger();
-	private final Runnable killTask = new Runnable() {
-		@Override
-		public void run() {
-		}
-	};
+	private final Runnable killTask = new KillRunnable();
 	private final Runnable workerTask = new Runnable() {
 		@Override
 		public void run() {
@@ -128,6 +124,12 @@ public class ThreadManager {
 
 	public void stop() {
 		killThreads(workThreads.size());
+	}
+
+	private static class KillRunnable implements Runnable {
+		@Override
+		public void run() {
+		}
 	}
 
 	private class ServerWorkThread extends ThreadMinecraftServer {

@@ -70,10 +70,9 @@ public abstract class PatchProfiler extends Profiler {
 				}
 
 				long var8 = 0L;
-				Iterator var10 = this.profilingMap.keySet().iterator();
 
-				while (var10.hasNext()) {
-					String var11 = (String) var10.next();
+				for (Object o : this.profilingMap.keySet()) {
+					String var11 = (String) o;
 
 					if (var11.length() > par1Str.length() && var11.startsWith(par1Str) && var11.indexOf('.', par1Str.length() + 1) < 0) {
 						var8 += (Long) this.profilingMap.get(var11);

@@ -59,9 +59,9 @@ public class PrePatcher {
 			while (matcher.find()) {
 				String type = matcher.group(2);
 				String ret = "null"; // TODO: Add more types.
-				if (type.equals("boolean")) {
+				if ("boolean".equals(type)) {
 					ret = "false";
-				} else if (type.equals("void")) {
+				} else if ("void".equals(type)) {
 					ret = "";
 				}
 				String decl = matcher.group(1) + "return " + ret + ";}";
