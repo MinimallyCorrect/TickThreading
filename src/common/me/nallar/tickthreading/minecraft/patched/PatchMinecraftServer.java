@@ -20,7 +20,7 @@ import net.minecraftforge.common.DimensionManager;
 
 public abstract class PatchMinecraftServer extends MinecraftServer {
 	public ThreadManager threadManager;
-	private static int tickTime = 0;
+	private static float tickTime = 0;
 	private AtomicInteger currentWorld;
 	private Integer[] dimensionIdsToTick;
 	private Runnable tickRunnable;
@@ -116,13 +116,12 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			((IUpdatePlayerListBox) this.tickables.get(var1)).update();
 		}
 
-		int usedTimeMilliseconds = (int) ((System.nanoTime() - startTime) / 1000000);
-		tickTime = (tickTime * 127 + usedTimeMilliseconds) / 128;
+		tickTime = (tickTime * 127 + ((System.nanoTime() - startTime) / 1000000)) / 128;
 		this.theProfiler.endSection();
 	}
 
 	@Declare
-	public static int getTickTime() {
+	public static float getTickTime() {
 		return tickTime;
 	}
 
