@@ -20,12 +20,9 @@
 		<class id="net.minecraft.network.packet.Packet56MapChunks">
 			<volatile field="field_73587_e"/>
 		</class>
-		<!--
-		Doesn't appear to be necessary
 		<class id="net.minecraft.world.gen.ChunkProviderServer">
-			<synchronize field="loadedChunkHashMap">safeLoadChunk,loadChunk,unload100OldestChunks</synchronize>
+			<synchronize field="loadedChunkHashMap">safeLoadChunk,loadChunk,unload100OldestChunks,unloadAllChunks</synchronize>
 		</class>
-		-->
 		<class id="net.minecraft.world.WorldServer">
 			<!-- Fixes an issue where the tickNextTickLists would become out of sync -->
 			<synchronize>func_82740_a,scheduleBlockUpdateFromLoad,getPendingBlockUpdates,addBlockEvent</synchronize>
