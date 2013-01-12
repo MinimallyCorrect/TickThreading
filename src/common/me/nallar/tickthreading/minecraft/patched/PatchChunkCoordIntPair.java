@@ -9,6 +9,6 @@ public class PatchChunkCoordIntPair extends ChunkCoordIntPair {
 
 	@Override
 	public int hashCode() {
-		return (chunkXPos * 31) + chunkXPos;
+		return (chunkXPos * 7907) + chunkXPos;
 	}
 }
