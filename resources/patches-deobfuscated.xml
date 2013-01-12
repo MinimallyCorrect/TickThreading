@@ -31,6 +31,8 @@
 			<synchronize>func_82740_a,scheduleBlockUpdateFromLoad,getPendingBlockUpdates,addBlockEvent</synchronize>
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchWorldServer"/>
 			<insertSuper>tickBlocksAndAmbiance</insertSuper>
+			<newInitializer field="doneChunks" code="java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap());"/>
+			<newInitializer field="activeChunkSet" code="java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap());"/>
 		</class>
 		<class id="net.minecraft.world.World">
 			<!-- addedEntityList could be added to while looping -->
