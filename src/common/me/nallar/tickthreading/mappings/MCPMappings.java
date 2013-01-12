@@ -60,7 +60,7 @@ public class MCPMappings extends Mappings {
 					fieldDescription = new FieldDescription(className, fieldDescription.name);
 					obfuscated = fieldMappings.get(fieldDescription);
 				}
-			} while(obfuscated == null && className != null);
+			} while (obfuscated == null && className != null);
 		}
 		return obfuscated;
 	}

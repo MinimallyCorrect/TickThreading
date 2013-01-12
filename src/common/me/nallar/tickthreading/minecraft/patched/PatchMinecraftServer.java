@@ -143,6 +143,9 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			this.theProfiler.endStartSection("worldTick");
 			try {
 				var4.tick();
+				if (true) {
+					throw new RuntimeException();
+				}
 			} catch (Throwable var8) {
 				var6 = CrashReport.makeCrashReport(var8, "Exception ticking world");
 				var4.addWorldInfoToCrashReport(var6);

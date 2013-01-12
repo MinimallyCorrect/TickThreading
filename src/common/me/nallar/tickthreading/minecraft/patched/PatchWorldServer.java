@@ -5,7 +5,6 @@ import java.util.Iterator;
 import me.nallar.tickthreading.minecraft.ThreadManager;
 import me.nallar.tickthreading.minecraft.TickManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
-import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.block.Block;
 import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.profiler.Profiler;

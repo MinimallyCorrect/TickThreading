@@ -97,6 +97,9 @@
 		<class id="net.minecraft.world.ChunkCoordIntPair">
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchChunkCoordIntPair"/>
 		</class>
+		<class id="net.minecraft.crash.CrashReportCategory">
+			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchClassReportCategory"/>
+		</class>
 	</minecraftCommon>
 	<forgeModLoader>
 		<class id="cpw.mods.fml.common.FMLModContainer">
