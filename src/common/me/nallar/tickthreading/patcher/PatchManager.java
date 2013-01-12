@@ -253,8 +253,8 @@ public class PatchManager {
 		}
 
 		public Object run(Element patchElement, CtClass ctClass) {
-			Log.fine("Patching " + ctClass.getName() + " with " + this.name);
 			Map<String, String> attributes = getAttributes(patchElement);
+			Log.fine("Patching " + ctClass.getName() + " with " + this.name + '(' + CollectionsUtil.joinMap(attributes) + ')');
 			if (requiredAttributes != null && !attributes.keySet().containsAll(requiredAttributes)) {
 				Log.severe("Missing required attributes " + requiredAttributes.toString() + " when patching " + ctClass.getName());
 				return null;
