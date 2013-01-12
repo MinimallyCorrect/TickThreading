@@ -97,12 +97,9 @@
 			<lock field="writeLock">addVillagerPosition</lock>
 			<lock field="readLock">findNearestVillage,func_82566_a</lock>
 		</class>
-		<!--
-		Will wait for Forge PR similar to be merged, and use its code. Just backporting.
 		<class id="net.minecraft.world.ChunkCoordIntPair">
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchChunkCoordIntPair"/>
 		</class>
-		-->
 	</minecraftCommon>
 	<forgeModLoader>
 		<class id="cpw.mods.fml.common.FMLModContainer">

@@ -10,6 +10,8 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.base.Splitter;
+
 // The prepatcher adds method declarations in superclasses,
 // so javac can compile the patch classes if they need to use a method/field they
 // add on an instance other than this
@@ -36,7 +38,7 @@ public class PrePatcher {
 			}
 			String shortClassName = extendsMatcher.group(1);
 			String className = null;
-			for (String line : contents.split("\n")) {
+			for (String line : Splitter.on('\n').split(contents)) {
 				if (line.endsWith('.' + shortClassName + ';')) {
 					className = line.substring(7, line.length() - 1);
 				}

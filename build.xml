@@ -120,8 +120,21 @@
 	</target>
 
 	<target name="prepatch">
-		<javac includeantruntime="false" srcdir="${src.dir}/nmsprepatcher" destdir="${classes.dir}" debug="on" source="1.6"/>
-		<java classpath="${classes.dir}" classname="me.nallar.nmsprepatcher.Main">
+		<path id="class.path">
+			<fileset dir="${mcp.dir}/lib">
+				<include name="**/*.jar"/>
+			</fileset>
+		</path>
+		<javac includeantruntime="false" srcdir="${src.dir}/nmsprepatcher" destdir="${classes.dir}" debug="on" source="1.6">
+			<classpath>
+				<path refid="class.path"/>
+			</classpath>
+		</javac>
+		<java classname="me.nallar.nmsprepatcher.Main">
+			<classpath>
+				<path refid="class.path"/>
+				<pathelement location="${classes.dir}"/>
+			</classpath>
 			<arg value="${src.dir}/common/me/nallar/tickthreading/minecraft/patched"/>
 			<arg value="${mcpsrc.dir}/minecraft"/>
 		</java>
@@ -195,11 +208,7 @@
 			</fileset>
 		</delete>
 
-		<path id="class.path">
-			<fileset dir="${mcp.dir}/lib">
-				<include name="**/*.jar"/>
-			</fileset>
-		</path>
+
 
 		<java classname="me.nallar.tickthreading.patcher.PatchMain">
 			<classpath>
