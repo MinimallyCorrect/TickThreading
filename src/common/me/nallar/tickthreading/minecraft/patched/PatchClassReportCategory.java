@@ -11,8 +11,8 @@ public abstract class PatchClassReportCategory extends CrashReportCategory {
 	@Override
 	public int func_85073_a(int par1) {
 		StackTraceElement[] var2 = Thread.currentThread().getStackTrace();
-		this.field_85075_d = new StackTraceElement[var2.length - 5 - par1];
-		System.arraycopy(var2, 5 + par1, this.field_85075_d, 0, this.field_85075_d.length);
+		this.field_85075_d = new StackTraceElement[var2.length - 7 - par1];
+		System.arraycopy(var2, 7 + par1, this.field_85075_d, 0, this.field_85075_d.length);
 		return this.field_85075_d.length;
 	}
 }
