@@ -70,8 +70,7 @@
 		</class>
 		<class id="net.minecraft.entity.player.EntityPlayerMP">
 			<!-- TODO: Fix this with less locking -->
-			<newField field="staticLock" class="java.lang.Object" static=""/>
-			<synchronize field="staticLock">onUpdate</synchronize>
+			<synchronize field="worldObj">onUpdate</synchronize>
 			<!-- Concurrent access during iteration = boom -->
 			<newInitializer field="destroyedItemsNetCache" class="me.nallar.tickthreading.collections.ConcurrentLinkedQueueList"/>
 		</class>
