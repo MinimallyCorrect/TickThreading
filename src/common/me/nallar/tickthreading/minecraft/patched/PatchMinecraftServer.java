@@ -176,10 +176,9 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 		this.theProfiler.endStartSection("players");
 		this.serverConfigManager.sendPlayerInfoToAllPlayers();
-		this.theProfiler.endStartSection("connection");
-		this.getNetworkThread().networkTick();
-		this.theProfiler.endStartSection("tickables");
 
+
+		this.theProfiler.endStartSection("tickables");
 		for (var1 = 0; var1 < this.tickables.size(); ++var1) {
 			((IUpdatePlayerListBox) this.tickables.get(var1)).update();
 		}
@@ -187,6 +186,9 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		if (concurrentTicking) {
 			threadManager.waitForCompletion();
 		}
+
+		this.theProfiler.endStartSection("connection");
+		this.getNetworkThread().networkTick();
 
 		this.theProfiler.endStartSection("dim_unloading");
 		DimensionManager.unloadWorlds(worldTickTimes);
