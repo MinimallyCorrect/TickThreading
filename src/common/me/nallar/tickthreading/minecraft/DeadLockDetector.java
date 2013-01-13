@@ -94,10 +94,10 @@ public class DeadLockDetector {
 					sb.append("        ").append(stackTraceElement.toString()).append('\n');
 				}
 			}
-			ThreadMXBean tmx = ManagementFactory.getThreadMXBean();
-			long[] ids = tmx.findDeadlockedThreads();
-			if (ids != null) {
-				ThreadInfo[] infos = tmx.getThreadInfo(ids, true, true);
+			ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+			long[] deadlockedThreads = threadMXBean.findDeadlockedThreads();
+			if (deadlockedThreads != null) {
+				ThreadInfo[] infos = threadMXBean.getThreadInfo(deadlockedThreads, true, true);
 				sb.append("Definitely deadlocked: \n");
 				for (ThreadInfo threadInfo : infos) {
 					sb.append(threadInfo).append('\n');
