@@ -65,6 +65,10 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 				var4 = (ChunkCoordIntPair) chunkCoordIterator.next();
 			}
 
+			if (Math.random() > (MinecraftServer.getTPS() / 20)) {
+				continue;
+			}
+
 			int xPos = var4.chunkXPos * 16;
 			int yPos = var4.chunkZPos * 16;
 			Chunk chunk = this.getChunkFromChunkCoords(var4.chunkXPos, var4.chunkZPos);
