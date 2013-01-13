@@ -97,7 +97,7 @@ public class DeadLockDetector {
 			}
 			if (TickThreading.instance.exitOnDeadlock && MinecraftServer.getServer().isServerRunning()) {
 				MinecraftServer.getServer().save();
-				System.exit(1);
+				Runtime.getRuntime().halt(1);
 			}
 			return false;
 		}
