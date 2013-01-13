@@ -94,13 +94,22 @@ public abstract class PatchWorld extends World {
 
 	@Override
 	public int countEntities(Class entityType) {
-		try {
+		if (loadedEntityList instanceof EntityList) {
 			return ((EntityList) this.loadedEntityList).manager.getEntityCount(entityType);
-		} catch (ClassCastException ignored) {
-		} catch (Exception e) {
-			Log.severe("Failed to count entities", e);
 		}
-		return super.countEntities(entityType);
+		int var2 = 0;
+
+		for (int var3 = 0; var3 < this.loadedEntityList.size(); ++var3)
+		{
+			Entity var4 = (Entity)this.loadedEntityList.get(var3);
+
+			if (entityType.isAssignableFrom(var4.getClass()))
+			{
+				++var2;
+			}
+		}
+
+		return var2;
 	}
 
 	@Override
