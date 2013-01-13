@@ -102,7 +102,7 @@ public class TickThreading {
 		requirePatchedProperty.comment = "If the server must be patched to run with TickThreading";
 		Property exitOnDeadlockProperty = config.get(Configuration.CATEGORY_GENERAL, "exitOnDeadlock", exitOnDeadlock);
 		exitOnDeadlockProperty.comment = "If the server should shut down when a deadlock is detected";
-		Property requireOpForTicksCommandProperty = config.get(Configuration.CATEGORY_GENERAL, "exitOnDeadlock", requireOpForTicksCommand);
+		Property requireOpForTicksCommandProperty = config.get(Configuration.CATEGORY_GENERAL, "requireOpsForTicksCommand", requireOpForTicksCommand);
 		requireOpForTicksCommandProperty.comment = "If a player must be opped to use /ticks";
 		Property saveIntervalProperty = config.get(Configuration.CATEGORY_GENERAL, "saveInterval", saveInterval);
 		saveIntervalProperty.comment = "Time between auto-saves, in ticks.";
