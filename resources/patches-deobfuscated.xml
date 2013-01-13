@@ -2,7 +2,7 @@
 <mods>
 	<minecraftCommon>
 		<class id="net.minecraft.world.SpawnerAnimals">
-			<synchronize>findChunksForSpawning</synchronize>
+			<threadLocal field="eligibleChunksForSpawning" type="java.util.HashMap" threadLocalField="javassist.is.faulty.ThreadLocals.eligibleChunksForSpawning"/>
 		</class>
 		<class id="net.minecraft.pathfinding.Path">
 			<newInitializer field="pathPoints" class="net.minecraft.pathfinding.PathPoint" arraySize="128"/>

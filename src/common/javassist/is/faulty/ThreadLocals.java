@@ -18,6 +18,7 @@ public class ThreadLocals {
 	public static final ThreadLocal redPowerPowerSearchTest = new HashSetThreadLocal();
 	public static final ThreadLocal redPowerPowerSearch = new LinkedListThreadLocal();
 	public static final ThreadLocal redPowerIsSearching = new BooleanThreadLocal();
+	public static final ThreadLocal eligibleChunksForSpawning = new HashMapThreadLocal();
 
 	private static class ArrayListThreadLocal extends ThreadLocal {
 		@Override
