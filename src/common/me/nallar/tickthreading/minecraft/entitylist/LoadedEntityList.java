@@ -9,6 +9,7 @@ import net.minecraft.world.World;
 public class LoadedEntityList<T> extends EntityList<T> {
 	public LoadedEntityList(World world, Field overriddenField, TickManager manager) {
 		super(world, overriddenField, manager, manager.entityList);
+		manager.entityLock = this;
 	}
 
 	@Override

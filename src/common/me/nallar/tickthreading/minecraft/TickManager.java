@@ -32,6 +32,8 @@ public class TickManager {
 	public final List<TileEntity> tileEntityList = new ArrayList<TileEntity>();
 	public final List<Entity> entityList = new ArrayList<Entity>();
 	private final Map<Class<?>, Integer> entityClassToCountMap = new HashMap<Class<?>, Integer>();
+	public Object tileEntityLock;
+	public Object entityLock;
 
 	public TickManager(World world, int regionSize, int threads) {
 		threadManager = new ThreadManager(threads == 0 ? (Runtime.getRuntime().availableProcessors() * 3) / 2 : threads, "Tick Thread for " + Log.name(world));
@@ -123,7 +125,7 @@ public class TickManager {
 
 	public synchronized void add(TileEntity tileEntity) {
 		getOrCreateCallable(tileEntity).add(tileEntity);
-		synchronized (tileEntityList) {
+		synchronized (tileEntityLock) {
 			if (!tileEntityList.contains(tileEntity)) {
 				tileEntityList.add(tileEntity);
 			}
@@ -132,7 +134,7 @@ public class TickManager {
 
 	public synchronized void add(Entity entity) {
 		getOrCreateCallable(entity).add(entity);
-		synchronized (entityList) {
+		synchronized (entityLock) {
 			if (!entityList.contains(entity)) {
 				entityList.add(entity);
 				Class entityClass = entity.getClass();
@@ -156,13 +158,13 @@ public class TickManager {
 	}
 
 	public void removed(TileEntity tileEntity) {
-		synchronized (tileEntityList) {
+		synchronized (tileEntityLock) {
 			tileEntityList.remove(tileEntity);
 		}
 	}
 
 	public void removed(Entity entity) {
-		synchronized (entityList) {
+		synchronized (entityLock) {
 			entityList.remove(entity);
 			Class entityClass = entity.getClass();
 			Integer count = entityClassToCountMap.get(entityClass);

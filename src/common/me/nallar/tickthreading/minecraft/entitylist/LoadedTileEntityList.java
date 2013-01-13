@@ -9,6 +9,7 @@ import net.minecraft.world.World;
 public class LoadedTileEntityList<T> extends EntityList<T> {
 	public LoadedTileEntityList(World world, Field overriddenField, TickManager manager) {
 		super(world, overriddenField, manager, manager.tileEntityList);
+		manager.tileEntityLock = this;
 	}
 
 	@Override
