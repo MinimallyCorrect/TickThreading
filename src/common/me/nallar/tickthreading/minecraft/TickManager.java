@@ -221,12 +221,15 @@ public class TickManager {
 	}
 
 	public String getBasicStats() {
-		long time = 0;
+		long timeTotal = 0;
 		long[] tickTimes = MinecraftServer.getServer().worldTickTimes.get(world.provider.dimensionId);
 		for (long tick : tickTimes) {
-			time += tick;
+			timeTotal += tick;
 		}
-		time = (time/1000000)/tickTimes.length;
+		double time = (timeTotal/1000000)/tickTimes.length;
+		if (time == 0) {
+			time = 0.1;
+		}
 		return Log.name(world) + ": " + Math.min(1000 / time, 20) + "tps, " + entityList.size() + " entities, load: " + (time * 2) + "%\n";
 	}
 
