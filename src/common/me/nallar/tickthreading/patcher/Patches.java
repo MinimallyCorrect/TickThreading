@@ -278,8 +278,12 @@ public class Patches {
 		if (o instanceof CtMethod) {
 			synchronize((CtMethod) o, attributes.get("field"));
 		} else {
+			boolean static_ = attributes.containsKey("static");
 			for (CtMethod ctMethod : ((CtClass) o).getDeclaredMethods()) {
-				synchronize(ctMethod, attributes.get("field"));
+				boolean isStatic = (ctMethod.getModifiers() & Modifier.STATIC) == Modifier.STATIC;
+				if (isStatic == static_) {
+					synchronize(ctMethod, attributes.get("field"));
+				}
 			}
 		}
 	}
