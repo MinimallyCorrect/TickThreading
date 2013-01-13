@@ -79,6 +79,7 @@ public enum CollectionsUtil {
 				stringBuilder.append(',');
 			}
 			stringBuilder.append(entry.getKey().toString()).append(':').append(entry.getValue().toString());
+			notFirst = true;
 		}
 		return stringBuilder.toString();
 	}
