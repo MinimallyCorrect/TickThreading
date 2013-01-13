@@ -64,7 +64,7 @@ public class ThreadManager {
 		while (waiting.get() > 0) {
 			try {
 				synchronized (readyLock) {
-					readyLock.wait(0, 100);
+					readyLock.wait(1);
 				}
 			} catch (InterruptedException ignored) {
 			}
