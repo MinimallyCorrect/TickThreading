@@ -1,5 +1,8 @@
 package me.nallar.tickthreading.minecraft;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -89,6 +92,15 @@ public class DeadLockDetector {
 						.append("    Stack:").append('\n');
 				for (StackTraceElement stackTraceElement : thread.getStackTrace()) {
 					sb.append("        ").append(stackTraceElement.toString()).append('\n');
+				}
+			}
+			ThreadMXBean tmx = ManagementFactory.getThreadMXBean();
+			long[] ids = tmx.findDeadlockedThreads();
+			if (ids != null) {
+				ThreadInfo[] infos = tmx.getThreadInfo(ids, true, true);
+				sb.append("Definitely deadlocked: \n");
+				for (ThreadInfo threadInfo : infos) {
+					sb.append(threadInfo).append('\n');
 				}
 			}
 			Log.severe(sb.toString());

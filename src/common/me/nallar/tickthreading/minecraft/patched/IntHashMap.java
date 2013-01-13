@@ -217,7 +217,6 @@ public abstract class IntHashMap extends net.minecraft.util.IntHashMap {
 		private int innerIndex;
 		private int expectedModCount;
 		private int lastReturned = EMPTY_KEY;
-
 		int prevKey = EMPTY_KEY;
 		Object prevValue;
 
@@ -284,5 +283,4 @@ public abstract class IntHashMap extends net.minecraft.util.IntHashMap {
 			throw new NoSuchElementException();
 		}
 	}
-
 }
