@@ -163,15 +163,15 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 		currentWorld.set(0);
 
-		boolean concurrentTicking = tickCounter < 100 || theProfiler.profilingEnabled || !TickThreading.instance.enableWorldTickThreading;
+		boolean concurrentTicking = tickCounter >= 100 && !theProfiler.profilingEnabled && TickThreading.instance.enableWorldTickThreading;
 
 		if (concurrentTicking) {
-			doTick();
-		} else {
 			int count = Math.min(threadManager.size(), dimensionIdsToTick.length);
 			for (int i = 0; i < count; i++) {
 				threadManager.run(tickRunnable);
 			}
+		} else {
+			doTick();
 		}
 
 		this.theProfiler.endStartSection("players");
