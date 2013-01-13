@@ -177,11 +177,11 @@ public class TickManager {
 
 	public void doTick() {
 		boolean previousProfiling = world.theProfiler.profilingEnabled;
+		lastStartTime = DeadLockDetector.tick("TickManager.doTick: " + Log.name(world));
+		threadManager.waitForCompletion();
 		if (previousProfiling) {
 			world.theProfiler.profilingEnabled = false;
 		}
-		lastStartTime = DeadLockDetector.tick("TickManager.doTick: " + Log.name(world));
-		threadManager.waitForCompletion();
 		threadManager.runList(tickRegions);
 		threadManager.waitForCompletion();
 		threadManager.run(new Runnable() {

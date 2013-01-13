@@ -231,24 +231,10 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 				CrashReport var6;
 
-				this.theProfiler.endStartSection("worldTick");
-				try {
-					var4.tick();
-				} catch (Throwable var8) {
-					var6 = CrashReport.makeCrashReport(var8, "Exception ticking world");
-					var4.addWorldInfoToCrashReport(var6);
-					throw new ReportedException(var6);
-				}
-
 				this.theProfiler.endStartSection("entityTick");
-				try {
-					var4.updateEntities();
-				} catch (Throwable var7) {
-					var6 = CrashReport.makeCrashReport(var7, "Exception ticking world entities");
-					var4.addWorldInfoToCrashReport(var6);
-					throw new ReportedException(var6);
-				}
-
+				var4.updateEntities();
+				this.theProfiler.endStartSection("worldTick");
+				var4.tick();
 				this.theProfiler.endStartSection("postForgeTick");
 				FMLCommonHandler.instance().onPostWorldTick(var4);
 				this.theProfiler.endSection();
