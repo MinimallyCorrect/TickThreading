@@ -59,7 +59,6 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		}
 
 		this.theProfiler.startSection("tallying");
-		this.tickTimeArray[this.tickCounter % 100] = System.nanoTime() - var1;
 		this.sentPacketCountArray[this.tickCounter % 100] = Packet.sentID - this.lastSentPacketID;
 		this.lastSentPacketID = Packet.sentID;
 		this.sentPacketSizeArray[this.tickCounter % 100] = Packet.sentSize - this.lastSentPacketSize;
@@ -81,13 +80,13 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		this.theProfiler.endSection();
 		this.theProfiler.endSection();
 		FMLCommonHandler.instance().onPostServerTick();
+		tickTime = (tickTime * 127 + ((this.tickTimeArray[this.tickCounter % 100] = System.nanoTime() - var1) / 1000000)) / 128;
 	}
 
 	@Override
 	public void updateTimeLightAndEntities() {
 		this.theProfiler.startSection("levels");
 		int var1;
-		long startTime = System.nanoTime();
 
 		dimensionIdsToTick = DimensionManager.getIDs();
 
@@ -121,7 +120,6 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			((IUpdatePlayerListBox) this.tickables.get(var1)).update();
 		}
 
-		tickTime = (tickTime * 127 + ((System.nanoTime() - startTime) / 1000000)) / 128;
 		this.theProfiler.endSection();
 	}
 
