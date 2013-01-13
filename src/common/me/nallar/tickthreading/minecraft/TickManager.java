@@ -232,7 +232,7 @@ public class TickManager {
 		if (time == 0) {
 			time = 0.1;
 		}
-		return Log.name(world) + ": " + Math.min(1000 / time, 20) + "tps, " + entityList.size() + " entities, load: " + (time * 2) + "%\n";
+		return Log.name(world) + ": " + Math.min(1000 / time, 20) + "tps, " + entityList.size() + " entities, " + tileEntityList.size() + " tileEntities, load: " + (time * 2) + "%\n";
 	}
 
 	public String getDetailedStats() {
