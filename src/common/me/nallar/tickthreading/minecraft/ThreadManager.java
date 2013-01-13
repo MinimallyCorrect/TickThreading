@@ -40,7 +40,7 @@ public class ThreadManager {
 				}
 				if (waiting.decrementAndGet() == 0) {
 					synchronized (readyLock) {
-						readyLock.notify();
+						readyLock.notifyAll();
 					}
 				}
 			}

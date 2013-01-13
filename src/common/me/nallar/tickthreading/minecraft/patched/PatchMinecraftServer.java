@@ -1,7 +1,10 @@
 package me.nallar.tickthreading.minecraft.patched;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
@@ -24,9 +27,71 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	private AtomicInteger currentWorld;
 	private Integer[] dimensionIdsToTick;
 	private Runnable tickRunnable;
+	private static final int TARGET_TPS = 20;
+	private static final int TARGET_TICK_TIME = 1000000000 / TARGET_TPS;
 
 	public PatchMinecraftServer(File par1File) {
 		super(par1File);
+	}
+
+	@Override
+	public void run() {
+		try {
+			if (this.startServer()) {
+				FMLCommonHandler.instance().handleServerStarted();
+				FMLCommonHandler.instance().onWorldLoadTick(worldServers);
+				double currentTPS = 0;
+				for (long lastTick = 0L; this.serverRunning; this.serverIsRunning = true) {
+					long curTime = System.nanoTime();
+					long wait = TARGET_TICK_TIME - (curTime - lastTick);
+					if (wait > 0) {
+						Thread.sleep(wait / 1000000);
+						continue;
+					}
+					currentTPS = (currentTPS * 0.95) + (1E9 / (curTime - lastTick) * 0.05);
+					lastTick = curTime;
+					tickCounter++;
+					this.tick();
+				}
+				FMLCommonHandler.instance().handleServerStopping();
+			} else {
+				this.finalTick(null);
+			}
+		} catch (Throwable throwable) {
+			if (FMLCommonHandler.instance().shouldServerBeKilledQuietly()) {
+				return;
+			}
+			throwable.printStackTrace();
+			logger.log(Level.SEVERE, "Encountered an unexpected exception " + throwable.getClass().getSimpleName(), throwable);
+			CrashReport crashReport;
+
+			if (throwable instanceof ReportedException) {
+				crashReport = this.addServerInfoToCrashReport(((ReportedException) throwable).getCrashReport());
+			} else {
+				crashReport = this.addServerInfoToCrashReport(new CrashReport("Exception in server tick loop", throwable));
+			}
+
+			File var3 = new File(new File(this.getDataDirectory(), "crash-reports"), "crash-" + (new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss")).format(new Date()) + "-server.txt");
+
+			if (crashReport.saveToFile(var3)) {
+				logger.severe("This crash report has been saved to: " + var3.getAbsolutePath());
+			} else {
+				logger.severe("We were unable to save this crash report to disk.");
+			}
+
+			this.finalTick(crashReport);
+		} finally {
+			try {
+				if (!FMLCommonHandler.instance().shouldServerBeKilledQuietly()) {
+					this.stopServer();
+					this.serverStopped = true;
+				}
+			} catch (Throwable throwable) {
+				throwable.printStackTrace();
+			} finally {
+				this.systemExitNow();
+			}
+		}
 	}
 
 	@Override
