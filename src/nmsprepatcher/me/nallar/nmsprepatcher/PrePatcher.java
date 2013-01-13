@@ -85,6 +85,7 @@ public class PrePatcher {
 			sourceString = source.toString();
 			// TODO: Fix package -> public properly later.
 			sourceString = sourceString.replace("    boolean isOutputEncrypted;", "    public boolean isOutputEncrypted;");
+			sourceString = sourceString.replace(" final ", " ");
 			Matcher privateMatcher = privatePattern.matcher(sourceString);
 			sourceString = privateMatcher.replaceAll("$1protected");
 			try {
