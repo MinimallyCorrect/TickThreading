@@ -115,9 +115,14 @@ public class PatchManager {
 				}
 				String field = patchElement.getAttribute("field");
 				if (!field.isEmpty()) {
+					String after = "";
+					if (field.indexOf('.') != -1) {
+						after = field.substring(field.indexOf('.'));
+						field = field.substring(0, field.indexOf('.'));
+					}
 					FieldDescription obfuscatedField = mappings.map(new FieldDescription(className, field));
 					if (obfuscatedField != null) {
-						patchElement.setAttribute("field", obfuscatedField.name);
+						patchElement.setAttribute("field", obfuscatedField.name + after);
 					}
 				}
 				String clazz = patchElement.getAttribute("class");

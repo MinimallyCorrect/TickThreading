@@ -20,9 +20,6 @@
 		<class id="net.minecraft.network.packet.Packet56MapChunks">
 			<volatile field="field_73587_e"/>
 		</class>
-		<class id="net.minecraft.world.gen.ChunkProviderServer">
-			<synchronize field="loadedChunkHashMap">safeLoadChunk,loadChunk,unload100OldestChunks,unloadAllChunks</synchronize>
-		</class>
 		<class id="net.minecraft.world.WorldServer">
 			<!-- Fixes an issue where the tickNextTickLists would become out of sync -->
 			<synchronize>func_82740_a,scheduleBlockUpdateFromLoad,getPendingBlockUpdates,addBlockEvent</synchronize>
@@ -38,6 +35,9 @@
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchWorld"/>
 			<public>releaseEntitySkin</public>
 			<newInitializer field="activeChunkSet" code="java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap());"/>
+		</class>
+		<class id="net.minecraft.world.gen.ChunkProviderServer">
+			<synchronize field="currentServer.TELock">safeLoadChunk,loadChunk,unload100OldestChunks,unloadAllChunks</synchronize>
 		</class>
 		<class id="net.minecraft.world.chunk.Chunk">
 			<!-- The entity list could be accessed from multiple threads, as usual causes problems during iteration -->
