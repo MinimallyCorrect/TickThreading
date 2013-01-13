@@ -14,6 +14,7 @@ import me.nallar.tickthreading.minecraft.tickregion.EntityTickRegion;
 import me.nallar.tickthreading.minecraft.tickregion.TickRegion;
 import me.nallar.tickthreading.minecraft.tickregion.TileEntityTickRegion;
 import net.minecraft.entity.Entity;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 
@@ -220,7 +221,13 @@ public class TickManager {
 	}
 
 	public String getBasicStats() {
-		return Log.name(world) + ": " + Math.min(1000 / averageTickLength, 20) + "tps, " + entityList.size() + " entities, load: " + (this.getTickTime() * 2) + "%\n";
+		long time = 0;
+		long[] tickTimes = MinecraftServer.getServer().worldTickTimes.get(world.provider.dimensionId);
+		for (long tick : tickTimes) {
+			time += tick;
+		}
+		time = (time/1000000)/tickTimes.length;
+		return Log.name(world) + ": " + Math.min(1000 / time, 20) + "tps, " + entityList.size() + " entities, load: " + (time * 2) + "%\n";
 	}
 
 	public String getDetailedStats() {
