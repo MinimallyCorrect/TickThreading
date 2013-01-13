@@ -178,7 +178,7 @@
 			-->
 		</class>
 		<class id="com.eloraam.redpower.core.TubeFlow">
-			<synchronize>update,add</synchronize>
+			<synchronize>add</synchronize>
 		</class>
 	</redPowerCore>
 	<industrialCraft>
