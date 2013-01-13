@@ -165,11 +165,15 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 		if (tickCounter < 100 || theProfiler.profilingEnabled || !TickThreading.instance.enableWorldTickThreading) {
 			doTick();
+			this.theProfiler.endStartSection("players");
+			this.serverConfigManager.sendPlayerInfoToAllPlayers();
 		} else {
-			int count = Math.min(Runtime.getRuntime().availableProcessors(), dimensionIdsToTick.length);
+			int count = Math.min(threadManager.size(), dimensionIdsToTick.length);
 			for (int i = 0; i < count; i++) {
 				threadManager.run(tickRunnable);
 			}
+			this.theProfiler.endStartSection("players");
+			this.serverConfigManager.sendPlayerInfoToAllPlayers();
 			threadManager.waitForCompletion();
 		}
 
@@ -177,8 +181,6 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		DimensionManager.unloadWorlds(worldTickTimes);
 		this.theProfiler.endStartSection("connection");
 		this.getNetworkThread().networkTick();
-		this.theProfiler.endStartSection("players");
-		this.serverConfigManager.sendPlayerInfoToAllPlayers();
 		this.theProfiler.endStartSection("tickables");
 
 		for (var1 = 0; var1 < this.tickables.size(); ++var1) {
