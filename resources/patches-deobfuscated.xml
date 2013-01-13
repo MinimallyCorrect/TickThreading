@@ -65,6 +65,9 @@
 		<class id="net.minecraft.util.LongHashMap">
 			<replace class="me.nallar.tickthreading.minecraft.patched.LongHashMap"/>
 		</class>
+		<class id="net.minecraft.util.IntHashMap">
+			<replace class="me.nallar.tickthreading.minecraft.patched.IntHashMap"/>
+		</class>
 		<class id="net.minecraft.entity.player.EntityPlayerMP">
 			<!-- TODO: Fix this with less locking -->
 			<synchronize field="worldObj">onUpdate</synchronize>
