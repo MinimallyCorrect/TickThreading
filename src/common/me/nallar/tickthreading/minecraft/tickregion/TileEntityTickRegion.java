@@ -159,4 +159,9 @@ public class TileEntityTickRegion extends TickRegion {
 	public boolean isEmpty() {
 		return tileEntitySet.isEmpty();
 	}
+
+	@Override
+	public int size() {
+		return tileEntitySet.size();
+	}
 }

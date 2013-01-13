@@ -102,6 +102,11 @@ public class EntityTickRegion extends TickRegion {
 	}
 
 	@Override
+	public int size() {
+		return entitySet.size();
+	}
+
+	@Override
 	public void die() {
 		super.die();
 		entitySet.clear();

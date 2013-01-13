@@ -104,7 +104,8 @@ public abstract class TickRegion implements Runnable {
 	}
 
 	public String getStats() {
-		return this.getClass().getSimpleName() + " - X: " + regionX * manager.regionSize + ", Z: " + regionZ * manager.regionSize + ", time: " + getAverageTickTime() + "ms";
+		return this.getClass().getSimpleName() + " - X: " + regionX * manager.regionSize + ", Z: " + regionZ * manager.regionSize + ", time: " + getAverageTickTime() + "ms"
+				+ "\n size: " + size();
 	}
 
 	@Override
@@ -127,6 +128,8 @@ public abstract class TickRegion implements Runnable {
 	protected abstract TickRegion getCallable(int regionX, int regionZ);
 
 	public abstract boolean isEmpty();
+
+	public abstract int size();
 
 	public abstract void processChanges();
 }
