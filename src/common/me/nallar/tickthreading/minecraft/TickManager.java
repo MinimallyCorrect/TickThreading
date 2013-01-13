@@ -32,8 +32,8 @@ public class TickManager {
 	public final List<TileEntity> tileEntityList = new ArrayList<TileEntity>();
 	public final List<Entity> entityList = new ArrayList<Entity>();
 	private final Map<Class<?>, Integer> entityClassToCountMap = new HashMap<Class<?>, Integer>();
-	public Object tileEntityLock;
-	public Object entityLock;
+	public Object tileEntityLock = new Object();
+	public Object entityLock = new Object();
 
 	public TickManager(World world, int regionSize, int threads) {
 		threadManager = new ThreadManager(threads == 0 ? (Runtime.getRuntime().availableProcessors() * 3) / 2 : threads, "Tick Thread for " + Log.name(world));
