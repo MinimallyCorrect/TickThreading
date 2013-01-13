@@ -7,6 +7,7 @@ import me.nallar.tickthreading.minecraft.TickThreading;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
+import net.minecraftforge.common.DimensionManager;
 
 public class TicksCommand extends Command {
 	public static String name = "ticks";
@@ -23,16 +24,15 @@ public class TicksCommand extends Command {
 
 	@Override
 	public void processCommand(ICommandSender commandSender, List<String> arguments) {
-		if (commandSender instanceof Entity) {
-			World world = ((Entity) commandSender).worldObj;
-			if (arguments.contains("all")) {
-
-			} else {
-				sendChat(commandSender, TickThreading.instance.getManager(world).getDetailedStats());
-			}
+		World world;
+		if (arguments.size() > 0) {
+			world = DimensionManager.getWorld(Integer.valueOf(arguments.get(0)));
+		} else if (commandSender instanceof Entity) {
+			world = ((Entity) commandSender).worldObj;
 		} else {
-			Log.info("/ticks must be used by an entity - it provides stats on the current world");
-			// TODO: get world by name from console.
+			Log.info("Usage: /ticks [dimensionid]");
+			return;
 		}
+		sendChat(commandSender, TickThreading.instance.getManager(world).getDetailedStats());
 	}
 }
