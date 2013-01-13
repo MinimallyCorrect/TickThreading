@@ -111,6 +111,9 @@
 		<class id="net.minecraft.block.BlockRedstoneWire">
 			<synchronize>calculateCurrentChanges,updateAndPropagateCurrentStrength</synchronize>
 		</class>
+		<class id="net.minecraft.network.TcpConnection">
+			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchTcpConnection"/>
+		</class>
 	</minecraftCommon>
 	<forgeModLoader>
 		<class id="cpw.mods.fml.common.FMLModContainer">

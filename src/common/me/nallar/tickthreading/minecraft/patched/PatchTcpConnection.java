@@ -20,7 +20,7 @@ public abstract class PatchTcpConnection extends TcpConnection {
 	}
 
 	private boolean callPacketOut(Packet p) {
-		for (IPacketHandler handler : packetHandlers) {
+		for (IPacketHandler handler : getPacketHandlers()) {
 			if (!handler.onOutgoingPacket(theNetHandler, p.getPacketId(), p)) {
 				return false;
 			}

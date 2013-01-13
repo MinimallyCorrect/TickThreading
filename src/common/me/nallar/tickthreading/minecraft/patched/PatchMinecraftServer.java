@@ -163,22 +163,19 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 		currentWorld.set(0);
 
-		if (tickCounter < 100 || theProfiler.profilingEnabled || !TickThreading.instance.enableWorldTickThreading) {
+		boolean concurrentTicking = tickCounter < 100 || theProfiler.profilingEnabled || !TickThreading.instance.enableWorldTickThreading;
+
+		if (concurrentTicking) {
 			doTick();
-			this.theProfiler.endStartSection("players");
-			this.serverConfigManager.sendPlayerInfoToAllPlayers();
 		} else {
 			int count = Math.min(threadManager.size(), dimensionIdsToTick.length);
 			for (int i = 0; i < count; i++) {
 				threadManager.run(tickRunnable);
 			}
-			this.theProfiler.endStartSection("players");
-			this.serverConfigManager.sendPlayerInfoToAllPlayers();
-			threadManager.waitForCompletion();
 		}
 
-		this.theProfiler.endStartSection("dim_unloading");
-		DimensionManager.unloadWorlds(worldTickTimes);
+		this.theProfiler.endStartSection("players");
+		this.serverConfigManager.sendPlayerInfoToAllPlayers();
 		this.theProfiler.endStartSection("connection");
 		this.getNetworkThread().networkTick();
 		this.theProfiler.endStartSection("tickables");
@@ -186,6 +183,13 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		for (var1 = 0; var1 < this.tickables.size(); ++var1) {
 			((IUpdatePlayerListBox) this.tickables.get(var1)).update();
 		}
+
+		if (concurrentTicking) {
+			threadManager.waitForCompletion();
+		}
+
+		this.theProfiler.endStartSection("dim_unloading");
+		DimensionManager.unloadWorlds(worldTickTimes);
 
 		this.theProfiler.endSection();
 	}
