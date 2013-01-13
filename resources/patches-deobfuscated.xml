@@ -107,6 +107,9 @@
 		<class id="net.minecraft.crash.CrashReportCategory">
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchClassReportCategory"/>
 		</class>
+		<class id="net.minecraft.block.BlockRedstoneWire">
+			<synchronize>calculateCurrentChanges,updateAndPropagateCurrentStrength</synchronize>
+		</class>
 	</minecraftCommon>
 	<forgeModLoader>
 		<class id="cpw.mods.fml.common.FMLModContainer">
