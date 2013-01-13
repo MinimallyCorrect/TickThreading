@@ -29,6 +29,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	private Runnable tickRunnable;
 	private static final int TARGET_TPS = 20;
 	private static final int TARGET_TICK_TIME = 1000000000 / TARGET_TPS;
+	private static double currentTPS = 0;
 
 	public PatchMinecraftServer(File par1File) {
 		super(par1File);
@@ -40,7 +41,6 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			if (this.startServer()) {
 				FMLCommonHandler.instance().handleServerStarted();
 				FMLCommonHandler.instance().onWorldLoadTick(worldServers);
-				double currentTPS = 0;
 				for (long lastTick = 0L; this.serverRunning; this.serverIsRunning = true) {
 					long curTime = System.nanoTime();
 					long wait = TARGET_TICK_TIME - (curTime - lastTick);
@@ -191,6 +191,11 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	@Declare
 	public static float getTickTime() {
 		return tickTime;
+	}
+
+	@Declare
+	public static double getTPS() {
+		return currentTPS;
 	}
 
 	@Declare

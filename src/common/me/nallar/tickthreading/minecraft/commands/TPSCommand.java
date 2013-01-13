@@ -4,6 +4,7 @@ import java.util.List;
 
 import me.nallar.tickthreading.minecraft.TickManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
+import me.nallar.tickthreading.minecraft.patched.PatchMinecraftServer;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 
@@ -29,7 +30,7 @@ public class TPSCommand extends Command {
 		}
 		float usedTime = MinecraftServer.getTickTime();
 		tpsReport.append("\nUsed time per tick: ").append(usedTime).append("ms")
-				.append("\nOverall TPS: ").append(Math.min(20, 1000 / (usedTime == 0 ? 1 : usedTime)))
+				.append("\nOverall TPS: ").append(MinecraftServer.getTPS())
 				.append("\nOverall load: ").append(usedTime * 2).append('%');
 		sendChat(commandSender, tpsReport.toString());
 	}
