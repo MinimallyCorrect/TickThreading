@@ -9,10 +9,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import me.nallar.tickthreading.Log;
+import net.minecraft.profiler.Profiler;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ThreadMinecraftServer;
 import net.minecraft.util.AxisAlignedBB;
 
 public class ThreadManager {
+	private static final Profiler profiler = MinecraftServer.getServer().theProfiler;
 	private final boolean isServer = FMLCommonHandler.instance().getEffectiveSide().isServer();
 	private final BlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<Runnable>();
 	private final String namePrefix;
@@ -61,6 +64,7 @@ public class ThreadManager {
 	}
 
 	public void waitForCompletion() {
+		profiler.startSection(namePrefix);
 		while (waiting.get() > 0) {
 			try {
 				synchronized (readyLock) {
@@ -69,6 +73,7 @@ public class ThreadManager {
 			} catch (InterruptedException ignored) {
 			}
 		}
+		profiler.endSection();
 	}
 
 	public void runList(final List<? extends Runnable> tasks) {

@@ -18,7 +18,7 @@ import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.SpawnListEntry;
 
 public class PatchSpawnerAnimals extends SpawnerAnimals {
-	public static int findChunksForSpawning(WorldServer par0WorldServer, boolean par1, boolean par2, boolean par3) {
+	public static int a(WorldServer par0WorldServer, boolean par1, boolean par2, boolean par3) {
 		if (!par1 && !par2) {
 			return 0;
 		}
@@ -112,7 +112,7 @@ public class PatchSpawnerAnimals extends SpawnerAnimals {
 														EntityLiving var39;
 
 														try {
-															var39 = (EntityLiving) var22.entityClass.getConstructor(new Class[]{World.class}).newInstance(new Object[]{par0WorldServer});
+															var39 = (EntityLiving) var22.entityClass.getConstructor(World.class).newInstance(par0WorldServer);
 														} catch (Exception var31) {
 															var31.printStackTrace();
 															return var4;

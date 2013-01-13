@@ -139,7 +139,7 @@ public class Patches {
 			try {
 				CtMethod oldMethod = ctClass.getDeclaredMethod(newMethod.getName(), newMethod.getParameterTypes());
 				replaceMethod(oldMethod, newMethod);
-				Log.info("Replaced " + newMethod.getName());
+				Log.info("Replaced " + newMethod);
 			} catch (NotFoundException ignored) {
 				CtMethod added = CtNewMethod.copy(newMethod, ctClass, classMap);
 				Log.info("Adding " + added);
