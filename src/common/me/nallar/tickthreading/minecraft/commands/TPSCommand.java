@@ -4,7 +4,6 @@ import java.util.List;
 
 import me.nallar.tickthreading.minecraft.TickManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
-import me.nallar.tickthreading.minecraft.patched.PatchMinecraftServer;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 

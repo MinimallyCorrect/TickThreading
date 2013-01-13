@@ -8,6 +8,7 @@
 			<newInitializer field="pathPoints" class="net.minecraft.pathfinding.PathPoint" arraySize="128"/>
 		</class>
 		<class id="net.minecraft.server.MinecraftServer">
+			<addClass class="net.minecraft.network.packet.IPacketHandler"/>
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchMinecraftServer"/>
 			<public field="mcServer"/>
 		</class>

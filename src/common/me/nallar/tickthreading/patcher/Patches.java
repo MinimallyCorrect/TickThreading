@@ -314,6 +314,13 @@ public class Patches {
 		ctMethod.addCatch("{ " + returnCode + '}', classRegistry.getClass("java.lang.Exception"));
 	}
 
+	@Patch (
+			requiredAttributes = "class"
+	)
+	public void addClass(CtClass ctClass, Map<String, String> attributes) throws IOException, CannotCompileException, NotFoundException {
+		classRegistry.add(ctClass, attributes.get("class"));
+	}
+
 	@Patch
 	public void replaceInstantiations(CtBehavior object, Map<String, String> attributes) {
 		// TODO: Implement this, change some newInitializer patches to use this
