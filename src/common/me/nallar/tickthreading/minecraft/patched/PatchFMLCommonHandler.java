@@ -29,9 +29,7 @@ public abstract class PatchFMLCommonHandler extends FMLCommonHandler {
 			ticksToRun.retainAll(ticks);
 			if (!ticksToRun.isEmpty()) {
 				theProfiler.startSection(ticker.getClass().toString());
-				synchronized (ticker) {
-					ticker.tickStart(ticksToRun, data);
-				}
+				ticker.tickStart(ticksToRun, data);
 				theProfiler.endSection();
 			}
 		}
@@ -49,9 +47,7 @@ public abstract class PatchFMLCommonHandler extends FMLCommonHandler {
 			ticksToRun.retainAll(ticks);
 			if (!ticksToRun.isEmpty()) {
 				theProfiler.startSection(ticker.getClass().toString());
-				synchronized (ticker) {
-					ticker.tickEnd(ticksToRun, data);
-				}
+				ticker.tickEnd(ticksToRun, data);
 				theProfiler.endSection();
 			}
 		}
