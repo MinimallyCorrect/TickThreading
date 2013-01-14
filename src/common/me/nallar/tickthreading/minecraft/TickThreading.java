@@ -53,6 +53,7 @@ public class TickThreading {
 	public boolean requireOpForTicksCommand = true;
 	public int saveInterval = 1800;
 	public int deadLockTime = 30;
+	public boolean aggressiveTicks = true;
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load
@@ -108,6 +109,8 @@ public class TickThreading {
 		saveIntervalProperty.comment = "Time between auto-saves, in ticks.";
 		Property deadLockTimeProperty = config.get(Configuration.CATEGORY_GENERAL, "deadLockTime", deadLockTime);
 		deadLockTimeProperty.comment = "The time(seconds) of being frozen which will trigger the DeadLockDetector.";
+		Property aggressiveTicksProperty = config.get(Configuration.CATEGORY_GENERAL, "aggressiveTicks", aggressiveTicks);
+		aggressiveTicksProperty.comment = "If false, will use Spigot tick time algorithm which may lead to lower idle load, but worse TPS if ticks are spiking.";
 		config.save();
 
 		TicksCommand.name = ticksCommandName.value;
@@ -124,6 +127,7 @@ public class TickThreading {
 		enableChunkTickThreading = enableChunkTickThreadingProperty.getBoolean(enableChunkTickThreading);
 		enableWorldTickThreading = enableWorldTickThreadingProperty.getBoolean(enableWorldTickThreading);
 		requireOpForTicksCommand = requireOpForTicksCommandProperty.getBoolean(requireOpForTicksCommand);
+		aggressiveTicks = aggressiveTicksProperty.getBoolean(aggressiveTicks);
 	}
 
 	@Mod.ServerStarting

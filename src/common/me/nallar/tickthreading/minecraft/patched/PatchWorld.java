@@ -4,7 +4,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import javassist.is.faulty.ThreadLocals;
-import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.entitylist.EntityList;
 import net.minecraft.block.Block;
 import net.minecraft.crash.CrashReport;
@@ -99,12 +98,10 @@ public abstract class PatchWorld extends World {
 		}
 		int var2 = 0;
 
-		for (int var3 = 0; var3 < this.loadedEntityList.size(); ++var3)
-		{
-			Entity var4 = (Entity)this.loadedEntityList.get(var3);
+		for (int var3 = 0; var3 < this.loadedEntityList.size(); ++var3) {
+			Entity var4 = (Entity) this.loadedEntityList.get(var3);
 
-			if (entityType.isAssignableFrom(var4.getClass()))
-			{
+			if (entityType.isAssignableFrom(var4.getClass())) {
 				++var2;
 			}
 		}

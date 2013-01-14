@@ -41,10 +41,12 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			if (this.startServer()) {
 				FMLCommonHandler.instance().handleServerStarted();
 				FMLCommonHandler.instance().onWorldLoadTick(worldServers);
+				// This block is derived from Spigot code,
+				// LGPL
 				for (long lastTick = 0L; this.serverRunning; this.serverIsRunning = true) {
 					long curTime = System.nanoTime();
 					long wait = TARGET_TICK_TIME - (curTime - lastTick);
-					if (wait > 0) {
+					if (wait > 0 && (currentTPS > TARGET_TPS || !TickThreading.instance.aggressiveTicks)) {
 						Thread.sleep(wait / 1000000);
 						continue;
 					}
@@ -101,8 +103,8 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 	@Override
 	public void tick() {
-		FMLCommonHandler.instance().rescheduleTicks(Side.SERVER);
 		long var1 = System.nanoTime();
+		FMLCommonHandler.instance().rescheduleTicks(Side.SERVER);
 		AxisAlignedBB.getAABBPool().cleanPool();
 		FMLCommonHandler.instance().onPreServerTick();
 		++this.tickCounter;
@@ -177,7 +179,6 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		this.theProfiler.endStartSection("players");
 		this.serverConfigManager.sendPlayerInfoToAllPlayers();
 
-
 		this.theProfiler.endStartSection("tickables");
 		for (var1 = 0; var1 < this.tickables.size(); ++var1) {
 			((IUpdatePlayerListBox) this.tickables.get(var1)).update();
@@ -228,8 +229,6 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 				this.theProfiler.startSection("forgeTick");
 				FMLCommonHandler.instance().onPreWorldTick(var4);
-
-				CrashReport var6;
 
 				this.theProfiler.endStartSection("entityTick");
 				var4.updateEntities();
