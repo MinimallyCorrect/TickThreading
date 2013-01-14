@@ -8,6 +8,7 @@ import java.util.Iterator;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.ChunkCoordIntPair;
@@ -22,6 +23,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 		if (!par1 && !par2) {
 			return 0;
 		}
+		double tpsFactor = MinecraftServer.getTPS() / 20;
 		HashMap eligibleChunksForSpawning = new HashMap();
 		int var4;
 		int var7;
@@ -54,7 +56,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 		for (int var34 = 0; var34 < var7; ++var34) {
 			EnumCreatureType var35 = var33[var34];
 
-			if ((!var35.getPeacefulCreature() || par2) && (var35.getPeacefulCreature() || par1) && (!var35.getAnimal() || par3) && par0WorldServer.countEntities(var35.getCreatureClass()) <= var35.getMaxNumberOfCreature() * eligibleChunksForSpawning.size() / 256) {
+			if ((Math.random() < tpsFactor) || ((!var35.getPeacefulCreature() || par2) && (var35.getPeacefulCreature() || par1) && (!var35.getAnimal() || par3) && par0WorldServer.countEntities(var35.getCreatureClass()) <= var35.getMaxNumberOfCreature() * eligibleChunksForSpawning.size() / 256)) {
 				ArrayList<ChunkCoordIntPair> tmp = new ArrayList(eligibleChunksForSpawning.keySet());
 				Collections.shuffle(tmp);
 				Iterator var37 = tmp.iterator();

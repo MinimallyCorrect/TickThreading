@@ -56,6 +56,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	}
 
 	public void run() {
+		double tpsFactor = MinecraftServer.getTPS() / 20;
 		while (true) {
 			ChunkCoordIntPair var4;
 			synchronized (chunkCoordIterator) {
@@ -65,7 +66,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 				var4 = (ChunkCoordIntPair) chunkCoordIterator.next();
 			}
 
-			if (Math.random() > (MinecraftServer.getTPS() / 20)) {
+			if (Math.random() > tpsFactor) {
 				continue;
 			}
 
