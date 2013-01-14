@@ -17,7 +17,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.SpawnListEntry;
 
-public class PatchSpawnerAnimals extends SpawnerAnimals {
+public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 	public static int a(WorldServer par0WorldServer, boolean par1, boolean par2, boolean par3) {
 		if (!par1 && !par2) {
 			return 0;
