@@ -107,7 +107,6 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		FMLCommonHandler.instance().rescheduleTicks(Side.SERVER);
 		AxisAlignedBB.getAABBPool().cleanPool();
 		FMLCommonHandler.instance().onPreServerTick();
-		++this.tickCounter;
 
 		if (this.startProfiling) {
 			this.startProfiling = false;
