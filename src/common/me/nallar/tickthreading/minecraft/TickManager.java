@@ -123,7 +123,7 @@ public class TickManager {
 		}
 	}
 
-	public synchronized void add(TileEntity tileEntity) {
+	public void add(TileEntity tileEntity) {
 		getOrCreateCallable(tileEntity).add(tileEntity);
 		synchronized (tileEntityLock) {
 			if (!tileEntityList.contains(tileEntity)) {
@@ -132,11 +132,16 @@ public class TickManager {
 		}
 	}
 
-	public synchronized void add(Entity entity) {
+	public void add(Entity entity) {
 		getOrCreateCallable(entity).add(entity);
+		boolean added;
 		synchronized (entityLock) {
-			if (!entityList.contains(entity)) {
+			if (added = !entityList.contains(entity)) {
 				entityList.add(entity);
+			}
+		}
+		if (added) {
+			synchronized (entityClassToCountMap) {
 				Class entityClass = entity.getClass();
 				Integer count = entityClassToCountMap.get(entityClass);
 				if (count == null) {
@@ -147,12 +152,12 @@ public class TickManager {
 		}
 	}
 
-	public synchronized void remove(TileEntity tileEntity) {
+	public void remove(TileEntity tileEntity) {
 		getOrCreateCallable(tileEntity).remove(tileEntity);
 		removed(tileEntity);
 	}
 
-	public synchronized void remove(Entity entity) {
+	public void remove(Entity entity) {
 		getOrCreateCallable(entity).remove(entity);
 		removed(entity);
 	}
@@ -164,14 +169,19 @@ public class TickManager {
 	}
 
 	public void removed(Entity entity) {
+		boolean removed;
 		synchronized (entityLock) {
-			entityList.remove(entity);
-			Class entityClass = entity.getClass();
-			Integer count = entityClassToCountMap.get(entityClass);
-			if (count == null) {
-				count = 0;
+			removed = entityList.remove(entity);
+		}
+		if (removed) {
+			synchronized (entityClassToCountMap) {
+				Class entityClass = entity.getClass();
+				Integer count = entityClassToCountMap.get(entityClass);
+				if (count == null) {
+					throw new IllegalStateException("Removed an entity which should not have been in the entityList");
+				}
+				entityClassToCountMap.put(entityClass, count - 1);
 			}
-			entityClassToCountMap.put(entityClass, count - 1);
 		}
 	}
 

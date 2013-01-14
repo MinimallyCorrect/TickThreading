@@ -23,4 +23,11 @@ public class LoadedEntityList<T> extends EntityList<T> {
 		manager.remove((Entity) o);
 		return true;
 	}
+
+	@Override
+	public T remove(int index) {
+		Entity removed = (Entity) get(index);
+		manager.remove(removed);
+		return (T) removed;
+	}
 }

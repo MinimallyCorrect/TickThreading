@@ -40,9 +40,9 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 					ChunkCoordIntPair var12 = new ChunkCoordIntPair(var9 + var6, var10 + var7);
 
 					if (!var11) {
-						eligibleChunksForSpawning.put(var12, Boolean.valueOf(false));
+						eligibleChunksForSpawning.put(var12, false);
 					} else if (!eligibleChunksForSpawning.containsKey(var12)) {
-						eligibleChunksForSpawning.put(var12, Boolean.valueOf(true));
+						eligibleChunksForSpawning.put(var12, true);
 					}
 				}
 			}

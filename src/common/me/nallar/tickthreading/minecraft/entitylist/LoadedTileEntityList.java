@@ -23,4 +23,11 @@ public class LoadedTileEntityList<T> extends EntityList<T> {
 		manager.remove((TileEntity) o);
 		return true;
 	}
+
+	@Override
+	public T remove(int index) {
+		TileEntity removed = (TileEntity) get(index);
+		manager.remove(removed);
+		return (T) removed;
+	}
 }
