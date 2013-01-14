@@ -21,7 +21,7 @@
 		<class id="net.minecraft.network.packet.Packet56MapChunks">
 			<volatile field="field_73587_e"/>
 		</class>
-		<class id="net.minecraft.network.TcpReaderThread">
+		<class id="net.minecraft.network.TcpWriterThread">
 			<ignoreExceptions type="java.net.SocketException">run</ignoreExceptions>
 		</class>
 		<class id="net.minecraft.world.WorldServer">
@@ -197,13 +197,14 @@
 	</redPowerCore>
 	<industrialCraft>
 		<class id="ic2.core.EnergyNet">
+			<replaceMethodCall index="1" method="warning" code="{}">emitEnergyFrom</replaceMethodCall>
 			<newInitializer field="energySourceToEnergyPathMap" code="java.util.Collections.synchronizedMap(new java.util.WeakHashMap&lt;Class, Object&gt;());"/>
 			<newInitializer field="entityLivingToShockEnergyMap" code="java.util.Collections.synchronizedMap(new java.util.WeakHashMap&lt;Class, Object&gt;());"/>
 			<newField field="readWriteLock" class="me.nallar.tickthreading.util.TwoWayReentrantReadWriteLock"/>
 			<newField field="writeLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>
 			<newField field="readLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.readLock();"/>
 			<lock field="writeLock">addTileEntity,removeTileEntity</lock>
-			<lock field="readLock">emitEnergyFrom</lock>
+			<lock field="readLock">emitEnergyFrom,discover</lock>
 		</class>
 	</industrialCraft>
 	<!--

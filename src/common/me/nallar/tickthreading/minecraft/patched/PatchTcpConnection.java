@@ -2,6 +2,7 @@ package me.nallar.tickthreading.minecraft.patched;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,6 +48,16 @@ public abstract class PatchTcpConnection extends TcpConnection {
 				this.sendQueueByteLength += par1Packet.getPacketSize() + 1;
 				this.dataPackets.add(par1Packet);
 			}
+		}
+	}
+
+	@Override
+	protected void onNetworkError(Exception e) {
+		if (e instanceof SocketException) {
+			this.networkShutdown("disconnected: " + e.getMessage(), e);
+		} else {
+			e.printStackTrace();
+			this.networkShutdown("disconnect.genericReason", "Internal exception: " + e.toString());
 		}
 	}
 }

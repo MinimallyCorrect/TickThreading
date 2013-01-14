@@ -124,6 +124,40 @@ public class Patches {
 	}
 
 	@Patch (
+			requiredAttributes = "code,method"
+	)
+	public void replaceMethodCall(final CtBehavior ctBehavior, Map<String, String> attributes) throws CannotCompileException {
+		String method_ = attributes.get("method");
+		String className_ = null;
+		int dotIndex = method_.indexOf('.');
+		if (dotIndex != -1) {
+			className_ = method_.substring(0, dotIndex);
+			method_ = method_.substring(dotIndex + 1);
+		}
+		String index_ = attributes.get("index");
+		if (index_ == null) {
+			index_ = "-1";
+		}
+
+		final String method = method_;
+		final String className = className_;
+		final String code = attributes.get("code");
+		final int index = Integer.valueOf(index_);
+
+		ctBehavior.instrument(new ExprEditor() {
+			private int currentIndex = 0;
+
+			@Override
+			public void edit(MethodCall methodCall) throws CannotCompileException {
+				if ((className == null || methodCall.getClassName().equals(className)) && methodCall.getMethodName().equals(method) && (index == -1 || currentIndex++ == index)) {
+					Log.info("Replaced " + methodCall + " from " + ctBehavior);
+					methodCall.replace(code);
+				}
+			}
+		});
+	}
+
+	@Patch (
 			requiredAttributes = "fromClass"
 	)
 	public void addAll(CtClass ctClass, Map<String, String> attributes) throws NotFoundException, CannotCompileException, BadBytecode {
@@ -300,7 +334,7 @@ public class Patches {
 			CtClass ctClass = ctMethod.getDeclaringClass();
 			CtMethod replacement = CtNewMethod.copy(ctMethod, ctClass, null);
 			ctMethod.setName(ctMethod.getName() + "_nosynchronize");
-			replacement.setBody("synchronized(this." + field + ") { return $proceed($$); }", "this", ctMethod.getName());
+			replacement.setBody("synchronized(this." + field + ") { return this." + ctMethod.getName() + "($$); }");
 			ctClass.addMethod(replacement);
 		}
 	}
@@ -315,6 +349,7 @@ public class Patches {
 		if (exceptionType == null) {
 			exceptionType = "java.lang.Exception";
 		}
+		Log.info("Ignoring " + exceptionType + " in " + ctMethod + ", returning with " + returnCode);
 		ctMethod.addCatch("{ " + returnCode + '}', classRegistry.getClass(exceptionType));
 	}
 

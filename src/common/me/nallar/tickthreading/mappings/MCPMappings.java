@@ -55,8 +55,8 @@ public class MCPMappings extends Mappings {
 			String className;
 			do {
 				className = classNameToSuperClassName.get(fieldDescription.className);
-				Log.info(fieldDescription + " -> " + className);
 				if (className != null) {
+					Log.info(fieldDescription + " -> " + className);
 					fieldDescription = new FieldDescription(className, fieldDescription.name);
 					obfuscated = fieldMappings.get(fieldDescription);
 				}
