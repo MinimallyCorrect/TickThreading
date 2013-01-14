@@ -311,7 +311,11 @@ public class Patches {
 		if (returnCode == null) {
 			returnCode = "return;";
 		}
-		ctMethod.addCatch("{ " + returnCode + '}', classRegistry.getClass("java.lang.Exception"));
+		String exceptionType = attributes.get("type");
+		if (exceptionType == null) {
+			exceptionType = "java.lang.Exception";
+		}
+		ctMethod.addCatch("{ " + returnCode + '}', classRegistry.getClass(exceptionType));
 	}
 
 	@Patch (
