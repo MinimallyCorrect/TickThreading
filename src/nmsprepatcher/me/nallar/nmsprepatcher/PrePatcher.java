@@ -19,7 +19,8 @@ public class PrePatcher {
 	private static final Logger log = Logger.getLogger("PatchLogger");
 	private static final Pattern privatePattern = Pattern.compile("^(\\s+?)private", Pattern.MULTILINE);
 	private static final Pattern extendsPattern = Pattern.compile("\\s+?extends\\s+?([\\S]+)[^\\{]+?\\{", Pattern.DOTALL | Pattern.MULTILINE);
-	private static final Pattern declarePattern = Pattern.compile("@Declare\\s+?(public\\s+?(\\S*?)?\\s+?(\\S*?)\\s*?\\S+?\\s*?\\([^\\{]*\\)\\s*?\\{)", Pattern.DOTALL | Pattern.MULTILINE);
+	private static final Pattern declareMethodPattern = Pattern.compile("@Declare\\s+?(public\\s+?(\\S*?)?\\s+?(\\S*?)\\s*?\\S+?\\s*?\\([^\\{]*\\)\\s*?\\{)", Pattern.DOTALL | Pattern.MULTILINE);
+	private static final Pattern declareVariablePattern = Pattern.compile("@Declare\\s+?(public [^\n])", Pattern.DOTALL | Pattern.MULTILINE);
 
 	public static void patch(File patchDirectory, File sourceDirectory) {
 		if (!patchDirectory.isDirectory()) {
@@ -57,7 +58,7 @@ public class PrePatcher {
 			int cutIndex = previousIndex == -1 ? sourceString.lastIndexOf('}') : previousIndex;
 			StringBuilder source = new StringBuilder(sourceString.substring(0, cutIndex)).append("\n//PREPATCH\n");
 			log.info("Prepatching declarations for " + className);
-			Matcher matcher = declarePattern.matcher(contents);
+			Matcher matcher = declareMethodPattern.matcher(contents);
 			while (matcher.find()) {
 				String type = matcher.group(2);
 				String ret = "null"; // TODO: Add more types.

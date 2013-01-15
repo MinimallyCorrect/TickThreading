@@ -107,12 +107,7 @@
 		<class id="net.minecraft.server.management.PlayerManager">
 			<newField field="chunkWatcherLock" class="java.lang.Object"/>
 			<synchronize field="chunkWatcherLock">getOrCreateChunkWatcher</synchronize>
-			<newField field="chunkWatcherWithPlayersLock" class="java.lang.Object"/>
-			<synchronize field="chunkWatcherWithPlayersLock">updatePlayerInstances</synchronize>
 			<synchronize>addPlayer,removePlayer</synchronize>
-		</class>
-		<class id="net.minecraft.server.management.PlayerInstance">
-			<synchronize field="myManager.chunkWatcherWithPlayersLock">flagChunkForUpdate,sendThisChunkToPlayer</synchronize>
 		</class>
 		<class id="net.minecraft.world.ChunkCoordIntPair">
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchChunkCoordIntPair"/>
