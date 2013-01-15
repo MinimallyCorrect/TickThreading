@@ -9,7 +9,7 @@ import net.minecraft.world.chunk.storage.IChunkLoader;
 import net.minecraft.world.gen.ChunkProviderServer;
 import net.minecraftforge.common.DimensionManager;
 
-public class PatchChunkProviderServer extends ChunkProviderServer {
+public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 	public PatchChunkProviderServer(WorldServer par1WorldServer, IChunkLoader par2IChunkLoader, IChunkProvider par3IChunkProvider) {
 		super(par1WorldServer, par2IChunkLoader, par3IChunkProvider);
 	}

@@ -47,6 +47,7 @@
 			<synchronize field="staticLock">getModdedBiomeGenerators</synchronize>
 		</class>
 		<class id="net.minecraft.world.gen.ChunkProviderServer">
+			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchChunkProviderServer"/>
 			<synchronize field="currentServer.TELock">safeLoadChunk,loadChunk,unload100OldestChunks,unloadAllChunks</synchronize>
 		</class>
 		<class id="net.minecraft.world.chunk.Chunk">
