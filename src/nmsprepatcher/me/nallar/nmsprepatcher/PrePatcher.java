@@ -12,8 +12,6 @@ import java.util.regex.Pattern;
 
 import com.google.common.base.Splitter;
 
-import me.nallar.tickthreading.Log;
-
 // The prepatcher adds method declarations in superclasses,
 // so javac can compile the patch classes if they need to use a method/field they
 // add on an instance other than this
@@ -22,7 +20,7 @@ public class PrePatcher {
 	private static final Pattern privatePattern = Pattern.compile("^(\\s+?)private", Pattern.MULTILINE);
 	private static final Pattern extendsPattern = Pattern.compile("\\s+?extends\\s+?([\\S]+)[^\\{]+?\\{", Pattern.DOTALL | Pattern.MULTILINE);
 	private static final Pattern declareMethodPattern = Pattern.compile("@Declare\\s+?(public\\s+?(\\S*?)?\\s+?(\\S*?)\\s*?\\S+?\\s*?\\([^\\{]*\\)\\s*?\\{)", Pattern.DOTALL | Pattern.MULTILINE);
-	private static final Pattern declareVariablePattern = Pattern.compile("@Declare\\s+?//(public [^;\r\n]+?;)", Pattern.DOTALL | Pattern.MULTILINE);
+	private static final Pattern declareVariablePattern = Pattern.compile("@Declare\\s+?(public [^;\r\n]+?)_;", Pattern.DOTALL | Pattern.MULTILINE);
 
 	public static void patch(File patchDirectory, File sourceDirectory) {
 		if (!patchDirectory.isDirectory()) {
@@ -88,7 +86,7 @@ public class PrePatcher {
 			while (variableMatcher.find()) {
 				String var = variableMatcher.group(1);
 				log.info("adding " + var);
-				source.append(var).append('\n');
+				source.append(var).append(";\n");
 			}
 			source.append("\n}");
 			sourceString = source.toString();

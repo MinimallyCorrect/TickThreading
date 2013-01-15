@@ -1,9 +1,12 @@
 package me.nallar.tickthreading.patcher;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.google.common.base.Splitter;
 
 import javassist.CannotCompileException;
 import javassist.ClassMap;
@@ -158,6 +161,24 @@ public class Patches {
 	}
 
 	@Patch (
+			requiredAttributes = "code,return,name"
+	)
+	public void addMethod(CtClass ctClass, Map<String, String> attributes) throws NotFoundException, CannotCompileException {
+		String name = attributes.get("name");
+		String return_ = attributes.get("return");
+		String code = attributes.get("code");
+		String parameterNamesList = attributes.get("parameters");
+		parameterNamesList = parameterNamesList == null ? "" : parameterNamesList;
+		List<CtClass> parameterList = new ArrayList<CtClass>();
+		for (String parameterName : Splitter.on(',').trimResults().omitEmptyStrings().split(parameterNamesList)) {
+			parameterList.add(classRegistry.getClass(parameterName));
+		}
+		CtMethod newMethod = new CtMethod(classRegistry.getClass(return_), name, parameterList.toArray(new CtClass[parameterList.size()]), ctClass);
+		newMethod.setBody('{' + code + '}');
+		ctClass.addMethod(newMethod);
+	}
+
+	@Patch (
 			requiredAttributes = "fromClass"
 	)
 	public void addAll(CtClass ctClass, Map<String, String> attributes) throws NotFoundException, CannotCompileException, BadBytecode {
@@ -167,6 +188,9 @@ public class Patches {
 		classMap.put(fromClass, ctClass.getName());
 		for (CtField ctField : from.getDeclaredFields()) {
 			Log.info("Added " + ctField);
+			if (ctField.getName().endsWith("_")) {
+				ctField.setName(ctField.getName().substring(0, ctField.getName().length() - 1));
+			}
 			ctClass.addField(new CtField(ctField, ctClass));
 		}
 		for (CtMethod newMethod : from.getDeclaredMethods()) {
@@ -179,7 +203,10 @@ public class Patches {
 				Log.info("Adding " + added);
 				ctClass.addMethod(added);
 				if ("construct".equals(added.getName())) {
-					ctClass.getClassInitializer().insertAfter("this.construct();");
+					ctClass.addField(new CtField(classRegistry.getClass("boolean"), "isConstructed", ctClass), CtField.Initializer.constant(false));
+					for (CtBehavior ctBehavior : ctClass.getDeclaredConstructors()) {
+						ctBehavior.insertAfter("{ if(!this.isConstructed) { this.isConstructed = true; this.construct(); } }");
+					}
 				}
 			}
 		}

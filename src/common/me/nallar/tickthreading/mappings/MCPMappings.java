@@ -33,7 +33,7 @@ public class MCPMappings extends Mappings {
 		MethodDescription obfuscated = methodMappings.get(methodDescription);
 		if (obfuscated == null) {
 			obfuscated = parameterlessMethodMappings.get(methodDescription.getShortName());
-			if (methodDescription.isExact()) {
+			if (methodDescription.isExact() || obfuscated == null) {
 				Log.info("Failed to directly map " + methodDescription
 						+ "\n would map to " + obfuscated);
 				obfuscated = methodDescription;

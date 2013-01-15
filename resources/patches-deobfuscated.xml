@@ -90,7 +90,9 @@
 			<insertAfter field="entityId" code="this.$field = this.nextEntityID_.getAndIncrement();"/>
 		</class>
 		<class id="net.minecraft.tileentity.TileEntity">
-			<setBody code="return super.toString() + &quot; x,y,x: &quot; + xCoord + &quot;, &quot; + yCoord + &quot;, &quot; + zCoord;">toString</setBody>
+			<addMethod return="java.lang.String"
+								 name="toString"
+								 code="return super.toString() + &quot; x,y,x: &quot; + xCoord + &quot;, &quot; + yCoord + &quot;, &quot; + zCoord;"/>
 		</class>
 		<class id="net.minecraft.entity.EntityTracker">
 			<!-- Yet more comodification exceptions -->

@@ -32,8 +32,9 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	private static final int TARGET_TPS = 20;
 	private static final int TARGET_TICK_TIME = 1000000000 / TARGET_TPS;
 	private static double currentTPS = 0;
+
 	@Declare
-	//public boolean currentlySaving;
+	public boolean currentlySaving_;
 
 	public void construct() {
 		currentlySaving = false;
