@@ -178,6 +178,9 @@ public class Patches {
 				CtMethod added = CtNewMethod.copy(newMethod, ctClass, classMap);
 				Log.info("Adding " + added);
 				ctClass.addMethod(added);
+				if ("construct".equals(added.getName())) {
+					ctClass.getClassInitializer().insertAfter("this.construct();");
+				}
 			}
 		}
 		for (CtClass CtInterface : from.getInterfaces()) {
