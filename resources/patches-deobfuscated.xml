@@ -235,4 +235,9 @@
 			<synchronize>tick</synchronize>
 		</class>
 	</wirelessRedstone>
+	<myTown>
+		<class id="ee.lutsu.alpha.mc.mytown.event.ProtectionEvents">
+			<synchronize>tickStart</synchronize>
+		</class>
+	</myTown>
 </mods>
