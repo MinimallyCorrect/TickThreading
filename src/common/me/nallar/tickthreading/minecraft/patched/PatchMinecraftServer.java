@@ -105,9 +105,6 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	@Override
 	public void tick() {
 		long var1 = System.nanoTime();
-		FMLCommonHandler.instance().rescheduleTicks(Side.SERVER);
-		AxisAlignedBB.getAABBPool().cleanPool();
-		FMLCommonHandler.instance().onPreServerTick();
 
 		if (this.startProfiling) {
 			this.startProfiling = false;
@@ -116,6 +113,13 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		}
 
 		this.theProfiler.startSection("root");
+
+		this.theProfiler.startSection("forgePreServerTick");
+		FMLCommonHandler.instance().rescheduleTicks(Side.SERVER);
+		AxisAlignedBB.getAABBPool().cleanPool();
+		FMLCommonHandler.instance().onPreServerTick();
+		this.theProfiler.endSection();
+
 		this.updateTimeLightAndEntities();
 
 		if (this.tickCounter % TickThreading.instance.saveInterval == 0) {
@@ -144,9 +148,11 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			this.usageSnooper.addMemoryStatsToSnooper();
 		}
 
-		this.theProfiler.endSection();
-		this.theProfiler.endSection();
+		this.theProfiler.endStartSection("forgePostServerTick");
 		FMLCommonHandler.instance().onPostServerTick();
+
+		this.theProfiler.endSection();
+		this.theProfiler.endSection();
 		tickTime = (tickTime * 127 + ((this.tickTimeArray[this.tickCounter % 100] = System.nanoTime() - var1) / 1000000)) / 128;
 	}
 
@@ -173,7 +179,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				threadManager.run(tickRunnable);
 			}
 		} else {
-			doTick();
+			doWorldTick();
 		}
 
 		this.theProfiler.endStartSection("players");
@@ -208,40 +214,38 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	}
 
 	@Declare
-	public void doTick() {
+	public void doWorldTick() {
 		int i;
 		while ((i = currentWorld.getAndIncrement()) < dimensionIdsToTick.length) {
 			int id = dimensionIdsToTick[i];
 			long var2 = System.nanoTime();
 
-			if (id == 0 || this.getAllowNether()) {
-				WorldServer var4 = DimensionManager.getWorld(id);
-				this.theProfiler.startSection(var4.getWorldInfo().getWorldName());
-				this.theProfiler.startSection("pools");
-				var4.getWorldVec3Pool().clear();
-				this.theProfiler.endSection();
+			WorldServer var4 = DimensionManager.getWorld(id);
+			this.theProfiler.startSection(var4.getWorldInfo().getWorldName());
+			this.theProfiler.startSection("pools");
+			var4.getWorldVec3Pool().clear();
+			this.theProfiler.endSection();
 
-				if (this.tickCounter % 60 == 0) {
-					this.theProfiler.startSection("timeSync");
-					this.serverConfigManager.sendPacketToAllPlayersInDimension(new Packet4UpdateTime(var4.getTotalWorldTime(), var4.getWorldTime()), var4.provider.dimensionId);
-					this.theProfiler.endSection();
-				}
-
-				this.theProfiler.startSection("forgeTick");
-				FMLCommonHandler.instance().onPreWorldTick(var4);
-
-				this.theProfiler.endStartSection("entityTick");
-				var4.updateEntities();
-				this.theProfiler.endStartSection("worldTick");
-				var4.tick();
-				this.theProfiler.endStartSection("postForgeTick");
-				FMLCommonHandler.instance().onPostWorldTick(var4);
-				this.theProfiler.endSection();
-				this.theProfiler.startSection("tracker");
-				var4.getEntityTracker().updateTrackedEntities();
-				this.theProfiler.endSection();
+			if (this.tickCounter % 60 == 0) {
+				this.theProfiler.startSection("timeSync");
+				this.serverConfigManager.sendPacketToAllPlayersInDimension(new Packet4UpdateTime(var4.getTotalWorldTime(), var4.getWorldTime()), var4.provider.dimensionId);
 				this.theProfiler.endSection();
 			}
+
+			this.theProfiler.startSection("forgeTick");
+			FMLCommonHandler.instance().onPreWorldTick(var4);
+
+			this.theProfiler.endStartSection("entityTick");
+			var4.updateEntities();
+			this.theProfiler.endStartSection("worldTick");
+			var4.tick();
+			this.theProfiler.endStartSection("postForgeTick");
+			FMLCommonHandler.instance().onPostWorldTick(var4);
+			this.theProfiler.endSection();
+			this.theProfiler.startSection("tracker");
+			var4.getEntityTracker().updateTrackedEntities();
+			this.theProfiler.endSection();
+			this.theProfiler.endSection();
 
 			worldTickTimes.get(id)[this.tickCounter % 100] = System.nanoTime() - var2;
 		}
@@ -291,7 +295,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 		@Override
 		public void run() {
-			minecraftServer.doTick();
+			minecraftServer.doWorldTick();
 		}
 	}
 }
