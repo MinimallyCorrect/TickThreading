@@ -112,9 +112,12 @@
 			<lock field="readLock">findNearestVillage,func_82566_a</lock>
 		</class>
 		<class id="net.minecraft.server.management.PlayerManager">
-			<newField field="chunkWatcherLock" class="java.lang.Object"/>
-			<synchronize field="chunkWatcherLock">getOrCreateChunkWatcher</synchronize>
+			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchPlayerManager"/>
 			<synchronize>addPlayer,removePlayer</synchronize>
+		</class>
+		<class id="net.minecraft.server.management.PlayerInstance">
+			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchPlayerInstance"/>
+			<replaceMethodCall index="1" code="{ $_ = null; }"/>
 		</class>
 		<class id="net.minecraft.world.ChunkCoordIntPair">
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchChunkCoordIntPair"/>

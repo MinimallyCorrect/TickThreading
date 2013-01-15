@@ -127,10 +127,13 @@ public class Patches {
 	}
 
 	@Patch (
-			requiredAttributes = "code,method"
+			requiredAttributes = "code"
 	)
 	public void replaceMethodCall(final CtBehavior ctBehavior, Map<String, String> attributes) throws CannotCompileException {
 		String method_ = attributes.get("method");
+		if (method_ == null) {
+			method_ = "";
+		}
 		String className_ = null;
 		int dotIndex = method_.indexOf('.');
 		if (dotIndex != -1) {
@@ -152,7 +155,7 @@ public class Patches {
 
 			@Override
 			public void edit(MethodCall methodCall) throws CannotCompileException {
-				if ((className == null || methodCall.getClassName().equals(className)) && methodCall.getMethodName().equals(method) && (index == -1 || currentIndex++ == index)) {
+				if ((className == null || methodCall.getClassName().equals(className)) && (method.isEmpty() || methodCall.getMethodName().equals(method)) && (index == -1 || currentIndex++ == index)) {
 					Log.info("Replaced " + methodCall + " from " + ctBehavior);
 					methodCall.replace(code);
 				}
