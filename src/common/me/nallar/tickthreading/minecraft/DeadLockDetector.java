@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.ITickHandler;
 import cpw.mods.fml.common.TickType;
 import cpw.mods.fml.common.registry.TickRegistry;
@@ -108,8 +109,16 @@ public class DeadLockDetector {
 			for (World world : new HashMap<World, TickManager>(managerMap).keySet()) {
 				TickThreading.instance.onWorldUnload(new WorldEvent.Unload(world));
 			}
-			if (TickThreading.instance.exitOnDeadlock && MinecraftServer.getServer().isServerRunning()) {
-				MinecraftServer.getServer().save();
+			// Yes, we save multiple times - handleServerStopping may freeze on the same thing we deadlocked on, but if it doesn't might change stuff
+			// which needs to be saved.
+			MinecraftServer minecraftServer = MinecraftServer.getServer();
+			if (!minecraftServer.currentlySaving) {
+				minecraftServer.saveEverything();
+				FMLCommonHandler.instance().handleServerStopping();
+				minecraftServer.saveEverything();
+				minecraftServer.initiateShutdown();
+			}
+			if (TickThreading.instance.exitOnDeadlock) {
 				Runtime.getRuntime().halt(1);
 			}
 			return false;

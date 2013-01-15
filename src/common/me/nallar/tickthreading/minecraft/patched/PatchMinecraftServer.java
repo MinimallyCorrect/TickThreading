@@ -8,6 +8,7 @@ import java.util.logging.Level;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
+import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.ThreadManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
@@ -31,6 +32,12 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	private static final int TARGET_TPS = 20;
 	private static final int TARGET_TICK_TIME = 1000000000 / TARGET_TPS;
 	private static double currentTPS = 0;
+	@Declare
+	//public boolean currentlySaving;
+
+	public void construct() {
+		currentlySaving = false;
+	}
 
 	public PatchMinecraftServer(File par1File) {
 		super(par1File);
@@ -123,10 +130,12 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		this.updateTimeLightAndEntities();
 
 		if (this.tickCounter % TickThreading.instance.saveInterval == 0) {
+			currentlySaving = true;
 			this.theProfiler.startSection("save");
 			this.serverConfigManager.saveAllPlayerData();
 			this.saveAllWorlds(true);
 			this.theProfiler.endSection();
+			currentlySaving = false;
 		}
 
 		this.theProfiler.startSection("tallying");
@@ -252,8 +261,14 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	}
 
 	@Declare
-	public void save() {
-		this.saveAllWorlds(false);
+	public void saveEverything() {
+		if (this.isServerRunning() && !currentlySaving) {
+			this.saveAllWorlds(false);
+			this.serverConfigManager.saveAllPlayerData();
+			this.saveAllWorlds(false);
+		} else {
+			Log.severe("Server is already saving or crashed while saving - not attempting to save.");
+		}
 	}
 
 	@Override
