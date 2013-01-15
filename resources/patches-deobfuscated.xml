@@ -42,6 +42,10 @@
 			<public>releaseEntitySkin</public>
 			<newInitializer field="activeChunkSet" code="java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap());"/>
 		</class>
+		<class id="net.minecraft.world.biome.WorldChunkManager">
+			<newField field="staticLock" class="java.lang.Object" static=""/>
+			<synchronize field="staticLock">getModdedBiomeGenerators</synchronize>
+		</class>
 		<class id="net.minecraft.world.gen.ChunkProviderServer">
 			<synchronize field="currentServer.TELock">safeLoadChunk,loadChunk,unload100OldestChunks,unloadAllChunks</synchronize>
 		</class>
