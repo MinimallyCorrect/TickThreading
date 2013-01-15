@@ -230,4 +230,9 @@
 			<synchronize>tickEnd,onPlayerLogout,onWorldLoad,onWorldUnload,onChunkForce,onChunkUnForce</synchronize>
 		</class>
 	</chickenChunks>
+	<wirelessRedstone>
+		<class id="codechicken.wirelessredstone.core.RedstoneEtherServer">
+			<synchronize>tick</synchronize>
+		</class>
+	</wirelessRedstone>
 </mods>
