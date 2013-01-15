@@ -130,6 +130,9 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		this.updateTimeLightAndEntities();
 
 		if (this.tickCounter % TickThreading.instance.saveInterval == 0) {
+			if (currentlySaving) {
+				throw new IllegalStateException("Already saving!");
+			}
 			currentlySaving = true;
 			this.theProfiler.startSection("save");
 			this.serverConfigManager.saveAllPlayerData();
@@ -263,9 +266,11 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	@Declare
 	public void saveEverything() {
 		if (this.isServerRunning() && !currentlySaving) {
+			currentlySaving = true;
 			this.saveAllWorlds(false);
 			this.serverConfigManager.saveAllPlayerData();
 			this.saveAllWorlds(false);
+			currentlySaving = false;
 		} else {
 			Log.severe("Server is already saving or crashed while saving - not attempting to save.");
 		}
