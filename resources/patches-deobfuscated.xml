@@ -28,7 +28,7 @@
 		</class>
 		<class id="net.minecraft.world.WorldServer">
 			<!-- Fixes an issue where the tickNextTickLists would become out of sync -->
-			<synchronize>func_82740_a,scheduleBlockUpdateFromLoad,getPendingBlockUpdates,addBlockEvent</synchronize>
+			<synchronize>func_82740_a,scheduleBlockUpdateFromLoad,getPendingBlockUpdates,addBlockEvent,tickUpdates</synchronize>
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchWorldServer"/>
 			<insertSuper>tickBlocksAndAmbiance</insertSuper>
 			<newInitializer field="doneChunks" code="java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap());"/>

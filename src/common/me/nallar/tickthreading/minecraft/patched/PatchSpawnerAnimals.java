@@ -3,7 +3,9 @@ package me.nallar.tickthreading.minecraft.patched;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EnumCreatureType;
