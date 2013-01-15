@@ -51,6 +51,7 @@ public class TickThreading {
 	public boolean enableChunkTickThreading = true;
 	public boolean enableWorldTickThreading = true;
 	public boolean requireOpForTicksCommand = true;
+	public boolean shouldLoadSpawn = true;
 	public int saveInterval = 1800;
 	public int deadLockTime = 30;
 	public boolean aggressiveTicks = true;
@@ -111,6 +112,8 @@ public class TickThreading {
 		deadLockTimeProperty.comment = "The time(seconds) of being frozen which will trigger the DeadLockDetector.";
 		Property aggressiveTicksProperty = config.get(Configuration.CATEGORY_GENERAL, "aggressiveTicks", aggressiveTicks);
 		aggressiveTicksProperty.comment = "If false, will use Spigot tick time algorithm which may lead to lower idle load, but worse TPS if ticks are spiking.";
+		Property shouldLoadSpawnProperty = config.get(Configuration.CATEGORY_GENERAL, "shouldLoadSpawn", shouldLoadSpawn);
+		shouldLoadSpawnProperty.comment = "Whether chunks within 200 blocks of world spawn points should always be loaded";
 		config.save();
 
 		TicksCommand.name = ticksCommandName.value;
@@ -128,6 +131,7 @@ public class TickThreading {
 		enableWorldTickThreading = enableWorldTickThreadingProperty.getBoolean(enableWorldTickThreading);
 		requireOpForTicksCommand = requireOpForTicksCommandProperty.getBoolean(requireOpForTicksCommand);
 		aggressiveTicks = aggressiveTicksProperty.getBoolean(aggressiveTicks);
+		shouldLoadSpawn = shouldLoadSpawnProperty.getBoolean(shouldLoadSpawn);
 	}
 
 	@Mod.ServerStarting
