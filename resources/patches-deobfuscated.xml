@@ -235,10 +235,13 @@
 	<chickenChunks>
 		<class id="codechicken.chunkloader.ChunkLoaderEventHandler">
 			<newField field="staticLock" class="java.lang.Object" static=""/>
-			<synchronize field="staticLock"/>
+			<synchronize field="staticLock">tickEnd,onPlayerLogout,onWorldLoad,onWorldUnload,onChunkForce,onChunkUnForce</synchronize>
 		</class>
 		<class id="codechicken.chunkloader.PlayerChunkViewerManager">
 			<synchronize field="codechicken.chunkloader.ChunkLoaderEventHandler.staticLock"/>
+		</class>
+		<class id="codechicken.chunkloader.CommandChunkLoaders">
+			<synchronize field="codechicken.chunkloader.ChunkLoaderEventHandler.staticLock">handleCommand</synchronize>
 		</class>
 	</chickenChunks>
 	<wirelessRedstone>
