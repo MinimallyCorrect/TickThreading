@@ -36,11 +36,13 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 
 	public static int spawnMobsQuickly(WorldServer worldServer, boolean peaceful, boolean hostile, boolean animal) {
 		worldServer.theProfiler.startSection("creatureTypes");
-		int mobMultiplier = worldServer.playerEntities.size() * 5;
+		int entityMultiplier = worldServer.playerEntities.size() * 2;
+		int mobMultiplier = entityMultiplier * (worldServer.isDaytime() ? 1 : 2);
 		Map<EnumCreatureType, Integer> requiredSpawns = new EnumMap<EnumCreatureType, Integer>(EnumCreatureType.class);
 		for (EnumCreatureType creatureType : EnumCreatureType.values()) {
-			if (mobMultiplier * creatureType.getMaxNumberOfCreature() > worldServer.countEntities(creatureType.getCreatureClass())) {
-				requiredSpawns.put(creatureType, mobMultiplier * creatureType.getMaxNumberOfCreature());
+			int count = (creatureType.getPeacefulCreature() ? entityMultiplier : mobMultiplier) * creatureType.getMaxNumberOfCreature();
+			if (count > worldServer.countEntities(creatureType.getCreatureClass())) {
+				requiredSpawns.put(creatureType, count);
 			}
 		}
 		worldServer.theProfiler.endSection();
@@ -154,7 +156,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 		if (!par1 && !par2) {
 			return 0;
 		}
-		if (TickThreading.instance.enableFastMobSpawning) {
+		if (TickThreading.instance.enableFastMobSpawning && par0WorldServer.getWorldInfo().getDimension() != -1) {
 			return spawnMobsQuickly(par0WorldServer, par1, par2, par3);
 		}
 		double tpsFactor = MinecraftServer.getTPS() / 20;
