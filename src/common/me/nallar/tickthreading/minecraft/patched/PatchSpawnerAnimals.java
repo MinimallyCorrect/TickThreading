@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 import me.nallar.tickthreading.Log;
+import me.nallar.tickthreading.minecraft.TickThreading;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.player.EntityPlayer;
@@ -33,6 +34,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 	private static final int spawnVariance = 6;
 
 	public static int spawnMobsQuickly(WorldServer worldServer, boolean peaceful, boolean hostile, boolean animal) {
+		worldServer.theProfiler.startSection("creatureTypes");
 		int mobMultiplier = worldServer.playerEntities.size();
 		Map<EnumCreatureType, Integer> requiredSpawns = new HashMap<EnumCreatureType, Integer>();
 		for (EnumCreatureType creatureType : EnumCreatureType.values()) {
@@ -42,11 +44,13 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 				requiredSpawns.put(creatureType, mobMultiplier * creatureType.getMaxNumberOfCreature());
 			}
 		}
+		worldServer.theProfiler.endSection();
 
 		if (requiredSpawns.isEmpty()) {
 			return 0;
 		}
 
+		worldServer.theProfiler.startSection("spawnableChunks");
 		int spawnedMobs = 0;
 		Set<Long> closeChunks = new HashSet<Long>();
 		List<Long> spawnableChunks = new ArrayList<Long>();
@@ -75,9 +79,16 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 				}
 			}
 		}
+		worldServer.theProfiler.endStartSection("spawnMobs");
+
+		SpawnLoop:
 		for (Map.Entry<EnumCreatureType, Integer> entry : requiredSpawns.entrySet()) {
 			EnumCreatureType creatureType = entry.getKey();
-			long hash = spawnableChunks.get(worldServer.rand.nextInt(spawnableChunks.size()));
+			int size = spawnableChunks.size();
+			if (size < 1) {
+				return spawnedMobs;
+			}
+			long hash = spawnableChunks.get(worldServer.rand.nextInt(size));
 			int x = (int) (hash >> 32);
 			int z = (int) hash;
 			ChunkPosition spawningPoint = getRandomSpawningPointInChunk(worldServer, x, z);
@@ -101,7 +112,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 							spawnedEntity = (EntityLiving) creatureClass.entityClass.getConstructor(World.class).newInstance(worldServer);
 						} catch (Exception e) {
 							Log.severe("Failed to spawn entity " + creatureClass, e);
-							return spawnedMobs;
+							break SpawnLoop;
 						}
 
 						spawnedEntity.setLocationAndAngles((double) ssX, (double) ssY, (double) ssZ, worldServer.rand.nextFloat() * 360.0F, 0.0F);
@@ -115,7 +126,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 				}
 			}
 			if (spawnedMobs >= 32) {
-				return spawnedMobs;
+				break;
 			}
 		}
 		return spawnedMobs;
@@ -125,7 +136,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 		if (!par1 && !par2) {
 			return 0;
 		}
-		if (true) {
+		if (TickThreading.instance.enableFastMobSpawning) {
 			return spawnMobsQuickly(par0WorldServer, par1, par2, par3);
 		}
 		double tpsFactor = MinecraftServer.getTPS() / 20;

@@ -5,8 +5,6 @@ import java.util.List;
 
 import javassist.is.faulty.ThreadLocals;
 import me.nallar.tickthreading.minecraft.entitylist.EntityList;
-import me.nallar.tickthreading.minecraft.entitylist.LoadedEntityList;
-import me.nallar.tickthreading.minecraft.entitylist.LoadedTileEntityList;
 import net.minecraft.block.Block;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
@@ -292,8 +290,7 @@ public abstract class PatchWorld extends World {
 		this.theProfiler.endSection();
 	}
 
-	public void markTileEntityForDespawn(TileEntity par1TileEntity)
-	{
+	public void markTileEntityForDespawn(TileEntity par1TileEntity) {
 		if (loadedTileEntityList instanceof EntityList) {
 			((EntityList) loadedTileEntityList).manager.remove(par1TileEntity);
 			par1TileEntity.onChunkUnload();
