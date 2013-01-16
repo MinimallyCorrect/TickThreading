@@ -235,7 +235,7 @@
 	<chickenChunks>
 		<class id="codechicken.chunkloader.ChunkLoaderEventHandler">
 			<newField field="staticLock" class="java.lang.Object" static=""/>
-			<synchronize field="staticLock">tickEnd,onPlayerLogout,onWorldLoad,onWorldUnload,onChunkForce,onChunkUnForce</synchronize>
+			<synchronize field="staticLock"/>
 		</class>
 		<class id="codechicken.chunkloader.PlayerChunkViewerManager">
 			<synchronize field="codechicken.chunkloader.ChunkLoaderEventHandler.staticLock"/>

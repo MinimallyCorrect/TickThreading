@@ -36,7 +36,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 
 	public static int spawnMobsQuickly(WorldServer worldServer, boolean peaceful, boolean hostile, boolean animal) {
 		worldServer.theProfiler.startSection("creatureTypes");
-		int entityMultiplier = worldServer.playerEntities.size() * 2;
+		int entityMultiplier = worldServer.playerEntities.size();
 		int mobMultiplier = entityMultiplier * (worldServer.isDaytime() ? 1 : 2);
 		Map<EnumCreatureType, Integer> requiredSpawns = new EnumMap<EnumCreatureType, Integer>(EnumCreatureType.class);
 		for (EnumCreatureType creatureType : EnumCreatureType.values()) {
@@ -113,9 +113,12 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 						ssY = worldServer.rand.nextInt(63) + 1;
 					} else {
 						ssY = worldServer.getHeightValue(ssX, ssZ);
+						if (!worldServer.getBlockMaterial(ssX, ssY - 1, ssZ).isOpaque()) {
+							continue;
+						}
 					}
 
-					if (creatureType == EnumCreatureType.waterCreature || !worldServer.getBlockMaterial(ssX, ssY, ssZ).isLiquid()) {
+					if (creatureType == EnumCreatureType.waterCreature || (!worldServer.getBlockMaterial(ssX, ssY - 1, ssZ).isLiquid())) {
 						SpawnListEntry creatureClass = worldServer.spawnRandomCreature(creatureType, ssX, ssY, ssZ);
 						if (creatureClass == null) {
 							break;
