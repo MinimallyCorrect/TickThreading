@@ -69,14 +69,20 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 					closeChunks.add(hash(x, z));
 				}
 			}
-			x = pX - farRange;
-			maxX = pX + farRange;
-			startZ = pZ - farRange;
-			maxZ = pZ + farRange;
+		}
+		for (Object entityPlayer_ : worldServer.playerEntities) {
+			EntityPlayer entityPlayer = (EntityPlayer) entityPlayer_;
+			int pX = entityPlayer.chunkCoordX;
+			int pZ = entityPlayer.chunkCoordZ;
+			int x = pX - farRange;
+			int maxX = pX + farRange;
+			int startZ = pZ - farRange;
+			int maxZ = pZ + farRange;
 			for (; x <= maxX; x++) {
 				for (int z = startZ; z <= maxZ; z++) {
-					if (closeChunks.add(hash(x, z))) {
-						spawnableChunks.add(hash(x, z));
+					long hash = hash(x, z);
+					if (closeChunks.add(hash)) {
+						spawnableChunks.add(hash);
 					}
 				}
 			}
@@ -150,7 +156,6 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 			}
 		}
 		worldServer.theProfiler.endSection();
-		Log.info("Spawned " + spawnedMobs);
 		return spawnedMobs;
 	}
 
@@ -158,7 +163,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 		if (!par1 && !par2) {
 			return 0;
 		}
-		if (TickThreading.instance.enableFastMobSpawning && par0WorldServer.getWorldInfo().getDimension() != -1) {
+		if (TickThreading.instance.enableFastMobSpawning && !"Nether".equals(par0WorldServer.provider.getDimensionName())) {
 			return spawnMobsQuickly(par0WorldServer, par1, par2, par3);
 		}
 		double tpsFactor = MinecraftServer.getTPS() / 20;
