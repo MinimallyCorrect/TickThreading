@@ -26,21 +26,19 @@ import net.minecraft.world.biome.SpawnListEntry;
 
 public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 	private static long hash(long x, long y) {
-		return (x << 32) & y;
+		return (x << 32) | y;
 	}
 
 	private static final int closeRange = 1;
-	private static final int farRange = 4;
+	private static final int farRange = 5;
 	private static final int spawnVariance = 6;
 
 	public static int spawnMobsQuickly(WorldServer worldServer, boolean peaceful, boolean hostile, boolean animal) {
 		worldServer.theProfiler.startSection("creatureTypes");
-		int mobMultiplier = worldServer.playerEntities.size();
+		int mobMultiplier = worldServer.playerEntities.size() * 5;
 		Map<EnumCreatureType, Integer> requiredSpawns = new HashMap<EnumCreatureType, Integer>();
 		for (EnumCreatureType creatureType : EnumCreatureType.values()) {
-			boolean isPeaceful = creatureType.getPeacefulCreature();
-			if (((!isPeaceful || hostile) && (isPeaceful || peaceful) && (!creatureType.getAnimal() || animal))
-					&& (mobMultiplier * creatureType.getMaxNumberOfCreature() < worldServer.countEntities(creatureType.getCreatureClass()))) {
+			if (mobMultiplier * creatureType.getMaxNumberOfCreature() > worldServer.countEntities(creatureType.getCreatureClass())) {
 				requiredSpawns.put(creatureType, mobMultiplier * creatureType.getMaxNumberOfCreature());
 			}
 		}
@@ -86,7 +84,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 			EnumCreatureType creatureType = entry.getKey();
 			int size = spawnableChunks.size();
 			if (size < 1) {
-				return spawnedMobs;
+				break;
 			}
 			long hash = spawnableChunks.get(worldServer.rand.nextInt(size));
 			int x = (int) (hash >> 32);
@@ -95,11 +93,17 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 			int sX = spawningPoint.x;
 			int sY = spawningPoint.y;
 			int sZ = spawningPoint.z;
-			if (!worldServer.isBlockNormalCube(sX, sY, sZ) && worldServer.getBlockMaterial(sX, sY, sZ) == creatureType.getCreatureMaterial()) {
-				for (int i = 0; i < 4; i++) {
+			if (worldServer.getBlockMaterial(sX, sY, sZ) == creatureType.getCreatureMaterial()) {
+				for (int i = 0; i < 6; i++) {
 					int ssX = sX + (worldServer.rand.nextInt(spawnVariance) - spawnVariance / 2);
-					int ssY = sY + (worldServer.rand.nextInt(2) - 1);
 					int ssZ = sZ + (worldServer.rand.nextInt(spawnVariance) - spawnVariance / 2);
+					int ssY = worldServer.getHeightValue(ssX, ssZ);
+
+					if (creatureType == EnumCreatureType.waterCreature) {
+						ssY -= 2;
+					} else if (creatureType == EnumCreatureType.ambient) {
+						ssY = worldServer.rand.nextInt(ssY - 1) + 1;
+					}
 
 					if (canCreatureTypeSpawnAtLocation(creatureType, worldServer, ssX, ssY, ssZ)) {
 						SpawnListEntry creatureClass = worldServer.spawnRandomCreature(creatureType, ssX, ssY, ssZ);
@@ -121,7 +125,11 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 							worldServer.spawnEntityInWorld(spawnedEntity);
 							creatureSpecificInit(spawnedEntity, worldServer, ssX, ssY, ssZ);
 							spawnedMobs++;
+						} else {
+							Log.info("Cancelled gCSH " + creatureType);
 						}
+					} else {
+						Log.info("Cancelled cctsal " + creatureType);
 					}
 				}
 			}
@@ -129,6 +137,8 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 				break;
 			}
 		}
+		worldServer.theProfiler.endSection();
+		Log.info("Spawned " + spawnedMobs);
 		return spawnedMobs;
 	}
 
