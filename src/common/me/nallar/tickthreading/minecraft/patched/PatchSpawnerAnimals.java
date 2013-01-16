@@ -81,7 +81,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 			for (; x <= maxX; x++) {
 				for (int z = startZ; z <= maxZ; z++) {
 					long hash = hash(x, z);
-					if (closeChunks.add(hash)) {
+					if (!closeChunks.contains(hash)) {
 						spawnableChunks.add(hash);
 					}
 				}
