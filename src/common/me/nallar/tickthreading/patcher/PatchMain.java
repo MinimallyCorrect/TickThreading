@@ -73,6 +73,7 @@ public class PatchMain {
 				patchManager.patchEnvironment = "mcpc";
 			} catch (NotFoundException ignored) {
 			}
+			Log.info("Patching in environment: " + patchManager.patchEnvironment);
 			patchManager.loadBackups(filesToLoad);
 			patchManager.classRegistry.loadFiles(filesToLoad);
 			patchManager.runPatches();
