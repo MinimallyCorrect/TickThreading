@@ -115,7 +115,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 						ssY = worldServer.getHeightValue(ssX, ssZ);
 					}
 
-					if (canCreatureTypeSpawnAtLocation(creatureType, worldServer, ssX, ssY, ssZ)) {
+					if (true || canCreatureTypeSpawnAtLocation(creatureType, worldServer, ssX, ssY, ssZ)) {
 						SpawnListEntry creatureClass = worldServer.spawnRandomCreature(creatureType, ssX, ssY, ssZ);
 						if (creatureClass == null) {
 							break;

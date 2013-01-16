@@ -237,6 +237,9 @@
 			<newField field="staticLock" class="java.lang.Object" static=""/>
 			<synchronize field="staticLock">tickEnd,onPlayerLogout,onWorldLoad,onWorldUnload,onChunkForce,onChunkUnForce</synchronize>
 		</class>
+		<class id="codechicken.chunkloader.PlayerChunkViewerManager">
+			<synchronize field="codechicken.chunkloader.ChunkLoaderEventHandler.staticLock"/>
+		</class>
 	</chickenChunks>
 	<wirelessRedstone>
 		<class id="codechicken.wirelessredstone.core.RedstoneEtherServer">
