@@ -97,7 +97,8 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 			int sZ = z * 16 + worldServer.rand.nextInt(16);
 			int sY = worldServer.getHeightValue(sX, sZ);
 			if (creatureType == EnumCreatureType.waterCreature) {
-				if (!"Ocean".equals(worldServer.getBiomeGenForCoords(sX, sZ).biomeName)) {
+				String biomeName = worldServer.getBiomeGenForCoords(sX, sZ).biomeName;
+				if (!"Ocean".equals(biomeName) && !"River".equals(biomeName)) {
 					continue;
 				}
 				sY -= 2;
