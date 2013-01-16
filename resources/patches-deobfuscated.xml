@@ -247,4 +247,9 @@
 			<synchronize>tickStart</synchronize>
 		</class>
 	</myTown>
+	<soulShards>
+		<class id="com.shadwdrgn.soulshards.CommonProxy">
+			<replaceMethodCall index="0" code="{}" method="println">processShard</replaceMethodCall>
+		</class>
+	</soulShards>
 </mods>
