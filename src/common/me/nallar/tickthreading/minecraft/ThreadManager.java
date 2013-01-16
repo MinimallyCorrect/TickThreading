@@ -132,6 +132,9 @@ public class ThreadManager {
 	}
 
 	private static class KillRunnable implements Runnable {
+		KillRunnable() {
+		}
+
 		@Override
 		public void run() {
 		}

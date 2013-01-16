@@ -2,6 +2,7 @@ package me.nallar.tickthreading.minecraft.patched;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -36,7 +37,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 	public static int spawnMobsQuickly(WorldServer worldServer, boolean peaceful, boolean hostile, boolean animal) {
 		worldServer.theProfiler.startSection("creatureTypes");
 		int mobMultiplier = worldServer.playerEntities.size() * 5;
-		Map<EnumCreatureType, Integer> requiredSpawns = new HashMap<EnumCreatureType, Integer>();
+		Map<EnumCreatureType, Integer> requiredSpawns = new EnumMap<EnumCreatureType, Integer>(EnumCreatureType.class);
 		for (EnumCreatureType creatureType : EnumCreatureType.values()) {
 			if (mobMultiplier * creatureType.getMaxNumberOfCreature() > worldServer.countEntities(creatureType.getCreatureClass())) {
 				requiredSpawns.put(creatureType, mobMultiplier * creatureType.getMaxNumberOfCreature());

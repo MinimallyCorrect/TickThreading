@@ -11,15 +11,16 @@ import net.minecraft.server.MinecraftServer;
 public abstract class PatchSingleIntervalHandler extends SingleIntervalHandler {
 	public static Profiler theProfiler = null;
 
+	public void construct() {
+		theProfiler = MinecraftServer.getServer().theProfiler;
+	}
+
 	public PatchSingleIntervalHandler(ITickHandler handler) {
 		super(handler);
 	}
 
 	@Override
 	public void tickStart(EnumSet<TickType> type, Object... tickData) {
-		if (theProfiler == null) {
-			theProfiler = MinecraftServer.getServer().theProfiler;
-		}
 		theProfiler.startSection(wrapped.getClass().toString());
 		wrapped.tickStart(type, tickData);
 		theProfiler.endSection();

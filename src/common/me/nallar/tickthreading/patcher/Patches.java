@@ -191,7 +191,7 @@ public class Patches {
 		classMap.put(fromClass, ctClass.getName());
 		for (CtField ctField : from.getDeclaredFields()) {
 			Log.info("Added " + ctField);
-			if (ctField.getName().endsWith("_")) {
+			if (ctField.getName().length() > 0 && ctField.getName().charAt(ctField.getName().length() - 1) == '_') {
 				ctField.setName(ctField.getName().substring(0, ctField.getName().length() - 1));
 			}
 			ctClass.addField(new CtField(ctField, ctClass));
