@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.logging.Level;
 
+import javassist.NotFoundException;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.mappings.MCPMappings;
 import me.nallar.tickthreading.mappings.Mappings;
@@ -67,6 +68,11 @@ public class PatchMain {
 		try {
 			Iterable<File> filesToLoad = (Iterable<File>) CollectionsUtil.toObjects(CollectionsUtil.split(args[0]), File.class);
 			patchManager.classRegistry.forcePatching = forcePatching;
+			try {
+				patchManager.classRegistry.getClass("org.bukkit.craftbukkit.Main");
+				patchManager.patchEnvironment = "mcpc";
+			} catch(NotFoundException ignored) {
+			}
 			patchManager.loadBackups(filesToLoad);
 			patchManager.classRegistry.loadFiles(filesToLoad);
 			patchManager.runPatches();

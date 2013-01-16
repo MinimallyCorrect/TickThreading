@@ -48,6 +48,7 @@ public class PatchManager {
 	private final Map<String, PatchMethodDescriptor> patches = new HashMap<String, PatchMethodDescriptor>();
 	public final ClassRegistry classRegistry = new ClassRegistry();
 	private final File backupDirectory;
+	public String patchEnvironment = "forge";
 
 	public PatchManager(InputStream configStream, Class<Patches> patchClass) throws IOException, SAXException {
 		loadPatches(patchClass);
@@ -170,6 +171,10 @@ public class PatchManager {
 				if (!classRegistry.shouldPatch(className)) {
 					Log.info(className + " is already patched, skipping.");
 					continue;
+				}
+				String environment = classElement.getAttribute("env");
+				if (!environment.isEmpty() && !environment.equals(patchEnvironment)) {
+					Log.info(className + " requires " + environment + ", not patched as we are using " + patchEnvironment);
 				}
 				CtClass ctClass;
 				try {

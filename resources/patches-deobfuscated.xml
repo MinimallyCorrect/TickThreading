@@ -43,7 +43,7 @@
 			<newField field="staticLock" class="java.lang.Object" static=""/>
 			<synchronize field="staticLock">getModdedBiomeGenerators</synchronize>
 		</class>
-		<class id="net.minecraft.world.gen.ChunkProviderServer">
+		<class id="net.minecraft.world.gen.ChunkProviderServer" env="forge">
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchChunkProviderServer"/>
 			<synchronize field="chunkLoadLock">unloadAllChunks,saveChunks,unload100OldestChunks</synchronize>
 		</class>
