@@ -183,7 +183,10 @@ public class TickThreading {
 	@ForgeSubscribe
 	public void onWorldUnload(WorldEvent.Unload event) {
 		try {
-			managers.get(event.world).unload();
+			TickManager tickManager = managers.get(event.world);
+			if (tickManager != null) {
+				tickManager.unload();
+			}
 			managers.remove(event.world);
 			if (enableTileEntityTickThreading) {
 				Field loadedTileEntityField = FieldUtil.getFields(World.class, List.class)[loadedTileEntityFieldIndex];
