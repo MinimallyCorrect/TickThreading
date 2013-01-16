@@ -5,8 +5,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import me.nallar.tickthreading.Log;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.player.EntityPlayer;
@@ -21,9 +24,109 @@ import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.SpawnListEntry;
 
 public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
+	private static long hash(long x, long y) {
+		return (x << 32) & y;
+	}
+
+	private static final int closeRange = 1;
+	private static final int farRange = 4;
+	private static final int spawnVariance = 6;
+
+	public static int spawnMobsQuickly(WorldServer worldServer, boolean peaceful, boolean hostile, boolean animal) {
+		int mobMultiplier = worldServer.playerEntities.size();
+		Map<EnumCreatureType, Integer> requiredSpawns = new HashMap<EnumCreatureType, Integer>();
+		for (EnumCreatureType creatureType : EnumCreatureType.values()) {
+			boolean isPeaceful = creatureType.getPeacefulCreature();
+			if (((!isPeaceful || hostile) && (isPeaceful || peaceful) && (!creatureType.getAnimal() || animal))
+					&& (mobMultiplier * creatureType.getMaxNumberOfCreature() < worldServer.countEntities(creatureType.getCreatureClass()))) {
+				requiredSpawns.put(creatureType, mobMultiplier * creatureType.getMaxNumberOfCreature());
+			}
+		}
+
+		if (requiredSpawns.isEmpty()) {
+			return 0;
+		}
+
+		int spawnedMobs = 0;
+		Set<Long> closeChunks = new HashSet<Long>();
+		List<Long> spawnableChunks = new ArrayList<Long>();
+		for (Object entityPlayer_ : worldServer.playerEntities) {
+			EntityPlayer entityPlayer = (EntityPlayer) entityPlayer_;
+			int pX = entityPlayer.chunkCoordX;
+			int pZ = entityPlayer.chunkCoordZ;
+			int x = pX - closeRange;
+			int maxX = pX + closeRange;
+			int startZ = pZ - closeRange;
+			int maxZ = pZ + closeRange;
+			for (; x <= maxX; x++) {
+				for (int z = startZ; z <= maxZ; z++) {
+					closeChunks.add(hash(x, z));
+				}
+			}
+			x = pX - farRange;
+			maxX = pX + farRange;
+			startZ = pZ - farRange;
+			maxZ = pZ + farRange;
+			for (; x <= maxX; x++) {
+				for (int z = startZ; z <= maxZ; z++) {
+					if (closeChunks.add(hash(x, z))) {
+						spawnableChunks.add(hash(x, z));
+					}
+				}
+			}
+		}
+		for (Map.Entry<EnumCreatureType, Integer> entry : requiredSpawns.entrySet()) {
+			EnumCreatureType creatureType = entry.getKey();
+			long hash = spawnableChunks.get(worldServer.rand.nextInt(spawnableChunks.size()));
+			int x = (int) (hash >> 32);
+			int z = (int) hash;
+			ChunkPosition spawningPoint = getRandomSpawningPointInChunk(worldServer, x, z);
+			int sX = spawningPoint.x;
+			int sY = spawningPoint.y;
+			int sZ = spawningPoint.z;
+			if (!worldServer.isBlockNormalCube(sX, sY, sZ) && worldServer.getBlockMaterial(sX, sY, sZ) == creatureType.getCreatureMaterial()) {
+				for (int i = 0; i < 4; i++) {
+					int ssX = sX + (worldServer.rand.nextInt(spawnVariance) - spawnVariance / 2);
+					int ssY = sY + (worldServer.rand.nextInt(2) - 1);
+					int ssZ = sZ + (worldServer.rand.nextInt(spawnVariance) - spawnVariance / 2);
+
+					if (canCreatureTypeSpawnAtLocation(creatureType, worldServer, ssX, ssY, ssZ)) {
+						SpawnListEntry creatureClass = worldServer.spawnRandomCreature(creatureType, ssX, ssY, ssZ);
+						if (creatureClass == null) {
+							break;
+						}
+
+						EntityLiving spawnedEntity;
+						try {
+							spawnedEntity = (EntityLiving) creatureClass.entityClass.getConstructor(World.class).newInstance(worldServer);
+						} catch (Exception e) {
+							Log.severe("Failed to spawn entity " + creatureClass, e);
+							return spawnedMobs;
+						}
+
+						spawnedEntity.setLocationAndAngles((double) ssX, (double) ssY, (double) ssZ, worldServer.rand.nextFloat() * 360.0F, 0.0F);
+
+						if (spawnedEntity.getCanSpawnHere()) {
+							worldServer.spawnEntityInWorld(spawnedEntity);
+							creatureSpecificInit(spawnedEntity, worldServer, ssX, ssY, ssZ);
+							spawnedMobs++;
+						}
+					}
+				}
+			}
+			if (spawnedMobs >= 32) {
+				return spawnedMobs;
+			}
+		}
+		return spawnedMobs;
+	}
+
 	public static int a(WorldServer par0WorldServer, boolean par1, boolean par2, boolean par3) {
 		if (!par1 && !par2) {
 			return 0;
+		}
+		if (true) {
+			return spawnMobsQuickly(par0WorldServer, par1, par2, par3);
 		}
 		double tpsFactor = MinecraftServer.getTPS() / 20;
 		HashMap eligibleChunksForSpawning = new HashMap();
