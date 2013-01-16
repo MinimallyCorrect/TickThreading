@@ -2,10 +2,12 @@ package me.nallar.tickthreading.minecraft.patched;
 
 import java.util.ArrayList;
 
+import me.nallar.tickthreading.Log;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.management.PlayerInstance;
 import net.minecraft.server.management.PlayerManager;
 import net.minecraft.world.ChunkCoordIntPair;
+import net.minecraft.world.WorldProvider;
 import net.minecraft.world.WorldServer;
 
 public abstract class PatchPlayerManager extends PlayerManager {
@@ -134,6 +136,25 @@ public abstract class PatchPlayerManager extends PlayerManager {
 
 		synchronized (this.players) {
 			this.players.remove(par1EntityPlayerMP);
+		}
+	}
+
+	@Override
+	public void updatePlayerInstances() {
+		try {
+			for (Object chunkWatcherWithPlayer : this.chunkWatcherWithPlayers) {
+				if (chunkWatcherWithPlayer instanceof PlayerInstance) {
+					((PlayerInstance) chunkWatcherWithPlayer).sendChunkUpdate();
+				}
+			}
+		} catch (Exception e) {
+			Log.severe("Failed to send some chunk updates", e);
+		}
+
+		this.chunkWatcherWithPlayers.clear();
+
+		if (this.players.isEmpty()) {
+			this.theWorldServer.theChunkProviderServer.unloadAllChunks();
 		}
 	}
 }
