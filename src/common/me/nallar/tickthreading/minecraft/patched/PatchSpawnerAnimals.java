@@ -90,20 +90,27 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 			long hash = spawnableChunks.get(worldServer.rand.nextInt(size));
 			int x = (int) (hash >> 32);
 			int z = (int) hash;
-			ChunkPosition spawningPoint = getRandomSpawningPointInChunk(worldServer, x, z);
-			int sX = spawningPoint.x;
-			int sY = spawningPoint.y;
-			int sZ = spawningPoint.z;
+			int sX = x * 16 + worldServer.rand.nextInt(16);
+			int sZ = z * 16 + worldServer.rand.nextInt(16);
+			int sY = worldServer.getHeightValue(sX, sZ);
+			if (creatureType == EnumCreatureType.waterCreature) {
+				if (!"Ocean".equals(worldServer.getBiomeGenForCoords(sX, sZ).biomeName)) {
+					continue;
+				}
+				sY -= 2;
+			}
 			if (worldServer.getBlockMaterial(sX, sY, sZ) == creatureType.getCreatureMaterial()) {
 				for (int i = 0; i < 6; i++) {
 					int ssX = sX + (worldServer.rand.nextInt(spawnVariance) - spawnVariance / 2);
 					int ssZ = sZ + (worldServer.rand.nextInt(spawnVariance) - spawnVariance / 2);
-					int ssY = worldServer.getHeightValue(ssX, ssZ);
+					int ssY;
 
 					if (creatureType == EnumCreatureType.waterCreature) {
-						ssY -= 2;
+						ssY = sY;
 					} else if (creatureType == EnumCreatureType.ambient) {
-						ssY = worldServer.rand.nextInt(ssY - 1) + 1;
+						ssY = worldServer.rand.nextInt(63) + 1;
+					} else {
+						ssY = worldServer.getHeightValue(ssX, ssZ);
 					}
 
 					if (canCreatureTypeSpawnAtLocation(creatureType, worldServer, ssX, ssY, ssZ)) {
@@ -151,7 +158,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 			return spawnMobsQuickly(par0WorldServer, par1, par2, par3);
 		}
 		double tpsFactor = MinecraftServer.getTPS() / 20;
-		HashMap eligibleChunksForSpawning = new HashMap();
+		HashMap<ChunkCoordIntPair, Boolean> eligibleChunksForSpawning = new HashMap<ChunkCoordIntPair, Boolean>();
 		int var4;
 		int var7;
 
@@ -184,15 +191,15 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 			EnumCreatureType var35 = var33[var34];
 
 			if ((Math.random() < tpsFactor) && ((!var35.getPeacefulCreature() || par2) && (var35.getPeacefulCreature() || par1) && (!var35.getAnimal() || par3) && par0WorldServer.countEntities(var35.getCreatureClass()) <= var35.getMaxNumberOfCreature() * eligibleChunksForSpawning.size() / 256)) {
-				ArrayList<ChunkCoordIntPair> tmp = new ArrayList(eligibleChunksForSpawning.keySet());
+				ArrayList<ChunkCoordIntPair> tmp = new ArrayList<ChunkCoordIntPair>(eligibleChunksForSpawning.keySet());
 				Collections.shuffle(tmp);
-				Iterator var37 = tmp.iterator();
+				Iterator<ChunkCoordIntPair> var37 = tmp.iterator();
 				label110:
 
 				while (var37.hasNext()) {
-					ChunkCoordIntPair var36 = (ChunkCoordIntPair) var37.next();
+					ChunkCoordIntPair var36 = var37.next();
 
-					if (!(Boolean) eligibleChunksForSpawning.get(var36)) {
+					if (!eligibleChunksForSpawning.get(var36)) {
 						ChunkPosition var38 = getRandomSpawningPointInChunk(par0WorldServer, var36.chunkXPos, var36.chunkZPos);
 						int var13 = var38.x;
 						int var14 = var38.y;

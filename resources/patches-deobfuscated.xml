@@ -34,9 +34,6 @@
 			<newInitializer field="doneChunks" code="java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap());"/>
 		</class>
 		<class id="net.minecraft.world.World">
-			<!-- addedEntityList could be added to while looping -->
-			<newField field="TELock" class="java.lang.Object"/>
-			<synchronize field="TELock">addTileEntity(Ljava/util/Collection;)V,setBlockTileEntity,addTileEntity(Lany;)V,getBlockTileEntity</synchronize>
 			<!-- Same list was used by multiple threads -->
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchWorld"/>
 			<public>releaseEntitySkin</public>
@@ -48,7 +45,6 @@
 		</class>
 		<class id="net.minecraft.world.gen.ChunkProviderServer">
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchChunkProviderServer"/>
-			<synchronize field="currentServer.TELock">unload100OldestChunks,unloadAllChunks</synchronize>
 		</class>
 		<class id="net.minecraft.world.chunk.Chunk">
 			<!-- The entity list could be accessed from multiple threads, as usual causes problems during iteration -->
