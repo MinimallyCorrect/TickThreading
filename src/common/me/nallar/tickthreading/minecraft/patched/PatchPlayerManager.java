@@ -1,26 +1,45 @@
 package me.nallar.tickthreading.minecraft.patched;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import me.nallar.tickthreading.Log;
+import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.management.PlayerInstance;
 import net.minecraft.server.management.PlayerManager;
 import net.minecraft.world.ChunkCoordIntPair;
-import net.minecraft.world.WorldProvider;
 import net.minecraft.world.WorldServer;
 
 public abstract class PatchPlayerManager extends PlayerManager {
 	public Object chunkWatcherLock;
 	public Object chunkUpdateLock;
+	@Declare
+	public java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock playerUpdateLock_;
+	@Declare
+	public java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock playersUpdateLock_;
 
 	public void construct() {
 		chunkWatcherLock = new Object();
 		chunkUpdateLock = new Object();
+		ReentrantReadWriteLock reentrantReadWriteLock = new ReentrantReadWriteLock();
+		playersUpdateLock = reentrantReadWriteLock.writeLock();
+		playerUpdateLock = reentrantReadWriteLock.readLock();
 	}
 
 	public PatchPlayerManager(WorldServer par1WorldServer, int par2) {
 		super(par1WorldServer, par2);
+	}
+
+	@Declare
+	public net.minecraft.util.LongHashMap getChunkWatchers() {
+		return this.playerInstances;
+	}
+
+	@Declare
+	public List getChunkWatcherWithPlayers() {
+		return this.chunkWatcherWithPlayers;
 	}
 
 	@Override
@@ -141,6 +160,7 @@ public abstract class PatchPlayerManager extends PlayerManager {
 
 	@Override
 	public void updatePlayerInstances() {
+		playersUpdateLock.lock();
 		try {
 			for (Object chunkWatcherWithPlayer : this.chunkWatcherWithPlayers) {
 				if (chunkWatcherWithPlayer instanceof PlayerInstance) {
@@ -149,6 +169,8 @@ public abstract class PatchPlayerManager extends PlayerManager {
 			}
 		} catch (Exception e) {
 			Log.severe("Failed to send some chunk updates", e);
+		} finally {
+			playersUpdateLock.unlock();
 		}
 
 		this.chunkWatcherWithPlayers.clear();
