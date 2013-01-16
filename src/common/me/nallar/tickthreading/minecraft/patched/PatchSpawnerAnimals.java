@@ -12,6 +12,7 @@ import java.util.Set;
 
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickThreading;
+import net.minecraft.block.Block;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.player.EntityPlayer;
@@ -113,7 +114,8 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 						ssY = worldServer.rand.nextInt(63) + 1;
 					} else {
 						ssY = worldServer.getHeightValue(ssX, ssZ);
-						if (!worldServer.getBlockMaterial(ssX, ssY - 1, ssZ).isOpaque()) {
+						if (!worldServer.getBlockMaterial(ssX, ssY - 1, ssZ).isOpaque() ||
+								!Block.blocksList[worldServer.getBlockId(ssX, ssY - 1, ssZ)].canCreatureSpawn(creatureType, worldServer, ssX, ssY - 1, ssZ)) {
 							continue;
 						}
 					}
@@ -138,11 +140,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 							worldServer.spawnEntityInWorld(spawnedEntity);
 							creatureSpecificInit(spawnedEntity, worldServer, ssX, ssY, ssZ);
 							spawnedMobs++;
-						} else {
-							Log.info("Cancelled gCSH " + creatureType);
 						}
-					} else {
-						Log.info("Cancelled cctsal " + creatureType);
 					}
 				}
 			}
