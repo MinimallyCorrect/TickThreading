@@ -234,7 +234,8 @@
 	</gregTech>
 	<chickenChunks>
 		<class id="codechicken.chunkloader.ChunkLoaderEventHandler">
-			<synchronize>tickEnd,onPlayerLogout,onWorldLoad,onWorldUnload,onChunkForce,onChunkUnForce</synchronize>
+			<newField field="staticLock" class="java.lang.Object" static=""/>
+			<synchronize field="staticLock">tickEnd,onPlayerLogout,onWorldLoad,onWorldUnload,onChunkForce,onChunkUnForce</synchronize>
 		</class>
 	</chickenChunks>
 	<wirelessRedstone>
