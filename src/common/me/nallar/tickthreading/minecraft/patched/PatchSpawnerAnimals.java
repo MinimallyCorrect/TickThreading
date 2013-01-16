@@ -115,7 +115,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 						ssY = worldServer.getHeightValue(ssX, ssZ);
 					}
 
-					if (true || canCreatureTypeSpawnAtLocation(creatureType, worldServer, ssX, ssY, ssZ)) {
+					if (creatureType == EnumCreatureType.waterCreature || !worldServer.getBlockMaterial(ssX, ssY, ssZ).isLiquid()) {
 						SpawnListEntry creatureClass = worldServer.spawnRandomCreature(creatureType, ssX, ssY, ssZ);
 						if (creatureClass == null) {
 							break;
