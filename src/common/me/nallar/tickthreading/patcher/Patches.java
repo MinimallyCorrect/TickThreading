@@ -367,7 +367,7 @@ public class Patches {
 			CtClass ctClass = ctMethod.getDeclaringClass();
 			CtMethod replacement = CtNewMethod.copy(ctMethod, ctClass, null);
 			ctMethod.setName(ctMethod.getName() + "_nosynchronize");
-			replacement.setBody("synchronized(this." + field + ") { return this." + ctMethod.getName() + "($$); }");
+			replacement.setBody("synchronized(" + field + ") { return this." + ctMethod.getName() + "($$); }");
 			ctClass.addMethod(replacement);
 		}
 	}
