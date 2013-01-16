@@ -112,12 +112,20 @@ public class DeadLockDetector {
 			// Yes, we save multiple times - handleServerStopping may freeze on the same thing we deadlocked on, but if it doesn't might change stuff
 			// which needs to be saved.
 			MinecraftServer minecraftServer = MinecraftServer.getServer();
-			if (!minecraftServer.currentlySaving) {
-				minecraftServer.saveEverything();
-				FMLCommonHandler.instance().handleServerStopping();
-				minecraftServer.saveEverything();
-				minecraftServer.initiateShutdown();
+			if (minecraftServer.currentlySaving) {
+				Log.severe("World state is possibly corrupted! Sleeping for 2 minutes - will force save after.");
+				Log.flush();
+				minecraftServer.currentlySaving = false;
+				try {
+					Thread.sleep(1000 * 120);
+				} catch (InterruptedException ignored) {
+				}
 			}
+			minecraftServer.saveEverything();
+			FMLCommonHandler.instance().handleServerStopping();
+			minecraftServer.saveEverything();
+			minecraftServer.initiateShutdown();
+			Log.flush();
 			if (TickThreading.instance.exitOnDeadlock) {
 				Runtime.getRuntime().halt(1);
 			}
