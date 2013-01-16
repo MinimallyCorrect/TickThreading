@@ -198,6 +198,9 @@
 		<class id="com.eloraam.redpower.core.TubeFlow">
 			<synchronize>add</synchronize>
 		</class>
+		<class id="com.eloraam.redpower.core.PipeLib">
+			<replaceMethodCall index="0" code="{ $_ = null; }" method="printf">registerForgeFluid</replaceMethodCall>
+		</class>
 	</redPowerCore>
 	<industrialCraft>
 		<class id="ic2.core.EnergyNet">
