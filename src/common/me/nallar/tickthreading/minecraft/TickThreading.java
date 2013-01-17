@@ -119,8 +119,8 @@ public class TickThreading {
 		shouldLoadSpawnProperty.comment = "Whether chunks within 200 blocks of world spawn points should always be loaded. Recommended to use Forge's dormant chunk cache if this is enabled";
 		Property enableFastMobSpawningProperty = config.get(Configuration.CATEGORY_GENERAL, "enableFastMobSpawning", enableFastMobSpawning);
 		enableFastMobSpawningProperty.comment = "If enabled, TT's alternative mob spawning implementation will be used. This is experimental!";
-		Property disabledFastMobSpawningDimensionsProperty = config.get(Configuration.CATEGORY_GENERAL, "disabledFastMobSpawningDimensions", "-1");
-		disabledFastMobSpawningDimensionsProperty.comment = "Comma-delimited list of dimensions not to enable fast spawning in.";
+		Property disabledFastMobSpawningDimensionsProperty = config.get(Configuration.CATEGORY_GENERAL, "disableFastMobSpawningDimensions", new int[] {-1});
+		disabledFastMobSpawningDimensionsProperty.comment = "List of dimensions not to enable fast spawning in.";
 		config.save();
 
 		TicksCommand.name = ticksCommandName.value;
