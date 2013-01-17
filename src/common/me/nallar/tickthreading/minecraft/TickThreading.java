@@ -3,6 +3,7 @@ package me.nallar.tickthreading.minecraft;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -56,6 +57,7 @@ public class TickThreading {
 	public int deadLockTime = 30;
 	public boolean aggressiveTicks = true;
 	public boolean enableFastMobSpawning = false;
+	private HashSet<Integer> disabledFastMobSpawningDimensions = new HashSet<Integer>();
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load
@@ -117,6 +119,8 @@ public class TickThreading {
 		shouldLoadSpawnProperty.comment = "Whether chunks within 200 blocks of world spawn points should always be loaded. Recommended to use Forge's dormant chunk cache if this is enabled";
 		Property enableFastMobSpawningProperty = config.get(Configuration.CATEGORY_GENERAL, "enableFastMobSpawning", enableFastMobSpawning);
 		enableFastMobSpawningProperty.comment = "If enabled, TT's alternative mob spawning implementation will be used. This is experimental!";
+		Property disabledFastMobSpawningDimensionsProperty = config.get(Configuration.CATEGORY_GENERAL, "disabledFastMobSpawningDimensions", "-1");
+		disabledFastMobSpawningDimensionsProperty.comment = "Comma-delimited list of dimensions not to enable fast spawning in.";
 		config.save();
 
 		TicksCommand.name = ticksCommandName.value;
@@ -136,6 +140,11 @@ public class TickThreading {
 		requireOpForTicksCommand = requireOpForTicksCommandProperty.getBoolean(requireOpForTicksCommand);
 		aggressiveTicks = aggressiveTicksProperty.getBoolean(aggressiveTicks);
 		shouldLoadSpawn = shouldLoadSpawnProperty.getBoolean(shouldLoadSpawn);
+		int[] disabledDimensions = disabledFastMobSpawningDimensionsProperty.getIntList();
+		disabledFastMobSpawningDimensions = new HashSet<Integer>(disabledDimensions.length);
+		for (int disabledDimension : disabledDimensions) {
+			disabledFastMobSpawningDimensions.add(disabledDimension);
+		}
 	}
 
 	@Mod.ServerStarting
@@ -213,5 +222,9 @@ public class TickThreading {
 
 	public List<TickManager> getManagers() {
 		return new ArrayList<TickManager>(managers.values());
+	}
+
+	public boolean shouldFastSpawn(World world) {
+		return this.enableFastMobSpawning && !disabledFastMobSpawningDimensions.contains(world.provider.dimensionId);
 	}
 }

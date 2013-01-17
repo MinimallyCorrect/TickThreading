@@ -163,7 +163,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 		if (!par1 && !par2) {
 			return 0;
 		}
-		if (TickThreading.instance.enableFastMobSpawning && !"Nether".equals(par0WorldServer.provider.getDimensionName())) {
+		if (TickThreading.instance.shouldFastSpawn(par0WorldServer)) {
 			return spawnMobsQuickly(par0WorldServer, par1, par2, par3);
 		}
 		double tpsFactor = MinecraftServer.getTPS() / 20;
