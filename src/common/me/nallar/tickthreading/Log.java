@@ -177,6 +177,6 @@ public class Log {
 	}
 
 	public static String name(World world) {
-		return world.getWorldInfo().getWorldName() + '/' + world.provider.getDimensionName() + (world.isRemote ? "-r" : "");
+		return world.provider.getDimensionName() + '/' + world.provider.dimensionId + (world.isRemote ? "-r" : "");
 	}
 }
