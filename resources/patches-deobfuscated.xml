@@ -276,6 +276,26 @@
 		</class>
 	</soulShards>
 	<extraBiomesXL>
+		<class id="extrabiomes.module.summa.worldgen.WorldGenLegendOak$TreeBlock">
+			<synchronize>loadCustomBlocks</synchronize>
+			<insertBefore code="if (loadedCustomBlocks) { return; }">loadCustomBlocks</insertBefore>
+		</class>
+		<class id="extrabiomes.module.summa.worldgen.WorldGenFirTreeHuge$TreeBlock">
+			<synchronize>loadCustomBlocks</synchronize>
+			<insertBefore code="if (loadedCustomBlocks) { return; }">loadCustomBlocks</insertBefore>
+		</class>
+		<class id="extrabiomes.module.summa.worldgen.WorldGenFirTree$TreeBlock">
+			<synchronize>loadCustomBlocks</synchronize>
+			<insertBefore code="if (loadedCustomBlocks) { return; }">loadCustomBlocks</insertBefore>
+		</class>
+		<class id="extrabiomes.module.summa.worldgen.WorldGenAutumnTree$AutumnTreeType">
+			<synchronize>loadCustomBlocks</synchronize>
+			<insertBefore code="if (loadedCustomBlocks) { return; }">loadCustomBlocks</insertBefore>
+		</class>
+		<class id="extrabiomes.module.summa.worldgen.WorldGenAcacia$TreeBlock">
+			<synchronize>loadCustomBlocks</synchronize>
+			<insertBefore code="if (loadedCustomBlocks) { return; }">loadCustomBlocks</insertBefore>
+		</class>
 		<class id="extrabiomes.module.summa.worldgen.WorldGenRedwood$TreeBlock">
 			<synchronize>loadCustomBlocks</synchronize>
 			<insertBefore code="if (loadedCustomBlocks) { return; }">loadCustomBlocks</insertBefore>
