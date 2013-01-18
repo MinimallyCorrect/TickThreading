@@ -19,6 +19,7 @@
 		</class>
 		<class id="net.minecraft.network.packet.Packet51MapChunk">
 			<volatile field="chunkData"/>
+			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchPacket51MapChunk"/>
 		</class>
 		<class id="net.minecraft.network.packet.Packet56MapChunks">
 			<volatile field="field_73587_e"/>

@@ -211,6 +211,9 @@ public class Patches {
 						ctBehavior.insertAfter("{ if(!this.isConstructed) { this.isConstructed = true; this.construct(); } }");
 					}
 				}
+				if (("staticConstruct").equals(added.getName())) {
+					ctClass.makeClassInitializer().insertAfter("{ staticConstruct(); }");
+				}
 			}
 		}
 		for (CtClass CtInterface : from.getInterfaces()) {

@@ -225,6 +225,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		return currentTPS;
 	}
 
+	@Override
 	@Declare
 	public void doWorldTick() {
 		int i;
@@ -263,6 +264,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		}
 	}
 
+	@Override
 	@Declare
 	public void saveEverything() {
 		if (this.isServerRunning() && !currentlySaving) {

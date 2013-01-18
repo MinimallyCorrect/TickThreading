@@ -32,11 +32,13 @@ public abstract class PatchPlayerManager extends PlayerManager {
 		super(par1WorldServer, par2);
 	}
 
+	@Override
 	@Declare
 	public net.minecraft.util.LongHashMap getChunkWatchers() {
 		return this.playerInstances;
 	}
 
+	@Override
 	@Declare
 	public List getChunkWatcherWithPlayers() {
 		return this.chunkWatcherWithPlayers;
