@@ -275,4 +275,9 @@
 			<replaceMethodCall index="0" code="{}" method="println">processShard</replaceMethodCall>
 		</class>
 	</soulShards>
+	<extraBiomesXL>
+		<class id="extrabiomes.module.summa.worldgen.WorldGenRedwood$TreeBlock">
+			<synchronize>getID,getMetadata</synchronize>
+		</class>
+	</extraBiomesXL>
 </mods>
