@@ -1,5 +1,8 @@
 package me.nallar.tickthreading.minecraft.patched;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import me.nallar.tickthreading.minecraft.TickThreading;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
@@ -16,9 +19,11 @@ import net.minecraftforge.common.ForgeChunkManager;
 
 public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 	public Object chunkLoadLock;
+	public Map<Long, Object> chunkLoadLocks;
 
 	public void construct() {
 		chunkLoadLock = new Object();
+		chunkLoadLocks = new HashMap<Long, Object>();
 	}
 
 	public PatchChunkProviderServer(WorldServer par1WorldServer, IChunkLoader par2IChunkLoader, IChunkProvider par3IChunkProvider) {
@@ -73,8 +78,8 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 	}
 
 	@Override
-	public Chunk loadChunk(int par1, int par2) {
-		long var3 = ChunkCoordIntPair.chunkXZ2Int(par1, par2);
+	public Chunk loadChunk(int x, int z) {
+		long var3 = ChunkCoordIntPair.chunkXZ2Int(x, z);
 		this.chunksToUnload.remove(Long.valueOf(var3));
 		Chunk var5 = (Chunk) this.loadedChunkHashMap.getValueByKey(var3);
 
@@ -82,26 +87,25 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 			return var5;
 		}
 
-		synchronized (chunkLoadLock) {
+		synchronized (getLock(x, z)) {
 			var5 = (Chunk) this.loadedChunkHashMap.getValueByKey(var3);
 			if (var5 != null) {
 				return var5;
 			}
 			var5 = ForgeChunkManager.fetchDormantChunk(var3, currentServer);
 			if (var5 == null) {
-				var5 = this.safeLoadChunk(par1, par2);
+				var5 = this.safeLoadChunk(x, z);
 			}
-
 			if (var5 == null) {
 				if (this.currentChunkProvider == null) {
 					var5 = this.defaultEmptyChunk;
 				} else {
 					try {
-						var5 = this.currentChunkProvider.provideChunk(par1, par2);
+						var5 = this.currentChunkProvider.provideChunk(x, z);
 					} catch (Throwable var9) {
 						CrashReport var7 = CrashReport.makeCrashReport(var9, "Exception generating new chunk");
 						CrashReportCategory var8 = var7.makeCategory("Chunk to be generated");
-						var8.addCrashSection("Location", String.format("%d,%d", par1, par2));
+						var8.addCrashSection("Location", String.format("%d,%d", x, z));
 						var8.addCrashSection("Position hash", var3);
 						var8.addCrashSection("Generator", this.currentChunkProvider.makeString());
 						throw new ReportedException(var7);
@@ -115,10 +119,31 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 			if (var5 == null) {
 				throw new IllegalStateException("Null chunk was provided!");
 			}
+
+			var5.onChunkLoad();
+			var5.populateChunk(this, this, x, z);
 		}
-		var5.onChunkLoad();
-		var5.populateChunk(this, this, par1, par2);
+		chunkLoadLocks.remove(hash(x, z));
 
 		return var5;
+	}
+
+	public Object getLock(int x, int z) {
+		long hash = hash(x, z);
+		Object lock = chunkLoadLocks.get(hash);
+		if (lock == null) {
+			synchronized (chunkLoadLock) {
+				lock = chunkLoadLocks.get(hash);
+				if (lock == null) {
+					lock = new Object();
+					chunkLoadLocks.put(hash, lock);
+				}
+			}
+		}
+		return lock;
+	}
+
+	private static long hash(int x, int y) {
+		return (((long) x) << 32) | (y & 0xffffffffL);
 	}
 }
