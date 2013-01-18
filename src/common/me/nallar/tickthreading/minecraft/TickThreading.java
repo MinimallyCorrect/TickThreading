@@ -59,6 +59,7 @@ public class TickThreading {
 	public boolean enableFastMobSpawning = false;
 	private HashSet<Integer> disabledFastMobSpawningDimensions = new HashSet<Integer>();
 	private boolean waitForEntityTick = true;
+	public int chunkCacheSize = 0;
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load
@@ -120,10 +121,12 @@ public class TickThreading {
 		shouldLoadSpawnProperty.comment = "Whether chunks within 200 blocks of world spawn points should always be loaded. Recommended to use Forge's dormant chunk cache if this is enabled";
 		Property enableFastMobSpawningProperty = config.get(Configuration.CATEGORY_GENERAL, "enableFastMobSpawning", enableFastMobSpawning);
 		enableFastMobSpawningProperty.comment = "If enabled, TT's alternative mob spawning implementation will be used. This is experimental!";
-		Property disabledFastMobSpawningDimensionsProperty = config.get(Configuration.CATEGORY_GENERAL, "disableFastMobSpawningDimensions", new int[] {-1});
+		Property disabledFastMobSpawningDimensionsProperty = config.get(Configuration.CATEGORY_GENERAL, "disableFastMobSpawningDimensions", new int[]{-1});
 		disabledFastMobSpawningDimensionsProperty.comment = "List of dimensions not to enable fast spawning in.";
 		Property waitForEntityTickProperty = config.get(Configuration.CATEGORY_GENERAL, "waitForEntityTick", waitForEntityTick);
 		waitForEntityTickProperty.comment = "Whether we should wait until all Tile/Entity tick threads are finished before moving on with world tick. False = experimental, but may improve performance.";
+		Property chunkCacheSizeProperty = config.get(Configuration.CATEGORY_GENERAL, "chunkCacheSize", chunkCacheSize);
+		chunkCacheSizeProperty.comment = "Number of unloaded chunks to keep cached. Replacement for Forge's dormant chunk cache, which tends to break.";
 		config.save();
 
 		TicksCommand.name = ticksCommandName.value;
@@ -132,6 +135,7 @@ public class TickThreading {
 		regionSize = regionSizeProperty.getInt(regionSize);
 		saveInterval = saveIntervalProperty.getInt(saveInterval);
 		deadLockTime = deadLockTimeProperty.getInt(deadLockTime);
+		chunkCacheSize = chunkCacheSizeProperty.getInt(chunkCacheSize);
 		enableEntityTickThreading = enableEntityTickThreadingProperty.getBoolean(enableEntityTickThreading);
 		enableTileEntityTickThreading = enableTileEntityTickThreadingProperty.getBoolean(enableTileEntityTickThreading);
 		variableTickRate = variableTickRateProperty.getBoolean(variableTickRate);

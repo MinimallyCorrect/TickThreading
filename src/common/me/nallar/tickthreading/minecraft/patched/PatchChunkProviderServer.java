@@ -62,7 +62,6 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 				this.chunksToUnload.remove(var2);
 				this.loadedChunkHashMap.remove(var2);
 				this.loadedChunks.remove(var3);
-				ForgeChunkManager.putDormantChunk(ChunkCoordIntPair.chunkXZ2Int(var3.xPosition, var3.zPosition), var3);
 				if (loadedChunks.size() == 0 && ForgeChunkManager.getPersistentChunksFor(currentServer).size() == 0 && !DimensionManager.shouldLoadSpawn(currentServer.provider.dimensionId)) {
 					DimensionManager.unloadWorld(currentServer.provider.dimensionId);
 					return currentChunkProvider.unload100OldestChunks();
@@ -92,10 +91,7 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 			if (var5 != null) {
 				return var5;
 			}
-			var5 = ForgeChunkManager.fetchDormantChunk(var3, currentServer);
-			if (var5 == null) {
-				var5 = this.safeLoadChunk(x, z);
-			}
+			var5 = this.safeLoadChunk(x, z);
 			if (var5 == null) {
 				if (this.currentChunkProvider == null) {
 					var5 = this.defaultEmptyChunk;

@@ -94,6 +94,7 @@ public class PrePatcher {
 			sourceString = sourceString.replace("    boolean isOutputEncrypted;", "    public boolean isOutputEncrypted;");
 			sourceString = sourceString.replace("    PlayerManager myManager;", "    public PlayerManager myManager;");
 			sourceString = sourceString.replace(" final ", " ");
+			sourceString = sourceString.replace("\nclass", "\npublic class");
 			Matcher privateMatcher = privatePattern.matcher(sourceString);
 			sourceString = privateMatcher.replaceAll("$1protected");
 			try {
