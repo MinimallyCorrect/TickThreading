@@ -301,4 +301,10 @@
 			<insertBefore code="if (loadedCustomBlocks) { return; }">loadCustomBlocks</insertBefore>
 		</class>
 	</extraBiomesXL>
+	<factorization>
+		<class id="factorization.api.Charge">
+			<newField field="staticLock" class="java.lang.Object" static=""/>
+			<synchronize field="staticLock">createOrJoinConductorSet</synchronize>
+		</class>
+	</factorization>
 </mods>
