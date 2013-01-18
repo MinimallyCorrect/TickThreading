@@ -176,6 +176,10 @@
 			-->
 			<newInitializer field="travelingEntities" class="java.util.concurrent.ConcurrentHashMap"/>
 		</class>
+		<class id="buildcraft.transport.PipeTransportPower">
+			<newField field="staticLock" class="java.lang.Object" static=""/>
+			<synchronize field="staticLock">updateEntity</synchronize>
+		</class>
 	</buildCraftTransport>
 	<thermalExpansionTransport>
 		<class id="thermalexpansion.transport.tileentity.TileConduitEnergy">
@@ -208,11 +212,7 @@
 			<replaceMethodCall index="1" method="warning" code="{}">emitEnergyFrom</replaceMethodCall>
 			<newInitializer field="energySourceToEnergyPathMap" code="java.util.Collections.synchronizedMap(new java.util.WeakHashMap&lt;Class, Object&gt;());"/>
 			<newInitializer field="entityLivingToShockEnergyMap" code="java.util.Collections.synchronizedMap(new java.util.WeakHashMap&lt;Class, Object&gt;());"/>
-			<newField field="readWriteLock" class="me.nallar.tickthreading.util.TwoWayReentrantReadWriteLock"/>
-			<newField field="writeLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>
-			<newField field="readLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.readLock();"/>
-			<lock field="writeLock">addTileEntity,removeTileEntity</lock>
-			<lock field="readLock">emitEnergyFrom,discover</lock>
+			<synchronize>addTileEntity,removeTileEntity,emitEnergyFrom,discover</synchronize>
 			<replaceMethod
 							code="{
 							ic2.core.EnergyNet energyNet = (ic2.core.EnergyNet) worldToEnergyNetMap.get($1);

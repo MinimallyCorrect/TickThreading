@@ -84,6 +84,9 @@ public class EntityTickRegion extends TickRegion {
 	@Override
 	public void processChanges() {
 		synchronized (tickStateLock) {
+			if (ticking) {
+				return;
+			}
 			entitySet.addAll(toAdd);
 			entitySet.removeAll(toRemove);
 			toAdd.clear();
