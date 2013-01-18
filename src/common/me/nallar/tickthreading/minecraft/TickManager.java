@@ -36,7 +36,7 @@ public class TickManager {
 	public Object entityLock = new Object();
 
 	public TickManager(World world, int regionSize, int threads) {
-		threadManager = new ThreadManager(threads == 0 ? (Runtime.getRuntime().availableProcessors() * 3) / 2 : threads, "Tick Thread for " + Log.name(world));
+		threadManager = new ThreadManager(threads == 0 ? Runtime.getRuntime().availableProcessors() : threads, "Tick Thread for " + Log.name(world));
 		this.world = world;
 		this.regionSize = regionSize;
 	}
