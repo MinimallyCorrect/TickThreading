@@ -277,7 +277,8 @@
 	</soulShards>
 	<extraBiomesXL>
 		<class id="extrabiomes.module.summa.worldgen.WorldGenRedwood$TreeBlock">
-			<synchronize>getID,getMetadata</synchronize>
+			<synchronize>loadCustomBlocks</synchronize>
+			<insertBefore code="if (loadedCustomBlocks) { return; }">loadCustomBlocks</insertBefore>
 		</class>
 	</extraBiomesXL>
 </mods>
