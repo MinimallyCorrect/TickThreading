@@ -34,8 +34,10 @@ public class TickManager {
 	private final Map<Class<?>, Integer> entityClassToCountMap = new HashMap<Class<?>, Integer>();
 	public Object tileEntityLock = new Object();
 	public Object entityLock = new Object();
+	private final boolean waitForCompletion;
 
-	public TickManager(World world, int regionSize, int threads) {
+	public TickManager(World world, int regionSize, int threads, boolean waitForCompletion) {
+		this.waitForCompletion = waitForCompletion;
 		threadManager = new ThreadManager(threads == 0 ? Runtime.getRuntime().availableProcessors() : threads, "Tile/Entity Tick for " + Log.name(world));
 		this.world = world;
 		this.regionSize = regionSize;
@@ -193,7 +195,9 @@ public class TickManager {
 			world.theProfiler.profilingEnabled = false;
 		}
 		threadManager.runList(tickRegions);
-		threadManager.waitForCompletion();
+		if (waitForCompletion) {
+			threadManager.waitForCompletion();
+		}
 		threadManager.run(new Runnable() {
 			@Override
 			public void run() {

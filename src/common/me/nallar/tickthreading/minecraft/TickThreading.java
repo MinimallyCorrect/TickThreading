@@ -58,6 +58,7 @@ public class TickThreading {
 	public boolean aggressiveTicks = true;
 	public boolean enableFastMobSpawning = false;
 	private HashSet<Integer> disabledFastMobSpawningDimensions = new HashSet<Integer>();
+	private boolean waitForEntityTick = true;
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load
@@ -121,6 +122,8 @@ public class TickThreading {
 		enableFastMobSpawningProperty.comment = "If enabled, TT's alternative mob spawning implementation will be used. This is experimental!";
 		Property disabledFastMobSpawningDimensionsProperty = config.get(Configuration.CATEGORY_GENERAL, "disableFastMobSpawningDimensions", new int[] {-1});
 		disabledFastMobSpawningDimensionsProperty.comment = "List of dimensions not to enable fast spawning in.";
+		Property waitForEntityTickProperty = config.get(Configuration.CATEGORY_GENERAL, "waitForEntityTick", waitForEntityTick);
+		waitForEntityTickProperty.comment = "Whether we should wait until all Tile/Entity tick threads are finished before moving on with world tick. False = experimental, but may improve performance.";
 		config.save();
 
 		TicksCommand.name = ticksCommandName.value;
@@ -140,6 +143,7 @@ public class TickThreading {
 		requireOpForTicksCommand = requireOpForTicksCommandProperty.getBoolean(requireOpForTicksCommand);
 		aggressiveTicks = aggressiveTicksProperty.getBoolean(aggressiveTicks);
 		shouldLoadSpawn = shouldLoadSpawnProperty.getBoolean(shouldLoadSpawn);
+		waitForEntityTick = waitForEntityTickProperty.getBoolean(waitForEntityTick);
 		int[] disabledDimensions = disabledFastMobSpawningDimensionsProperty.getIntList();
 		disabledFastMobSpawningDimensions = new HashSet<Integer>(disabledDimensions.length);
 		for (int disabledDimension : disabledDimensions) {
@@ -168,7 +172,7 @@ public class TickThreading {
 
 	@ForgeSubscribe
 	public void onWorldLoad(WorldEvent.Load event) {
-		TickManager manager = new TickManager(event.world, regionSize, tickThreads);
+		TickManager manager = new TickManager(event.world, regionSize, tickThreads, waitForEntityTick);
 		manager.setVariableTickRate(variableTickRate);
 		try {
 			if (enableTileEntityTickThreading) {
