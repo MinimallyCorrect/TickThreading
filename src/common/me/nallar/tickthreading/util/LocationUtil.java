@@ -2,8 +2,8 @@ package me.nallar.tickthreading.util;
 
 import java.io.File;
 import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.patcher.PatchMain;
@@ -37,13 +37,16 @@ public enum LocationUtil {
 		return directoryOf(PatchMain.class).getParentFile();
 	}
 
-	public
-	static File getModsDirectory() {
+	public static File getCoreModsDirectory() {
+		return new File(getServerDirectory(), "coremods");
+	}
+
+	public static File getModsDirectory() {
 		return new File(getServerDirectory(), "mods");
 	}
 
-	public static Set<File> getJarLocations() {
-		Set<File> jarLocations = new HashSet<File>();
+	public static List<File> getJarLocations() {
+		List<File> jarLocations = new ArrayList<File>();
 		File forgeJar = locationOf(net.minecraft.server.MinecraftServer.class);
 		// Tuple = class not likely to be modified by forge
 		// Minecraft and forge aren't necessarily in the same place
@@ -52,6 +55,7 @@ public enum LocationUtil {
 			jarLocations.add(forgeJar.getParentFile());
 		}
 		jarLocations.add(minecraftJar);
+		jarLocations.add(getCoreModsDirectory());
 		jarLocations.add(getModsDirectory());
 		return jarLocations;
 	}
