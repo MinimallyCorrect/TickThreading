@@ -27,8 +27,8 @@ import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.SpawnListEntry;
 
 public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
-	private static long hash(long x, long y) {
-		return (x << 32) | y;
+	private static long hash(int x, int y) {
+		return (((long) x) << 32) | (y & 0xffffffffL);
 	}
 
 	private static final int closeRange = 1;
