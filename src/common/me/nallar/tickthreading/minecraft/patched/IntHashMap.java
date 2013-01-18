@@ -264,7 +264,7 @@ public abstract class IntHashMap extends net.minecraft.util.IntHashMap {
 
 			for (; index < keys.length; index++) {
 				if (keys[index] != null) {
-					for (; innerIndex < keys[index].length; innerIndex++) {
+					if (innerIndex < keys[index].length) {
 						int key = keys[index][innerIndex];
 						Object value = values[index][innerIndex];
 						if (key == EMPTY_KEY) {

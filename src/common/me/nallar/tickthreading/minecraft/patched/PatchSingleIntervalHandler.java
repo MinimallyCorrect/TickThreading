@@ -11,7 +11,7 @@ import net.minecraft.server.MinecraftServer;
 public abstract class PatchSingleIntervalHandler extends SingleIntervalHandler {
 	public static Profiler theProfiler = null;
 
-	public void construct() {
+	public static void staticConstruct() {
 		theProfiler = MinecraftServer.getServer().theProfiler;
 	}
 

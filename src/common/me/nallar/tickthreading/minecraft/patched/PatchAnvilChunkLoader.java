@@ -25,15 +25,16 @@ public class PatchAnvilChunkLoader extends AnvilChunkLoader {
 		super(par1File);
 	}
 
+	@Override
 	public Chunk loadChunk(World par1World, int par2, int par3) throws IOException {
 		NBTTagCompound var4 = null;
 		ChunkCoordIntPair var5 = new ChunkCoordIntPair(par2, par3);
 
 		synchronized (this.syncLockObject) {
 			if (this.pendingAnvilChunksCoordinates.contains(var5)) {
-				for (int var7 = 0; var7 < this.chunksToRemove.size(); ++var7) {
-					if (((AnvilChunkLoaderPending) this.chunksToRemove.get(var7)).chunkCoordinate.equals(var5)) {
-						var4 = ((AnvilChunkLoaderPending) this.chunksToRemove.get(var7)).nbtTags;
+				for (Object aChunksToRemove : this.chunksToRemove) {
+					if (((AnvilChunkLoaderPending) aChunksToRemove).chunkCoordinate.equals(var5)) {
+						var4 = ((AnvilChunkLoaderPending) aChunksToRemove).nbtTags;
 						break;
 					}
 				}
@@ -42,16 +43,16 @@ public class PatchAnvilChunkLoader extends AnvilChunkLoader {
 
 		if (var4 == null) {
 			var4 = chunkCache.getIfPresent(hash(par2, par3));
-		}
 
-		if (var4 == null) {
-			DataInputStream var10 = RegionFileCache.getChunkInputStream(this.chunkSaveLocation, par2, par3);
+			if (var4 == null) {
+				DataInputStream var10 = RegionFileCache.getChunkInputStream(this.chunkSaveLocation, par2, par3);
 
-			if (var10 == null) {
-				return null;
+				if (var10 == null) {
+					return null;
+				}
+
+				var4 = CompressedStreamTools.read(var10);
 			}
-
-			var4 = CompressedStreamTools.read(var10);
 		}
 
 		return this.checkedReadChunkFromNBT(par1World, par2, par3, var4);
@@ -59,8 +60,7 @@ public class PatchAnvilChunkLoader extends AnvilChunkLoader {
 
 	@Override
 	public boolean writeNextIO() {
-		AnvilChunkLoaderPending var1 = null;
-		Object var2 = this.syncLockObject;
+		AnvilChunkLoaderPending var1;
 
 		synchronized (this.syncLockObject) {
 			if (this.chunksToRemove.isEmpty()) {
