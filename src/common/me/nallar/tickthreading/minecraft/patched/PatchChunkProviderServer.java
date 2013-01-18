@@ -1,12 +1,14 @@
 package me.nallar.tickthreading.minecraft.patched;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import me.nallar.tickthreading.minecraft.TickThreading;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.util.ChunkCoordinates;
+import net.minecraft.util.IProgressUpdate;
 import net.minecraft.util.ReportedException;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.WorldServer;
@@ -61,10 +63,12 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 				this.safeSaveExtraChunkData(var3);
 				this.chunksToUnload.remove(var2);
 				this.loadedChunkHashMap.remove(var2);
-				this.loadedChunks.remove(var3);
-				if (loadedChunks.size() == 0 && ForgeChunkManager.getPersistentChunksFor(currentServer).size() == 0 && !DimensionManager.shouldLoadSpawn(currentServer.provider.dimensionId)) {
-					DimensionManager.unloadWorld(currentServer.provider.dimensionId);
-					return currentChunkProvider.unload100OldestChunks();
+				synchronized (loadedChunks) {
+					this.loadedChunks.remove(var3);
+					if (loadedChunks.size() == 0 && ForgeChunkManager.getPersistentChunksFor(currentServer).size() == 0 && !DimensionManager.shouldLoadSpawn(currentServer.provider.dimensionId)) {
+						DimensionManager.unloadWorld(currentServer.provider.dimensionId);
+						return currentChunkProvider.unload100OldestChunks();
+					}
 				}
 			}
 
@@ -110,7 +114,9 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 			}
 
 			this.loadedChunkHashMap.add(var3, var5);
-			this.loadedChunks.add(var5);
+			synchronized (loadedChunks) {
+				this.loadedChunks.add(var5);
+			}
 
 			if (var5 == null) {
 				throw new IllegalStateException("Null chunk was provided!");
@@ -122,6 +128,53 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 		chunkLoadLocks.remove(hash(x, z));
 
 		return var5;
+	}
+
+	@Override
+	public void unloadAllChunks() {
+		synchronized (loadedChunks) {
+			Iterator var1 = this.loadedChunks.iterator();
+
+			while (var1.hasNext()) {
+				Chunk var2 = (Chunk) var1.next();
+				this.unloadChunksIfNotNearSpawn(var2.xPosition, var2.zPosition);
+			}
+		}
+	}
+
+	@Override
+	public boolean saveChunks(boolean par1, IProgressUpdate par2IProgressUpdate) {
+		int var3 = 0;
+
+		synchronized (loadedChunks) {
+			for (int var4 = 0; var4 < this.loadedChunks.size(); ++var4) {
+				Chunk var5 = (Chunk) this.loadedChunks.get(var4);
+
+				if (par1) {
+					this.safeSaveExtraChunkData(var5);
+				}
+
+				if (var5.needsSaving(par1)) {
+					this.safeSaveChunk(var5);
+					var5.isModified = false;
+					++var3;
+
+					if (var3 == 24 && !par1) {
+						return false;
+					}
+				}
+			}
+		}
+
+		if (par1) {
+			if (this.currentChunkLoader == null) {
+				return true;
+			}
+
+			this.currentChunkLoader.saveExtraData();
+		}
+
+		return true;
 	}
 
 	public Object getLock(int x, int z) {
