@@ -255,8 +255,9 @@ public class TickManager {
 				.row((time * 2d) + "%");
 	}
 
-	public String getDetailedStats() {
-		StringBuilder stats = new StringBuilder();
+	public TableFormatter writeDetailedStats(TableFormatter tf) {
+		@SuppressWarnings ("MismatchedQueryAndUpdateOfStringBuilder")
+		StringBuilder stats = tf.sb;
 		stats.append("World: ").append(Log.name(world)).append('\n');
 		stats.append("---- Slowest tick regions ----").append('\n');
 		// TODO: Rewrite this
@@ -284,7 +285,7 @@ public class TickManager {
 		stats.append("\nMax tick time: ").append(maxTickTime).append("ms");
 		stats.append("\nEffective tick time: ").append(lastTickLength).append("ms");
 		stats.append("\nAverage effective tick time: ").append(averageTickLength).append("ms");
-		return stats.toString();
+		return tf;
 	}
 
 	public int getEntityCount(Class<?> clazz) {

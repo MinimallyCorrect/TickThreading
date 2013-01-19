@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import me.nallar.tickthreading.Log;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 

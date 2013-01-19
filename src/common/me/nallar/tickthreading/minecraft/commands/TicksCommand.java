@@ -4,6 +4,7 @@ import java.util.List;
 
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickThreading;
+import me.nallar.tickthreading.util.TableFormatter;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
@@ -34,6 +35,6 @@ public class TicksCommand extends Command {
 			Log.info("Usage: /ticks [dimensionid]");
 			return;
 		}
-		sendChat(commandSender, TickThreading.instance.getManager(world).getDetailedStats());
+		sendChat(commandSender, String.valueOf(TickThreading.instance.getManager(world).writeDetailedStats(new TableFormatter())));
 	}
 }
