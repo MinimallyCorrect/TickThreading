@@ -20,12 +20,17 @@ import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.ForgeChunkManager;
 
 public abstract class PatchChunkProviderServer extends ChunkProviderServer {
+	public static Object genLock;
 	public Object chunkLoadLock;
 	public Map<Long, Object> chunkLoadLocks;
 
 	public void construct() {
 		chunkLoadLock = new Object();
 		chunkLoadLocks = new HashMap<Long, Object>();
+	}
+
+	public static void staticConstruct() {
+		genLock = new Object();
 	}
 
 	public PatchChunkProviderServer(WorldServer par1WorldServer, IChunkLoader par2IChunkLoader, IChunkProvider par3IChunkProvider) {
@@ -90,7 +95,7 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 			return var5;
 		}
 
-		synchronized (ChunkProviderServer.class) {
+		synchronized (getLock(x, z)) {
 			var5 = (Chunk) this.loadedChunkHashMap.getValueByKey(var3);
 			if (var5 != null) {
 				return var5;
@@ -101,9 +106,7 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 					var5 = this.defaultEmptyChunk;
 				} else {
 					try {
-						synchronized (ChunkProviderServer.class) {
-							var5 = this.currentChunkProvider.provideChunk(x, z);
-						}
+						var5 = this.currentChunkProvider.provideChunk(x, z);
 					} catch (Throwable var9) {
 						CrashReport var7 = CrashReport.makeCrashReport(var9, "Exception generating new chunk");
 						CrashReportCategory var8 = var7.makeCategory("Chunk to be generated");
@@ -126,7 +129,7 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 
 			var5.onChunkLoad();
 
-			synchronized (ChunkProviderServer.class) {
+			synchronized (genLock) {
 				// Prevent concurrent chunk generation, it can be buggy
 				var5.populateChunk(this, this, x, z);
 			}
