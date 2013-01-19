@@ -147,9 +147,6 @@ public class ClassRegistry {
 		String packageName = getPackage(className);
 		File location = classNameToLocation.get(className);
 		if (packageLocations.containsKey(packageName)) {
-			if (!packageName.isEmpty()) {
-				Log.fine("Marking files for " + packageName + " as dirty");
-			}
 			for (Map.Entry<String, Set<File>> entry : packageLocations.entrySet()) {
 				if (entry.getValue().contains(location)) {
 					updatedFiles.addAll(packageLocations.get(entry.getKey()));
