@@ -136,6 +136,9 @@
 		<class id="net.minecraft.network.TcpConnection">
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchTcpConnection"/>
 		</class>
+		<class id="net.minecraft.entity.ai.EntityAITasks">
+			<synchronize>addTask,func_85156_a,onUpdateTasks,func_75775_b</synchronize>
+		</class>
 	</minecraftCommon>
 	<forgeModLoader>
 		<class id="cpw.mods.fml.common.FMLModContainer">
