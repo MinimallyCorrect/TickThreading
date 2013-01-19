@@ -90,7 +90,7 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 			return var5;
 		}
 
-		synchronized (getLock(x, z)) {
+		synchronized (ChunkProviderServer.class) {
 			var5 = (Chunk) this.loadedChunkHashMap.getValueByKey(var3);
 			if (var5 != null) {
 				return var5;
