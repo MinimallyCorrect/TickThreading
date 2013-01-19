@@ -1,5 +1,6 @@
 package me.nallar.tickthreading.util;
 
+import javax.swing.text.NumberFormatter;
 import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.List;
@@ -18,6 +19,15 @@ public class TableFormatter {
 
 	public TableFormatter row(String data) {
 		currentData.add(data);
+		return this;
+	}
+
+	public TableFormatter row(float data) {
+		return row((double) data);
+	}
+
+	public TableFormatter row(double data) {
+		currentData.add(format(data, 3));
 		return this;
 	}
 
@@ -50,7 +60,7 @@ public class TableFormatter {
 		currentData.clear();
 	}
 
-	private int getMaxLengths(int[] rowLengths, int rowIndex, int rowCount, Iterable<String> stringIterable) {
+	private static int getMaxLengths(int[] rowLengths, int rowIndex, int rowCount, Iterable<String> stringIterable) {
 		for (String data : stringIterable) {
 			if (rowLengths[rowIndex % rowCount] < data.length()) {
 				rowLengths[rowIndex % rowCount] = data.length();
@@ -58,5 +68,27 @@ public class TableFormatter {
 			rowIndex++;
 		}
 		return rowIndex;
+	}
+
+	private static final int POW10[] = {1, 10, 100, 1000, 10000, 100000, 1000000};
+
+	/*
+	 * http://stackoverflow.com/a/10554128/250076
+	 */
+	private static String format(double val, int precision) {
+		StringBuilder sb = new StringBuilder();
+		if (val < 0) {
+			sb.append('-');
+			val = -val;
+		}
+		int exp = POW10[precision];
+		long lval = (long)(val * exp + 0.5);
+		sb.append(lval / exp).append('.');
+		long fval = lval % exp;
+		for (int p = precision - 1; p > 0 && fval < POW10[p]; p--) {
+			sb.append('0');
+		}
+		sb.append(fval);
+		return sb.toString();
 	}
 }

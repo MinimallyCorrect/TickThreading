@@ -249,10 +249,10 @@ public class TickManager {
 		}
 		tf
 				.row(Log.name(world))
-				.row(String.valueOf(Math.min(1000 / time, 20)))
+				.row(Math.min(1000 / time, 20))
 				.row(String.valueOf(entityList.size()))
 				.row(String.valueOf(tileEntityList.size()))
-				.row((time * 2) + "%");
+				.row((time * 2d) + "%");
 	}
 
 	public String getDetailedStats() {
