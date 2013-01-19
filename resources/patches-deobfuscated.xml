@@ -223,8 +223,7 @@
 		</class>
 		<class id="com.eloraam.redpower.core.TubeFlow">
 			<newField field="staticLock" class="java.lang.Object" static=""/>
-			<synchronize>add,onRemove,update</synchronize>
-			<synchronize field="staticLock">update</synchronize>
+			<synchronize field="staticLock">update,add,onRemove</synchronize>
 			<!-- Possibly buggy but fast fix
 			<replaceField field="contents" class="me.nallar.tickthreading.collections.ConcurrentLinkedQueueList" type="java.util.List"/>
 			-->
