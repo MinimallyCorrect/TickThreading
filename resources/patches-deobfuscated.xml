@@ -163,12 +163,9 @@
 			<!-- ಠ_ಠ -->
 			<synchronize>findLightAirParent</synchronize>
 		</class>
-		<class id="factorization.ConductorSet">
-			<synchronize>update</synchronize>
-		</class>
-		<class id="factorization.api.Charge">
+		<class id="factorization.common.TileEntityWire.g">
 			<newField field="staticLock" class="java.lang.Object" static=""/>
-			<synchronize field="staticLock">createOrJoinConductorSet</synchronize>
+			<synchronize field="staticLock">g</synchronize>
 		</class>
 	</factorization>
 	<liteLoader>
