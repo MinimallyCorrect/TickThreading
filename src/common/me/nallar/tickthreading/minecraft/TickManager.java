@@ -13,6 +13,7 @@ import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.tickregion.EntityTickRegion;
 import me.nallar.tickthreading.minecraft.tickregion.TickRegion;
 import me.nallar.tickthreading.minecraft.tickregion.TileEntityTickRegion;
+import me.nallar.tickthreading.util.TableFormatter;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
@@ -236,7 +237,7 @@ public class TickManager {
 		return (maxTickTime > 55 && variableTickRate) ? 55 : maxTickTime;
 	}
 
-	public String getBasicStats() {
+	public void writeBasicStats(TableFormatter tf) {
 		long timeTotal = 0;
 		long[] tickTimes = MinecraftServer.getServer().worldTickTimes.get(world.provider.dimensionId);
 		for (long tick : tickTimes) {
@@ -246,7 +247,12 @@ public class TickManager {
 		if (time == 0) {
 			time = 0.1;
 		}
-		return Log.name(world) + ": " + Math.min(1000 / time, 20) + "tps, " + entityList.size() + " entities, " + tileEntityList.size() + " tileEntities, load: " + (time * 2) + "%\n";
+		tf
+				.row(Log.name(world))
+				.row(String.valueOf(Math.min(1000 / time, 20)))
+				.row(String.valueOf(entityList.size()))
+				.row(String.valueOf(tileEntityList.size()))
+				.row((time * 2) + "%");
 	}
 
 	public String getDetailedStats() {

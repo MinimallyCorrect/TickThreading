@@ -4,6 +4,7 @@ import java.util.List;
 
 import me.nallar.tickthreading.minecraft.TickManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
+import me.nallar.tickthreading.util.TableFormatter;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 
@@ -22,11 +23,18 @@ public class TPSCommand extends Command {
 
 	@Override
 	public void processCommand(ICommandSender commandSender, List<String> arguments) {
-		StringBuilder tpsReport = new StringBuilder();
-		tpsReport.append("---- TPS Report ----\n");
+		TableFormatter tf = new TableFormatter();
+		StringBuilder tpsReport = tf.sb;
+		tf
+				.heading("World")
+				.heading("TPS")
+				.heading("Entities")
+				.heading("Tiles")
+				.heading("Load");
 		for (TickManager tickManager : TickThreading.instance.getManagers()) {
-			tpsReport.append(tickManager.getBasicStats());
+			tickManager.writeBasicStats(tf);
 		}
+		tf.finishTable();
 		float usedTime = MinecraftServer.getTickTime();
 		tpsReport.append("\nUsed time per tick: ").append(usedTime).append("ms")
 				.append("\nOverall TPS: ").append(MinecraftServer.getTPS())
