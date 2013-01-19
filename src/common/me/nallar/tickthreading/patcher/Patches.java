@@ -281,6 +281,32 @@ public class Patches {
 	}
 
 	@Patch (
+			requiredAttributes = "field"
+	)
+	public void replaceField(CtClass ctClass, Map<String, String> attributes) throws NotFoundException, CannotCompileException, IOException {
+		String field = attributes.get("field");
+		String clazz = attributes.get("class");
+		String type = attributes.get("type");
+		if (type == null) {
+			type = clazz;
+		}
+		String initialise = attributes.get("code");
+		String arraySize = attributes.get("arraySize");
+		initialise = "{ " + field + " = " + (initialise == null ? ("new " + clazz + (arraySize == null ? "()" : '[' + arraySize + ']')) : initialise) + "; }";
+		CtField oldField = ctClass.getDeclaredField(field);
+		oldField.setName(oldField.getName() + "_old");
+		CtField newField = new CtField(classRegistry.getClass(type), field, ctClass);
+		newField.setModifiers(oldField.getModifiers());
+		ctClass.addField(newField);
+		for (CtConstructor ctConstructor : ctClass.getConstructors()) {
+			ctConstructor.insertAfter(initialise);
+		}
+		if (clazz != null) {
+			classRegistry.add(ctClass, clazz);
+		}
+	}
+
+	@Patch (
 			requiredAttributes = "field,class"
 	)
 	public void newField(CtClass ctClass, Map<String, String> attributes) throws NotFoundException, CannotCompileException, IOException {
