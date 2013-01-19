@@ -60,7 +60,7 @@ public class TickThreading {
 	public boolean enableFastMobSpawning = false;
 	private HashSet<Integer> disabledFastMobSpawningDimensions = new HashSet<Integer>();
 	private boolean waitForEntityTick = true;
-	public int chunkCacheSize = 0;
+	public int chunkCacheSize = 500;
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load
