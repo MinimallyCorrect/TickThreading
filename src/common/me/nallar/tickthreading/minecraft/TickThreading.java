@@ -33,7 +33,7 @@ import net.minecraftforge.event.ForgeSubscribe;
 import net.minecraftforge.event.world.WorldEvent;
 
 @SuppressWarnings ("WeakerAccess")
-@Mod (modid = "TickThreading", name = "TickThreading", version = "1.0")
+@Mod (modid = "TickThreading", name = "TickThreading", version = "@MOD_VERSION@")
 @NetworkMod (clientSideRequired = false, serverSideRequired = false)
 public class TickThreading {
 	private static final int loadedEntityFieldIndex = 0;

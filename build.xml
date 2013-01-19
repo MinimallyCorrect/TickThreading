@@ -148,6 +148,12 @@
 		<!-- Copy sources -->
 		<copy todir="${mcpsrc.dir}/minecraft">
 			<fileset dir="${src.dir}/common"/>
+			<filterset>
+				<filter token="MC_VERSION" value="${mc.version}"/>
+				<filter token="MOD_VERSION" value="${project.version.full}"/>
+				<filter token="MOD_ID" value="${ant.project.name}"/>
+				<filter token="MOD_NAME" value="${ant.project.name}"/>
+			</filterset>
 		</copy>
 
 		<!-- Copy libs -->
