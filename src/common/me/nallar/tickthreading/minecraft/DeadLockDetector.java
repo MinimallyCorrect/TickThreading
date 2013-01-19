@@ -127,7 +127,11 @@ public class DeadLockDetector {
 			minecraftServer.initiateShutdown();
 			Log.flush();
 			if (TickThreading.instance.exitOnDeadlock) {
-				Runtime.getRuntime().halt(1);
+				try {
+					Thread.sleep(30000);
+				} catch (InterruptedException ignored) {
+				}
+				Runtime.getRuntime().exit(1);
 			}
 			return false;
 		}
