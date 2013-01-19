@@ -10,7 +10,6 @@ import net.minecraft.command.ICommandSender;
 
 abstract class Command extends CommandBase {
 	static void sendChat(ICommandSender commandSender, String message) {
-		Log.info(message);
 		while (message != null) {
 			int nlIndex = message.indexOf('\n');
 			String sent;
