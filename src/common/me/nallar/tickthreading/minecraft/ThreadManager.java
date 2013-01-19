@@ -87,7 +87,6 @@ public class ThreadManager {
 				while ((c = index.getAndIncrement()) < size) {
 					tasks.get(c).run();
 				}
-				// TODO: Move this?
 				AxisAlignedBB.getAABBPool().cleanPool();
 			}
 		};

@@ -90,7 +90,6 @@ public class ClassRegistry {
 
 	void loadJar(JarFile jar) throws IOException {
 		loadZip(jar);
-		// TODO: Remove code signing?
 	}
 
 	void appendClassPath(String path) throws NotFoundException {
