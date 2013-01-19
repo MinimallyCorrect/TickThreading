@@ -71,13 +71,6 @@
 			<!-- Improves performance -->
 			<replaceMethod fromClass="me.nallar.tickthreading.minecraft.patched.PatchAxisAlignedBB">intersectsWith</replaceMethod>
 		</class>
-		<!--
-		<class id="net.minecraft.util.AABBPool">
-			Prevent multiple threads accessing the same AABB
-			Probably not necessary due to pool, unless MC devs messed up.
-			<synchronize>addOrModifyAABBInPool</synchronize>
-		</class>
-		-->
 		<class id="net.minecraft.util.LongHashMap">
 			<replace class="me.nallar.tickthreading.minecraft.patched.LongHashMap"/>
 		</class>
@@ -174,14 +167,6 @@
 			<synchronize>a(Ljava/lang/String;)V,b()V</synchronize>
 		</class>
 	</liteLoader>
-	<!-- Might not be needed
-	<buildCraftAPI>
-		<class id="buildcraft.api.power.PowerProvider">
-			<volatile/>
-			<synchronize/>
-		</class>
-	</buildCraftAPI>
-	-->
 	<buildCraftTransport>
 		<class id="buildcraft.transport.TileGenericPipe">
 			<newField field="staticLock" class="java.lang.Object" static=""/>
@@ -189,9 +174,6 @@
 			<synchronize field="facadeBlocks">blockCreated,getBlockId,getTile,computeConnections</synchronize>
 		</class>
 		<class id="buildcraft.transport.PipeTransportItems">
-			<!--
-			<synchronize field="travelingEntities">moveSolids,entityEntering</synchronize>
-			-->
 			<newInitializer field="travelingEntities" class="java.util.concurrent.ConcurrentHashMap"/>
 		</class>
 		<class id="buildcraft.transport.PipeTransportPower">
@@ -252,19 +234,6 @@
 							>getForWorld</replaceMethod>
 		</class>
 	</industrialCraft>
-	<!--
-	This does not appear to be needed.
-	<stevesCarts>
-		<class id="vswe.stevescarts.Carts.entMCBase">
-			<newField field="staticLock" class="java.lang.Object" static=""/>
-			<synchronize field="staticLock">doUpdate,getCon</synchronize>
-			<synchronize>addModuleClass,d,k_</synchronize>
-		</class>
-		<class id="vswe.stevescarts.PacketHandler">
-			<logExceptions>receivePacketAtCart</logExceptions>
-		</class>
-	</stevesCarts>
-	-->
 	<gregTech>
 		<class id="gregtechmod.GT_Mod">
 			<synchronize>readIDSUData,writeIDSUData</synchronize>
