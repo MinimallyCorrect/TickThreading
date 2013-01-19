@@ -95,6 +95,9 @@
 			<newField static="" field="nextEntityID_" class="java.util.concurrent.atomic.AtomicInteger"/>
 			<insertAfter field="entityId" code="this.$field = this.nextEntityID_.getAndIncrement();"/>
 		</class>
+		<class id="net.minecraft.entity.item.EntityItem">
+			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchEntityItem"/>
+		</class>
 		<class id="net.minecraft.tileentity.TileEntity">
 			<addMethod return="java.lang.String"
 								 name="toString"
