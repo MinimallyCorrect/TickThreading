@@ -52,6 +52,9 @@
 			<newField field="staticLock" class="java.lang.Object" static=""/>
 			<synchronize field="staticLock">provideChunk</synchronize>
 		</class>
+		<class id="net.minecraft.world.chunk.storage.AnvilChunkLoader" env="forge">
+			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchAnvilChunkLoader"/>
+		</class>
 		<class id="net.minecraft.world.chunk.Chunk">
 			<!-- The entity list could be accessed from multiple threads, as usual causes problems during iteration -->
 			<newField field="entityListReadWriteLock" class="me.nallar.tickthreading.util.TwoWayReentrantReadWriteLock"/>
