@@ -11,10 +11,12 @@ import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.mappings.MCPMappings;
 import me.nallar.tickthreading.mappings.Mappings;
 import me.nallar.tickthreading.util.CollectionsUtil;
+import me.nallar.tickthreading.util.VersionUtil;
 import org.xml.sax.SAXException;
 
 public class PatchMain {
 	public static void main(String[] argv) {
+		Log.info("Running " + VersionUtil.versionString());
 		if (argv.length < 1) {
 			Log.severe("Type must be passed");
 			return;

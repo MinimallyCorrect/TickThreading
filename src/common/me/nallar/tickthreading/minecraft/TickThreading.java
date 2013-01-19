@@ -23,6 +23,7 @@ import me.nallar.tickthreading.patcher.PatchManager;
 import me.nallar.tickthreading.util.FieldUtil;
 import me.nallar.tickthreading.util.LocationUtil;
 import me.nallar.tickthreading.util.PatchUtil;
+import me.nallar.tickthreading.util.VersionUtil;
 import net.minecraft.command.ServerCommandManager;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
@@ -158,7 +159,7 @@ public class TickThreading {
 	@Mod.ServerStarting
 	public void serverStarting(FMLServerStartingEvent event) {
 		if (enabled) {
-			Log.severe("TickThreading is installed on this server!"
+			Log.severe(VersionUtil.versionString() + " is installed on this server!"
 					+ "\nIf anything breaks, check if it is still broken without TickThreading"
 					+ "\nWe don't want to annoy mod devs with issue reports caused by TickThreading."
 					+ "\nIf it's only broken with TickThreading, report it at"
