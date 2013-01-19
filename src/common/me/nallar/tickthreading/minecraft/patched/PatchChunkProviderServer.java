@@ -101,7 +101,9 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 					var5 = this.defaultEmptyChunk;
 				} else {
 					try {
-						var5 = this.currentChunkProvider.provideChunk(x, z);
+						synchronized (ChunkProviderServer.class) {
+							var5 = this.currentChunkProvider.provideChunk(x, z);
+						}
 					} catch (Throwable var9) {
 						CrashReport var7 = CrashReport.makeCrashReport(var9, "Exception generating new chunk");
 						CrashReportCategory var8 = var7.makeCategory("Chunk to be generated");
