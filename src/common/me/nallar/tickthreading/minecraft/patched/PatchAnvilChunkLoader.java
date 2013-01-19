@@ -28,7 +28,11 @@ import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import net.minecraft.world.chunk.storage.RegionFileCache;
 
 public abstract class PatchAnvilChunkLoader extends AnvilChunkLoader {
-	private static Cache<Long, NBTTagCompound> chunkCache = CacheBuilder.newBuilder().maximumSize(TickThreading.instance.chunkCacheSize).build();
+	private Cache<Long, NBTTagCompound> chunkCache;
+
+	public void construct() {
+		chunkCache = CacheBuilder.newBuilder().maximumSize(TickThreading.instance.chunkCacheSize).build();
+	}
 
 	public PatchAnvilChunkLoader(File par1File) {
 		super(par1File);
