@@ -123,7 +123,11 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 			}
 
 			var5.onChunkLoad();
-			var5.populateChunk(this, this, x, z);
+
+			synchronized (ChunkProviderServer.class) {
+				// Prevent concurrent chunk generation, it can be buggy
+				var5.populateChunk(this, this, x, z);
+			}
 		}
 		chunkLoadLocks.remove(hash(x, z));
 
