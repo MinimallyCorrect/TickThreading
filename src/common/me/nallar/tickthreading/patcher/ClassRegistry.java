@@ -240,12 +240,11 @@ public class ClassRegistry {
 				ZipEntry zipEntry;
 				while ((zipEntry = zin.getNextEntry()) != null) {
 					String entryName = zipEntry.getName();
-					if (entryName.equals(hashFileName) || additionalClasses.containsKey(entryName) || (entryName.startsWith("META-INF") && !entryName.endsWith("MANIFEST.MF"))) {
+					if (entryName.equals(hashFileName) || additionalClasses.containsKey(entryName) || (entryName.startsWith("META-INF") && !entryName.toUpperCase().endsWith("MANIFEST.MF"))) {
 						// Skip
 					} else if (replacementFiles.containsKey(entryName)) {
 						replacements.add(entryName);
 					} else {
-						// TODO: Ignore meta-inf?
 						zout.putNextEntry(isJar(zipFile) ? new JarEntry(entryName) : new ZipEntry(entryName));
 						ByteStreams.copy(zin, zout);
 					}
