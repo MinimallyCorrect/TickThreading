@@ -161,6 +161,47 @@ public abstract class PatchPlayerManager extends PlayerManager {
 	}
 
 	@Override
+	public void updateMountedMovingPlayer(EntityPlayerMP par1EntityPlayerMP) {
+		synchronized (par1EntityPlayerMP.loadedChunks) {
+			int var2 = (int) par1EntityPlayerMP.posX >> 4;
+			int var3 = (int) par1EntityPlayerMP.posZ >> 4;
+			double var4 = par1EntityPlayerMP.managedPosX - par1EntityPlayerMP.posX;
+			double var6 = par1EntityPlayerMP.managedPosZ - par1EntityPlayerMP.posZ;
+			double var8 = var4 * var4 + var6 * var6;
+
+			if (var8 >= 64.0D) {
+				int var10 = (int) par1EntityPlayerMP.managedPosX >> 4;
+				int var11 = (int) par1EntityPlayerMP.managedPosZ >> 4;
+				int var12 = this.playerViewRadius;
+				int var13 = var2 - var10;
+				int var14 = var3 - var11;
+
+				if (var13 != 0 || var14 != 0) {
+					for (int var15 = var2 - var12; var15 <= var2 + var12; ++var15) {
+						for (int var16 = var3 - var12; var16 <= var3 + var12; ++var16) {
+							if (!this.func_72684_a(var15, var16, var10, var11, var12)) {
+								this.getOrCreateChunkWatcher(var15, var16, true).addPlayerToChunkWatchingList(par1EntityPlayerMP);
+							}
+
+							if (!this.func_72684_a(var15 - var13, var16 - var14, var2, var3, var12)) {
+								PlayerInstance var17 = this.getOrCreateChunkWatcher(var15 - var13, var16 - var14, false);
+
+								if (var17 != null) {
+									var17.sendThisChunkToPlayer(par1EntityPlayerMP);
+								}
+							}
+						}
+					}
+
+					this.filterChunkLoadQueue(par1EntityPlayerMP);
+					par1EntityPlayerMP.managedPosX = par1EntityPlayerMP.posX;
+					par1EntityPlayerMP.managedPosZ = par1EntityPlayerMP.posZ;
+				}
+			}
+		}
+	}
+
+	@Override
 	public void updatePlayerInstances() {
 		playersUpdateLock.lock();
 		try {

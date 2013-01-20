@@ -72,7 +72,7 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 			}
 
 			for (int var1 = 0; var1 < 100 && !this.chunksToUnload_.isEmpty(); ++var1) {
-				Long var2 = (Long) this.chunksToUnload_.iterator().next();
+				Long var2 = this.chunksToUnload_.iterator().next();
 				Chunk var3 = (Chunk) this.loadedChunkHashMap.getValueByKey(var2);
 				var3.onChunkUnload();
 				this.safeSaveChunk(var3);

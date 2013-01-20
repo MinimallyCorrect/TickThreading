@@ -64,15 +64,11 @@ public class TickThreading {
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load
-		if (requirePatched && PatchManager.shouldPatch(LocationUtil.getJarLocations())) {
-			enabled = false;
-			try {
-				PatchUtil.writePatchRunners();
-			} catch (IOException e) {
-				Log.severe("Failed to write patch runners", e);
-			}
-		} else {
-			enabled = true;
+		enabled = !(requirePatched && PatchManager.shouldPatch(LocationUtil.getJarLocations()));
+		try {
+			PatchUtil.writePatchRunners();
+		} catch (IOException e) {
+			Log.severe("Failed to write patch runners", e);
 		}
 		instance = this;
 	}
