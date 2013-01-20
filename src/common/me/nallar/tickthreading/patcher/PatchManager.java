@@ -33,6 +33,7 @@ import me.nallar.tickthreading.mappings.MethodDescription;
 import me.nallar.tickthreading.util.CollectionsUtil;
 import me.nallar.tickthreading.util.DomUtil;
 import me.nallar.tickthreading.util.LocationUtil;
+import me.nallar.tickthreading.util.VersionUtil;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -142,7 +143,7 @@ public class PatchManager {
 		List<Element> modElements = DomUtil.elementList(configDocument.getDocumentElement().getChildNodes());
 		for (Element modElement : modElements) {
 			for (Element classElement : DomUtil.getElementsByTag(modElement, "class")) {
-				hashes.put(classElement.getAttribute("id"), DomUtil.getHash(classElement));
+				hashes.put(classElement.getAttribute("id"), DomUtil.getHash(classElement) + VersionUtil.versionString().hashCode() * 31);
 			}
 		}
 		return hashes;
