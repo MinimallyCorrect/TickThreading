@@ -23,7 +23,7 @@ public class TPSCommand extends Command {
 
 	@Override
 	public void processCommand(ICommandSender commandSender, List<String> arguments) {
-		TableFormatter tf = new TableFormatter();
+		TableFormatter tf = new TableFormatter(commandSender);
 		StringBuilder tpsReport = tf.sb;
 		tf
 				.heading("World")

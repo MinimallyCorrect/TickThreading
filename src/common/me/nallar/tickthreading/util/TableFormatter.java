@@ -1,15 +1,26 @@
 package me.nallar.tickthreading.util;
 
 import java.util.ArrayList;
-import java.util.Formatter;
 import java.util.List;
 
+import me.nallar.tickthreading.util.StringFillers.StringFiller;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.Entity;
+
 public class TableFormatter {
-	public StringBuilder sb = new StringBuilder();
+	public final StringFiller stringFiller;
+	public final StringBuilder sb = new StringBuilder();
 	private List<String> currentHeadings = new ArrayList<String>();
 	private List<String> currentData = new ArrayList<String>();
-	private Formatter fmt = new Formatter(sb);
 	public String splitter = " | ";
+
+	public TableFormatter(ICommandSender commandSender) {
+		this(commandSender instanceof Entity ? StringFiller.CHAT : StringFiller.FIXED_WIDTH);
+	}
+
+	public TableFormatter(StringFiller stringFiller) {
+		this.stringFiller = stringFiller;
+	}
 
 	public TableFormatter heading(String text) {
 		currentHeadings.add(text);
@@ -21,8 +32,12 @@ public class TableFormatter {
 		return this;
 	}
 
-	public TableFormatter row(float data) {
-		return row((double) data);
+	public TableFormatter row(Object data) {
+		return row(String.valueOf(data));
+	}
+
+	public TableFormatter row(int data) {
+		return row(String.valueOf(data));
 	}
 
 	public TableFormatter row(double data) {
@@ -33,21 +48,19 @@ public class TableFormatter {
 	public void finishTable() {
 		int rowIndex = 0;
 		int rowCount = currentHeadings.size();
-		int[] rowLengths = new int[rowCount];
+		double[] rowLengths = new double[rowCount];
 		getMaxLengths(rowLengths, rowIndex, rowCount, currentHeadings);
 		getMaxLengths(rowLengths, rowIndex, rowCount, currentData);
 		String cSplit = "";
 		for (String heading : currentHeadings) {
-			sb.append(cSplit);
-			fmt.format("%" + (rowLengths[rowIndex % rowCount]) + 's', heading);
+			sb.append(cSplit).append(stringFiller.fill(heading, rowLengths[rowIndex % rowCount]));
 			cSplit = splitter;
 			rowIndex++;
 		}
 		sb.append('\n');
 		cSplit = "";
 		for (String data : currentData) {
-			sb.append(cSplit);
-			fmt.format("%" + (rowLengths[rowIndex % rowCount]) + 's', data);
+			sb.append(cSplit).append(stringFiller.fill(data, rowLengths[rowIndex % rowCount]));
 			cSplit = splitter;
 			rowIndex++;
 			if (rowIndex % rowCount == 0) {
@@ -59,10 +72,11 @@ public class TableFormatter {
 		currentData.clear();
 	}
 
-	private static int getMaxLengths(int[] rowLengths, int rowIndex, int rowCount, Iterable<String> stringIterable) {
+	private int getMaxLengths(double[] rowLengths, int rowIndex, int rowCount, Iterable<String> stringIterable) {
 		for (String data : stringIterable) {
-			if (rowLengths[rowIndex % rowCount] < data.length()) {
-				rowLengths[rowIndex % rowCount] = data.length();
+			double length = stringFiller.getLength(data);
+			if (rowLengths[rowIndex % rowCount] < length) {
+				rowLengths[rowIndex % rowCount] = length;
 			}
 			rowIndex++;
 		}

@@ -35,6 +35,6 @@ public class TicksCommand extends Command {
 			Log.info("Usage: /ticks [dimensionid]");
 			return;
 		}
-		sendChat(commandSender, String.valueOf(TickThreading.instance.getManager(world).writeDetailedStats(new TableFormatter())));
+		sendChat(commandSender, String.valueOf(TickThreading.instance.getManager(world).writeDetailedStats(new TableFormatter(commandSender))));
 	}
 }
