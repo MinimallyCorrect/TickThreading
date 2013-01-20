@@ -70,10 +70,10 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 				this.loadedChunkHashMap.remove(var2);
 				synchronized (loadedChunks) {
 					this.loadedChunks.remove(var3);
-					if (loadedChunks.size() == 0 && ForgeChunkManager.getPersistentChunksFor(currentServer).size() == 0 && !DimensionManager.shouldLoadSpawn(currentServer.provider.dimensionId)) {
-						DimensionManager.unloadWorld(currentServer.provider.dimensionId);
-						return currentChunkProvider.unload100OldestChunks();
-					}
+				}
+				if (loadedChunks.size() == 0 && ForgeChunkManager.getPersistentChunksFor(currentServer).size() == 0 && !DimensionManager.shouldLoadSpawn(currentServer.provider.dimensionId)) {
+					DimensionManager.unloadWorld(currentServer.provider.dimensionId);
+					return currentChunkProvider.unload100OldestChunks();
 				}
 			}
 

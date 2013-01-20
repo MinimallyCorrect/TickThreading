@@ -53,7 +53,7 @@ public class TickThreading {
 	public boolean enableChunkTickThreading = true;
 	public boolean enableWorldTickThreading = true;
 	public boolean requireOpForTicksCommand = true;
-	public boolean shouldLoadSpawn = true;
+	public boolean shouldLoadSpawn = false;
 	public int saveInterval = 1800;
 	public int deadLockTime = 30;
 	public boolean aggressiveTicks = true;
@@ -119,7 +119,7 @@ public class TickThreading {
 		Property aggressiveTicksProperty = config.get(Configuration.CATEGORY_GENERAL, "aggressiveTicks", aggressiveTicks);
 		aggressiveTicksProperty.comment = "If false, will use Spigot tick time algorithm which may lead to lower idle load, but worse TPS if ticks are spiking.";
 		Property shouldLoadSpawnProperty = config.get(Configuration.CATEGORY_GENERAL, "shouldLoadSpawn", shouldLoadSpawn);
-		shouldLoadSpawnProperty.comment = "Whether chunks within 200 blocks of world spawn points should always be loaded. Recommended to use Forge's dormant chunk cache if this is enabled";
+		shouldLoadSpawnProperty.comment = "Whether chunks within 200 blocks of world spawn points should always be loaded.";
 		Property enableFastMobSpawningProperty = config.get(Configuration.CATEGORY_GENERAL, "enableFastMobSpawning", enableFastMobSpawning);
 		enableFastMobSpawningProperty.comment = "If enabled, TT's alternative mob spawning implementation will be used. This is experimental!";
 		Property disabledFastMobSpawningDimensionsProperty = config.get(Configuration.CATEGORY_GENERAL, "disableFastMobSpawningDimensions", new int[]{-1});
