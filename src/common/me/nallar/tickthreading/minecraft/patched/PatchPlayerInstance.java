@@ -57,6 +57,8 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 
 				this.myManager.getWorldServer().theChunkProviderServer.unloadChunksIfNotNearSpawn(this.chunkLocation.chunkXPos, this.chunkLocation.chunkZPos);
 			}
+		} else {
+			throw new IllegalStateException("Player " + par1EntityPlayerMP + " was not already watching " + this);
 		}
 	}
 
