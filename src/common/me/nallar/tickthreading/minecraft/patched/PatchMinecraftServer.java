@@ -259,7 +259,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			this.theProfiler.startSection("tracker");
 			var4.getEntityTracker().updateTrackedEntities();
 			this.theProfiler.endSection();
-			if (this.tickCounter % 10000 == 0) {
+			if (this.tickCounter % TickThreading.instance.chunkGCInterval == 0) {
 				ChunkGarbageCollector.garbageCollect(var4);
 			}
 			this.theProfiler.endSection();

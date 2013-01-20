@@ -60,7 +60,8 @@ public class TickThreading {
 	public boolean enableFastMobSpawning = false;
 	private HashSet<Integer> disabledFastMobSpawningDimensions = new HashSet<Integer>();
 	private boolean waitForEntityTick = true;
-	public int chunkCacheSize = 500;
+	public int chunkCacheSize = 2000;
+	public int chunkGCInterval = 5000;
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load
@@ -124,6 +125,8 @@ public class TickThreading {
 		waitForEntityTickProperty.comment = "Whether we should wait until all Tile/Entity tick threads are finished before moving on with world tick. False = experimental, but may improve performance.";
 		Property chunkCacheSizeProperty = config.get(Configuration.CATEGORY_GENERAL, "chunkCacheSize", chunkCacheSize);
 		chunkCacheSizeProperty.comment = "Number of unloaded chunks to keep cached. Replacement for Forge's dormant chunk cache, which tends to break.";
+		Property chunkGCIntervalProperty = config.get(Configuration.CATEGORY_GENERAL, "chunkGCInterval", chunkGCInterval);
+		chunkGCIntervalProperty.comment = "Interval between chunk garbage collections in ticks";
 		config.save();
 
 		TicksCommand.name = ticksCommandName.value;
@@ -133,6 +136,7 @@ public class TickThreading {
 		saveInterval = saveIntervalProperty.getInt(saveInterval);
 		deadLockTime = deadLockTimeProperty.getInt(deadLockTime);
 		chunkCacheSize = chunkCacheSizeProperty.getInt(chunkCacheSize);
+		chunkGCInterval = chunkGCIntervalProperty.getInt(chunkGCInterval);
 		enableEntityTickThreading = enableEntityTickThreadingProperty.getBoolean(enableEntityTickThreading);
 		enableTileEntityTickThreading = enableTileEntityTickThreadingProperty.getBoolean(enableTileEntityTickThreading);
 		variableTickRate = variableTickRateProperty.getBoolean(variableTickRate);
