@@ -105,7 +105,11 @@
 			<lock field="writeLock">addEntityToTracker(Lnet/minecraft/entity/Entity;)V,addEntityToTracker(Lnet/minecraft/entity/Entity;IIZ)V,removeEntityFromAllTrackingPlayers</lock>
 			<lock field="readLock">updateTrackedEntities,removeAllTrackingPlayers,func_85172_a</lock>
 		</class>
+		<class id="net.minecraft.village.Village">
+			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchVillage"/>
+		</class>
 		<class id="net.minecraft.village.VillageCollection">
+			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchVillageCollection"/>
 			<!-- Literally the most useless collection. Locking instead of voiding in case it ever does something useful in future -->
 			<newField field="readWriteLock" class="me.nallar.tickthreading.util.TwoWayReentrantReadWriteLock"/>
 			<newField field="writeLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>

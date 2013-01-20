@@ -282,7 +282,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 	@Override
 	protected void initialWorldChunkLoad() {
-		if (TickThreading.instance.shouldLoadSpawn) {
+		if (!TickThreading.instance.shouldLoadSpawn) {
 			return;
 		}
 		int loadedChunks = 0;
