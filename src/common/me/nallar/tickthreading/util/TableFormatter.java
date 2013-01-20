@@ -15,7 +15,11 @@ public class TableFormatter {
 	public String splitter = " | ";
 
 	public TableFormatter(ICommandSender commandSender) {
-		this(commandSender instanceof Entity ? StringFiller.CHAT : StringFiller.FIXED_WIDTH);
+		boolean chat = commandSender instanceof Entity;
+		stringFiller = chat ? StringFiller.CHAT : StringFiller.FIXED_WIDTH;
+		if (chat) {
+			splitter = " " + ChatFormat.YELLOW + '|' + ChatFormat.RESET + ' ';
+		}
 	}
 
 	public TableFormatter(StringFiller stringFiller) {

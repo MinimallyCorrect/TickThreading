@@ -2,6 +2,7 @@ package me.nallar.tickthreading.minecraft.patched;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -9,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.google.common.collect.Sets;
 
 import me.nallar.tickthreading.minecraft.TickThreading;
+import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.util.ChunkCoordinates;
@@ -69,7 +71,7 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 				this.chunksToUnloadSet.remove(ChunkCoordIntPair.chunkXZ2Int(forced.chunkXPos, forced.chunkZPos));
 			}
 
-			for (int var1 = 0; var1 < 100 && !this.chunksToUnloadSet.isEmpty(); ++var1) {
+			for (int var1 = 0; var1 < 200 && !this.chunksToUnloadSet.isEmpty(); ++var1) {
 				Long var2 = this.chunksToUnloadSet.iterator().next();
 				Chunk var3 = (Chunk) this.loadedChunkHashMap.getValueByKey(var2);
 				var3.onChunkUnload();
@@ -190,6 +192,16 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 		}
 
 		return true;
+	}
+
+	@Declare
+	public List<Chunk> getLoadedChunks() {
+		return loadedChunks;
+	}
+
+	@Declare
+	public Set<Long> getChunksToUnloadSet() {
+		return chunksToUnloadSet;
 	}
 
 	public Object getLock(int x, int z) {

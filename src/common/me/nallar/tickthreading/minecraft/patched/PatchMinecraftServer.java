@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import me.nallar.tickthreading.Log;
+import me.nallar.tickthreading.minecraft.ChunkGarbageCollector;
 import me.nallar.tickthreading.minecraft.ThreadManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
@@ -258,6 +259,9 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			this.theProfiler.startSection("tracker");
 			var4.getEntityTracker().updateTrackedEntities();
 			this.theProfiler.endSection();
+			if (this.tickCounter % 10000 == 0) {
+				ChunkGarbageCollector.garbageCollect(var4);
+			}
 			this.theProfiler.endSection();
 
 			worldTickTimes.get(id)[this.tickCounter % 100] = System.nanoTime() - var2;

@@ -9,7 +9,6 @@ import me.nallar.tickthreading.util.ChatFormat;
 /**
  * Derived from https://github.com/andfRa/Saga/blob/master/src/org/saga/utility/chat/ChatFiller.java
  */
-
 class ChatStringFiller extends StringFiller {
 	public final static double DEFAULT_LENGTH = 3.0 / 2.0;
 	private final static double MAX_GAP = 1.25;
