@@ -164,7 +164,8 @@ public class TickThreading {
 			serverCommandManager.registerCommand(new TicksCommand());
 			serverCommandManager.registerCommand(new TPSCommand());
 		} else {
-			Log.severe("TickThreading is disabled, because your server has not been patched!" +
+			Log.severe("TickThreading is disabled, because your server has not been patched" +
+					" or the patches are out of date" +
 					"\nTo patch your server, simply run the PATCHME.bat/sh file in your server directory");
 		}
 	}
