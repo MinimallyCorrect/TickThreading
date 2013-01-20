@@ -18,6 +18,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 
 public class TickManager {
 	public final int regionSize;
@@ -237,7 +238,7 @@ public class TickManager {
 		return (maxTickTime > 55 && variableTickRate) ? 55 : maxTickTime;
 	}
 
-	public void writeBasicStats(TableFormatter tf) {
+	public void writeStats(TableFormatter tf) {
 		long timeTotal = 0;
 		long[] tickTimes = MinecraftServer.getServer().worldTickTimes.get(world.provider.dimensionId);
 		for (long tick : tickTimes) {
@@ -252,6 +253,7 @@ public class TickManager {
 				.row(Math.min(1000 / time, 20))
 				.row(String.valueOf(entityList.size()))
 				.row(String.valueOf(tileEntityList.size()))
+				.row(world instanceof WorldServer ? String.valueOf(((WorldServer) world).theChunkProviderServer.getLoadedChunkCount()) : "0")
 				.row((time * 2d) + "%");
 	}
 

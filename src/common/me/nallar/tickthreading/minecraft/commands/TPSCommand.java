@@ -30,9 +30,10 @@ public class TPSCommand extends Command {
 				.heading("TPS")
 				.heading("Entities")
 				.heading("Tiles")
+				.heading("Chunks")
 				.heading("Load");
 		for (TickManager tickManager : TickThreading.instance.getManagers()) {
-			tickManager.writeBasicStats(tf);
+			tickManager.writeStats(tf);
 		}
 		tf.finishTable();
 		float usedTime = MinecraftServer.getTickTime();
