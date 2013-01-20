@@ -170,7 +170,7 @@ public abstract class PatchPlayerManager extends PlayerManager {
 				}
 			}
 		} catch (Exception e) {
-			Log.severe("Failed to send some chunk updates", e);
+			Log.severe("Failed to unload some chunks", e);
 		} finally {
 			playersUpdateLock.unlock();
 		}
