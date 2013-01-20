@@ -156,9 +156,9 @@
 			<!-- ಠ_ಠ -->
 			<synchronize>findLightAirParent</synchronize>
 		</class>
-		<class id="factorization.common.TileEntityWire.g">
+		<class id="factorization.api.Charge">
 			<newField field="staticLock" class="java.lang.Object" static=""/>
-			<synchronize field="staticLock">g</synchronize>
+			<synchronize field="staticLock">update</synchronize>
 		</class>
 	</factorization>
 	<liteLoader>

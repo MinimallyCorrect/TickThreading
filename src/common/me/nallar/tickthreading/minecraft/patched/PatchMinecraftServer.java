@@ -269,9 +269,11 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	public void saveEverything() {
 		if (this.isServerRunning() && !currentlySaving) {
 			currentlySaving = true;
-			this.saveAllWorlds(false);
 			this.serverConfigManager.saveAllPlayerData();
 			this.saveAllWorlds(false);
+			for (WorldServer world : this.worldServers) {
+				world.flush();
+			}
 			currentlySaving = false;
 		} else {
 			Log.severe("Server is already saving or crashed while saving - not attempting to save.");
