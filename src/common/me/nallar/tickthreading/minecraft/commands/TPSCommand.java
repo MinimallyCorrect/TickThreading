@@ -5,6 +5,7 @@ import java.util.List;
 import me.nallar.tickthreading.minecraft.TickManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.util.TableFormatter;
+import me.nallar.tickthreading.util.VersionUtil;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 
@@ -25,6 +26,7 @@ public class TPSCommand extends Command {
 	public void processCommand(ICommandSender commandSender, List<String> arguments) {
 		TableFormatter tf = new TableFormatter(commandSender);
 		StringBuilder tpsReport = tf.sb;
+		tpsReport.append(VersionUtil.versionString()).append('\n');
 		tf
 				.heading("World")
 				.heading("TPS")
