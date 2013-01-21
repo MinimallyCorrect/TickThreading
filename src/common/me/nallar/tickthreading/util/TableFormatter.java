@@ -92,7 +92,7 @@ public class TableFormatter {
 	/*
 	 * http://stackoverflow.com/a/10554128/250076
 	 */
-	private static String formatDoubleWithPrecision(double val, int precision) {
+	public static String formatDoubleWithPrecision(double val, int precision) {
 		StringBuilder sb = new StringBuilder();
 		if (val < 0) {
 			sb.append('-');

@@ -254,7 +254,7 @@ public class TickManager {
 				.row(String.valueOf(entityList.size()))
 				.row(String.valueOf(tileEntityList.size()))
 				.row(world instanceof WorldServer ? String.valueOf(((WorldServer) world).theChunkProviderServer.getLoadedChunkCount()) : "0")
-				.row((time * 2d) + "%");
+				.row(TableFormatter.formatDoubleWithPrecision(time * 2d, 3) + '%');
 	}
 
 	public TableFormatter writeDetailedStats(TableFormatter tf) {
