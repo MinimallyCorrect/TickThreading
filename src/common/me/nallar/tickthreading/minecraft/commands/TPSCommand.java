@@ -39,7 +39,7 @@ public class TPSCommand extends Command {
 		}
 		tf.finishTable();
 		float usedTime = MinecraftServer.getTickTime();
-		tpsReport.append("\nUsed time per tick: ").append(usedTime).append("ms")
+		tpsReport
 				.append("\nOverall TPS: ").append(MinecraftServer.getTPS())
 				.append("\nOverall load: ").append(usedTime * 2).append('%');
 		sendChat(commandSender, tpsReport.toString());
