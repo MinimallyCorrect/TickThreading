@@ -55,7 +55,8 @@ public abstract class PatchAnvilChunkLoader extends AnvilChunkLoader {
 		}
 
 		if (var4 == null) {
-			var4 = chunkCache.getIfPresent(hash(par2, par3));
+			long cacheHash = hash(par2, par3);
+			var4 = chunkCache.getIfPresent(cacheHash);
 
 			if (var4 == null) {
 				DataInputStream var10 = RegionFileCache.getChunkInputStream(this.chunkSaveLocation, par2, par3);
@@ -65,6 +66,8 @@ public abstract class PatchAnvilChunkLoader extends AnvilChunkLoader {
 				}
 
 				var4 = CompressedStreamTools.read(var10);
+			} else {
+				chunkCache.invalidate(cacheHash);
 			}
 		}
 
