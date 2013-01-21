@@ -31,12 +31,10 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 	public static Object genLock;
 	public Object chunkLoadLock;
 	public Map<Long, Object> chunkLoadLocks;
-	public Set<Long> chunksToUnloadSet;
 
 	public void construct() {
 		chunkLoadLock = new Object();
 		chunkLoadLocks = new HashMap<Long, Object>();
-		chunksToUnloadSet = Sets.newSetFromMap(new ConcurrentHashMap<Long, Boolean>());
 	}
 
 	public static void staticConstruct() {
@@ -58,10 +56,10 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 			short var6 = 128;
 
 			if (var4 < -var6 || var4 > var6 || var5 < -var6 || var5 > var6) {
-				this.chunksToUnloadSet.add(hash);
+				this.chunksToUnload.add(hash);
 			}
 		} else {
-			this.chunksToUnloadSet.add(hash);
+			this.chunksToUnload.add(hash);
 		}
 	}
 
@@ -69,16 +67,16 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 	public boolean unload100OldestChunks() {
 		if (!this.currentServer.canNotSave) {
 			for (ChunkCoordIntPair forced : currentServer.getPersistentChunks().keySet()) {
-				this.chunksToUnloadSet.remove(ChunkCoordIntPair.chunkXZ2Int(forced.chunkXPos, forced.chunkZPos));
+				this.chunksToUnload.remove(ChunkCoordIntPair.chunkXZ2Int(forced.chunkXPos, forced.chunkZPos));
 			}
 
-			for (int var1 = 0; var1 < 200 && !this.chunksToUnloadSet.isEmpty(); ++var1) {
-				Long var2 = this.chunksToUnloadSet.iterator().next();
+			for (int var1 = 0; var1 < 200 && !this.chunksToUnload.isEmpty(); ++var1) {
+				Long var2 = (Long) this.chunksToUnload.iterator().next();
 				Chunk var3 = (Chunk) this.loadedChunkHashMap.getValueByKey(var2);
 				var3.onChunkUnload();
 				this.safeSaveChunk(var3);
 				this.safeSaveExtraChunkData(var3);
-				this.chunksToUnloadSet.remove(var2);
+				this.chunksToUnload.remove(var2);
 				this.loadedChunkHashMap.remove(var2);
 				synchronized (loadedChunks) {
 					this.loadedChunks.remove(var3);
@@ -126,7 +124,7 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 	@Override
 	public Chunk loadChunk(int x, int z) {
 		long var3 = ChunkCoordIntPair.chunkXZ2Int(x, z);
-		this.chunksToUnloadSet.remove(Long.valueOf(var3));
+		this.chunksToUnload.remove(Long.valueOf(var3));
 		Chunk var5 = (Chunk) this.loadedChunkHashMap.getValueByKey(var3);
 
 		if (var5 != null) {
@@ -230,7 +228,7 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 
 	@Declare
 	public Set<Long> getChunksToUnloadSet() {
-		return chunksToUnloadSet;
+		return chunksToUnload;
 	}
 
 	public Object getLock(int x, int z) {
