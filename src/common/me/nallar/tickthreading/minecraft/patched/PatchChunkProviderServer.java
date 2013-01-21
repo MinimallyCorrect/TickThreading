@@ -49,7 +49,6 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 	public void unloadChunksIfNotNearSpawn(int par1, int par2) {
 		long hash = ChunkCoordIntPair.chunkXZ2Int(par1, par2);
 		if (loadedChunkHashMap.getValueByKey(hash) == null) {
-			throw new IllegalStateException("x, z:" + par1 + ',' + par2 + " can't be unloaded - it isn't loaded yet!");
 		} else if (TickThreading.instance.shouldLoadSpawn && this.currentServer.provider.canRespawnHere() && DimensionManager.shouldLoadSpawn(currentServer.provider.dimensionId)) {
 			ChunkCoordinates var3 = this.currentServer.getSpawnPoint();
 			int var4 = par1 * 16 + 8 - var3.posX;
