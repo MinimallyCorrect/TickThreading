@@ -9,6 +9,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.common.collect.Sets;
 
+import cpw.mods.fml.common.FMLLog;
+import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.crash.CrashReport;
@@ -96,6 +98,32 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 	}
 
 	@Override
+	protected Chunk safeLoadChunk(int x, int z) {
+		if (this.currentChunkLoader == null) {
+			return null;
+		} else {
+			try {
+				Chunk chunk = this.currentChunkLoader.loadChunk(this.currentServer, x, z);
+
+				if (chunk != null) {
+					chunk.lastSaveTime = this.currentServer.getTotalWorldTime();
+
+					if (this.currentChunkProvider != null) {
+						synchronized (genLock) {
+							this.currentChunkProvider.recreateStructures(x, z);
+						}
+					}
+				}
+
+				return chunk;
+			} catch (Exception e) {
+				FMLLog.severe("Failed to load chunk", e);
+				return null;
+			}
+		}
+	}
+
+	@Override
 	public Chunk loadChunk(int x, int z) {
 		long var3 = ChunkCoordIntPair.chunkXZ2Int(x, z);
 		this.chunksToUnloadSet.remove(Long.valueOf(var3));
@@ -116,7 +144,9 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 					var5 = this.defaultEmptyChunk;
 				} else {
 					try {
-						var5 = this.currentChunkProvider.provideChunk(x, z);
+						synchronized (genLock) {
+							var5 = this.currentChunkProvider.provideChunk(x, z);
+						}
 					} catch (Throwable var9) {
 						CrashReport var7 = CrashReport.makeCrashReport(var9, "Exception generating new chunk");
 						CrashReportCategory var8 = var7.makeCategory("Chunk to be generated");
