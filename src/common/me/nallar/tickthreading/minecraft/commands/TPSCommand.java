@@ -25,8 +25,7 @@ public class TPSCommand extends Command {
 	@Override
 	public void processCommand(ICommandSender commandSender, List<String> arguments) {
 		TableFormatter tf = new TableFormatter(commandSender);
-		StringBuilder tpsReport = tf.sb;
-		tpsReport.append(VersionUtil.versionString()).append('\n');
+		tf.sb.append(VersionUtil.versionString()).append('\n');
 		tf
 				.heading("World")
 				.heading("TPS")
@@ -37,11 +36,14 @@ public class TPSCommand extends Command {
 		for (TickManager tickManager : TickThreading.instance.getManagers()) {
 			tickManager.writeStats(tf);
 		}
+		tf
+				.row("Overall")
+				.row(MinecraftServer.getTPS())
+				.row("")
+				.row("")
+				.row("")
+				.row(MinecraftServer.getTickTime() * 2);
 		tf.finishTable();
-		float usedTime = MinecraftServer.getTickTime();
-		tpsReport
-				.append("\nOverall TPS: ").append(MinecraftServer.getTPS())
-				.append("\nOverall load: ").append(usedTime * 2).append('%');
-		sendChat(commandSender, tpsReport.toString());
+		sendChat(commandSender, tf.toString());
 	}
 }
