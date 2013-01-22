@@ -176,6 +176,7 @@ public class PatchManager {
 				String environment = classElement.getAttribute("env");
 				if (!environment.isEmpty() && !environment.equals(patchEnvironment)) {
 					Log.info(className + " requires " + environment + ", not patched as we are using " + patchEnvironment);
+					continue;
 				}
 				CtClass ctClass;
 				try {
