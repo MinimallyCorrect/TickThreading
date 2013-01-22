@@ -87,13 +87,13 @@ public abstract class PatchAnvilChunkLoader extends AnvilChunkLoader {
 			this.pendingAnvilChunksCoordinates.remove(var1.chunkCoordinate);
 		}
 
-		chunkCache.put(hash(var1.chunkCoordinate.chunkXPos, var1.chunkCoordinate.chunkZPos), var1.nbtTags);
-
 		try {
 			this.writeChunkNBTTags(var1);
 		} catch (Exception var4) {
 			Log.severe("Failed to save a chunk!", var4);
 		}
+
+		chunkCache.put(hash(var1.chunkCoordinate.chunkXPos, var1.chunkCoordinate.chunkZPos), var1.nbtTags);
 
 		return true;
 	}
