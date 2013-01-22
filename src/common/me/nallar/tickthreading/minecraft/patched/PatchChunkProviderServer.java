@@ -63,6 +63,9 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 		}
 	}
 
+	/* 100 chunks?
+	 * I DO WHAT I WANT!
+	 */
 	@Override
 	public boolean unload100OldestChunks() {
 		if (!this.currentServer.canNotSave) {
@@ -70,17 +73,20 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 				this.chunksToUnload.remove(ChunkCoordIntPair.chunkXZ2Int(forced.chunkXPos, forced.chunkZPos));
 			}
 
-			for (int var1 = 0; var1 < 200 && !this.chunksToUnload.isEmpty(); ++var1) {
-				Long var2 = (Long) this.chunksToUnload.iterator().next();
+			Iterator<Long> i$ = chunksToUnload.iterator();
+			for (int i = 0; i < 200 && i$.hasNext(); ++i) {
+				Long var2 = i$.next();
 				Chunk var3 = (Chunk) this.loadedChunkHashMap.getValueByKey(var2);
-				var3.onChunkUnload();
-				this.safeSaveChunk(var3);
-				this.safeSaveExtraChunkData(var3);
-				this.chunksToUnload.remove(var2);
-				this.loadedChunkHashMap.remove(var2);
-				synchronized (loadedChunks) {
-					this.loadedChunks.remove(var3);
+				if (var3 != null) {
+					this.safeSaveChunk(var3);
+					this.safeSaveExtraChunkData(var3);
+					var3.onChunkUnload();
+					synchronized (loadedChunks) {
+						this.loadedChunks.remove(var3);
+					}
 				}
+				i$.remove();
+				this.loadedChunkHashMap.remove(var2);
 				if (loadedChunks.size() == 0 && ForgeChunkManager.getPersistentChunksFor(currentServer).size() == 0 && !DimensionManager.shouldLoadSpawn(currentServer.provider.dimensionId)) {
 					DimensionManager.unloadWorld(currentServer.provider.dimensionId);
 					return currentChunkProvider.unload100OldestChunks();
@@ -177,10 +183,9 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 	@Override
 	public void unloadAllChunks() {
 		synchronized (loadedChunks) {
-			Iterator var1 = this.loadedChunks.iterator();
 
-			while (var1.hasNext()) {
-				Chunk var2 = (Chunk) var1.next();
+			for (Object loadedChunk : this.loadedChunks) {
+				Chunk var2 = (Chunk) loadedChunk;
 				this.unloadChunksIfNotNearSpawn(var2.xPosition, var2.zPosition);
 			}
 		}
@@ -191,8 +196,8 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 		int var3 = 0;
 
 		synchronized (loadedChunks) {
-			for (int var4 = 0; var4 < this.loadedChunks.size(); ++var4) {
-				Chunk var5 = (Chunk) this.loadedChunks.get(var4);
+			for (Object loadedChunk : this.loadedChunks) {
+				Chunk var5 = (Chunk) loadedChunk;
 
 				if (par1) {
 					this.safeSaveExtraChunkData(var5);
