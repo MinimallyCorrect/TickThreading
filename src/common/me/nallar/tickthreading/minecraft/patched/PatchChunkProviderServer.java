@@ -226,11 +226,13 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 		return true;
 	}
 
+	@Override
 	@Declare
 	public List<Chunk> getLoadedChunks() {
 		return loadedChunks;
 	}
 
+	@Override
 	@Declare
 	public Set<Long> getChunksToUnloadSet() {
 		return chunksToUnload;
