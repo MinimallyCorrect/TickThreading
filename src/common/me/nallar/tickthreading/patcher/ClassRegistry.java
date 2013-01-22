@@ -236,7 +236,7 @@ public class ClassRegistry {
 				ZipEntry zipEntry;
 				while ((zipEntry = zin.getNextEntry()) != null) {
 					String entryName = zipEntry.getName();
-					if (entryName.equals(hashFileName) || additionalClasses.containsKey(entryName) || (entryName.startsWith("META-INF") && !entryName.toUpperCase().endsWith("MANIFEST.MF"))) {
+					if (entryName.equals(hashFileName) || additionalClasses.containsKey(entryName) || (entryName.startsWith("META-INF") && !entryName.toUpperCase().endsWith("MANIFEST.MF")) && (entryName.length() - entryName.replace("/", "").length() == 1)) {
 						// Skip
 					} else if (replacementFiles.containsKey(entryName)) {
 						replacements.add(entryName);
