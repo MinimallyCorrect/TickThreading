@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
 import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.relauncher.Side;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.ChunkGarbageCollector;
@@ -72,8 +73,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			if (FMLCommonHandler.instance().shouldServerBeKilledQuietly()) {
 				return;
 			}
-			throwable.printStackTrace();
-			logger.log(Level.SEVERE, "Encountered an unexpected exception " + throwable.getClass().getSimpleName(), throwable);
+			FMLLog.log(Level.SEVERE, throwable, "Encountered an unexpected exception" + throwable.getClass().getSimpleName());
 			CrashReport crashReport;
 
 			if (throwable instanceof ReportedException) {
@@ -98,7 +98,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 					this.serverStopped = true;
 				}
 			} catch (Throwable throwable) {
-				throwable.printStackTrace();
+				FMLLog.log(Level.SEVERE, throwable, "Exception while attempting to stop the server");
 			} finally {
 				this.systemExitNow();
 			}

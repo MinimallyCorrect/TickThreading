@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import cpw.mods.fml.common.FMLLog;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.profiler.ProfilerResult;
 
@@ -44,7 +45,7 @@ public abstract class PatchProfiler extends Profiler {
 				}
 
 				if (var5 > 100000000L) {
-					System.out.println("Something\'s taking too long! \'" + this.profilingSection + "\' took aprox " + (double) var5 / 1000000.0D + " ms");
+					FMLLog.warning("Something\'s taking too long! \'" + this.profilingSection + "\' took aprox " + (double) var5 / 1000000.0D + " ms");
 				}
 
 				this.profilingSection = !this.sectionList.isEmpty() ? (String) this.sectionList.get(this.sectionList.size() - 1) : "";

@@ -14,7 +14,7 @@ import cpw.mods.fml.common.FMLLog;
 import me.nallar.reporting.Reporter;
 import net.minecraft.world.World;
 
-@SuppressWarnings ("UnusedDeclaration")
+@SuppressWarnings ({"UnusedDeclaration", "UseOfSystemOutOrSystemErr"})
 public class Log {
 	public static final Logger LOGGER = Logger.getLogger("TickThreading");
 	private static Handler handler;
@@ -30,7 +30,7 @@ public class Log {
 			// Not running under forge
 			LOGGER.setUseParentHandlers(false);
 			LOGGER.addHandler(new Handler() {
-				private LogFormatter logFormatter = new LogFormatter();
+				private final LogFormatter logFormatter = new LogFormatter();
 
 				@Override
 				public void publish(LogRecord record) {
@@ -70,8 +70,8 @@ public class Log {
 				randomAccessFile.close();
 			}
 			handler = new Handler() {
-				private LogFormatter logFormatter = new LogFormatter();
-				private BufferedWriter outputWriter = new BufferedWriter(new FileWriter(saveFile));
+				private final LogFormatter logFormatter = new LogFormatter();
+				private final BufferedWriter outputWriter = new BufferedWriter(new FileWriter(saveFile));
 
 				@Override
 				public void publish(LogRecord record) {

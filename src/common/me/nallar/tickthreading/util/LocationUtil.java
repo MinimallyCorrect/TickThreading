@@ -22,7 +22,7 @@ public enum LocationUtil {
 	public static File locationOf(Class clazz) {
 		String path = clazz.getProtectionDomain().getCodeSource().getLocation().getPath();
 		path = path.contains("!") ? path.substring(0, path.lastIndexOf('!')) : path;
-		if (path.length() > 0 && path.charAt(0) == '/') {
+		if (!path.isEmpty() && path.charAt(0) == '/') {
 			path = "file:" + path;
 		}
 		try {

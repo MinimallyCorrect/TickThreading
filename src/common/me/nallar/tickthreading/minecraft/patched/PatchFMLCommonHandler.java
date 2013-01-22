@@ -21,7 +21,7 @@ public abstract class PatchFMLCommonHandler extends FMLCommonHandler {
 		}
 		List<IScheduledTickHandler> scheduledTicks = side.isClient() ? scheduledClientTicks : scheduledServerTicks;
 
-		if (scheduledTicks.size() == 0) {
+		if (scheduledTicks.isEmpty()) {
 			return;
 		}
 		for (IScheduledTickHandler ticker : scheduledTicks) {
@@ -39,7 +39,7 @@ public abstract class PatchFMLCommonHandler extends FMLCommonHandler {
 	public void tickEnd(EnumSet<TickType> ticks, Side side, Object... data) {
 		List<IScheduledTickHandler> scheduledTicks = side.isClient() ? scheduledClientTicks : scheduledServerTicks;
 
-		if (scheduledTicks.size() == 0) {
+		if (scheduledTicks.isEmpty()) {
 			return;
 		}
 		for (IScheduledTickHandler ticker : scheduledTicks) {

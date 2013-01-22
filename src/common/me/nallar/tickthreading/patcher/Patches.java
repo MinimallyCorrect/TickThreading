@@ -190,7 +190,7 @@ public class Patches {
 		ClassMap classMap = new ClassMap();
 		classMap.put(fromClass, ctClass.getName());
 		for (CtField ctField : from.getDeclaredFields()) {
-			if (ctField.getName().length() > 0 && ctField.getName().charAt(ctField.getName().length() - 1) == '_') {
+			if (!ctField.getName().isEmpty() && ctField.getName().charAt(ctField.getName().length() - 1) == '_') {
 				ctField.setName(ctField.getName().substring(0, ctField.getName().length() - 1));
 			}
 			try {

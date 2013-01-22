@@ -69,7 +69,7 @@ public enum CollectionsUtil {
 	}
 
 	public static String joinMap(Map<?, ?> map) {
-		if (map.size() == 0) {
+		if (map.isEmpty()) {
 			return "";
 		}
 		StringBuilder stringBuilder = new StringBuilder();

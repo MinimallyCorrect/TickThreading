@@ -23,7 +23,7 @@ public enum PatchUtil {
 		try {
 			CP += File.pathSeparator + new File(LocationUtil.getServerDirectory(), "lib/guava-12.0.1.jar").getAbsolutePath();
 			for (ZipEntry zipEntry : new EnumerableWrapper<ZipEntry>((Enumeration<ZipEntry>) zipFile.entries())) {
-				if (zipEntry.getName().startsWith("patchrun/") && !(zipEntry.getName().length() > 0 && zipEntry.getName().charAt(zipEntry.getName().length() - 1) == '/')) {
+				if (zipEntry.getName().startsWith("patchrun/") && !(!zipEntry.getName().isEmpty() && zipEntry.getName().charAt(zipEntry.getName().length() - 1) == '/')) {
 					String data = new Scanner(zipFile.getInputStream(zipEntry), "UTF-8").useDelimiter("\\A").next();
 					data = data.replace("%JAVA%", java).replace("%CP%", CP).replace("%MS%", MS).replace("\r\n", "\n");
 					Files.write(data.getBytes("UTF-8"), new File(LocationUtil.getServerDirectory(), zipEntry.getName().replace("patchrun/", "")));

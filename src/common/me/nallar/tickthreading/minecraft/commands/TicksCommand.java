@@ -26,7 +26,7 @@ public class TicksCommand extends Command {
 	@Override
 	public void processCommand(ICommandSender commandSender, List<String> arguments) {
 		World world = null;
-		if (arguments.size() > 0) {
+		if (!arguments.isEmpty()) {
 			world = DimensionManager.getWorld(Integer.valueOf(arguments.get(0)));
 		} else if (commandSender instanceof Entity) {
 			world = ((Entity) commandSender).worldObj;

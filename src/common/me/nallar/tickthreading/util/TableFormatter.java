@@ -10,8 +10,8 @@ import net.minecraft.entity.Entity;
 public class TableFormatter {
 	public final StringFiller stringFiller;
 	public final StringBuilder sb = new StringBuilder();
-	private List<String> currentHeadings = new ArrayList<String>();
-	private List<String> currentData = new ArrayList<String>();
+	private final List<String> currentHeadings = new ArrayList<String>();
+	private final List<String> currentData = new ArrayList<String>();
 	public String splitter = " | ";
 
 	public TableFormatter(ICommandSender commandSender) {

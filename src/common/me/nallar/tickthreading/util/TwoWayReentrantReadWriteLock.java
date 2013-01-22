@@ -127,7 +127,7 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 	}
 
 	private boolean hasReaders() {
-		return readingThreads.size() > 0;
+		return !readingThreads.isEmpty();
 	}
 
 	private boolean isNotReader(Thread callingThread) {

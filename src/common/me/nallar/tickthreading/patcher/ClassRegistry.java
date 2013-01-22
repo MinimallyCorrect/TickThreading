@@ -155,8 +155,7 @@ public class ClassRegistry {
 			updatedFiles.addAll(packageLocations.get(packageName));
 		}
 		updatedFiles.add(classNameToLocation.get(className));
-		className = className.replace('.', '/') + ".class";
-		replacementFiles.put(className, replacement);
+		replacementFiles.put(className.replace('.', '/') + ".class", replacement);
 	}
 
 	Map<String, byte[]> getAdditionalClasses(File file) {
@@ -255,7 +254,7 @@ public class ClassRegistry {
 				} else {
 					Log.info("Removed signing info from " + zipFile.getName());
 				}
-				if (additionalClasses.size() > 0) {
+				if (!additionalClasses.isEmpty()) {
 					Log.info("Added " + additionalClasses.size() + " classes required by patches.");
 				}
 				zin.close();

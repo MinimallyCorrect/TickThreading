@@ -5,7 +5,9 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
+import cpw.mods.fml.common.FMLLog;
 import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.network.TcpConnection;
 import net.minecraft.network.packet.IPacketHandler;
@@ -56,7 +58,7 @@ public abstract class PatchTcpConnection extends TcpConnection {
 		if (e instanceof SocketException) {
 			this.networkShutdown("disconnected: " + e.getMessage(), e);
 		} else {
-			e.printStackTrace();
+			FMLLog.log(Level.SEVERE, e, "Failed to handle packet from " + this.theNetHandler.getPlayer().getCommandSenderName());
 			this.networkShutdown("disconnect.genericReason", "Internal exception: " + e.toString());
 		}
 	}

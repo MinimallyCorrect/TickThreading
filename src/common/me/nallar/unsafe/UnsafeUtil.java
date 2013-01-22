@@ -31,7 +31,7 @@ public class UnsafeUtil {
 		return true;
 	}
 
-	public synchronized static long getAddress(Object o) {
+	public static synchronized long getAddress(Object o) {
 		addressGet[0] = o;
 		switch (addressSize) {
 			case 4:

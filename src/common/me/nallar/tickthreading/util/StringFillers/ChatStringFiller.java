@@ -10,9 +10,9 @@ import me.nallar.tickthreading.util.ChatFormat;
  * Derived from https://github.com/andfRa/Saga/blob/master/src/org/saga/utility/chat/ChatFiller.java
  */
 class ChatStringFiller extends StringFiller {
-	public final static double DEFAULT_LENGTH = 3.0 / 2.0;
-	private final static double MAX_GAP = 1.25;
-	private final static HashMap<Character, Double> SIZE_MAP = new HashMap<Character, Double>() {
+	public static final double DEFAULT_LENGTH = 3.0 / 2.0;
+	private static final double MAX_GAP = 1.25;
+	private static final HashMap<Character, Double> SIZE_MAP = new HashMap<Character, Double>() {
 		{
 			put('i', 0.5);
 			put('k', 5.0 / 4.0);
@@ -69,7 +69,7 @@ class ChatStringFiller extends StringFiller {
 			put('\u2591', 2.0);
 		}
 	};
-	private final static HashSet<Character> FILL_CHARS = new HashSet<Character>() {
+	private static final HashSet<Character> FILL_CHARS = new HashSet<Character>() {
 		private static final long serialVersionUID = 1L;
 
 		{

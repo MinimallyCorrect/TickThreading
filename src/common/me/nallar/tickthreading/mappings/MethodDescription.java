@@ -144,7 +144,7 @@ public class MethodDescription {
 	}
 
 	public static String toListString(List<MethodDescription> methodDescriptions) {
-		if (methodDescriptions.size() == 0) {
+		if (methodDescriptions.isEmpty()) {
 			return "";
 		}
 		StringBuilder stringBuilder = new StringBuilder();

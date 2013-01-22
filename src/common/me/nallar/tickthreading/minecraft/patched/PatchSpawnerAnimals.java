@@ -9,7 +9,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 
+import cpw.mods.fml.common.FMLLog;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import net.minecraft.block.Block;
@@ -259,7 +261,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 														try {
 															var39 = (EntityLiving) var22.entityClass.getConstructor(World.class).newInstance(par0WorldServer);
 														} catch (Exception var31) {
-															var31.printStackTrace();
+															FMLLog.log(Level.SEVERE, var31, "Exception creating an animal for spawning");
 															return var4;
 														}
 

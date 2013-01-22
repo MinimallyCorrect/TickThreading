@@ -5,12 +5,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
-import com.google.common.collect.Sets;
 
 import cpw.mods.fml.common.FMLLog;
-import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.crash.CrashReport;
@@ -87,7 +83,7 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 				}
 				i$.remove();
 				this.loadedChunkHashMap.remove(var2);
-				if (loadedChunks.size() == 0 && ForgeChunkManager.getPersistentChunksFor(currentServer).size() == 0 && !DimensionManager.shouldLoadSpawn(currentServer.provider.dimensionId)) {
+				if (loadedChunks.isEmpty() && ForgeChunkManager.getPersistentChunksFor(currentServer).isEmpty() && !DimensionManager.shouldLoadSpawn(currentServer.provider.dimensionId)) {
 					DimensionManager.unloadWorld(currentServer.provider.dimensionId);
 					return currentChunkProvider.unload100OldestChunks();
 				}
