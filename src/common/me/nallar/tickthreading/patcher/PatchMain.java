@@ -73,7 +73,7 @@ public class PatchMain {
 			patchManager.loadBackups(filesToLoad);
 			patchManager.classRegistry.loadFiles(filesToLoad);
 			try {
-				patchManager.classRegistry.getClass("org.bukkit.craftbukkit.Main");
+				patchManager.classRegistry.getClass("org.bukkit.craftbukkit.util.WatchdogThread");
 				patchManager.patchEnvironment = "mcpc";
 			} catch (NotFoundException ignored) {
 			}
