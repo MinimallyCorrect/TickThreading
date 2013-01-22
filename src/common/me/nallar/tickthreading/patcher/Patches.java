@@ -190,11 +190,15 @@ public class Patches {
 		ClassMap classMap = new ClassMap();
 		classMap.put(fromClass, ctClass.getName());
 		for (CtField ctField : from.getDeclaredFields()) {
-			Log.info("Added " + ctField);
 			if (ctField.getName().length() > 0 && ctField.getName().charAt(ctField.getName().length() - 1) == '_') {
 				ctField.setName(ctField.getName().substring(0, ctField.getName().length() - 1));
 			}
-			ctClass.addField(new CtField(ctField, ctClass));
+			try {
+				ctClass.getDeclaredField(ctField.getName());
+			} catch (NotFoundException ignored) {
+				Log.info("Added " + ctField);
+				ctClass.addField(new CtField(ctField, ctClass));
+			}
 		}
 		for (CtMethod newMethod : from.getDeclaredMethods()) {
 			try {

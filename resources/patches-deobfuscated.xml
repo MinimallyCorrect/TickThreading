@@ -79,6 +79,8 @@
 			<newField field="staticLock" class="java.lang.Object" static=""/>
 			<synchronize field="staticLock">onUpdate</synchronize>
 			<!-- Concurrent access during iteration = boom -->
+		</class>
+		<class id="net.minecraft.entity.player.EntityPlayerMP" env="forge">
 			<newInitializer field="destroyedItemsNetCache" class="me.nallar.tickthreading.collections.ConcurrentLinkedQueueList"/>
 		</class>
 		<class id="net.minecraft.entity.Entity">
@@ -114,11 +116,11 @@
 			<lock field="writeLock">addVillagerPosition</lock>
 			<lock field="readLock">findNearestVillage,func_82566_a</lock>
 		</class>
-		<class id="net.minecraft.server.management.PlayerManager">
+		<class id="net.minecraft.server.management.PlayerManager" env="forge">
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchPlayerManager"/>
 			<synchronize>addPlayer,removePlayer</synchronize>
 		</class>
-		<class id="net.minecraft.server.management.PlayerInstance">
+		<class id="net.minecraft.server.management.PlayerInstance" env="forge">
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchPlayerInstance"/>
 			<replaceMethodCall index="1" code="{ $_ = null; }"/>
 		</class>
