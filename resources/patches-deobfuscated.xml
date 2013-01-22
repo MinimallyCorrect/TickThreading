@@ -158,6 +158,10 @@
 		<class id="cpw.mods.fml.relauncher.RelaunchClassLoader">
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchRelaunchClassLoader"/>
 		</class>
+		<class id="cpw.mods.fml.common.network.ModListResponsePacket">
+			<replaceMethodCall index="2" code="{ $_ = null; }" method="info">execute</replaceMethodCall>
+			<replaceMethodCall index="3" code="{ $_ = null; }" method="info">execute</replaceMethodCall>
+		</class>
 	</forgeModLoader>
 	<factorization>
 		<class id="factorization.common.TileEntityWrathLamp">
