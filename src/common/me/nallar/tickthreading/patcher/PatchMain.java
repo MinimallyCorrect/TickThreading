@@ -70,14 +70,14 @@ public class PatchMain {
 		try {
 			Iterable<File> filesToLoad = (Iterable<File>) CollectionsUtil.toObjects(CollectionsUtil.split(args[0]), File.class);
 			patchManager.classRegistry.forcePatching = forcePatching;
+			patchManager.loadBackups(filesToLoad);
+			patchManager.classRegistry.loadFiles(filesToLoad);
 			try {
 				patchManager.classRegistry.getClass("org.bukkit.craftbukkit.Main");
 				patchManager.patchEnvironment = "mcpc";
 			} catch (NotFoundException ignored) {
 			}
 			Log.info("Patching in environment: " + patchManager.patchEnvironment);
-			patchManager.loadBackups(filesToLoad);
-			patchManager.classRegistry.loadFiles(filesToLoad);
 			patchManager.runPatches();
 		} catch (IOException e) {
 			Log.severe("Failed to load jars", e);
