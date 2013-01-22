@@ -39,7 +39,7 @@ public class ThreadManager {
 					runnable.run();
 				} catch (InterruptedException ignored) {
 				} catch (Exception e) {
-					Log.severe("Unhandled exception in worker thread", e);
+					Log.severe("Unhandled exception in worker thread " + Thread.currentThread().getName(), e);
 				}
 				if (waiting.decrementAndGet() == 0) {
 					synchronized (readyLock) {
