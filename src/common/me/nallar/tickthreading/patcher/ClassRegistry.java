@@ -11,10 +11,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.jar.JarInputStream;
-import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -224,39 +221,34 @@ public class ClassRegistry {
 				} else {
 					throw new IOException("Couldn't rename " + zipFile + " -> " + tempFile);
 				}
-				if (isJar(zipFile)) {
-					zin = new JarInputStream(new FileInputStream(tempFile));
-					zout = new JarOutputStream(new FileOutputStream(zipFile));
-				} else {
-					zin = new ZipInputStream(new FileInputStream(tempFile));
-					zout = new ZipOutputStream(new FileOutputStream(zipFile));
-				}
+				zin = new ZipInputStream(new FileInputStream(tempFile));
+				zout = new ZipOutputStream(new FileOutputStream(zipFile));
 				Set<String> replacements = new HashSet<String>();
 				Map<String, byte[]> additionalClasses = getAdditionalClasses(zipFile);
 				ZipEntry zipEntry;
 				while ((zipEntry = zin.getNextEntry()) != null) {
 					String entryName = zipEntry.getName();
-					if (entryName.equals(hashFileName) || additionalClasses.containsKey(entryName) || (entryName.startsWith("META-INF") && !entryName.toUpperCase().endsWith("MANIFEST.MF")) && (entryName.length() - entryName.replace("/", "").length() == 1)) {
+					if (entryName.equals(hashFileName) || additionalClasses.containsKey(entryName) || (entryName.startsWith("META-INF/") && !entryName.endsWith("/") && !entryName.toUpperCase().endsWith("MANIFEST.MF")) && (entryName.length() - entryName.replace("/", "").length() == 1)) {
 						// Skip
 					} else if (replacementFiles.containsKey(entryName)) {
 						replacements.add(entryName);
 					} else {
-						zout.putNextEntry(isJar(zipFile) ? new JarEntry(entryName) : new ZipEntry(entryName));
+						zout.putNextEntry(new ZipEntry(entryName));
 						ByteStreams.copy(zin, zout);
 					}
 				}
 				for (String name : replacements) {
-					zout.putNextEntry(isJar(zipFile) ? new JarEntry(name) : new ZipEntry(name));
+					zout.putNextEntry(new ZipEntry(name));
 					zout.write(replacementFiles.get(name));
 					zout.closeEntry();
 				}
 				for (Map.Entry<String, byte[]> stringEntry : additionalClasses.entrySet()) {
-					zout.putNextEntry(isJar(zipFile) ? new JarEntry(stringEntry.getKey()) : new ZipEntry(stringEntry.getKey()));
+					zout.putNextEntry(new ZipEntry(stringEntry.getKey()));
 					zout.write(stringEntry.getValue());
 					zout.closeEntry();
 				}
 				if (expectedPatchHashes.containsKey(zipFile)) {
-					zout.putNextEntry(isJar(zipFile) ? new JarEntry(hashFileName) : new ZipEntry(hashFileName));
+					zout.putNextEntry(new ZipEntry(hashFileName));
 					String patchHash = String.valueOf(expectedPatchHashes.get(zipFile));
 					zout.write(patchHash.getBytes("UTF-8"));
 					Log.info("Patched " + replacements.size() + " classes in " + zipFile.getName() + ", patchHash: " + patchHash);
@@ -335,10 +327,6 @@ public class ClassRegistry {
 				}
 			}
 		}
-	}
-
-	private static boolean isJar(File file) {
-		return file.getName().toLowerCase().endsWith(".jar");
 	}
 
 	private static String getPackage(String className) {
