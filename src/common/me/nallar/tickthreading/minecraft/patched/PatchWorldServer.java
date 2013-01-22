@@ -72,9 +72,9 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 			}
 
 			int xPos = var4.chunkXPos * 16;
-			int yPos = var4.chunkZPos * 16;
+			int zPos = var4.chunkZPos * 16;
 			Chunk chunk = this.getChunkFromChunkCoords(var4.chunkXPos, var4.chunkZPos);
-			this.moodSoundAndLightCheck(xPos, yPos, chunk);
+			this.moodSoundAndLightCheck(xPos, zPos, chunk);
 			//Limits and evenly distributes the lighting update time
 			if (System.nanoTime() - startTime <= 4000000 && doneChunks.add(var4)) {
 				chunk.updateSkylight();
@@ -88,7 +88,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 				this.updateLCG = this.updateLCG * 3 + 1013904223;
 				var8 = this.updateLCG >> 2;
 				var9 = xPos + (var8 & 15);
-				var10 = yPos + (var8 >> 8 & 15);
+				var10 = zPos + (var8 >> 8 & 15);
 				var11 = this.getPrecipitationHeight(var9, var10);
 
 				if (this.canLightningStrikeAt(var9, var11, var10)) {
@@ -103,24 +103,24 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 				var8 = this.updateLCG >> 2;
 				var9 = var8 & 15;
 				var10 = var8 >> 8 & 15;
-				var11 = this.getPrecipitationHeight(var9 + xPos, var10 + yPos);
+				var11 = this.getPrecipitationHeight(var9 + xPos, var10 + zPos);
 
-				if (this.isBlockFreezableNaturally(var9 + xPos, var11 - 1, var10 + yPos)) {
-					this.setBlockWithNotify(var9 + xPos, var11 - 1, var10 + yPos, Block.ice.blockID);
+				if (this.isBlockFreezableNaturally(var9 + xPos, var11 - 1, var10 + zPos)) {
+					this.setBlockWithNotify(var9 + xPos, var11 - 1, var10 + zPos, Block.ice.blockID);
 				}
 
-				if (this.isRaining() && this.canSnowAt(var9 + xPos, var11, var10 + yPos)) {
-					this.setBlockWithNotify(var9 + xPos, var11, var10 + yPos, Block.snow.blockID);
+				if (this.isRaining() && this.canSnowAt(var9 + xPos, var11, var10 + zPos)) {
+					this.setBlockWithNotify(var9 + xPos, var11, var10 + zPos, Block.snow.blockID);
 				}
 
 				if (this.isRaining()) {
-					BiomeGenBase var12 = this.getBiomeGenForCoords(var9 + xPos, var10 + yPos);
+					BiomeGenBase var12 = this.getBiomeGenForCoords(var9 + xPos, var10 + zPos);
 
 					if (var12.canSpawnLightningBolt()) {
-						var13 = this.getBlockId(var9 + xPos, var11 - 1, var10 + yPos);
+						var13 = this.getBlockId(var9 + xPos, var11 - 1, var10 + zPos);
 
 						if (var13 != 0) {
-							Block.blocksList[var13].fillWithRain(this, var9 + xPos, var11 - 1, var10 + yPos);
+							Block.blocksList[var13].fillWithRain(this, var9 + xPos, var11 - 1, var10 + zPos);
 						}
 					}
 				}
@@ -143,7 +143,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 						Block var18 = Block.blocksList[var17];
 
 						if (var18 != null && var18.getTickRandomly()) {
-							var18.updateTick(this, var14 + xPos, var16 + var21.getYLocation(), var15 + yPos, this.rand);
+							var18.updateTick(this, var14 + xPos, var16 + var21.getYLocation(), var15 + zPos, this.rand);
 						}
 					}
 				}
