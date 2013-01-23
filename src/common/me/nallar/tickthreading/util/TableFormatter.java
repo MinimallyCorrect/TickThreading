@@ -63,11 +63,12 @@ public class TableFormatter {
 		}
 		sb.append('\n');
 		cSplit = "";
+		rowIndex = 0;
 		for (String data : currentData) {
 			sb.append(cSplit).append(stringFiller.fill(data, rowLengths[rowIndex % rowCount]));
 			cSplit = splitter;
 			rowIndex++;
-			if (rowIndex % rowCount == 0) {
+			if (rowIndex % rowCount == 0 && rowIndex != currentData.size()) {
 				sb.append('\n');
 				cSplit = "";
 			}
