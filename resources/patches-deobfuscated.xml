@@ -44,6 +44,9 @@
 			<newField field="staticLock" class="java.lang.Object" static=""/>
 			<synchronize field="staticLock">getModdedBiomeGenerators</synchronize>
 		</class>
+		<class id="net.minecraft.world.gen.ChunkProviderServer">
+			<public field="loadedChunks"/>
+		</class>
 		<class id="net.minecraft.world.gen.ChunkProviderServer" env="forge">
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchChunkProviderServer"/>
 			<synchronize field="chunkLoadLock">unloadAllChunks,saveChunks,unload100OldestChunks</synchronize>
@@ -257,12 +260,7 @@
 			<synchronize field="staticLock">tickEnd,onPlayerLogout,onWorldLoad,onWorldUnload,onChunkForce,onChunkUnForce</synchronize>
 		</class>
 		<class id="codechicken.chunkloader.PlayerChunkViewerManager">
-			<newInitializer field="chunkChanges" class="me.nallar.tickthreading.collections.ComodificationDebugLinkedList"/>
-			<newInitializer field="ticketChanges" class="me.nallar.tickthreading.collections.ComodificationDebugLinkedList"/>
-			<newInitializer field="dimChanges" class="me.nallar.tickthreading.collections.ComodificationDebugLinkedList"/>
-			<newInitializer field="logouts" class="me.nallar.tickthreading.collections.ComodificationDebugLinkedList"/>
-			<newInitializer field="addViewers" class="me.nallar.tickthreading.collections.ComodificationDebugLinkedList"/>
-			<synchronize field="codechicken.chunkloader.ChunkLoaderEventHandler.staticLock"/>
+			<synchronize field="$1.b.g">calculateChunkChanges</synchronize>
 		</class>
 		<class id="codechicken.chunkloader.CommandChunkLoaders">
 			<synchronize field="codechicken.chunkloader.ChunkLoaderEventHandler.staticLock">handleCommand</synchronize>
