@@ -59,30 +59,4 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 			}
 		}
 	}
-
-	@Override
-	public void flagChunkForUpdate(int par1, int par2, int par3) {
-		if (this.numberOfTilesToUpdate == 0) {
-			this.myManager.playerUpdateLock.lock();
-			try {
-				this.myManager.getChunkWatcherWithPlayers().add(this);
-			} finally {
-				this.myManager.playerUpdateLock.unlock();
-			}
-		}
-
-		this.field_73260_f |= 1 << (par2 >> 4);
-
-		if (this.numberOfTilesToUpdate < 64) {
-			short var4 = (short) (par1 << 12 | par3 << 8 | par2);
-
-			for (int var5 = 0; var5 < this.numberOfTilesToUpdate; ++var5) {
-				if (this.locationOfBlockChange[var5] == var4) {
-					return;
-				}
-			}
-
-			this.locationOfBlockChange[this.numberOfTilesToUpdate++] = var4;
-		}
-	}
 }

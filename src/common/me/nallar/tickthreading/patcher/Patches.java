@@ -372,6 +372,80 @@ public class Patches {
 	}
 
 	@Patch (
+			requiredAttributes = "field"
+	)
+	public void lockMethodCall(final CtBehavior ctBehavior, Map<String, String> attributes) throws CannotCompileException {
+		String method_ = attributes.get("method");
+		if (method_ == null) {
+			method_ = "";
+		}
+		String className_ = null;
+		int dotIndex = method_.indexOf('.');
+		if (dotIndex != -1) {
+			className_ = method_.substring(0, dotIndex);
+			method_ = method_.substring(dotIndex + 1);
+		}
+		String index_ = attributes.get("index");
+		if (index_ == null) {
+			index_ = "-1";
+		}
+
+		final String method = method_;
+		final String className = className_;
+		final String field = attributes.get("field");
+		final int index = Integer.valueOf(index_);
+
+		ctBehavior.instrument(new ExprEditor() {
+			private int currentIndex = 0;
+
+			@Override
+			public void edit(MethodCall methodCall) throws CannotCompileException {
+				if ((className == null || methodCall.getClassName().equals(className)) && (method.isEmpty() || methodCall.getMethodName().equals(method)) && (index == -1 || currentIndex++ == index)) {
+					Log.info("Replaced " + methodCall + " from " + ctBehavior);
+					methodCall.replace("{ " + field + ".lock(); try { $_ =  $proceed($$); } finally { " + field + ".unlock(); } }");
+				}
+			}
+		});
+	}
+
+	@Patch (
+			requiredAttributes = "field"
+	)
+	public void synchronizeMethodCall(final CtBehavior ctBehavior, Map<String, String> attributes) throws CannotCompileException {
+		String method_ = attributes.get("method");
+		if (method_ == null) {
+			method_ = "";
+		}
+		String className_ = null;
+		int dotIndex = method_.indexOf('.');
+		if (dotIndex != -1) {
+			className_ = method_.substring(0, dotIndex);
+			method_ = method_.substring(dotIndex + 1);
+		}
+		String index_ = attributes.get("index");
+		if (index_ == null) {
+			index_ = "-1";
+		}
+
+		final String method = method_;
+		final String className = className_;
+		final String field = attributes.get("field");
+		final int index = Integer.valueOf(index_);
+
+		ctBehavior.instrument(new ExprEditor() {
+			private int currentIndex = 0;
+
+			@Override
+			public void edit(MethodCall methodCall) throws CannotCompileException {
+				if ((className == null || methodCall.getClassName().equals(className)) && (method.isEmpty() || methodCall.getMethodName().equals(method)) && (index == -1 || currentIndex++ == index)) {
+					Log.info("Replaced " + methodCall + " from " + ctBehavior);
+					methodCall.replace("synchronized(" + field + ") { $_ =  $0.$proceed($$); }");
+				}
+			}
+		});
+	}
+
+	@Patch (
 			emptyConstructor = false
 	)
 	public void synchronize(Object o, Map<String, String> attributes) throws CannotCompileException {

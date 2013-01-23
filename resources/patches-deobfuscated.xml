@@ -67,6 +67,9 @@
 			<!-- This prevents entities in multiple threads using the same Vec3 for collisions. -->
 			<synchronize>getVecFromPool</synchronize>
 		</class>
+		<class id="net.minecraft.util.Vec3Pool" env="mcpc">
+			<synchronize>getVecFromPool,release,clear</synchronize>
+		</class>
 		<class id="net.minecraft.util.AxisAlignedBB">
 			<!-- Improves performance -->
 			<replaceMethod fromClass="me.nallar.tickthreading.minecraft.patched.PatchAxisAlignedBB">intersectsWith</replaceMethod>
@@ -119,12 +122,20 @@
 			<lock field="writeLock">addVillagerPosition</lock>
 			<lock field="readLock">findNearestVillage,func_82566_a</lock>
 		</class>
-		<class id="net.minecraft.server.management.PlayerManager" env="forge">
+		<class id="net.minecraft.server.management.PlayerManager">
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchPlayerManager"/>
+		</class>
+		<class id="net.minecraft.server.management.PlayerManager" env="mcpc">
+			<synchronize>addPlayer,removePlayer,updateMountedMovingPlayer,updatePlayerInstances</synchronize>
+		</class>
+		<class id="net.minecraft.server.management.PlayerManager" env="forge">
+			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchPlayerManagerForge"/>
 			<synchronize>addPlayer,removePlayer</synchronize>
+			<synchronize field="$1.loadedChunk">updateMountedMovingPlayer</synchronize>
 		</class>
 		<class id="net.minecraft.server.management.PlayerInstance" env="forge">
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchPlayerInstance"/>
+			<lockMethodCall field="this.myManager.playerUpdateLock" method="add">flagChunkForUpdate</lockMethodCall>
 			<replaceMethodCall index="1" code="{ $_ = null; }"/>
 		</class>
 		<class id="net.minecraft.world.ChunkCoordIntPair">

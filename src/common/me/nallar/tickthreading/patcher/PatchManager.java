@@ -117,6 +117,10 @@ public class PatchManager {
 				}
 				String field = patchElement.getAttribute("field");
 				if (!field.isEmpty()) {
+					boolean thisPrefix = field.startsWith("this.");
+					if (thisPrefix) {
+						field = field.substring("this.".length());
+					}
 					String after = "";
 					if (field.indexOf('.') != -1) {
 						after = field.substring(field.indexOf('.'));
@@ -124,7 +128,7 @@ public class PatchManager {
 					}
 					FieldDescription obfuscatedField = mappings.map(new FieldDescription(className, field));
 					if (obfuscatedField != null) {
-						patchElement.setAttribute("field", obfuscatedField.name + after);
+						patchElement.setAttribute("field", (thisPrefix ? "this." : "") + obfuscatedField.name + after);
 					}
 				}
 				String clazz = patchElement.getAttribute("class");
