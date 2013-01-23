@@ -231,10 +231,18 @@ public class Patches {
 				Log.info("Adding " + added);
 				ctClass.addMethod(added);
 				if (added.getName().startsWith("construct")) {
-					ctClass.addField(new CtField(classRegistry.getClass("boolean"), "isConstructed", ctClass), CtField.Initializer.constant(false));
-					for (CtBehavior ctBehavior : ctClass.getDeclaredConstructors()) {
-						ctBehavior.insertAfter("{ if(!this.isConstructed) { this.isConstructed = true; this. " + added.getName() + "(); } }");
+					CtMethod runConstructors = null;
+					try {
+						runConstructors = ctClass.getDeclaredMethod("runConstructors");
+					} catch (NotFoundException e) {
+						runConstructors = CtNewMethod.make("public void runConstructors() { }", ctClass);
+						ctClass.addMethod(runConstructors);
+						ctClass.addField(new CtField(classRegistry.getClass("boolean"), "isConstructed", ctClass), CtField.Initializer.constant(false));
+						for (CtBehavior ctBehavior : ctClass.getDeclaredConstructors()) {
+							ctBehavior.insertAfter("{ if(!this.isConstructed) { this.isConstructed = true; this.runConstructors(); } }");
+						}
 					}
+					runConstructors.insertAfter(added.getName() + "();");
 				}
 				if (added.getName().startsWith("staticConstruct")) {
 					ctClass.makeClassInitializer().insertAfter("{ " + added.getName() + "(); }");
