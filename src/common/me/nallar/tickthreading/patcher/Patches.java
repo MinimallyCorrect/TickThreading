@@ -201,6 +201,27 @@ public class Patches {
 			}
 		}
 		for (CtMethod newMethod : from.getDeclaredMethods()) {
+			if ((newMethod.getName().startsWith("construct") || newMethod.getName().startsWith("staticConstruct"))) {
+				try {
+					ctClass.getDeclaredMethod(newMethod.getName());
+					boolean found = true;
+					int i = 0;
+					String name = newMethod.getName();
+					while (found) {
+						i++;
+						try {
+							ctClass.getDeclaredMethod(name + i);
+						} catch (NotFoundException e2) {
+							found = false;
+						}
+					}
+					newMethod.setName(name + i);
+				} catch (NotFoundException ignored) {
+					// Not found - no need to change the name
+				}
+			}
+		}
+		for (CtMethod newMethod : from.getDeclaredMethods()) {
 			try {
 				CtMethod oldMethod = ctClass.getDeclaredMethod(newMethod.getName(), newMethod.getParameterTypes());
 				replaceMethod(oldMethod, newMethod);
@@ -209,14 +230,14 @@ public class Patches {
 				CtMethod added = CtNewMethod.copy(newMethod, ctClass, classMap);
 				Log.info("Adding " + added);
 				ctClass.addMethod(added);
-				if ("construct".equals(added.getName())) {
+				if (added.getName().startsWith("construct")) {
 					ctClass.addField(new CtField(classRegistry.getClass("boolean"), "isConstructed", ctClass), CtField.Initializer.constant(false));
 					for (CtBehavior ctBehavior : ctClass.getDeclaredConstructors()) {
-						ctBehavior.insertAfter("{ if(!this.isConstructed) { this.isConstructed = true; this.construct(); } }");
+						ctBehavior.insertAfter("{ if(!this.isConstructed) { this.isConstructed = true; this. " + added.getName() + "(); } }");
 					}
 				}
-				if (("staticConstruct").equals(added.getName())) {
-					ctClass.makeClassInitializer().insertAfter("{ staticConstruct(); }");
+				if (added.getName().startsWith("staticConstruct")) {
+					ctClass.makeClassInitializer().insertAfter("{ " + added.getName() + "(); }");
 				}
 			}
 		}
