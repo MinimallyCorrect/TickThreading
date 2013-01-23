@@ -26,4 +26,6 @@ public abstract class Mappings {
 	public abstract ClassDescription map(ClassDescription classDescription);
 
 	public abstract FieldDescription map(FieldDescription fieldDescription);
+
+	public abstract MethodDescription rmap(MethodDescription methodDescription);
 }

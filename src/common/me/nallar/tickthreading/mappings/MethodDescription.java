@@ -64,7 +64,13 @@ public class MethodDescription {
 
 	@Override
 	public boolean equals(Object other) {
-		return this == other || (other instanceof MethodDescription && other.hashCode() == this.hashCode()) || (other instanceof Method && new MethodDescription((Method) other).equals(this));
+		return this == other ||
+				(other instanceof MethodDescription &&
+						((MethodDescription) other).clazz.equals(this.clazz) &&
+						((MethodDescription) other).returnType.equals(this.returnType) &&
+						((MethodDescription) other).parameters.equals(this.parameters) &&
+						((MethodDescription) other).name.equals(this.name))
+				|| (other instanceof Method && new MethodDescription((Method) other).equals(this));
 	}
 
 	public boolean similar(Object other) {
@@ -157,5 +163,21 @@ public class MethodDescription {
 
 	public void obfuscateClasses() {
 		// TODO: obfuscate parameters and return type
+	}
+
+	public List<String> getParameters() {
+		String parameters = this.parameters;
+		List<String> parameterList = new ArrayList<String>();
+		while (!parameters.isEmpty()) {
+			String p = parameters.substring(0, 1);
+			parameters = parameters.substring(1);
+			if ("L".equals(p)) {
+				int cIndex = parameters.indexOf(';');
+				p = parameters.substring(0, cIndex).replace('/', '.');
+				parameters = parameters.substring(cIndex + 1);
+			}
+			parameterList.add(p);
+		}
+		return parameterList;
 	}
 }

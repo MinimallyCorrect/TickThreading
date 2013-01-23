@@ -23,7 +23,7 @@ public class MCPMappings extends Mappings {
 	private final Map<String, String> methodSeargeMappings = new HashMap<String, String>();
 	private final Map<String, String> fieldSeargeMappings = new HashMap<String, String>();
 	private final BiMap<ClassDescription, ClassDescription> classMappings = HashBiMap.create();
-	private final Map<MethodDescription, MethodDescription> methodMappings = new HashMap<MethodDescription, MethodDescription>();
+	private final BiMap<MethodDescription, MethodDescription> methodMappings = HashBiMap.create();
 	private final Map<FieldDescription, FieldDescription> fieldMappings = new HashMap<FieldDescription, FieldDescription>();
 	private final Map<String, MethodDescription> parameterlessMethodMappings = new HashMap<String, MethodDescription>();
 	private final Map<String, String> classNameToSuperClassName = new HashMap<String, String>();
@@ -41,6 +41,11 @@ public class MCPMappings extends Mappings {
 			}
 		}
 		return obfuscated;
+	}
+
+	@Override
+	public MethodDescription rmap(MethodDescription methodDescription) {
+		return methodMappings.inverse().get(methodDescription);
 	}
 
 	@Override

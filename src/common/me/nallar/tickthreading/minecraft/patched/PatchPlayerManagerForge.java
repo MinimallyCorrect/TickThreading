@@ -11,9 +11,9 @@ import net.minecraft.world.WorldServer;
 
 public abstract class PatchPlayerManagerForge extends PlayerManager {
 	@Declare
-	public ReentrantReadWriteLock.ReadLock playerUpdateLock_;
+	public java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock playerUpdateLock_;
 	@Declare
-	public ReentrantReadWriteLock.WriteLock playersUpdateLock_;
+	public java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock playersUpdateLock_;
 
 	public void construct() {
 		ReentrantReadWriteLock reentrantReadWriteLock = new ReentrantReadWriteLock();

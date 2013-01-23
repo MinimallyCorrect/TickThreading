@@ -112,23 +112,33 @@ public class PatchManager {
 			classElement.setAttribute("id", obfuscatedClass.name);
 			NodeList patchElements = classElement.getChildNodes();
 			for (Element patchElement : DomUtil.elementList(patchElements)) {
+				List<MethodDescription> methodDescriptionList = MethodDescription.fromListString(deobfuscatedClass.name, patchElement.getTextContent());
 				if (!patchElement.getTextContent().isEmpty()) {
-					patchElement.setTextContent(MethodDescription.toListString(mappings.map(MethodDescription.fromListString(deobfuscatedClass.name, patchElement.getTextContent()))));
+					patchElement.setTextContent(MethodDescription.toListString(mappings.map(methodDescriptionList)));
 				}
-				String field = patchElement.getAttribute("field");
+				String field = patchElement.getAttribute("field"), prefix = "";
 				if (!field.isEmpty()) {
-					boolean thisPrefix = field.startsWith("this.");
-					if (thisPrefix) {
+					if (field.startsWith("this.")) {
 						field = field.substring("this.".length());
+						prefix = "this.";
 					}
-					String after = "";
+					String after = "", type = className;
 					if (field.indexOf('.') != -1) {
 						after = field.substring(field.indexOf('.'));
 						field = field.substring(0, field.indexOf('.'));
+						if (!field.isEmpty() && (field.charAt(0) == '$') && prefix.isEmpty()) {
+							if (methodDescriptionList.size() == 1) {
+								MethodDescription methodDescription = mappings.rmap(mappings.map(methodDescriptionList.get(0)));
+								type = methodDescription.getParameters().get(Integer.valueOf(field.substring(1)) - 1);
+								prefix = field + '.';
+								field = after.substring(1);
+								after = "";
+							}
+						}
 					}
-					FieldDescription obfuscatedField = mappings.map(new FieldDescription(className, field));
+					FieldDescription obfuscatedField = mappings.map(new FieldDescription(type, field));
 					if (obfuscatedField != null) {
-						patchElement.setAttribute("field", (thisPrefix ? "this." : "") + obfuscatedField.name + after);
+						patchElement.setAttribute("field", prefix + obfuscatedField.name + after);
 					}
 				}
 				String clazz = patchElement.getAttribute("class");

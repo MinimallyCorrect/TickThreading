@@ -1,9 +1,7 @@
 package me.nallar.tickthreading.minecraft.patched;
 
 import java.util.List;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.server.management.PlayerInstance;
 import net.minecraft.server.management.PlayerManager;
