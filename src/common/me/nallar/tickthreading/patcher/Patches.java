@@ -221,7 +221,6 @@ public class Patches {
 				}
 			}
 		}
-		List<String> constructMethods = new ArrayList<String>();
 		for (CtMethod newMethod : from.getDeclaredMethods()) {
 			try {
 				CtMethod oldMethod = ctClass.getDeclaredMethod(newMethod.getName(), newMethod.getParameterTypes());
@@ -232,21 +231,14 @@ public class Patches {
 				Log.info("Adding " + added);
 				ctClass.addMethod(added);
 				if (added.getName().startsWith("construct")) {
-					constructMethods.add(added.getName());
+					ctClass.addField(new CtField(classRegistry.getClass("boolean"), "isConstructed", ctClass), CtField.Initializer.constant(false));
+					for (CtBehavior ctBehavior : ctClass.getDeclaredConstructors()) {
+						ctBehavior.insertAfter("{ if(!this.isConstructed) { this.isConstructed = true; this. " + added.getName() + "(); } }");
+					}
 				}
 				if (added.getName().startsWith("staticConstruct")) {
 					ctClass.makeClassInitializer().insertAfter("{ " + added.getName() + "(); }");
 				}
-			}
-		}
-		ctClass.addField(new CtField(classRegistry.getClass("boolean"), "isConstructed", ctClass), CtField.Initializer.constant(false));
-		if (!constructMethods.isEmpty()) {
-			StringBuilder constructMethodsRunner = new StringBuilder();
-			for (String method : constructMethods) {
-				constructMethodsRunner.append("this. ").append(method).append("(); ");
-			}
-			for (CtBehavior ctBehavior : ctClass.getDeclaredConstructors()) {
-				ctBehavior.insertAfter("{ if(!this.isConstructed) { this.isConstructed = true; } " + constructMethodsRunner + '}');
 			}
 		}
 		for (CtClass CtInterface : from.getInterfaces()) {
