@@ -16,7 +16,7 @@ public class ChunkGarbageCollector {
 
 	private static boolean supportsGC() {
 		try {
-			Class.forName("org.bukkit.craftbukkit.util.WatchdogThread");
+			Class.forName("org.bukkit.craftbukkit.libs.jline.Terminal");
 		} catch (ClassNotFoundException e) {
 			return true;
 		}
