@@ -166,6 +166,7 @@ public class PatchManager {
 
 	public void runPatches() {
 		List<Element> modElements = DomUtil.elementList(configDocument.getDocumentElement().getChildNodes());
+		Map<String, CtClass> patchedClasses = new HashMap<String, CtClass>();
 		for (Element modElement : modElements) {
 			for (Element classElement : DomUtil.getElementsByTag(modElement, "class")) {
 				String className = classElement.getAttribute("id");
@@ -204,12 +205,17 @@ public class PatchManager {
 					}
 				}
 				if (patched) {
-					try {
-						classRegistry.update(className, ctClass.toBytecode());
-					} catch (Exception e) {
-						Log.severe("Javassist failed to save " + className, e);
-					}
+					patchedClasses.put(className, ctClass);
 				}
+			}
+		}
+		for (Map.Entry<String, CtClass> entry : patchedClasses.entrySet()) {
+			String className = entry.getKey();
+			CtClass ctClass = entry.getValue();
+			try {
+				classRegistry.update(className, ctClass.toBytecode());
+			} catch (Exception e) {
+				Log.severe("Javassist failed to save " + className, e);
 			}
 		}
 		try {
