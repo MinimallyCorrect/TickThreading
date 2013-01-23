@@ -124,9 +124,6 @@ public class DeadLockDetector {
 		}
 		Log.severe(sb.toString());
 		Log.flush();
-		for (World world : new HashMap<World, TickManager>(managerMap).keySet()) {
-			TickThreading.instance.onWorldUnload(new WorldEvent.Unload(world));
-		}
 		// Yes, we save multiple times - handleServerStopping may freeze on the same thing we deadlocked on, but if it doesn't might change stuff
 		// which needs to be saved.
 		MinecraftServer minecraftServer = MinecraftServer.getServer();
