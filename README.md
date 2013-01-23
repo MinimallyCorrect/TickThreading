@@ -3,16 +3,26 @@ TickThreading [![Build Status](http://nallar.me/buildservice/job/TickThreading/b
 Mod to run entity and tileentity ticks in threads and a patcher to improve thread-safety issues.
 Optionally, allows for automatically variable tick rate per tick region.
 
-Copyright &copy; 2012, nallar <rallan.pcl+gt@gmail.com>
+Copyright &copy; 2012, nallar <rallan.pcl+tt@gmail.com>
 TickThreading is licensed under the [N Open License, Version 1][License]
 
 Compatibility with other mods
 -----
 [See the wiki.](https://github.com/nallar/TickThreading/wiki/Mod-Compatibility)
 
+Configuration
+-----
+TickThreading uses minecraft forge's suggested config location - minecraft folder/configs/TickThreading.cfg
+It's commented quite well, and is hopefully understandable. If any of the descriptions don't make sense just make an issue.
+
+Logging
+-----
+TickThreading stores its logs in the TickThreadingLogs directory, and will keep the previous 5 logs.
+Make sure to include relevant logs if you run into a problem.
+
 Source
 ------
-The latest and greatest source of TickThreading can be found right here.  
+You're staring right at it! :P
 Download the latest builds from [Jenkins].  
 
 Compiling
