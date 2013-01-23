@@ -14,11 +14,13 @@ import cpw.mods.fml.common.TickType;
 import cpw.mods.fml.common.registry.TickRegistry;
 import cpw.mods.fml.relauncher.Side;
 import me.nallar.tickthreading.Log;
+import net.minecraft.network.packet.Packet3Chat;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 import net.minecraftforge.event.world.WorldEvent;
 
 public class DeadLockDetector {
+	private boolean sentWarningRecently = false;
 	private static volatile String lastJob = "";
 	private static volatile long lastTickTime = 0;
 	private final Map<World, TickManager> managerMap;
@@ -72,85 +74,99 @@ public class DeadLockDetector {
 
 	public boolean checkForDeadlocks() {
 		Log.flush();
-		if (lastTickTime == 0) {
+		int deadTime = (int) (System.currentTimeMillis() - lastTickTime);
+		if (lastTickTime == 0 || !MinecraftServer.getServer().isServerRunning()) {
 			return true;
 		}
-		int deadTime = (int) (System.currentTimeMillis() - lastTickTime);
-		if (deadTime > (TickThreading.instance.deadLockTime * 1000) && MinecraftServer.getServer().isServerRunning()) {
-			TreeMap<String, Thread> sortedThreads = new TreeMap<String, Thread>();
-			StringBuilder sb = new StringBuilder();
-			sb.append("The server appears to have deadlocked.")
-					.append("\nLast tick ").append(deadTime).append("ms ago.")
-					.append("\nTicking: ").append(lastJob).append('\n');
-			Map<Thread, StackTraceElement[]> traces = Thread.getAllStackTraces();
-			for (Thread thread : traces.keySet()) {
-				sortedThreads.put(thread.getName(), thread);
+		if (TickThreading.instance.exitOnDeadlock) {
+			if (sentWarningRecently && deadTime < 10000) {
+				sentWarningRecently = false;
+				MinecraftServer.getServerConfigurationManager(MinecraftServer.getServer())
+						.sendPacketToAllPlayers(new Packet3Chat("The server has recovered and will not need to restart. :)"));
+			} else if (deadTime > 10000) {
+				MinecraftServer.getServerConfigurationManager(MinecraftServer.getServer())
+						.sendPacketToAllPlayers(new Packet3Chat("The server appears to have frozen and will restart soon if it does not recover. :("));
 			}
-			for (Thread thread : sortedThreads.values()) {
-				sb.append("Current Thread: ").append(thread.getName()).append('\n').append("    PID: ").append(thread.getId())
-						.append(" | Alive: ").append(thread.isAlive()).append(" | State: ").append(thread.getState())
-						.append(" | Daemon: ").append(thread.isDaemon()).append(" | Priority:").append(thread.getPriority())
-						.append("    Stack:").append('\n');
-				for (StackTraceElement stackTraceElement : thread.getStackTrace()) {
-					sb.append("        ").append(stackTraceElement.toString()).append('\n');
-				}
-			}
-			ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-			long[] deadlockedThreads = threadMXBean.findDeadlockedThreads();
-			if (deadlockedThreads != null) {
-				ThreadInfo[] infos = threadMXBean.getThreadInfo(deadlockedThreads, true, true);
-				sb.append("Definitely deadlocked: \n");
-				for (ThreadInfo threadInfo : infos) {
-					sb.append(threadInfo).append('\n');
-				}
-			}
-			Log.severe(sb.toString());
-			Log.flush();
-			for (World world : new HashMap<World, TickManager>(managerMap).keySet()) {
-				TickThreading.instance.onWorldUnload(new WorldEvent.Unload(world));
-			}
-			// Yes, we save multiple times - handleServerStopping may freeze on the same thing we deadlocked on, but if it doesn't might change stuff
-			// which needs to be saved.
-			MinecraftServer minecraftServer = MinecraftServer.getServer();
-			if (minecraftServer.currentlySaving) {
-				Log.severe("World state is possibly corrupted! Sleeping for 2 minutes - will force save after.");
-				Log.flush();
-				minecraftServer.currentlySaving = false;
-				try {
-					Thread.sleep(1000 * 120);
-				} catch (InterruptedException ignored) {
-				}
-			}
-			Log.info("Attempting to save");
-			Log.flush();
-			minecraftServer.saveEverything(); // Save first
-			new Thread() {
-				@Override
-				public void run() {
-					try {
-						Thread.sleep(300000);
-					} catch (InterruptedException ignored) {
-					}
-					Log.severe("Froze while attempting to stop - halting server.");
-					Log.flush();
-					Runtime.getRuntime().halt(1);
-				}
-			}.start();
-			Log.info("Attempting to stop the server");
-			minecraftServer.stopServer();
-			FMLCommonHandler.instance().handleServerStopping(); // Try to get mods to save data - this may lock up, as we deadlocked.
-			minecraftServer.saveEverything(); // Save again, in case they changed anything.
-			minecraftServer.initiateShutdown();
-			Log.flush();
-			if (TickThreading.instance.exitOnDeadlock) {
-				try {
-					Thread.sleep(5000);
-				} catch (InterruptedException ignored) {
-				}
-				Runtime.getRuntime().exit(1);
-			}
-			return false;
 		}
-		return true;
+		if (deadTime < (TickThreading.instance.deadLockTime * 1000)) {
+			return true;
+		}
+		if (TickThreading.instance.exitOnDeadlock) {
+			MinecraftServer.getServerConfigurationManager(MinecraftServer.getServer())
+					.sendPacketToAllPlayers(new Packet3Chat("The server is restarting - be right back!"));
+		}
+		TreeMap<String, Thread> sortedThreads = new TreeMap<String, Thread>();
+		StringBuilder sb = new StringBuilder();
+		sb.append("The server appears to have deadlocked.")
+				.append("\nLast tick ").append(deadTime).append("ms ago.")
+				.append("\nTicking: ").append(lastJob).append('\n');
+		Map<Thread, StackTraceElement[]> traces = Thread.getAllStackTraces();
+		for (Thread thread : traces.keySet()) {
+			sortedThreads.put(thread.getName(), thread);
+		}
+		for (Thread thread : sortedThreads.values()) {
+			sb.append("Current Thread: ").append(thread.getName()).append('\n').append("    PID: ").append(thread.getId())
+					.append(" | Alive: ").append(thread.isAlive()).append(" | State: ").append(thread.getState())
+					.append(" | Daemon: ").append(thread.isDaemon()).append(" | Priority:").append(thread.getPriority())
+					.append("    Stack:").append('\n');
+			for (StackTraceElement stackTraceElement : thread.getStackTrace()) {
+				sb.append("        ").append(stackTraceElement.toString()).append('\n');
+			}
+		}
+		ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+		long[] deadlockedThreads = threadMXBean.findDeadlockedThreads();
+		if (deadlockedThreads != null) {
+			ThreadInfo[] infos = threadMXBean.getThreadInfo(deadlockedThreads, true, true);
+			sb.append("Definitely deadlocked: \n");
+			for (ThreadInfo threadInfo : infos) {
+				sb.append(threadInfo).append('\n');
+			}
+		}
+		Log.severe(sb.toString());
+		Log.flush();
+		for (World world : new HashMap<World, TickManager>(managerMap).keySet()) {
+			TickThreading.instance.onWorldUnload(new WorldEvent.Unload(world));
+		}
+		// Yes, we save multiple times - handleServerStopping may freeze on the same thing we deadlocked on, but if it doesn't might change stuff
+		// which needs to be saved.
+		MinecraftServer minecraftServer = MinecraftServer.getServer();
+		if (minecraftServer.currentlySaving) {
+			Log.severe("World state is possibly corrupted! Sleeping for 2 minutes - will force save after.");
+			Log.flush();
+			minecraftServer.currentlySaving = false;
+			try {
+				Thread.sleep(1000 * 120);
+			} catch (InterruptedException ignored) {
+			}
+		}
+		Log.info("Attempting to save");
+		Log.flush();
+		minecraftServer.saveEverything(); // Save first
+		new Thread() {
+			@Override
+			public void run() {
+				try {
+					Thread.sleep(300000);
+				} catch (InterruptedException ignored) {
+				}
+				Log.severe("Froze while attempting to stop - halting server.");
+				Log.flush();
+				Runtime.getRuntime().halt(1);
+			}
+		}.start();
+		Log.info("Attempting to save cleanly");
+		minecraftServer.stopServer();
+		FMLCommonHandler.instance().handleServerStopping(); // Try to get mods to save data - this may lock up, as we deadlocked.
+		minecraftServer.saveEverything(); // Save again, in case they changed anything.
+		minecraftServer.initiateShutdown();
+		Log.flush();
+		if (TickThreading.instance.exitOnDeadlock) {
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException ignored) {
+			}
+			Runtime.getRuntime().exit(1);
+		}
+		return false;
 	}
 }
