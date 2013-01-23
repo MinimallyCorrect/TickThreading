@@ -8,12 +8,7 @@ TickThreading is licensed under the [N Open License, Version 1][License]
 
 Compatibility with other mods
 -----
-Things will break! I don't expect other mod developers to try to make things threadsafe, the patcher takes care of it.
-
-What you can't do:
-
-* Access the loadedTileEntityList. It just won't work, and if you grab its iterator everything will be ticked. I may try to write compatibility for this later.
-* Call removeAll on loadedEntityList without also setting its tickAccess field to false after, else .size() will return 0 for the next call to it.
+[See the wiki.](https://github.com/nallar/TickThreading/wiki/Mod-Compatibility)
 
 Source
 ------
@@ -22,7 +17,7 @@ Download the latest builds from [Jenkins].
 
 Compiling
 ---------
-TickThreading is built using Ant.
+TickThreading is built using Ant. astyle is also required for linux users.
 
 * Install [Ant](http://ant.apache.org/)
 * Checkout this repo and run: `ant`
