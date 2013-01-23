@@ -257,6 +257,11 @@
 			<synchronize field="staticLock">tickEnd,onPlayerLogout,onWorldLoad,onWorldUnload,onChunkForce,onChunkUnForce</synchronize>
 		</class>
 		<class id="codechicken.chunkloader.PlayerChunkViewerManager">
+			<newInitializer field="chunkChanges" class="me.nallar.tickthreading.collections.ComodificationDebugLinkedList"/>
+			<newInitializer field="ticketChanges" class="me.nallar.tickthreading.collections.ComodificationDebugLinkedList"/>
+			<newInitializer field="dimChanges" class="me.nallar.tickthreading.collections.ComodificationDebugLinkedList"/>
+			<newInitializer field="logouts" class="me.nallar.tickthreading.collections.ComodificationDebugLinkedList"/>
+			<newInitializer field="addViewers" class="me.nallar.tickthreading.collections.ComodificationDebugLinkedList"/>
 			<synchronize field="codechicken.chunkloader.ChunkLoaderEventHandler.staticLock"/>
 		</class>
 		<class id="codechicken.chunkloader.CommandChunkLoaders">
