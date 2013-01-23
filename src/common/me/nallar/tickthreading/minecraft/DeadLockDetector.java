@@ -121,7 +121,23 @@ public class DeadLockDetector {
 				} catch (InterruptedException ignored) {
 				}
 			}
+			Log.info("Attempting to save");
+			Log.flush();
 			minecraftServer.saveEverything(); // Save first
+			new Thread() {
+				@Override
+				public void run() {
+					try {
+						Thread.sleep(300000);
+					} catch (InterruptedException ignored) {
+					}
+					Log.severe("Froze while attempting to stop - halting server.");
+					Log.flush();
+					Runtime.getRuntime().halt(1);
+				}
+			}.start();
+			Log.info("Attempting to stop the server");
+			minecraftServer.stopServer();
 			FMLCommonHandler.instance().handleServerStopping(); // Try to get mods to save data - this may lock up, as we deadlocked.
 			minecraftServer.saveEverything(); // Save again, in case they changed anything.
 			minecraftServer.initiateShutdown();
@@ -131,18 +147,6 @@ public class DeadLockDetector {
 					Thread.sleep(5000);
 				} catch (InterruptedException ignored) {
 				}
-				new Thread() {
-					@Override
-					public void run() {
-						try {
-							Thread.sleep(60000);
-						} catch (InterruptedException ignored) {
-						}
-						Log.severe("Froze while attempting to stop - halting server.");
-						Log.flush();
-						Runtime.getRuntime().halt(1);
-					}
-				}.start();
 				Runtime.getRuntime().exit(1);
 			}
 			return false;
