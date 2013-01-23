@@ -131,7 +131,7 @@
 		<class id="net.minecraft.server.management.PlayerManager" env="forge">
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchPlayerManagerForge"/>
 			<synchronize>addPlayer,removePlayer</synchronize>
-			<synchronize field="$1.loadedChunk">updateMountedMovingPlayer</synchronize>
+			<synchronize field="$1.loadedChunks">updateMountedMovingPlayer</synchronize>
 		</class>
 		<class id="net.minecraft.server.management.PlayerInstance" env="forge">
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchPlayerInstance"/>
