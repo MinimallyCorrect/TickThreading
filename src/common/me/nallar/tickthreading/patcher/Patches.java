@@ -150,6 +150,8 @@ public class Patches {
 		final String code = attributes.get("code");
 		final int index = Integer.valueOf(index_);
 
+		Log.fine("method: " + method + ", class: " + className + ", code" + code + ", index: " + index);
+
 		ctBehavior.instrument(new ExprEditor() {
 			private int currentIndex = 0;
 

@@ -4,7 +4,6 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -17,7 +16,6 @@ import me.nallar.tickthreading.Log;
 import net.minecraft.network.packet.Packet3Chat;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
-import net.minecraftforge.event.world.WorldEvent;
 
 public class DeadLockDetector {
 	private boolean sentWarningRecently = false;

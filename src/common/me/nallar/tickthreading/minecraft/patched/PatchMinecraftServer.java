@@ -249,10 +249,10 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			this.theProfiler.startSection("forgeTick");
 			FMLCommonHandler.instance().onPreWorldTick(var4);
 
-			this.theProfiler.endStartSection("entityTick");
-			var4.updateEntities();
 			this.theProfiler.endStartSection("worldTick");
 			var4.tick();
+			this.theProfiler.endStartSection("entityTick");
+			var4.updateEntities();
 			this.theProfiler.endStartSection("postForgeTick");
 			FMLCommonHandler.instance().onPostWorldTick(var4);
 			this.theProfiler.endSection();

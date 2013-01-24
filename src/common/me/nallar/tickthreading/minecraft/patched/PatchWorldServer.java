@@ -2,8 +2,8 @@ package me.nallar.tickthreading.minecraft.patched;
 
 import java.util.Iterator;
 
+import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.ThreadManager;
-import me.nallar.tickthreading.minecraft.TickManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import net.minecraft.block.Block;
 import net.minecraft.entity.effect.EntityLightningBolt;
@@ -19,6 +19,7 @@ import net.minecraft.world.storage.ISaveHandler;
 
 public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	private Iterator chunkCoordIterator;
+	private final ThreadManager threadManager = new ThreadManager(TickThreading.instance.getThreadCount(), "Chunk Updates for " + Log.name(this));
 
 	public PatchWorldServer(MinecraftServer par1MinecraftServer, ISaveHandler par2ISaveHandler, String par3Str, int par4, WorldSettings par5WorldSettings, Profiler par6Profiler) {
 		super(par1MinecraftServer, par2ISaveHandler, par3Str, par4, par5WorldSettings, par6Profiler);
@@ -29,11 +30,10 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	@Override
 	protected void tickBlocksAndAmbiance() {
 		TickThreading tickThreading = TickThreading.instance;
-		TickManager tickManager = tickThreading.getManager(this);
 		boolean concurrentTicks = tickThreading.enableChunkTickThreading && !mcServer.theProfiler.profilingEnabled;
 
 		if (concurrentTicks) {
-			tickManager.getThreadManager().waitForCompletion();
+			threadManager.waitForCompletion();
 		}
 
 		doneChunks.retainAll(activeChunkSet);
@@ -46,7 +46,6 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		startTime = System.nanoTime();
 
 		if (concurrentTicks) {
-			ThreadManager threadManager = tickManager.getThreadManager();
 			for (int i = 0; i < threadManager.size(); i++) {
 				threadManager.run(this);
 			}

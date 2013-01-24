@@ -40,7 +40,7 @@ public class TickManager {
 
 	public TickManager(World world, int regionSize, int threads, boolean waitForCompletion) {
 		this.waitForCompletion = waitForCompletion;
-		threadManager = new ThreadManager(threads == 0 ? Runtime.getRuntime().availableProcessors() : threads, "Tile/Entity Tick for " + Log.name(world));
+		threadManager = new ThreadManager(threads, "Tile/Entity Tick for " + Log.name(world));
 		this.world = world;
 		this.regionSize = regionSize;
 	}

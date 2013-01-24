@@ -37,6 +37,7 @@ import net.minecraftforge.event.world.WorldEvent;
 @Mod (modid = "TickThreading", name = "TickThreading", version = "@MOD_VERSION@")
 @NetworkMod (clientSideRequired = false, serverSideRequired = false)
 public class TickThreading {
+	private final Runtime runtime = Runtime.getRuntime();
 	private static final int loadedEntityFieldIndex = 0;
 	private static final int loadedTileEntityFieldIndex = 2;
 	public final boolean enabled;
@@ -176,7 +177,7 @@ public class TickThreading {
 
 	@ForgeSubscribe
 	public void onWorldLoad(WorldEvent.Load event) {
-		TickManager manager = new TickManager(event.world, regionSize, tickThreads, waitForEntityTick);
+		TickManager manager = new TickManager(event.world, regionSize, getThreadCount(), waitForEntityTick);
 		manager.setVariableTickRate(variableTickRate);
 		try {
 			if (enableTileEntityTickThreading) {
@@ -234,5 +235,9 @@ public class TickThreading {
 
 	public boolean shouldFastSpawn(World world) {
 		return this.enableFastMobSpawning && !disabledFastMobSpawningDimensions.contains(world.provider.dimensionId);
+	}
+
+	public int getThreadCount() {
+		return tickThreads == 0 ? runtime.availableProcessors() : tickThreads;
 	}
 }
