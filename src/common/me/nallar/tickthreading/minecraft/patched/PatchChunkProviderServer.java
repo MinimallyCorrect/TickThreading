@@ -178,6 +178,9 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 
 	@Override
 	public void unloadAllChunks() {
+		if (loadedChunks.size() == currentServer.getPersistentChunks().size()) {
+			return;
+		}
 		synchronized (loadedChunks) {
 
 			for (Object loadedChunk : this.loadedChunks) {
