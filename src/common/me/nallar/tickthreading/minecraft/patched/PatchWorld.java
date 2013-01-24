@@ -37,14 +37,31 @@ public abstract class PatchWorld extends World {
 		int var7 = MathHelper.floor_double(par2AxisAlignedBB.minZ);
 		int var8 = MathHelper.floor_double(par2AxisAlignedBB.maxZ + 1.0D);
 
-		for (int var9 = var3; var9 < var4; ++var9) {
-			for (int var10 = var7; var10 < var8; ++var10) {
-				if (this.blockExists(var9, 64, var10)) {
-					for (int var11 = var5 - 1; var11 < var6; ++var11) {
-						Block var12 = Block.blocksList[this.getBlockId(var9, var11, var10)];
-
-						if (var12 != null) {
-							var12.addCollidingBlockToList(this, var9, var11, var10, par2AxisAlignedBB, collidingBoundingBoxes, par1Entity);
+		int ystart = ((var5 - 1) < 0) ? 0 : (var5 - 1);
+		for (int chunkx = (var3 >> 4); chunkx <= ((var4 - 1) >> 4); chunkx++) {
+			int cx = chunkx << 4;
+			for (int chunkz = (var7 >> 4); chunkz <= ((var8 - 1) >> 4); chunkz++) {
+				if (!this.chunkExists(chunkx, chunkz)) {
+					continue;
+				}
+				int cz = chunkz << 4;
+				Chunk chunk = this.getChunkFromChunkCoords(chunkx, chunkz);
+				// Compute ranges within chunk
+				int xstart = (var3 < cx) ? cx : var3;
+				int xend = (var4 < (cx + 16)) ? var4 : (cx + 16);
+				int zstart = (var7 < cz) ? cz : var7;
+				int zend = (var8 < (cz + 16)) ? var8 : (cz + 16);
+				// Loop through blocks within chunk
+				for (int x = xstart; x < xend; x++) {
+					for (int z = zstart; z < zend; z++) {
+						for (int y = ystart; y < var6; y++) {
+							int blkid = chunk.getBlockID(x - cx, y, z - cz);
+							if (blkid > 0) {
+								Block block = Block.blocksList[blkid];
+								if (block != null) {
+									block.addCollidingBlockToList(this, x, y, z, par2AxisAlignedBB, collidingBoundingBoxes, par1Entity);
+								}
+							}
 						}
 					}
 				}
