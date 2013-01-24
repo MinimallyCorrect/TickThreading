@@ -31,7 +31,7 @@ public class EntityTickProfiler {
 		for (Map.Entry<Class<?>, AtomicLong> entry : this.time.entrySet()) {
 			time.put(entry.getKey(), entry.getValue().get());
 		}
-		final List<Class<?>> sortedKeysByTime = Ordering.natural().onResultOf(Functions.forMap(time)).immutableSortedCopy(time.keySet());
+		final List<Class<?>> sortedKeysByTime = Ordering.natural().reverse().onResultOf(Functions.forMap(time)).immutableSortedCopy(time.keySet());
 		tf
 				.heading("Class")
 				.heading("Time");
@@ -46,7 +46,7 @@ public class EntityTickProfiler {
 		for (Map.Entry<Class<?>, AtomicLong> entry : this.time.entrySet()) {
 			timePerTick.put(entry.getKey(), entry.getValue().get() / invocationCount.get(entry.getKey()).get());
 		}
-		final List<Class<?>> sortedKeysByTimePerTick = Ordering.natural().onResultOf(Functions.forMap(timePerTick)).immutableSortedCopy(timePerTick.keySet());
+		final List<Class<?>> sortedKeysByTimePerTick = Ordering.natural().reverse().onResultOf(Functions.forMap(timePerTick)).immutableSortedCopy(timePerTick.keySet());
 		tf
 				.heading("Class")
 				.heading("Time/tick");
