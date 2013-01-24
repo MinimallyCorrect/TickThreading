@@ -6,6 +6,7 @@ import java.util.Set;
 
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickManager;
+import me.nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
@@ -30,9 +31,18 @@ public class TileEntityTickRegion extends TickRegion {
 		boolean xPlusLocked = false;
 		boolean zMinusLocked = false;
 		boolean zPlusLocked = false;
+		boolean profilingEnabled = manager.profilingEnabled;
+		EntityTickProfiler entityTickProfiler = null;
+		long startTime = 0;
+		if (profilingEnabled) {
+			entityTickProfiler = manager.entityTickProfiler;
+		}
 		//Lock classLock = null;
 		Iterator<TileEntity> tileEntitiesIterator = tileEntitySet.iterator();
 		while (tileEntitiesIterator.hasNext()) {
+			if (profilingEnabled) {
+				startTime = System.nanoTime();
+			}
 			TileEntity tileEntity = tileEntitiesIterator.next();
 			try {
 				//classLock = null;
@@ -70,7 +80,6 @@ public class TileEntityTickRegion extends TickRegion {
 					}
 					continue;
 				}
-				//classLock = LockController.lock(tileEntity);
 				if (!tileEntity.isInvalid() && tileEntity.func_70309_m() && world.blockExists(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord)) {
 					tileEntity.updateEntity();
 				}
@@ -92,9 +101,6 @@ public class TileEntityTickRegion extends TickRegion {
 						+ "\nticking: " + tileEntity.getClass() + " at x,y,z:" + tileEntity.xCoord + ',' + tileEntity.yCoord + ',' + tileEntity.zCoord
 						+ "\nTick region: " + toString() + ':', throwable);
 			} finally {
-				//if (classLock != null) {
-				//	classLock.unlock();
-				//}
 				if (locked) {
 					if (xMinusLocked) {
 						this.xMinusLock.unlock();
@@ -109,6 +115,9 @@ public class TileEntityTickRegion extends TickRegion {
 					if (xPlusLocked) {
 						this.xPlusLock.unlock();
 					}
+				}
+				if (profilingEnabled) {
+					entityTickProfiler.record(tileEntity.getClass(), System.nanoTime() - startTime);
 				}
 			}
 		}

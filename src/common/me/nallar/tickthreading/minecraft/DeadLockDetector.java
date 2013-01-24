@@ -15,7 +15,6 @@ import cpw.mods.fml.relauncher.Side;
 import me.nallar.tickthreading.Log;
 import net.minecraft.network.packet.Packet3Chat;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.World;
 
 public class DeadLockDetector {
 	private boolean sentWarningRecently = false;

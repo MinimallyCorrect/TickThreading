@@ -14,6 +14,7 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 import me.nallar.tickthreading.Log;
+import me.nallar.tickthreading.minecraft.commands.ProfileCommand;
 import me.nallar.tickthreading.minecraft.commands.TPSCommand;
 import me.nallar.tickthreading.minecraft.commands.TicksCommand;
 import me.nallar.tickthreading.minecraft.entitylist.EntityList;
@@ -54,6 +55,7 @@ public class TickThreading {
 	public boolean enableChunkTickThreading = true;
 	public boolean enableWorldTickThreading = true;
 	public boolean requireOpForTicksCommand = true;
+	public boolean requireOpForProfileCommand = true;
 	public boolean shouldLoadSpawn = false;
 	public int saveInterval = 1800;
 	public int deadLockTime = 30;
@@ -104,12 +106,16 @@ public class TickThreading {
 		ticksCommandName.comment = "Name of the command to be used for performance stats. Defaults to ticks.";
 		Property tpsCommandName = config.get(Configuration.CATEGORY_GENERAL, "tpsCommandName", TPSCommand.name);
 		tpsCommandName.comment = "Name of the command to be used for TPS reports.";
+		Property profileCommandName = config.get(Configuration.CATEGORY_GENERAL, "profileCommandName", ProfileCommand.name);
+		profileCommandName.comment = "Name of the command to be used for profiling reports.";
 		Property requirePatchedProperty = config.get(Configuration.CATEGORY_GENERAL, "requirePatched", requirePatched);
 		requirePatchedProperty.comment = "If the server must be patched to run with TickThreading";
 		Property exitOnDeadlockProperty = config.get(Configuration.CATEGORY_GENERAL, "exitOnDeadlock", exitOnDeadlock);
 		exitOnDeadlockProperty.comment = "If the server should shut down when a deadlock is detected";
 		Property requireOpForTicksCommandProperty = config.get(Configuration.CATEGORY_GENERAL, "requireOpsForTicksCommand", requireOpForTicksCommand);
 		requireOpForTicksCommandProperty.comment = "If a player must be opped to use /ticks";
+		Property requireOpForProfileCommandProperty = config.get(Configuration.CATEGORY_GENERAL, "requireOpsForProfileCommand", requireOpForProfileCommand);
+		requireOpForProfileCommandProperty.comment = "If a player must be opped to use /profile";
 		Property saveIntervalProperty = config.get(Configuration.CATEGORY_GENERAL, "saveInterval", saveInterval);
 		saveIntervalProperty.comment = "Time between auto-saves, in ticks.";
 		Property deadLockTimeProperty = config.get(Configuration.CATEGORY_GENERAL, "deadLockTime", deadLockTime);
@@ -132,6 +138,7 @@ public class TickThreading {
 
 		TicksCommand.name = ticksCommandName.value;
 		TPSCommand.name = tpsCommandName.value;
+		ProfileCommand.name = profileCommandName.value;
 		tickThreads = tickThreadsProperty.getInt(tickThreads);
 		regionSize = regionSizeProperty.getInt(regionSize);
 		saveInterval = saveIntervalProperty.getInt(saveInterval);
@@ -147,6 +154,7 @@ public class TickThreading {
 		enableWorldTickThreading = enableWorldTickThreadingProperty.getBoolean(enableWorldTickThreading);
 		enableFastMobSpawning = enableFastMobSpawningProperty.getBoolean(enableFastMobSpawning);
 		requireOpForTicksCommand = requireOpForTicksCommandProperty.getBoolean(requireOpForTicksCommand);
+		requireOpForProfileCommand = requireOpForProfileCommandProperty.getBoolean(requireOpForProfileCommand);
 		aggressiveTicks = aggressiveTicksProperty.getBoolean(aggressiveTicks);
 		shouldLoadSpawn = shouldLoadSpawnProperty.getBoolean(shouldLoadSpawn);
 		waitForEntityTick = waitForEntityTickProperty.getBoolean(waitForEntityTick);

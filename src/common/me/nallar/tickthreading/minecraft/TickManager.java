@@ -10,6 +10,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import me.nallar.tickthreading.Log;
+import me.nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
 import me.nallar.tickthreading.minecraft.tickregion.EntityTickRegion;
 import me.nallar.tickthreading.minecraft.tickregion.TickRegion;
 import me.nallar.tickthreading.minecraft.tickregion.TileEntityTickRegion;
@@ -23,6 +24,7 @@ import net.minecraft.world.WorldServer;
 public class TickManager {
 	public final int regionSize;
 	public boolean variableTickRate;
+	public boolean profilingEnabled = false;
 	public float averageTickLength = 0;
 	public int lastTickLength = 0;
 	public long lastStartTime = 0;
@@ -37,6 +39,7 @@ public class TickManager {
 	public Object tileEntityLock = new Object();
 	public Object entityLock = new Object();
 	private final boolean waitForCompletion;
+	public EntityTickProfiler entityTickProfiler = new EntityTickProfiler();
 
 	public TickManager(World world, int regionSize, int threads, boolean waitForCompletion) {
 		this.waitForCompletion = waitForCompletion;

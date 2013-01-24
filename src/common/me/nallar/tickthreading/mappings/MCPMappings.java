@@ -35,8 +35,9 @@ public class MCPMappings extends Mappings implements Serializable {
 		if (obfuscated == null) {
 			obfuscated = parameterlessMethodMappings.get(methodDescription.getShortName());
 			if (methodDescription.isExact() || obfuscated == null) {
-				Log.info("Failed to directly map " + methodDescription
-						+ "\n would map to " + obfuscated);
+				if (obfuscated != null) {
+					Log.info("Failed to directly map " + methodDescription + ", would map to " + obfuscated);
+				}
 				obfuscated = methodDescription;
 				obfuscated.obfuscateClasses();
 			}

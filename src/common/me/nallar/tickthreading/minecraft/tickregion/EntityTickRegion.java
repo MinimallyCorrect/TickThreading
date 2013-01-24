@@ -6,6 +6,7 @@ import java.util.Set;
 
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickManager;
+import me.nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunkProvider;
@@ -21,8 +22,17 @@ public class EntityTickRegion extends TickRegion {
 	public void doTick() {
 		try {
 			IChunkProvider chunkProvider = world.getChunkProvider();
+			boolean profilingEnabled = manager.profilingEnabled;
+			EntityTickProfiler entityTickProfiler = null;
+			long startTime = 0;
+			if (profilingEnabled) {
+				entityTickProfiler = manager.entityTickProfiler;
+			}
 			Iterator<Entity> entitiesIterator = entitySet.iterator();
 			while (entitiesIterator.hasNext()) {
+				if (profilingEnabled) {
+					startTime = System.nanoTime();
+				}
 				Entity entity = entitiesIterator.next();
 				if (entity.ridingEntity != null) {
 					if (!entity.ridingEntity.isDead && entity.ridingEntity.riddenByEntity == entity) {
@@ -54,6 +64,9 @@ public class EntityTickRegion extends TickRegion {
 					//Log.severe("Inconsistent state: " + entity + " is in the wrong TickRegion.");
 					// Note to self for when I decide this is wrong later:
 					// Entities are supposed to move, of course this will happen!
+				}
+				if (profilingEnabled) {
+					entityTickProfiler.record(entity.getClass(), System.nanoTime() - startTime);
 				}
 			}
 		} catch (Throwable throwable) {
