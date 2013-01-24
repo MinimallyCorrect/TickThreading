@@ -5,6 +5,7 @@ import java.util.List;
 
 import javassist.is.faulty.ThreadLocals;
 import me.nallar.tickthreading.minecraft.entitylist.EntityList;
+import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.block.Block;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
@@ -24,6 +25,71 @@ import net.minecraft.world.storage.ISaveHandler;
 public abstract class PatchWorld extends World {
 	public PatchWorld(ISaveHandler par1ISaveHandler, String par2Str, WorldProvider par3WorldProvider, WorldSettings par4WorldSettings, Profiler par5Profiler) {
 		super(par1ISaveHandler, par2Str, par3WorldProvider, par4WorldSettings, par5Profiler);
+	}
+
+	@Declare
+	public boolean hasCollidingBoundingBoxes(Entity par1Entity, AxisAlignedBB par2AxisAlignedBB) {
+		List collidingBoundingBoxes = (List) ThreadLocals.collidingBoundingBoxes.get();
+		collidingBoundingBoxes.clear();
+		int var3 = MathHelper.floor_double(par2AxisAlignedBB.minX);
+		int var4 = MathHelper.floor_double(par2AxisAlignedBB.maxX + 1.0D);
+		int var5 = MathHelper.floor_double(par2AxisAlignedBB.minY);
+		int var6 = MathHelper.floor_double(par2AxisAlignedBB.maxY + 1.0D);
+		int var7 = MathHelper.floor_double(par2AxisAlignedBB.minZ);
+		int var8 = MathHelper.floor_double(par2AxisAlignedBB.maxZ + 1.0D);
+
+		int ystart = ((var5 - 1) < 0) ? 0 : (var5 - 1);
+		for (int chunkx = (var3 >> 4); chunkx <= ((var4 - 1) >> 4); chunkx++) {
+			int cx = chunkx << 4;
+			for (int chunkz = (var7 >> 4); chunkz <= ((var8 - 1) >> 4); chunkz++) {
+				if (!this.chunkExists(chunkx, chunkz)) {
+					continue;
+				}
+				int cz = chunkz << 4;
+				Chunk chunk = this.getChunkFromChunkCoords(chunkx, chunkz);
+				// Compute ranges within chunk
+				int xstart = (var3 < cx) ? cx : var3;
+				int xend = (var4 < (cx + 16)) ? var4 : (cx + 16);
+				int zstart = (var7 < cz) ? cz : var7;
+				int zend = (var8 < (cz + 16)) ? var8 : (cz + 16);
+				// Loop through blocks within chunk
+				for (int x = xstart; x < xend; x++) {
+					for (int z = zstart; z < zend; z++) {
+						for (int y = ystart; y < var6; y++) {
+							int blkid = chunk.getBlockID(x - cx, y, z - cz);
+							if (blkid > 0) {
+								Block block = Block.blocksList[blkid];
+								if (block != null) {
+									block.addCollidingBlockToList(this, x, y, z, par2AxisAlignedBB, collidingBoundingBoxes, par1Entity);
+								}
+								if (collidingBoundingBoxes.size() > 0) {
+									return true;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		double var14 = 0.25D;
+		List var16 = this.getEntitiesWithinAABBExcludingEntity(par1Entity, par2AxisAlignedBB.expand(var14, var14, var14));
+
+		for (int var15 = 0; var15 < var16.size(); ++var15) {
+			AxisAlignedBB var13 = ((Entity) var16.get(var15)).getBoundingBox();
+
+			if (var13 != null && var13.intersectsWith(par2AxisAlignedBB)) {
+				return true;
+			}
+
+			var13 = par1Entity.getCollisionBox((Entity) var16.get(var15));
+
+			if (var13 != null && var13.intersectsWith(par2AxisAlignedBB)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	@Override

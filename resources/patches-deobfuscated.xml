@@ -89,6 +89,9 @@
 		<class id="net.minecraft.entity.player.EntityPlayerMP" env="forge">
 			<newInitializer field="destroyedItemsNetCache" class="me.nallar.tickthreading.collections.ConcurrentLinkedQueueList"/>
 		</class>
+		<class id="net.minecraft.entity.Entity" env="forge">
+			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchEntity"/>
+		</class>
 		<class id="net.minecraft.entity.Entity">
 			<newField static="" field="nextEntityID_" class="java.util.concurrent.atomic.AtomicInteger"/>
 			<insertAfter field="entityId" code="this.$field = this.nextEntityID_.getAndIncrement();"/>
