@@ -41,7 +41,7 @@ public class ProfileCommand extends Command {
 			world = null;
 		}
 		if (world == null) {
-			Log.info("Usage: /profile [time=10] [dimensionid=current dimension]");
+			sendChat(commandSender, "Usage: /profile [time=10] [dimensionid=current dimension]");
 			return;
 		}
 		final TickManager manager = TickThreading.instance.getManager(world);
@@ -65,6 +65,7 @@ public class ProfileCommand extends Command {
 		};
 		Thread profilingThread = new Thread(profilingRunnable);
 		profilingThread.setName("TT Profiler");
+		sendChat(commandSender, "Profiling for " + time + " seconds in " + Log.name(world));
 		profilingThread.start();
 	}
 }

@@ -32,7 +32,7 @@ public class TicksCommand extends Command {
 			world = ((Entity) commandSender).worldObj;
 		}
 		if (world == null) {
-			Log.info("Usage: /ticks [dimensionid]");
+			sendChat(commandSender, "Usage: /ticks [dimensionid]");
 			return;
 		}
 		sendChat(commandSender, String.valueOf(TickThreading.instance.getManager(world).writeDetailedStats(new TableFormatter(commandSender))));
