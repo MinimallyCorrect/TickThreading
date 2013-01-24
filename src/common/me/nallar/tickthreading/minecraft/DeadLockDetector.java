@@ -21,7 +21,6 @@ public class DeadLockDetector {
 	private boolean sentWarningRecently = false;
 	private static volatile String lastJob = "";
 	private static volatile long lastTickTime = 0;
-	private final Map<World, TickManager> managerMap;
 	private static final ITickHandler tickHandler = new ITickHandler() {
 		private final EnumSet<TickType> tickTypes = EnumSet.of(TickType.SERVER, TickType.CLIENTGUI);
 
@@ -45,8 +44,7 @@ public class DeadLockDetector {
 		}
 	};
 
-	public DeadLockDetector(Map<World, TickManager> managerMap) {
-		this.managerMap = managerMap;
+	public DeadLockDetector() {
 		Thread deadlockThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -152,7 +150,7 @@ public class DeadLockDetector {
 		Log.info("Attempting to stop mods and disconnect players cleanly");
 		try {
 			minecraftServer.stopServer();
-		} catch(Exception e) {
+		} catch (Exception e) {
 			Log.severe("Error stopping server", e);
 		}
 		FMLCommonHandler.instance().handleServerStopping(); // Try to get mods to save data - this may lock up, as we deadlocked.

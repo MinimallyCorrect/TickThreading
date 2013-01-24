@@ -194,7 +194,7 @@ public class TickThreading {
 			Log.severe("Failed to initialise threading for world " + Log.name(event.world), e);
 		}
 		if (deadLockDetector == null) {
-			deadLockDetector = new DeadLockDetector(managers);
+			deadLockDetector = new DeadLockDetector();
 		}
 	}
 

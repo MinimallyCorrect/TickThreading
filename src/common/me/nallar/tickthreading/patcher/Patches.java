@@ -233,7 +233,7 @@ public class Patches {
 				Log.info("Adding " + added);
 				ctClass.addMethod(added);
 				if (added.getName().startsWith("construct")) {
-					CtMethod runConstructors = null;
+					CtMethod runConstructors;
 					try {
 						runConstructors = ctClass.getDeclaredMethod("runConstructors");
 					} catch (NotFoundException e) {

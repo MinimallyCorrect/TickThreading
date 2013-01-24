@@ -16,11 +16,11 @@ public abstract class PatchProfiler extends Profiler {
 	@Override
 	public void startSection(String par1Str) {
 		if (this.profilingEnabled) {
-			if (this.profilingSection.length() > 0) {
-				this.profilingSection = this.profilingSection + '.';
+			if (!this.profilingSection.isEmpty()) {
+				this.profilingSection += '.';
 			}
 
-			this.profilingSection = this.profilingSection + par1Str;
+			this.profilingSection += par1Str;
 			this.sectionList.add(this.profilingSection);
 			this.timestampList.add(System.nanoTime());
 		}
@@ -66,8 +66,8 @@ public abstract class PatchProfiler extends Profiler {
 				long var5 = this.profilingMap.containsKey(par1Str) ? (Long) this.profilingMap.get(par1Str) : -1L;
 				ArrayList var7 = new ArrayList();
 
-				if (par1Str.length() > 0) {
-					par1Str = par1Str + '.';
+				if (!par1Str.isEmpty()) {
+					par1Str += '.';
 				}
 
 				long var8 = 0L;

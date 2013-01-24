@@ -23,7 +23,7 @@ public class ChunkGarbageCollector {
 		return false;
 	}
 
-	public static Profiler profiler = MinecraftServer.getServer().theProfiler;
+	public static final Profiler profiler = MinecraftServer.getServer().theProfiler;
 
 	public static void garbageCollect(WorldServer worldServer) {
 		if (!enabled) {

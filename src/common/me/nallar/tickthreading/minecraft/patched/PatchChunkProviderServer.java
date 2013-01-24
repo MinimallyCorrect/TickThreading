@@ -182,7 +182,6 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 			return;
 		}
 		synchronized (loadedChunks) {
-
 			for (Object loadedChunk : this.loadedChunks) {
 				Chunk var2 = (Chunk) loadedChunk;
 				this.unloadChunksIfNotNearSpawn(var2.xPosition, var2.zPosition);
