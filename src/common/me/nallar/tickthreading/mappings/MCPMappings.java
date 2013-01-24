@@ -18,7 +18,7 @@ import com.google.common.io.Files;
 
 import me.nallar.tickthreading.Log;
 
-public class MCPMappings extends Mappings implements Serializable {
+public class MCPMappings extends Mappings {
 	private static final Pattern extendsPattern = Pattern.compile("\\s+?extends\\s+?([\\S]+)[^\\{]+?\\{", Pattern.DOTALL | Pattern.MULTILINE);
 	private static final Pattern packagePattern = Pattern.compile("package\\s+?([^\\s;]+)[^;]*?;", Pattern.DOTALL | Pattern.MULTILINE);
 	private final Map<String, String> methodSeargeMappings = new HashMap<String, String>();
@@ -170,5 +170,13 @@ public class MCPMappings extends Mappings implements Serializable {
 		} finally {
 			in.close();
 		}
+	}
+
+	public Map<String, String> getSimpleClassNameMappings() {
+		Map<String, String> map = new HashMap<String, String>();
+		for (Map.Entry<ClassDescription, ClassDescription> entry : classMappings.entrySet()) {
+			map.put(entry.getValue().name, entry.getKey().name);
+		}
+		return map;
 	}
 }

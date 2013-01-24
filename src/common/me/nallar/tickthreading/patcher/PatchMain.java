@@ -2,7 +2,9 @@ package me.nallar.tickthreading.patcher;
 
 import javax.xml.transform.TransformerException;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.logging.Level;
 
@@ -36,11 +38,12 @@ public class PatchMain {
 		String mcpConfigPath = args.length > 0 ? args[0] : "build/forge/mcp/conf";
 		String inputPatchPath = args.length > 1 ? args[1] : "resources/patches-deobfuscated.xml";
 		String outputPatchPath = args.length > 2 ? args[2] : "build/classes/patches.xml";
+		String outputMappingsPath = args.length > 2 ? args[2] : "build/classes/mappings.obj";
 
 		Log.info("Obfuscating " + inputPatchPath + " to " + outputPatchPath + " via " + mcpConfigPath);
 
 		try {
-			Mappings mcpMappings = new MCPMappings(new File(mcpConfigPath));
+			MCPMappings mcpMappings = new MCPMappings(new File(mcpConfigPath));
 			PatchManager patchManager = new PatchManager(new File(inputPatchPath).toURI().toURL().openStream(), Patches.class);
 
 			try {
@@ -48,6 +51,19 @@ public class PatchMain {
 				patchManager.save(new File(outputPatchPath));
 			} catch (TransformerException e) {
 				Log.severe("Failed to save obfuscated patch");
+			}
+
+			try {
+				File file = new File(outputMappingsPath);
+				FileOutputStream f = new FileOutputStream(file);
+				ObjectOutputStream s = new ObjectOutputStream(f);
+				try {
+					s.writeObject(mcpMappings.getSimpleClassNameMappings());
+				} finally {
+					s.close();
+				}
+			} catch (IOException e) {
+				Log.severe("Failed to save class name mappings", e);
 			}
 		} catch (IOException e) {
 			Log.severe("Failed to read input file", e);

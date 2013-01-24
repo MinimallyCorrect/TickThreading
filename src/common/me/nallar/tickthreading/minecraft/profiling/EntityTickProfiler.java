@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.google.common.base.Functions;
 import com.google.common.collect.Ordering;
 
+import me.nallar.tickthreading.util.MappingUtil;
 import me.nallar.tickthreading.util.TableFormatter;
 import org.cliffc.high_scale_lib.NonBlockingHashMap;
 
@@ -37,7 +38,7 @@ public class EntityTickProfiler {
 				.heading("Time");
 		for (int i = 0; i < 5 && i < sortedKeysByTime.size(); i++) {
 			tf
-					.row(sortedKeysByTime.get(i).getName())
+					.row(niceName(sortedKeysByTime.get(i)))
 					.row(time.get(sortedKeysByTime.get(i)) / 1000000d);
 		}
 		tf.finishTable();
@@ -52,11 +53,24 @@ public class EntityTickProfiler {
 				.heading("Time/tick");
 		for (int i = 0; i < 5 && i < sortedKeysByTimePerTick.size(); i++) {
 			tf
-					.row(sortedKeysByTimePerTick.get(i).getName())
+					.row(niceName(sortedKeysByTimePerTick.get(i)))
 					.row(timePerTick.get(sortedKeysByTimePerTick.get(i)) / 1000000d);
 		}
 		tf.finishTable();
 		return tf;
+	}
+
+	private static String niceName(Class<?> clazz) {
+		String name = MappingUtil.debobfuscate(clazz.getName());
+		if (name.contains(".")) {
+			String cName = name.substring(name.lastIndexOf('.') + 1);
+			String pName = name.substring(0, name.lastIndexOf('.'));
+			if (pName.contains(".")) {
+				pName = pName.substring(pName.lastIndexOf('.') + 1);
+			}
+			return pName + '.' + cName;
+		}
+		return name;
 	}
 
 	private final Map<Class<?>, AtomicInteger> invocationCount = new NonBlockingHashMap<Class<?>, AtomicInteger>();
