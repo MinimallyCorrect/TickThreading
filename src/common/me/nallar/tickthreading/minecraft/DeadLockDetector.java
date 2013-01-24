@@ -150,7 +150,11 @@ public class DeadLockDetector {
 			}
 		}.start();
 		Log.info("Attempting to stop mods and disconnect players cleanly");
-		minecraftServer.stopServer();
+		try {
+			minecraftServer.stopServer();
+		} catch(Exception e) {
+			Log.severe("Error stopping server", e);
+		}
 		FMLCommonHandler.instance().handleServerStopping(); // Try to get mods to save data - this may lock up, as we deadlocked.
 		minecraftServer.saveEverything(); // Save again, in case they changed anything.
 		minecraftServer.initiateShutdown();
