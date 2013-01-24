@@ -11,7 +11,6 @@ import java.util.logging.Level;
 import javassist.NotFoundException;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.mappings.MCPMappings;
-import me.nallar.tickthreading.mappings.Mappings;
 import me.nallar.tickthreading.util.CollectionsUtil;
 import me.nallar.tickthreading.util.VersionUtil;
 import org.xml.sax.SAXException;

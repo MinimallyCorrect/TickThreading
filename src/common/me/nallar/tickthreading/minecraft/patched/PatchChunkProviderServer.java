@@ -27,6 +27,7 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 	public static Object genLock;
 	public Object chunkLoadLock;
 	public Map<Long, Object> chunkLoadLocks;
+	private Chunk lastChunk;
 
 	public void construct() {
 		chunkLoadLock = new Object();
@@ -74,6 +75,9 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 				Long var2 = i$.next();
 				Chunk var3 = (Chunk) this.loadedChunkHashMap.getValueByKey(var2);
 				if (var3 != null) {
+					if (lastChunk == var3) {
+						lastChunk = null;
+					}
 					this.safeSaveChunk(var3);
 					this.safeSaveExtraChunkData(var3);
 					var3.onChunkUnload();
@@ -95,6 +99,16 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 		}
 
 		return this.currentChunkProvider.unload100OldestChunks();
+	}
+
+	@Override
+	public Chunk provideChunk(int x, int z) {
+		Chunk chunk = lastChunk;
+		if (chunk == null || chunk.xPosition != x || chunk.zPosition != z) {
+			chunk = (Chunk) this.loadedChunkHashMap.getValueByKey(ChunkCoordIntPair.chunkXZ2Int(x, z));
+			return (lastChunk = (chunk == null ? (!this.currentServer.findingSpawnPoint && !this.loadChunkOnProvideRequest ? this.defaultEmptyChunk : this.loadChunk(x, z)) : chunk));
+		}
+		return chunk;
 	}
 
 	@Override
