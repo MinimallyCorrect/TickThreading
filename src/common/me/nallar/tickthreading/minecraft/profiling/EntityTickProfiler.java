@@ -37,8 +37,8 @@ public class EntityTickProfiler {
 				.heading("Time");
 		for (int i = 0; i < 5 && i < sortedKeysByTime.size(); i++) {
 			tf
-					.row(sortedKeysByTime.get(i))
-					.row(time.get(sortedKeysByTime.get(i)));
+					.row(sortedKeysByTime.get(i).getName())
+					.row(time.get(sortedKeysByTime.get(i)) / 1000000d);
 		}
 		tf.finishTable();
 		tf.sb.append('\n');
@@ -52,8 +52,8 @@ public class EntityTickProfiler {
 				.heading("Time/tick");
 		for (int i = 0; i < 5 && i < sortedKeysByTimePerTick.size(); i++) {
 			tf
-					.row(sortedKeysByTimePerTick.get(i))
-					.row(timePerTick.get(sortedKeysByTimePerTick.get(i)));
+					.row(sortedKeysByTimePerTick.get(i).getName())
+					.row(timePerTick.get(sortedKeysByTimePerTick.get(i)) / 1000000d);
 		}
 		tf.finishTable();
 		return tf;
