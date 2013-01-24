@@ -176,6 +176,7 @@ public class TickThreading {
 			ServerCommandManager serverCommandManager = (ServerCommandManager) event.getServer().getCommandManager();
 			serverCommandManager.registerCommand(new TicksCommand());
 			serverCommandManager.registerCommand(new TPSCommand());
+			serverCommandManager.registerCommand(new ProfileCommand());
 		} else {
 			Log.severe("TickThreading is disabled, because your server has not been patched" +
 					" or the patches are out of date" +
