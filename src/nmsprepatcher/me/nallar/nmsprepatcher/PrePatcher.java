@@ -92,7 +92,7 @@ public class PrePatcher {
 			sourceString = source.toString();
 			// TODO: Fix package -> public properly later.
 			sourceString = sourceString.replace("    boolean isOutputEncrypted;", "    public boolean isOutputEncrypted;");
-			sourceString = sourceString.replace("    PlayerManager myManager;", "    public PlayerManager myManager;");
+			sourceString = sourceString.replace("PlayerManager myManager;", "public PlayerManager myManager;").replace("public public", "public");
 			sourceString = sourceString.replace(" final ", " ");
 			sourceString = sourceString.replace("\nclass", "\npublic class");
 			Matcher privateMatcher = privatePattern.matcher(sourceString);

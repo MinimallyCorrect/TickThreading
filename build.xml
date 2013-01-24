@@ -40,12 +40,14 @@
 
 	<mkdir dir="${download.dir}"/>
 	<mkdir dir="${lib.dir}"/>
+	<mkdir dir="${build.dir}"/>
 
 	<!-- Targets -->
 
 	<!-- Clear build directory -->
 	<target name="clean">
 		<delete dir="${build.dir}"/>
+		<mkdir dir="${build.dir}"/>
 	</target>
 
 	<!-- Set full version -->
@@ -125,6 +127,7 @@
 				<include name="**/*.jar"/>
 			</fileset>
 		</path>
+		<mkdir dir="${classes.dir}"/>
 		<javac includeantruntime="false" srcdir="${src.dir}/nmsprepatcher" destdir="${classes.dir}" debug="on" source="1.6">
 			<classpath>
 				<path refid="class.path"/>
