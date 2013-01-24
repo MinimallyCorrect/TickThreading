@@ -244,7 +244,7 @@ public class TickManager {
 		for (long tick : tickTimes) {
 			timeTotal += tick;
 		}
-		double time = (timeTotal / 1000000) / tickTimes.length;
+		double time = (timeTotal / 1000000d) / tickTimes.length;
 		if (time == 0) {
 			time = 0.1;
 		}
