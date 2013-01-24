@@ -3,6 +3,7 @@ package me.nallar.tickthreading.mappings;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,7 +18,7 @@ import com.google.common.io.Files;
 
 import me.nallar.tickthreading.Log;
 
-public class MCPMappings extends Mappings {
+public class MCPMappings extends Mappings implements Serializable {
 	private static final Pattern extendsPattern = Pattern.compile("\\s+?extends\\s+?([\\S]+)[^\\{]+?\\{", Pattern.DOTALL | Pattern.MULTILINE);
 	private static final Pattern packagePattern = Pattern.compile("package\\s+?([^\\s;]+)[^;]*?;", Pattern.DOTALL | Pattern.MULTILINE);
 	private final Map<String, String> methodSeargeMappings = new HashMap<String, String>();
