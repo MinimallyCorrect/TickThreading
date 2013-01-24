@@ -13,12 +13,17 @@ public class TableFormatter {
 	private final List<String> currentHeadings = new ArrayList<String>();
 	private final List<String> currentData = new ArrayList<String>();
 	public String splitter = " | ";
+	public String headingSplitter = " | ";
+	public String headingColour = "";
+	public String rowColour = "";
 
 	public TableFormatter(ICommandSender commandSender) {
 		boolean chat = commandSender instanceof Entity;
 		stringFiller = chat ? StringFiller.CHAT : StringFiller.FIXED_WIDTH;
 		if (chat) {
 			splitter = " " + ChatFormat.YELLOW + '|' + ChatFormat.RESET + ' ';
+			headingSplitter = splitter;
+			headingColour = ChatFormat.DARK_GREEN + "";
 		}
 	}
 
@@ -57,15 +62,15 @@ public class TableFormatter {
 		getMaxLengths(rowLengths, rowIndex, rowCount, currentData);
 		String cSplit = "";
 		for (String heading : currentHeadings) {
-			sb.append(cSplit).append(stringFiller.fill(heading, rowLengths[rowIndex % rowCount]));
-			cSplit = splitter;
+			sb.append(cSplit).append(headingColour).append(stringFiller.fill(heading, rowLengths[rowIndex % rowCount]));
+			cSplit = headingSplitter;
 			rowIndex++;
 		}
 		sb.append('\n');
 		cSplit = "";
 		rowIndex = 0;
 		for (String data : currentData) {
-			sb.append(cSplit).append(stringFiller.fill(data, rowLengths[rowIndex % rowCount]));
+			sb.append(cSplit).append(rowColour).append(stringFiller.fill(data, rowLengths[rowIndex % rowCount]));
 			cSplit = splitter;
 			rowIndex++;
 			if (rowIndex % rowCount == 0 && rowIndex != currentData.size()) {
