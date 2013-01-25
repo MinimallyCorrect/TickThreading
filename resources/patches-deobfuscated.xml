@@ -88,6 +88,7 @@
 			<!-- TODO: Fix this with less locking -->
 			<newField field="staticLock" class="java.lang.Object" static=""/>
 			<synchronize field="staticLock">onUpdate</synchronize>
+			<synchronize field="loadedChunks">onUpdate</synchronize>
 			<!-- Concurrent access during iteration = boom -->
 		</class>
 		<class id="net.minecraft.entity.player.EntityPlayerMP" env="forge">
@@ -156,6 +157,7 @@
 		</class>
 		<class id="net.minecraft.network.TcpConnection">
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchTcpConnection"/>
+			<insertBefore code="Thread.dumpStack();">networkShutdown</insertBefore>
 		</class>
 		<class id="net.minecraft.entity.ai.EntityAITasks">
 			<synchronize>addTask,func_85156_a,onUpdateTasks,func_75775_b</synchronize>

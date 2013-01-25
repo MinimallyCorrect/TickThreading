@@ -29,11 +29,14 @@ import net.minecraftforge.common.DimensionManager;
 public abstract class PatchMinecraftServer extends MinecraftServer {
 	public ThreadManager threadManager;
 	private static float tickTime = 0;
+	private static float networkTickTime = 0;
 	private AtomicInteger currentWorld;
 	private Integer[] dimensionIdsToTick;
 	private Runnable tickRunnable;
 	private static int TARGET_TPS;
 	private static int TARGET_TICK_TIME;
+	private static int NETWORK_TPS;
+	private static int NETWORK_TICK_TIME;
 	private static double currentTPS = 0;
 	private static double networkTPS = 0;
 	private boolean tickNetworkInMainThread = true;
@@ -46,6 +49,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 	public static void staticConstruct() {
 		setTargetTPS(20);
+		setNetworkTPS(40);
 	}
 
 	public PatchMinecraftServer(File par1File) {
@@ -59,6 +63,13 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		TARGET_TICK_TIME = 1000000000 / TARGET_TPS;
 	}
 
+	@Declare
+	public static void setNetworkTPS(int targetTPS) {
+		assert targetTPS > 0 : "Target TPS must be greater than 0";
+		NETWORK_TPS = targetTPS;
+		NETWORK_TICK_TIME = 1000000000 / NETWORK_TPS;
+	}
+
 	@Override
 	public void run() {
 		try {
@@ -67,12 +78,13 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				FMLCommonHandler.instance().onWorldLoadTick(worldServers);
 				// This block is derived from Spigot code,
 				// LGPL
+				this.serverIsRunning = true;
 				this.tick();
 				if (TickThreading.instance.concurrentNetworkTicks) {
 					tickNetworkInMainThread = false;
 					new FakeServerThread(new NetworkTickRunnable(this), "Network Tick", false).start();
 				}
-				for (long lastTick = 0L; this.serverRunning; this.serverIsRunning = true) {
+				for (long lastTick = 0L; this.serverRunning; ) {
 					long curTime = System.nanoTime();
 					long wait = TARGET_TICK_TIME - (curTime - lastTick);
 					if (wait > 0 && (currentTPS > TARGET_TPS || !TickThreading.instance.aggressiveTicks)) {
@@ -257,6 +269,26 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		return TARGET_TPS;
 	}
 
+	@Declare
+	public static float getNetworkTickTime() {
+		return networkTickTime;
+	}
+
+	@Declare
+	public static double getNetworkTPS() {
+		return networkTPS;
+	}
+
+	@Declare
+	public static double getNetworkTargetTickTime() {
+		return NETWORK_TICK_TIME;
+	}
+
+	@Declare
+	public static double getNetworkTargetTPS() {
+		return NETWORK_TPS;
+	}
+
 	@Override
 	@Declare
 	public void doWorldTick() {
@@ -369,8 +401,9 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		public void run() {
 			for (long lastTick = 0L; minecraftServer.isServerRunning(); ) {
 				long curTime = System.nanoTime();
-				long wait = TARGET_TICK_TIME - (curTime - lastTick);
-				if (wait > 0 && (networkTPS > TARGET_TPS || !TickThreading.instance.aggressiveTicks)) {
+				networkTickTime = (networkTickTime * 127 + (curTime - lastTick)) / 128;
+				long wait = NETWORK_TICK_TIME - (curTime - lastTick);
+				if (wait > 0) {
 					try {
 						Thread.sleep(wait / 1000000);
 					} catch (InterruptedException ignored) {
@@ -380,6 +413,10 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				networkTPS = (networkTPS * 0.975) + (1E9 / (curTime - lastTick) * 0.025);
 				lastTick = curTime;
 				minecraftServer.getNetworkThread().networkTick();
+				try {
+					Thread.sleep(1L);
+				} catch (InterruptedException ignored) {
+				}
 			}
 		}
 	}
