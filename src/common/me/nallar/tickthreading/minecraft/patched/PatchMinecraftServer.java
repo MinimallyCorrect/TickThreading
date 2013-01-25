@@ -14,6 +14,7 @@ import me.nallar.tickthreading.minecraft.ChunkGarbageCollector;
 import me.nallar.tickthreading.minecraft.ThreadManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
+import me.nallar.tickthreading.util.FakeServerThread;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet4UpdateTime;
@@ -69,7 +70,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				this.tick();
 				if (TickThreading.instance.concurrentNetworkTicks) {
 					tickNetworkInMainThread = false;
-					new Thread(new NetworkTickRunnable(this), "Network Tick").start();
+					new FakeServerThread(new NetworkTickRunnable(this), "Network Tick", false).start();
 				}
 				for (long lastTick = 0L; this.serverRunning; this.serverIsRunning = true) {
 					long curTime = System.nanoTime();
@@ -366,7 +367,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 		@Override
 		public void run() {
-			for (long lastTick = 0L; minecraftServer.isServerRunning();) {
+			for (long lastTick = 0L; minecraftServer.isServerRunning(); ) {
 				long curTime = System.nanoTime();
 				long wait = TARGET_TICK_TIME - (curTime - lastTick);
 				if (wait > 0 && (networkTPS > TARGET_TPS || !TickThreading.instance.aggressiveTicks)) {
