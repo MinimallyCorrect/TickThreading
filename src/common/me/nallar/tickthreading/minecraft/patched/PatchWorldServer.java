@@ -42,8 +42,6 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 
 		chunkCoordIterator = this.activeChunkSet.iterator();
 
-		startTime = System.nanoTime();
-
 		if (concurrentTicks) {
 			for (int i = 0; i < threadManager.size(); i++) {
 				threadManager.run(this);
