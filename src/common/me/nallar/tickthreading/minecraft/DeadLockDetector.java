@@ -70,7 +70,7 @@ public class DeadLockDetector {
 	public boolean checkForDeadlocks() {
 		Log.flush();
 		int deadTime = (int) (System.currentTimeMillis() - lastTickTime);
-		if (lastTickTime == 0 || !MinecraftServer.getServer().isServerRunning()) {
+		if (lastTickTime == 0 || (!MinecraftServer.getServer().isServerRunning() && deadTime < (TickThreading.instance.deadLockTime * 10000))) {
 			return true;
 		}
 		if (TickThreading.instance.exitOnDeadlock) {
