@@ -28,11 +28,13 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 	public Object chunkLoadLock;
 	public Map<Long, Object> chunkLoadLocks;
 	private Chunk lastChunk;
+	private net.minecraft.util.LongHashMap loadingChunkHashMap;
 
 	public void construct() {
 		chunkLoadLock = new Object();
 		chunkLoadLocks = new HashMap<Long, Object>();
 		genLock = new Object();
+		loadingChunkHashMap = new net.minecraft.util.LongHashMap();
 	}
 
 	public PatchChunkProviderServer(WorldServer par1WorldServer, IChunkLoader par2IChunkLoader, IChunkProvider par3IChunkProvider) {
@@ -145,21 +147,22 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 			if (var5 != null) {
 				return var5;
 			}
-			var5 = this.safeLoadChunk(x, z);
-			if (var5 != null) {
-				this.loadedChunkHashMap.add(var3, var5);
-				synchronized (loadedChunks) {
-					this.loadedChunks.add(var5);
+			var5 = (Chunk) loadingChunkHashMap.getValueByKey(var3);
+			if (var5 == null) {
+				var5 = this.safeLoadChunk(x, z);
+				if (var5 != null) {
+					this.loadingChunkHashMap.add(var3, var5);
 				}
 			}
 		}
 
-		// TODO: Never return a chunk while it is still being populated in another thread.
-		// Map of chunks which are currently being loaded?
-
 		synchronized (genLock) {
 			synchronized (lock) {
 				var5 = (Chunk) this.loadedChunkHashMap.getValueByKey(var3);
+				if (var5 != null) {
+					return var5;
+				}
+				var5 = (Chunk) this.loadingChunkHashMap.getValueByKey(var3);
 				if (var5 == null) {
 					if (this.currentChunkProvider == null) {
 						var5 = this.defaultEmptyChunk;
@@ -175,10 +178,6 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 							throw new ReportedException(var7);
 						}
 					}
-					this.loadedChunkHashMap.add(var3, var5);
-					synchronized (loadedChunks) {
-						this.loadedChunks.add(var5);
-					}
 				} else {
 					if (this.currentChunkProvider != null) {
 						this.currentChunkProvider.recreateStructures(x, z);
@@ -191,6 +190,12 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 
 				var5.onChunkLoad();
 				var5.populateChunk(this, this, x, z);
+
+				this.loadingChunkHashMap.remove(var3);
+				this.loadedChunkHashMap.add(var3, var5);
+				synchronized (loadedChunks) {
+					this.loadedChunks.add(var5);
+				}
 			}
 		}
 
