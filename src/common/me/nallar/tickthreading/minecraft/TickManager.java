@@ -280,7 +280,7 @@ public class TickManager {
 		Collection<TickRegion> var = sortedTickCallables.values();
 		TickRegion[] sortedTickCallablesArray = var.toArray(new TickRegion[var.size()]);
 		for (int i = sortedTickCallablesArray.length - 1; i >= sortedTickCallablesArray.length - 6; i--) {
-			if (i >= 0 && sortedTickCallablesArray[i].getAverageTickTime() > 3) {
+			if (i >= 0 && sortedTickCallablesArray[i].getAverageTickTime() > 1.5) {
 				stats.append(sortedTickCallablesArray[i].getStats()).append('\n');
 			}
 		}
