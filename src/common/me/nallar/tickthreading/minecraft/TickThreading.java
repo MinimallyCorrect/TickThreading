@@ -67,6 +67,7 @@ public class TickThreading {
 	public int chunkCacheSize = 2000;
 	public int chunkGCInterval = 600;
 	private int targetTPS = 20;
+	public boolean concurrentNetworkTicks = true;
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load
@@ -138,6 +139,8 @@ public class TickThreading {
 		chunkGCIntervalProperty.comment = "Interval between chunk garbage collections in ticks";
 		Property targetTPSProperty = config.get(Configuration.CATEGORY_GENERAL, "targetTPS", targetTPS);
 		targetTPSProperty.comment = "TPS the server should try to run at.";
+		Property concurrentNetworkTicksProperty = config.get(Configuration.CATEGORY_GENERAL, "concurrentNetworkTicks", concurrentNetworkTicks);
+		concurrentNetworkTicksProperty.comment = "Whether network ticks should be ran in the main thread.";
 		config.save();
 
 		TicksCommand.name = ticksCommandName.value;
@@ -163,6 +166,7 @@ public class TickThreading {
 		aggressiveTicks = aggressiveTicksProperty.getBoolean(aggressiveTicks);
 		shouldLoadSpawn = shouldLoadSpawnProperty.getBoolean(shouldLoadSpawn);
 		waitForEntityTick = waitForEntityTickProperty.getBoolean(waitForEntityTick);
+		concurrentNetworkTicks = concurrentNetworkTicksProperty.getBoolean(concurrentNetworkTicks);
 		int[] disabledDimensions = disabledFastMobSpawningDimensionsProperty.getIntList();
 		disabledFastMobSpawningDimensions = new HashSet<Integer>(disabledDimensions.length);
 		for (int disabledDimension : disabledDimensions) {

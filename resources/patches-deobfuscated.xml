@@ -24,6 +24,10 @@
 		<class id="net.minecraft.network.packet.Packet56MapChunks">
 			<volatile field="field_73587_e"/>
 		</class>
+		<class id="net.minecraft.network.NetworkListenThread">
+			<synchronize>addPlayer,networkTick</synchronize>
+			<replaceMethodCall code="{ $_ = null; }" method="log" index="1">networkTick</replaceMethodCall>
+		</class>
 		<class id="net.minecraft.network.TcpWriterThread">
 			<ignoreExceptions type="java.net.SocketException">run</ignoreExceptions>
 		</class>

@@ -34,6 +34,8 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	private static int TARGET_TPS;
 	private static int TARGET_TICK_TIME;
 	private static double currentTPS = 0;
+	private static double networkTPS = 0;
+	private boolean tickNetworkInMainThread = true;
 	@Declare
 	public boolean currentlySaving_;
 
@@ -64,6 +66,11 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				FMLCommonHandler.instance().onWorldLoadTick(worldServers);
 				// This block is derived from Spigot code,
 				// LGPL
+				this.tick();
+				if (TickThreading.instance.concurrentNetworkTicks) {
+					tickNetworkInMainThread = false;
+					new Thread(new NetworkTickRunnable(this), "Network Tick").start();
+				}
 				for (long lastTick = 0L; this.serverRunning; this.serverIsRunning = true) {
 					long curTime = System.nanoTime();
 					long wait = TARGET_TICK_TIME - (curTime - lastTick);
@@ -218,8 +225,10 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			threadManager.waitForCompletion();
 		}
 
-		this.theProfiler.endStartSection("connection");
-		this.getNetworkThread().networkTick();
+		if (tickNetworkInMainThread) {
+			this.theProfiler.endStartSection("connection");
+			this.getNetworkThread().networkTick();
+		}
 
 		this.theProfiler.endStartSection("dim_unloading");
 		DimensionManager.unloadWorlds(worldTickTimes);
@@ -345,6 +354,32 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		@Override
 		public void run() {
 			minecraftServer.doWorldTick();
+		}
+	}
+
+	public static class NetworkTickRunnable implements Runnable {
+		private final MinecraftServer minecraftServer;
+
+		public NetworkTickRunnable(MinecraftServer minecraftServer) {
+			this.minecraftServer = minecraftServer;
+		}
+
+		@Override
+		public void run() {
+			for (long lastTick = 0L; minecraftServer.isServerRunning();) {
+				long curTime = System.nanoTime();
+				long wait = TARGET_TICK_TIME - (curTime - lastTick);
+				if (wait > 0 && (networkTPS > TARGET_TPS || !TickThreading.instance.aggressiveTicks)) {
+					try {
+						Thread.sleep(wait / 1000000);
+					} catch (InterruptedException ignored) {
+					}
+					continue;
+				}
+				networkTPS = (networkTPS * 0.975) + (1E9 / (curTime - lastTick) * 0.025);
+				lastTick = curTime;
+				minecraftServer.getNetworkThread().networkTick();
+			}
 		}
 	}
 }
