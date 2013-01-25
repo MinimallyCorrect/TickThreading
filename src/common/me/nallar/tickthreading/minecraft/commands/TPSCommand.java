@@ -42,7 +42,7 @@ public class TPSCommand extends Command {
 				.row("")
 				.row("")
 				.row("")
-				.row(TableFormatter.formatDoubleWithPrecision(MinecraftServer.getTickTime() * 2, 3) + '%');
+				.row(TableFormatter.formatDoubleWithPrecision((MinecraftServer.getTickTime() * 100) / MinecraftServer.getTargetTickTime(), 3) + '%');
 		tf.finishTable();
 		sendChat(commandSender, tf.toString());
 	}

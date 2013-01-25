@@ -253,7 +253,7 @@ public class TickManager {
 		}
 		tf
 				.row(Log.name(world))
-				.row(Math.min(1000 / time, 20))
+				.row(Math.min(1000 / time, MinecraftServer.getTargetTPS()))
 				.row(String.valueOf(entityList.size()))
 				.row(String.valueOf(tileEntityList.size()))
 				.row(world instanceof WorldServer ? String.valueOf(((WorldServer) world).theChunkProviderServer.getLoadedChunkCount()) : "0")

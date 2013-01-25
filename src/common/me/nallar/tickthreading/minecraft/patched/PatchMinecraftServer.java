@@ -31,8 +31,8 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	private AtomicInteger currentWorld;
 	private Integer[] dimensionIdsToTick;
 	private Runnable tickRunnable;
-	private static final int TARGET_TPS = 20;
-	private static final int TARGET_TICK_TIME = 1000000000 / TARGET_TPS;
+	private static int TARGET_TPS;
+	private static int TARGET_TICK_TIME;
 	private static double currentTPS = 0;
 	@Declare
 	public boolean currentlySaving_;
@@ -41,8 +41,19 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		currentlySaving = false;
 	}
 
+	public static void staticConstruct() {
+		setTargetTPS(20);
+	}
+
 	public PatchMinecraftServer(File par1File) {
 		super(par1File);
+	}
+
+	@Declare
+	public static void setTargetTPS(int targetTPS) {
+		assert targetTPS > 0 : "Target TPS must be greater than 0";
+		TARGET_TPS = targetTPS;
+		TARGET_TICK_TIME = 1000000000 / TARGET_TPS;
 	}
 
 	@Override
@@ -224,6 +235,16 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	@Declare
 	public static double getTPS() {
 		return currentTPS;
+	}
+
+	@Declare
+	public static double getTargetTickTime() {
+		return TARGET_TICK_TIME;
+	}
+
+	@Declare
+	public static double getTargetTPS() {
+		return TARGET_TPS;
 	}
 
 	@Override

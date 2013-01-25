@@ -26,6 +26,7 @@ import me.nallar.tickthreading.util.LocationUtil;
 import me.nallar.tickthreading.util.PatchUtil;
 import me.nallar.tickthreading.util.VersionUtil;
 import net.minecraft.command.ServerCommandManager;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.Configuration;
@@ -65,6 +66,7 @@ public class TickThreading {
 	private boolean waitForEntityTick = true;
 	public int chunkCacheSize = 2000;
 	public int chunkGCInterval = 600;
+	private int targetTPS = 20;
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load
@@ -134,6 +136,8 @@ public class TickThreading {
 		chunkCacheSizeProperty.comment = "Number of unloaded chunks to keep cached. Replacement for Forge's dormant chunk cache, which tends to break.";
 		Property chunkGCIntervalProperty = config.get(Configuration.CATEGORY_GENERAL, "chunkGCInterval", chunkGCInterval);
 		chunkGCIntervalProperty.comment = "Interval between chunk garbage collections in ticks";
+		Property targetTPSProperty = config.get(Configuration.CATEGORY_GENERAL, "targetTPS", targetTPS);
+		targetTPSProperty.comment = "TPS the server should try to run at.";
 		config.save();
 
 		TicksCommand.name = ticksCommandName.value;
@@ -145,6 +149,7 @@ public class TickThreading {
 		deadLockTime = deadLockTimeProperty.getInt(deadLockTime);
 		chunkCacheSize = chunkCacheSizeProperty.getInt(chunkCacheSize);
 		chunkGCInterval = chunkGCIntervalProperty.getInt(chunkGCInterval);
+		targetTPS = targetTPSProperty.getInt(targetTPS);
 		enableEntityTickThreading = enableEntityTickThreadingProperty.getBoolean(enableEntityTickThreading);
 		enableTileEntityTickThreading = enableTileEntityTickThreadingProperty.getBoolean(enableTileEntityTickThreading);
 		variableTickRate = variableTickRateProperty.getBoolean(variableTickRate);
@@ -177,6 +182,7 @@ public class TickThreading {
 			serverCommandManager.registerCommand(new TicksCommand());
 			serverCommandManager.registerCommand(new TPSCommand());
 			serverCommandManager.registerCommand(new ProfileCommand());
+			MinecraftServer.setTargetTPS(targetTPS);
 		} else {
 			Log.severe("TickThreading is disabled, because your server has not been patched" +
 					" or the patches are out of date" +
