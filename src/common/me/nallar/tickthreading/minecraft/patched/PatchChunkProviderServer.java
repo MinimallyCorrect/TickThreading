@@ -24,7 +24,7 @@ import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.ForgeChunkManager;
 
 public abstract class PatchChunkProviderServer extends ChunkProviderServer {
-	public static Object genLock;
+	public Object genLock;
 	public Object chunkLoadLock;
 	public Map<Long, Object> chunkLoadLocks;
 	private Chunk lastChunk;
@@ -32,9 +32,6 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 	public void construct() {
 		chunkLoadLock = new Object();
 		chunkLoadLocks = new HashMap<Long, Object>();
-	}
-
-	public static void staticConstruct() {
 		genLock = new Object();
 	}
 
@@ -121,12 +118,6 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 
 				if (chunk != null) {
 					chunk.lastSaveTime = this.currentServer.getTotalWorldTime();
-
-					if (this.currentChunkProvider != null) {
-						synchronized (genLock) {
-							this.currentChunkProvider.recreateStructures(x, z);
-						}
-					}
 				}
 
 				return chunk;
@@ -147,42 +138,58 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 			return var5;
 		}
 
-		synchronized (getLock(x, z)) {
+		final Object lock = getLock(x, z);
+
+		synchronized (lock) {
 			var5 = (Chunk) this.loadedChunkHashMap.getValueByKey(var3);
 			if (var5 != null) {
 				return var5;
 			}
 			var5 = this.safeLoadChunk(x, z);
-			if (var5 == null) {
-				if (this.currentChunkProvider == null) {
-					var5 = this.defaultEmptyChunk;
-				} else {
-					try {
-						synchronized (genLock) {
-							var5 = this.currentChunkProvider.provideChunk(x, z);
-						}
-					} catch (Throwable var9) {
-						CrashReport var7 = CrashReport.makeCrashReport(var9, "Exception generating new chunk");
-						CrashReportCategory var8 = var7.makeCategory("Chunk to be generated");
-						var8.addCrashSection("Location", String.format("%d,%d", x, z));
-						var8.addCrashSection("Position hash", var3);
-						var8.addCrashSection("Generator", this.currentChunkProvider.makeString());
-						throw new ReportedException(var7);
-					}
+			if (var5 != null) {
+				this.loadedChunkHashMap.add(var3, var5);
+				synchronized (loadedChunks) {
+					this.loadedChunks.add(var5);
 				}
 			}
+		}
 
-			this.loadedChunkHashMap.add(var3, var5);
-			synchronized (loadedChunks) {
-				this.loadedChunks.add(var5);
+		// TODO: Never return a chunk while it is still being populated in another thread.
+
+		synchronized (genLock) {
+			synchronized (lock) {
+				if (var5 == null) {
+					if (this.currentChunkProvider == null) {
+						var5 = this.defaultEmptyChunk;
+					} else {
+						try {
+							var5 = this.currentChunkProvider.provideChunk(x, z);
+						} catch (Throwable var9) {
+							CrashReport var7 = CrashReport.makeCrashReport(var9, "Exception generating new chunk");
+							CrashReportCategory var8 = var7.makeCategory("Chunk to be generated");
+							var8.addCrashSection("Location", String.format("%d,%d", x, z));
+							var8.addCrashSection("Position hash", var3);
+							var8.addCrashSection("Generator", this.currentChunkProvider.makeString());
+							throw new ReportedException(var7);
+						}
+					}
+					this.loadedChunkHashMap.add(var3, var5);
+					synchronized (loadedChunks) {
+						this.loadedChunks.add(var5);
+					}
+				} else {
+					if (this.currentChunkProvider != null) {
+						this.currentChunkProvider.recreateStructures(x, z);
+					}
+				}
+
+				if (var5 == null) {
+					throw new IllegalStateException("Null chunk was provided!");
+				}
+
+				var5.onChunkLoad();
+				var5.populateChunk(this, this, x, z);
 			}
-
-			if (var5 == null) {
-				throw new IllegalStateException("Null chunk was provided!");
-			}
-
-			var5.onChunkLoad();
-			var5.populateChunk(this, this, x, z);
 		}
 
 		chunkLoadLocks.remove(hash(x, z));
