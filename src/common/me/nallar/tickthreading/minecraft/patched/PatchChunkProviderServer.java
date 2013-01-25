@@ -147,11 +147,7 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 			return var5;
 		}
 
-		boolean needsGenerated = false;
-
-		final Object lock = getLock(x, z);
-
-		synchronized (lock) {
+		synchronized (getLock(x, z)) {
 			var5 = (Chunk) this.loadedChunkHashMap.getValueByKey(var3);
 			if (var5 != null) {
 				return var5;
@@ -161,46 +157,21 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 				if (this.currentChunkProvider == null) {
 					var5 = this.defaultEmptyChunk;
 				} else {
-					needsGenerated = true;
-				}
-			}
-		}
-
-		if (needsGenerated) {
-			try {
-				synchronized (genLock) {
-					synchronized (lock) {
-						var5 = (Chunk) this.loadedChunkHashMap.getValueByKey(var3);
-						if (var5 == null) {
+					try {
+						synchronized (genLock) {
 							var5 = this.currentChunkProvider.provideChunk(x, z);
 						}
-						this.loadedChunkHashMap.add(var3, var5);
-						synchronized (loadedChunks) {
-							this.loadedChunks.add(var5);
-						}
-
-						if (var5 == null) {
-							throw new IllegalStateException("Null chunk was provided!");
-						}
-
-						var5.onChunkLoad();
-						var5.populateChunk(this, this, x, z);
+					} catch (Throwable var9) {
+						CrashReport var7 = CrashReport.makeCrashReport(var9, "Exception generating new chunk");
+						CrashReportCategory var8 = var7.makeCategory("Chunk to be generated");
+						var8.addCrashSection("Location", String.format("%d,%d", x, z));
+						var8.addCrashSection("Position hash", var3);
+						var8.addCrashSection("Generator", this.currentChunkProvider.makeString());
+						throw new ReportedException(var7);
 					}
 				}
-				chunkLoadLocks.remove(hash(x, z));
-
-				return var5;
-			} catch (Throwable var9) {
-				CrashReport var7 = CrashReport.makeCrashReport(var9, "Exception generating new chunk");
-				CrashReportCategory var8 = var7.makeCategory("Chunk to be generated");
-				var8.addCrashSection("Location", String.format("%d,%d", x, z));
-				var8.addCrashSection("Position hash", var3);
-				var8.addCrashSection("Generator", this.currentChunkProvider.makeString());
-				throw new ReportedException(var7);
 			}
-		}
 
-		synchronized (lock) {
 			this.loadedChunkHashMap.add(var3, var5);
 			synchronized (loadedChunks) {
 				this.loadedChunks.add(var5);
