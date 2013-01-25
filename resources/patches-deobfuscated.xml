@@ -274,6 +274,9 @@
 		<class id="codechicken.chunkloader.PlayerChunkViewerManager">
 			<synchronize field="$1.b.g">calculateChunkChanges</synchronize>
 		</class>
+		<class id="codechicken.chunkloader.ChunkLoaderManager">
+			<disable>cleanChunks</disable>
+		</class>
 		<class id="codechicken.chunkloader.CommandChunkLoaders">
 			<synchronize field="codechicken.chunkloader.ChunkLoaderEventHandler.staticLock">handleCommand</synchronize>
 		</class>

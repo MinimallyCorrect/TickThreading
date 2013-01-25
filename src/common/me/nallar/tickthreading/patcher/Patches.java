@@ -61,6 +61,11 @@ public class Patches {
 		}
 	}
 
+	@Patch
+	public void disable(CtMethod ctMethod, Map<String, String> attributes) throws NotFoundException, CannotCompileException {
+		ctMethod.setBody("{ }");
+	}
+
 	@Patch (
 			requiredAttributes = "class"
 	)
