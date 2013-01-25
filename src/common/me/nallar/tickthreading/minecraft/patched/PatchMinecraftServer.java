@@ -331,8 +331,10 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		}
 	}
 
+	@Override
 	@Declare
 	public void doNetworkTick() {
+		long lastTime = 1;
 		for (long lastTick = 0L; serverRunning; ) {
 			long curTime = System.nanoTime();
 			long time = curTime - lastTick;
@@ -344,10 +346,12 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				}
 				continue;
 			}
-			networkTickTime = (networkTickTime * 127 + time) / 128;
+			networkTickTime = (networkTickTime * 127 + lastTime) / 128;
 			networkTPS = (networkTPS * 0.975) + (1E9 / time * 0.025);
 			lastTick = curTime;
+			lastTime = System.nanoTime();
 			this.getNetworkThread().networkTick();
+			lastTime = System.nanoTime() - lastTime;
 		}
 	}
 
