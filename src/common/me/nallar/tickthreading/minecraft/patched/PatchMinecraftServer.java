@@ -331,6 +331,29 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		}
 	}
 
+	@Declare
+	public void doNetworkTick() {
+		for (long lastTick = 0L; serverRunning; ) {
+			long curTime = System.nanoTime();
+			networkTickTime = (networkTickTime * 127 + (curTime - lastTick)) / 128;
+			long wait = NETWORK_TICK_TIME - (curTime - lastTick);
+			if (wait > 0) {
+				try {
+					Thread.sleep(wait / 1000000);
+				} catch (InterruptedException ignored) {
+				}
+				continue;
+			}
+			networkTPS = (networkTPS * 0.975) + (1E9 / (curTime - lastTick) * 0.025);
+			lastTick = curTime;
+			this.getNetworkThread().networkTick();
+			try {
+				Thread.sleep(1L);
+			} catch (InterruptedException ignored) {
+			}
+		}
+	}
+
 	@Override
 	@Declare
 	public void saveEverything() {
@@ -399,25 +422,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 		@Override
 		public void run() {
-			for (long lastTick = 0L; minecraftServer.isServerRunning(); ) {
-				long curTime = System.nanoTime();
-				networkTickTime = (networkTickTime * 127 + (curTime - lastTick)) / 128;
-				long wait = NETWORK_TICK_TIME - (curTime - lastTick);
-				if (wait > 0) {
-					try {
-						Thread.sleep(wait / 1000000);
-					} catch (InterruptedException ignored) {
-					}
-					continue;
-				}
-				networkTPS = (networkTPS * 0.975) + (1E9 / (curTime - lastTick) * 0.025);
-				lastTick = curTime;
-				minecraftServer.getNetworkThread().networkTick();
-				try {
-					Thread.sleep(1L);
-				} catch (InterruptedException ignored) {
-				}
-			}
+			minecraftServer.doNetworkTick();
 		}
 	}
 }
