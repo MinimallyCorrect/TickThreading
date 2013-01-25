@@ -188,14 +188,14 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 					throw new IllegalStateException("Null chunk was provided!");
 				}
 
-				var5.onChunkLoad();
-				var5.populateChunk(this, this, x, z);
-
 				this.loadingChunkHashMap.remove(var3);
 				this.loadedChunkHashMap.add(var3, var5);
 				synchronized (loadedChunks) {
 					this.loadedChunks.add(var5);
 				}
+
+				var5.onChunkLoad();
+				var5.populateChunk(this, this, x, z);
 			}
 		}
 
