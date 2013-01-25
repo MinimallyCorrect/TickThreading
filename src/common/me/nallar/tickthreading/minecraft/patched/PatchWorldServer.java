@@ -74,6 +74,9 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 				continue;
 			}
 
+			if (!this.chunkExists(var4.chunkXPos, var4.chunkZPos)) {
+				continue;
+			}
 			int xPos = var4.chunkXPos * 16;
 			int zPos = var4.chunkZPos * 16;
 			Chunk chunk = this.getChunkFromChunkCoords(var4.chunkXPos, var4.chunkZPos);
