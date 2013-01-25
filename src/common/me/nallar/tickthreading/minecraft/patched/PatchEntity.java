@@ -203,7 +203,7 @@ public abstract class PatchEntity extends Entity {
 					this.boundingBox.setBB(var29);
 				}
 				/* Fixes a vanilla bug where the player view would dip when stepping between certain blocks
-                 * https://mojang.atlassian.net/browse/MC-1594
+				 * https://mojang.atlassian.net/browse/MC-1594
                 else
                 {
                     double var40 = this.boundingBox.minY - (double)((int)this.boundingBox.minY);

@@ -232,6 +232,7 @@ public class Patches {
 				CtMethod added = CtNewMethod.copy(newMethod, ctClass, classMap);
 				Log.info("Adding " + added);
 				ctClass.addMethod(added);
+				replaceMethod(added, newMethod);
 				if (added.getName().startsWith("construct")) {
 					CtMethod runConstructors;
 					try {
