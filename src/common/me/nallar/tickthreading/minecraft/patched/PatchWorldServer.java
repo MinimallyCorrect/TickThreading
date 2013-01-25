@@ -76,6 +76,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 			int zPos = var4.chunkZPos * 16;
 			Chunk chunk = this.getChunkFromChunkCoords(var4.chunkXPos, var4.chunkZPos);
 			this.moodSoundAndLightCheck(xPos, zPos, chunk);
+			this.theProfiler.endStartSection("chunkTick"); // endStart as moodSoundAndLightCheck starts a section.
 			chunk.updateSkylight();
 			int var8;
 			int var9;
