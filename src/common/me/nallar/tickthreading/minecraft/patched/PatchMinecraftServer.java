@@ -335,8 +335,8 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	public void doNetworkTick() {
 		for (long lastTick = 0L; serverRunning; ) {
 			long curTime = System.nanoTime();
-			networkTickTime = (networkTickTime * 127 + (curTime - lastTick)) / 128;
-			long wait = NETWORK_TICK_TIME - (curTime - lastTick);
+			long time = curTime - lastTick;
+			long wait = NETWORK_TICK_TIME - time;
 			if (wait > 0) {
 				try {
 					Thread.sleep(wait / 1000000);
@@ -344,13 +344,10 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				}
 				continue;
 			}
-			networkTPS = (networkTPS * 0.975) + (1E9 / (curTime - lastTick) * 0.025);
+			networkTickTime = (networkTickTime * 127 + time) / 128;
+			networkTPS = (networkTPS * 0.975) + (1E9 / time * 0.025);
 			lastTick = curTime;
 			this.getNetworkThread().networkTick();
-			try {
-				Thread.sleep(1L);
-			} catch (InterruptedException ignored) {
-			}
 		}
 	}
 
