@@ -76,13 +76,14 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 			int zPos = var4.chunkZPos * 16;
 			Chunk chunk = this.getChunkFromChunkCoords(var4.chunkXPos, var4.chunkZPos);
 			this.moodSoundAndLightCheck(xPos, zPos, chunk);
-			this.theProfiler.endStartSection("chunkTick"); // endStart as moodSoundAndLightCheck starts a section.
+			theProfiler.endStartSection("chunkTick"); // endStart as moodSoundAndLightCheck starts a section.
 			chunk.updateSkylight();
 			int var8;
 			int var9;
 			int var10;
 			int var11;
 
+			theProfiler.startSection("lightning");
 			if (provider.canDoLightning(chunk) && this.rand.nextInt(100000) == 0 && this.isRaining() && this.isThundering()) {
 				this.updateLCG = this.updateLCG * 3 + 1013904223;
 				var8 = this.updateLCG >> 2;
@@ -97,6 +98,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 
 			int var13;
 
+			theProfiler.endStartSection("precipitation");
 			if (provider.canDoRainSnowIce(chunk) && this.rand.nextInt(16) == 0) {
 				this.updateLCG = this.updateLCG * 3 + 1013904223;
 				var8 = this.updateLCG >> 2;
@@ -125,6 +127,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 				}
 			}
 
+			theProfiler.endStartSection("blockTick");
 			ExtendedBlockStorage[] var19 = chunk.getBlockStorageArray();
 			var9 = var19.length;
 
@@ -147,6 +150,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 					}
 				}
 			}
+			theProfiler.endSection();
 		}
 	}
 }
