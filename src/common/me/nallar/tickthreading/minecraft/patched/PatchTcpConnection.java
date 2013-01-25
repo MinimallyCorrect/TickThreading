@@ -58,7 +58,12 @@ public abstract class PatchTcpConnection extends TcpConnection {
 		if (e instanceof SocketException) {
 			this.networkShutdown("disconnected: " + e.getMessage(), e);
 		} else {
-			FMLLog.log(Level.SEVERE, e, "Failed to handle packet from " + this.theNetHandler.getPlayer().getCommandSenderName());
+			String name = "unknown";
+			try {
+				name = this.theNetHandler.getPlayer().getCommandSenderName();
+			} catch (Throwable ignored) {
+			}
+			FMLLog.log(Level.SEVERE, e, "Failed to handle packet from " + name);
 			this.networkShutdown("disconnect.genericReason", "Internal exception: " + e.toString());
 		}
 	}
