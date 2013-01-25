@@ -40,11 +40,6 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 			threadManager.waitForCompletion();
 		}
 
-		doneChunks.retainAll(activeChunkSet);
-		if (doneChunks.size() == activeChunkSet.size()) {
-			doneChunks.clear();
-		}
-
 		chunkCoordIterator = this.activeChunkSet.iterator();
 
 		startTime = System.nanoTime();
@@ -70,7 +65,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 				var4 = (ChunkCoordIntPair) chunkCoordIterator.next();
 			}
 
-			if (Math.random() > tpsFactor) {
+			if (tpsFactor < 1 && this.rand.nextFloat() > tpsFactor) {
 				continue;
 			}
 
@@ -81,10 +76,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 			int zPos = var4.chunkZPos * 16;
 			Chunk chunk = this.getChunkFromChunkCoords(var4.chunkXPos, var4.chunkZPos);
 			this.moodSoundAndLightCheck(xPos, zPos, chunk);
-			//Limits and evenly distributes the lighting update time
-			if (System.nanoTime() - startTime <= 4000000 && doneChunks.add(var4)) {
-				chunk.updateSkylight();
-			}
+			chunk.updateSkylight();
 			int var8;
 			int var9;
 			int var10;
