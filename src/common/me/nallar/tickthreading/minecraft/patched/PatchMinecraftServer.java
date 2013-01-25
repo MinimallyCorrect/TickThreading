@@ -177,7 +177,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 		this.theProfiler.endSection();
 		this.theProfiler.endSection();
-		tickTime = (tickTime * 127 + ((this.tickTimeArray[this.tickCounter % 100] = System.nanoTime() - var1) / 1000000)) / 128;
+		tickTime = (tickTime * 127 + ((this.tickTimeArray[this.tickCounter % 100] = System.nanoTime() - var1))) / 128;
 	}
 
 	@Override
