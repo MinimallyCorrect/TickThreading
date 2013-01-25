@@ -155,9 +155,11 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 		}
 
 		// TODO: Never return a chunk while it is still being populated in another thread.
+		// Map of chunks which are currently being loaded?
 
 		synchronized (genLock) {
 			synchronized (lock) {
+				var5 = (Chunk) this.loadedChunkHashMap.getValueByKey(var3);
 				if (var5 == null) {
 					if (this.currentChunkProvider == null) {
 						var5 = this.defaultEmptyChunk;
