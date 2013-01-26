@@ -39,12 +39,13 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	private static int NETWORK_TICK_TIME;
 	private static double currentTPS = 0;
 	private static double networkTPS = 0;
-	private boolean tickNetworkInMainThread = true;
+	private boolean tickNetworkInMainThread;
 	@Declare
 	public boolean currentlySaving_;
 
 	public void construct() {
 		currentlySaving = false;
+		tickNetworkInMainThread = true;
 	}
 
 	public static void staticConstruct() {
