@@ -67,7 +67,7 @@ public class TickThreading {
 	public int chunkCacheSize = 2000;
 	public int chunkGCInterval = 600;
 	private int targetTPS = 20;
-	public boolean concurrentNetworkTicks = true;
+	public boolean concurrentNetworkTicks = false;
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load
