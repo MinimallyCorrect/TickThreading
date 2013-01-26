@@ -109,7 +109,9 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 		Chunk chunk = lastChunk;
 		if (chunk == null || chunk.xPosition != x || chunk.zPosition != z) {
 			chunk = (Chunk) this.loadedChunkHashMap.getValueByKey(ChunkCoordIntPair.chunkXZ2Int(x, z));
-			return (lastChunk = (chunk == null ? (!this.currentServer.findingSpawnPoint && !this.loadChunkOnProvideRequest ? this.defaultEmptyChunk : this.loadChunk(x, z)) : chunk));
+			chunk = (chunk == null ? (!this.currentServer.findingSpawnPoint && !this.loadChunkOnProvideRequest ? this.defaultEmptyChunk : this.loadChunk(x, z)) : chunk);
+			lastChunk = chunk;
+			return chunk;
 		}
 		return chunk;
 	}
