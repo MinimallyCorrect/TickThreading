@@ -257,7 +257,7 @@ public class TickManager {
 				.row(String.valueOf(entityList.size()))
 				.row(String.valueOf(tileEntityList.size()))
 				.row(world instanceof WorldServer ? String.valueOf(((WorldServer) world).theChunkProviderServer.getLoadedChunkCount()) : "0")
-				.row(TableFormatter.formatDoubleWithPrecision(time * 2d, 3) + '%');
+				.row(TableFormatter.formatDoubleWithPrecision((time * 100f) / MinecraftServer.getTargetTickTime(), 3) + '%');
 	}
 
 	public TableFormatter writeDetailedStats(TableFormatter tf) {
