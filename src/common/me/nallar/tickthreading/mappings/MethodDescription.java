@@ -165,7 +165,11 @@ public class MethodDescription {
 		// TODO: obfuscate parameters and return type
 	}
 
-	public List<String> getParameters() {
+	public String getParameters() {
+		return parameters;
+	}
+
+	public List<String> getParameterList() {
 		String parameters = this.parameters;
 		List<String> parameterList = new ArrayList<String>();
 		while (!parameters.isEmpty()) {

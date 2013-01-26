@@ -18,8 +18,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import javassist.CtBehavior;
@@ -127,9 +129,13 @@ public class PatchManager {
 						after = field.substring(field.indexOf('.'));
 						field = field.substring(0, field.indexOf('.'));
 						if (!field.isEmpty() && (field.charAt(0) == '$') && prefix.isEmpty()) {
-							if (methodDescriptionList.size() == 1) {
+							Set<String> parameters = new HashSet<String>();
+							for (MethodDescription methodDescription : methodDescriptionList) {
+								parameters.add(methodDescription.getParameters());
+							}
+							if (parameters.size() == 1) {
 								MethodDescription methodDescription = mappings.rmap(mappings.map(methodDescriptionList.get(0)));
-								type = methodDescription.getParameters().get(Integer.valueOf(field.substring(1)) - 1);
+								type = methodDescription.getParameterList().get(Integer.valueOf(field.substring(1)) - 1);
 								prefix = field + '.';
 								field = after.substring(1);
 								after = "";
