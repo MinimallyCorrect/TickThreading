@@ -37,7 +37,7 @@ public abstract class PatchPlayerManager extends PlayerManager {
 		long var4 = (long) par1 + 2147483647L | (long) par2 + 2147483647L << 32;
 		PlayerInstance var6 = (PlayerInstance) this.playerInstances.getValueByKey(var4);
 
-		if (var6 == null && par3) {
+		if (var6 == null && (par3 || loadingPlayerInstances.containsItem(var4))) {
 			synchronized (chunkWatcherLock) {
 				var6 = (PlayerInstance) this.playerInstances.getValueByKey(var4);
 				if (var6 == null) {
