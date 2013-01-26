@@ -200,9 +200,24 @@ public class ClassRegistry {
 		classPathSet.clear();
 	}
 
+	private static File makeTempFile(File tempLocation, File file) {
+		return new File(tempLocation, file.getName() + (String.valueOf(Math.random())).replace('.', '_') + ".tmp");
+	}
+
+	private static void delete(File f) {
+		if (f.isDirectory()) {
+			for (File c : f.listFiles()) {
+				delete(c);
+			}
+		}
+		f.delete();
+	}
+
 	public void save(File backupDirectory) throws IOException {
 		finishModifications();
 		File tempFile = null, renameFile = null;
+		File tempDirectory = new File(backupDirectory, "temp");
+		tempDirectory.mkdir();
 		ZipInputStream zin = null;
 		ZipOutputStream zout = null;
 		backupDirectory.mkdir();
@@ -212,7 +227,7 @@ public class ClassRegistry {
 				File backupFile = new File(backupDirectory, zipFile.getName());
 				backupFile.delete();
 				Files.copy(zipFile, backupFile);
-				tempFile = File.createTempFile(zipFile.getName(), null);
+				tempFile = makeTempFile(tempDirectory, zipFile);
 				tempFile.delete();
 				if (zipFile.renameTo(tempFile)) {
 					renameFile = zipFile;
@@ -273,6 +288,8 @@ public class ClassRegistry {
 				tempFile.renameTo(renameFile);
 			}
 			throw e;
+		} finally {
+			delete(tempDirectory);
 		}
 	}
 

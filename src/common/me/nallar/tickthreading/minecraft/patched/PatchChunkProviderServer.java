@@ -52,10 +52,14 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 			short var6 = 128;
 
 			if (var4 < -var6 || var4 > var6 || var5 < -var6 || var5 > var6) {
-				this.chunksToUnload.add(hash);
+				synchronized (chunksToUnload) {
+					this.chunksToUnload.add(hash);
+				}
 			}
 		} else {
-			this.chunksToUnload.add(hash);
+			synchronized (chunksToUnload) {
+				this.chunksToUnload.add(hash);
+			}
 		}
 	}
 
@@ -133,7 +137,9 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 	@Override
 	public Chunk loadChunk(int x, int z) {
 		long var3 = ChunkCoordIntPair.chunkXZ2Int(x, z);
-		this.chunksToUnload.remove(Long.valueOf(var3));
+		synchronized (chunksToUnload) {
+			this.chunksToUnload.remove(Long.valueOf(var3));
+		}
 		Chunk var5 = (Chunk) this.loadedChunkHashMap.getValueByKey(var3);
 
 		if (var5 != null) {

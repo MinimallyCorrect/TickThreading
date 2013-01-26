@@ -52,7 +52,10 @@ public class ChunkGarbageCollector {
 			}
 		}
 
-		chunkProvider.getChunksToUnloadSet().addAll(chunksToUnload);
+		Set<Long> chunksToUnload_ = chunkProvider.getChunksToUnloadSet();
+		synchronized (chunksToUnload_) {
+			chunksToUnload_.addAll(chunksToUnload);
+		}
 		profiler.endSection();
 	}
 }

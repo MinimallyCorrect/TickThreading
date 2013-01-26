@@ -243,9 +243,8 @@ public class PatchManager {
 		} catch (IOException e) {
 			Log.severe("Failed to save patched classes", e);
 			if (e.getMessage().contains("Couldn't rename ")) {
-				Log.severe("Make sure the user you are running the patcher as has access to the temporary directory." +
-						"If you do have permissions and it still doesn't work, set a different temporary directory" +
-						"by changing PATCHME.sh to include '-Djava.io.tmpdir=/path/to/tmpdir/' before the -cp");
+				Log.severe("Make sure none of the mods/server jar are currently open in any running programs" +
+						"If you are using linux, check what has open files with the lsof command.");
 			}
 		}
 	}
