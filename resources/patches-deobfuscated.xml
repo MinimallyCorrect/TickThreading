@@ -85,9 +85,6 @@
 			<replace class="me.nallar.tickthreading.minecraft.patched.IntHashMap"/>
 		</class>
 		<class id="net.minecraft.entity.player.EntityPlayerMP">
-			<!-- TODO: Fix this with less locking -->
-			<newField field="staticLock" class="java.lang.Object" static=""/>
-			<synchronize field="staticLock">onUpdate</synchronize>
 			<synchronize field="loadedChunks">onUpdate</synchronize>
 			<!-- Concurrent access during iteration = boom -->
 		</class>
