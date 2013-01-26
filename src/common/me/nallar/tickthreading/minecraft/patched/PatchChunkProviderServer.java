@@ -72,6 +72,7 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 			Iterator<Long> i$ = chunksToUnload.iterator();
 			for (int i = 0; i < 200 && i$.hasNext(); ++i) {
 				Long var2 = i$.next();
+				i$.remove();
 				Chunk var3 = (Chunk) this.loadedChunkHashMap.getValueByKey(var2);
 				if (var3 != null) {
 					if (lastChunk == var3) {
@@ -84,17 +85,16 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 						this.loadedChunks.remove(var3);
 					}
 				}
-				i$.remove();
 				this.loadedChunkHashMap.remove(var2);
-				if (loadedChunks.isEmpty() && ForgeChunkManager.getPersistentChunksFor(currentServer).isEmpty() && !DimensionManager.shouldLoadSpawn(currentServer.provider.dimensionId)) {
-					DimensionManager.unloadWorld(currentServer.provider.dimensionId);
-					return currentChunkProvider.unload100OldestChunks();
-				}
 			}
 
 			if (this.currentChunkLoader != null) {
 				this.currentChunkLoader.chunkTick();
 			}
+		}
+
+		if (loadedChunks.isEmpty() && ForgeChunkManager.getPersistentChunksFor(currentServer).isEmpty() && !DimensionManager.shouldLoadSpawn(currentServer.provider.dimensionId)) {
+			DimensionManager.unloadWorld(currentServer.provider.dimensionId);
 		}
 
 		return this.currentChunkProvider.unload100OldestChunks();

@@ -512,7 +512,7 @@ public class Patches {
 			CtMethod replacement = CtNewMethod.copy(ctMethod, ctClass, null);
 			int i = 0;
 			try {
-				for (;true;i++) {
+				for (; true; i++) {
 					ctClass.getDeclaredMethod(ctMethod.getName() + "_s" + i);
 				}
 			} catch (NotFoundException ignored) {

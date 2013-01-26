@@ -16,8 +16,7 @@ public abstract class PatchFMLCommonHandler extends FMLCommonHandler {
 	public Profiler theProfiler = null;
 
 	@Override
-	public void rescheduleTicks(Side side)
-	{
+	public void rescheduleTicks(Side side) {
 		List<IScheduledTickHandler> scheduledTicks = side.isClient() ? scheduledClientTicks : scheduledServerTicks;
 		synchronized (scheduledTicks) {
 			TickRegistry.updateTickQueue(scheduledTicks, side);
