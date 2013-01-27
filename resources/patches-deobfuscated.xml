@@ -86,6 +86,8 @@
 		</class>
 		<class id="net.minecraft.entity.player.EntityPlayerMP">
 			<synchronize field="loadedChunks">onUpdate</synchronize>
+			<!--
+			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchEntityPlayerMP"/> -->
 			<!-- Concurrent access during iteration = boom -->
 		</class>
 		<class id="net.minecraft.entity.player.EntityPlayerMP" env="forge">
@@ -136,13 +138,14 @@
 		<class id="net.minecraft.server.management.PlayerManager" env="forge">
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchPlayerManagerForge"/>
 			<synchronize>addPlayer,removePlayer</synchronize>
-			<synchronize field="$1.loadedChunks">addPlayer,removePlayer</synchronize>
+			<synchronize field="$1.loadedChunks">addPlayer,removePlayer,filterChunkLoadQueue</synchronize>
 			<synchronize field="$1.loadedChunks">updateMountedMovingPlayer</synchronize>
 		</class>
 		<class id="net.minecraft.server.management.PlayerInstance" env="forge">
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchPlayerInstance"/>
 			<lockMethodCall field="this.myManager.playerUpdateLock" method="add">flagChunkForUpdate</lockMethodCall>
 			<replaceMethodCall index="1" code="{ $_ = null; }"/>
+			<synchronize field="$1.loadedChunks">addPlayerToChunkWatchingList,sendThisChunkToPlayer</synchronize>
 		</class>
 		<class id="net.minecraft.world.ChunkCoordIntPair">
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchChunkCoordIntPair"/>

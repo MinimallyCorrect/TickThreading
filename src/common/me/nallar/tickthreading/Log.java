@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 
 import cpw.mods.fml.common.FMLLog;
 import me.nallar.reporting.Reporter;
+import me.nallar.tickthreading.util.MappingUtil;
 import net.minecraft.world.World;
 
 @SuppressWarnings ({"UnusedDeclaration", "UseOfSystemOutOrSystemErr"})
@@ -178,5 +179,10 @@ public class Log {
 
 	public static String name(World world) {
 		return world.provider.getDimensionName() + '/' + world.provider.dimensionId + (world.isRemote ? "-r" : "");
+	}
+
+	public static String toString(Object o) {
+		String deobfuscatedName = MappingUtil.debobfuscate(o.getClass().getName());
+		return "c " + deobfuscatedName + ' ' + o.toString();
 	}
 }

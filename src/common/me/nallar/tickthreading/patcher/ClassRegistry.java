@@ -201,7 +201,7 @@ public class ClassRegistry {
 	}
 
 	private static File makeTempFile(File tempLocation, File file) {
-		return new File(tempLocation, file.getName() + (String.valueOf(Math.random())).replace('.', '_') + ".tmp");
+		return new File(tempLocation, file.getName() + ".tmp");
 	}
 
 	private static void delete(File f) {
@@ -216,7 +216,7 @@ public class ClassRegistry {
 	public void save(File backupDirectory) throws IOException {
 		finishModifications();
 		File tempFile = null, renameFile = null;
-		File tempDirectory = new File(backupDirectory, "temp");
+		File tempDirectory = new File(backupDirectory.getParentFile(), "TTTemp");
 		tempDirectory.mkdir();
 		ZipInputStream zin = null;
 		ZipOutputStream zout = null;

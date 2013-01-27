@@ -200,8 +200,11 @@
 		</copy>
 
 		<!-- Reset src dir to post-forge-install state -->
-		<delete dir="${mcpsrc.dir}/minecraft/me/nallar"/>
-		<delete dir="${mcpsrc.dir}/minecraft/javassist/is/faulty"/>
+		<parallel>
+			<delete dir="${mcpsrc.dir}/minecraft/me/nallar"/>
+			<delete dir="${mcpsrc.dir}/minecraft/javassist/is/faulty"/>
+			<delete file="${mcpsrc.dir}/minecraft/net/minecraft/network/packet/IPacketHandler.java"/>
+		</parallel>
 
 		<fail message="MCP failed to build">
 			<condition>

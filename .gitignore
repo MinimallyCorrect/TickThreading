@@ -46,6 +46,7 @@ MANIFEST.MF
 *.iml
 .idea
 build
+out/
 dist
 nbproject
 build.number

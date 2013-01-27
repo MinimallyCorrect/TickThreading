@@ -74,7 +74,7 @@ public class TileEntityTickRegion extends TickRegion {
 					manager.add(tileEntity);
 					if (hashCode != 0) {
 						Log.severe("Inconsistent state, a tile entity is in the wrong TickRegion"
-								+ "\n entity: " + tileEntity.getClass() + " at x,y,z:" + tileEntity.xCoord + ',' + tileEntity.yCoord + ',' + tileEntity.zCoord
+								+ "\n entity: " + Log.toString(tileEntity) + " at x,y,z:" + tileEntity.xCoord + ',' + tileEntity.yCoord + ',' + tileEntity.zCoord
 								+ "\n Has hashcode: " + manager.getHashCode(tileEntity)
 								+ "\n Region: " + toString());
 					}
@@ -98,7 +98,7 @@ public class TileEntityTickRegion extends TickRegion {
 				}
 			} catch (Throwable throwable) {
 				Log.severe("Exception during tile entity tick"
-						+ "\nticking: " + tileEntity.getClass() + " at x,y,z:" + tileEntity.xCoord + ',' + tileEntity.yCoord + ',' + tileEntity.zCoord
+						+ "\nticking: " + Log.toString(tileEntity) + " at x,y,z:" + tileEntity.xCoord + ',' + tileEntity.yCoord + ',' + tileEntity.zCoord
 						+ "\nTick region: " + toString() + ':', throwable);
 			} finally {
 				if (locked) {

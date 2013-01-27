@@ -2,6 +2,7 @@ package me.nallar.tickthreading.minecraft.patched;
 
 import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet51MapChunk;
 import net.minecraft.server.management.PlayerInstance;
 import net.minecraft.server.management.PlayerManager;
