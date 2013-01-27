@@ -10,6 +10,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import me.nallar.tickthreading.Log;
+import me.nallar.tickthreading.collections.TList;
 import me.nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
 import me.nallar.tickthreading.minecraft.tickregion.EntityTickRegion;
 import me.nallar.tickthreading.minecraft.tickregion.TickRegion;
@@ -31,10 +32,10 @@ public class TickManager {
 	public final World world;
 	private final Map<Integer, TileEntityTickRegion> tileEntityCallables = new HashMap<Integer, TileEntityTickRegion>();
 	private final Map<Integer, EntityTickRegion> entityCallables = new HashMap<Integer, EntityTickRegion>();
-	private final ArrayList<TickRegion> tickRegions = new ArrayList<TickRegion>();
+	private final List<TickRegion> tickRegions = new TList();
 	private final ThreadManager threadManager;
-	public final List<TileEntity> tileEntityList = new ArrayList<TileEntity>();
-	public final List<Entity> entityList = new ArrayList<Entity>();
+	public final List<TileEntity> tileEntityList = new TList();
+	public final List<Entity> entityList = new TList();
 	private final Map<Class<?>, Integer> entityClassToCountMap = new HashMap<Class<?>, Integer>();
 	public Object tileEntityLock = new Object();
 	public Object entityLock = new Object();
