@@ -70,17 +70,19 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 
 	public synchronized void unlockRead() {
 		Thread callingThread = Thread.currentThread();
-		if (isNotReader(callingThread)) {
+		Integer accessCount_ = readingThreads.get(callingThread);
+		if (accessCount_ == null) {
 			throw new IllegalMonitorStateException("Calling Thread does not" +
 					" hold a read lock on this ReadWriteLock");
 		}
-		int accessCount = getReadAccessCount(callingThread);
-		if (accessCount == 1) {
+		if (accessCount_ == 1) {
 			readingThreads.remove(callingThread);
+			if (readingThreads.isEmpty()) {
+				notify();
+			}
 		} else {
-			readingThreads.put(callingThread, (accessCount - 1));
+			readingThreads.put(callingThread, (accessCount_ - 1));
 		}
-		notifyAll();
 	}
 
 	public synchronized void lockWrite() {
