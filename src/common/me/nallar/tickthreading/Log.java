@@ -17,14 +17,18 @@ import net.minecraft.world.World;
 
 @SuppressWarnings ({"UnusedDeclaration", "UseOfSystemOutOrSystemErr"})
 public class Log {
-	public static final Logger LOGGER = Logger.getLogger("TickThreading");
+	public static Logger LOGGER = Logger.getLogger("TickThreading");
 	private static Handler handler;
 	private static final int numberOfLogFiles = 5;
 	private static final File logFolder = new File("TickThreadingLogs");
 
 	static {
 		try {
-			LOGGER.setParent(FMLLog.getLogger());
+			Logger parent = FMLLog.getLogger();
+			if (parent == null) {
+				throw new NoClassDefFoundError();
+			}
+			LOGGER.setParent(parent);
 			LOGGER.setUseParentHandlers(true);
 			setFileName("tickthreading", Level.INFO, LOGGER);
 		} catch (NoClassDefFoundError ignored) {

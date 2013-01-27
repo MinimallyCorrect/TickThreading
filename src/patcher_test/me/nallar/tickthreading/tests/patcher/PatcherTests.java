@@ -19,7 +19,7 @@ public class PatcherTests {
 	public void testReplaceInstantiations() throws Exception {
 		Map<String, List<String>> replacementClasses = new HashMap<String, List<String>>();
 		replacementClasses.put("java.util.HashMap", CollectionsUtil.split("java.util.concurrent.ConcurrentHashMap,me.nallar.tickthreading.collections.CHashMap"));
-		Patches patches = new Patches(classRegistry);
+		Patches patches = new Patches(null);
 
 		CtClass ctClass = ClassPool.getDefault().get("me.nallar.tickthreading.tests.patches.PatcherTests");
 		for (CtMethod ctMethod : ctClass.getDeclaredMethods()) {

@@ -1,14 +1,16 @@
 package me.nallar.unsafe;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Field;
 
+import javassist.Modifier;
+import me.nallar.tickthreading.Log;
 import sun.misc.Unsafe;
 
 public class UnsafeUtil {
 	private static final Unsafe $ = UnsafeAccess.$;
-	private static final Object[] addressGet = new Object[1];
 	private static final long baseOffset = $.arrayBaseOffset(Object[].class);
-	private static final int addressSize = $.addressSize();
+	private static final long headerSize = baseOffset - 8;
 
 	public static void swap(Object a, Object b) {
 		// I'm sorry.
@@ -20,18 +22,64 @@ public class UnsafeUtil {
 			throw new UnsupportedOperationException("Objects of different classes or sizes can not be swapped.");
 		}
 		long temporaryInstanceLocation = $.allocateMemory(sizeA);
-		$.copyMemory(a, 0, null, temporaryInstanceLocation, sizeA); // Copy object A to temporary directly allocated memory
-		$.copyMemory(b, 0, a, 0, sizeA); // Copy object B to object A
-		$.copyMemory(null, temporaryInstanceLocation, b, 0, sizeA); // Copy temporary copy of A to B
+		long temporaryInstanceLocation2 = $.allocateMemory(sizeA);
+		$.copyMemory(a, 0, null, temporaryInstanceLocation, sizeA);
+		$.copyMemory(b, 0, null, temporaryInstanceLocation2, sizeA);
+		copyMemory(temporaryInstanceLocation, b, sizeA);
+		copyMemory(temporaryInstanceLocation2, a, sizeA);
 		$.freeMemory(temporaryInstanceLocation);
+		$.freeMemory(temporaryInstanceLocation2);
 	}
 
-	public static long sizeOf(Object object) {
-		return $.getAddress(normalize($.getInt(object, 4L)) + 12L);
+	private static void copyMemory(long src, Object dest, long size) {
+		long sSize = size;
+		while (size > 0) {
+			if (size >= 8) {
+				$.putLong(dest, sSize - size, $.getLong(null, src));
+				size -= 8;
+				src += 8;
+			} else if (size >= 4) {
+				$.putInt(dest, sSize - size, $.getInt(null, src));
+				size -= 4;
+				src += 4;
+			} else if (size >= 2) {
+				$.putShort(dest, sSize - size, $.getShort(null, src));
+				size -= 2;
+				src += 2;
+			} else {
+				$.putByte(dest, sSize - size, $.getByte(null, src));
+				size--;
+				src++;
+			}
+		}
 	}
 
-	private static long normalize(int value) {
-		return (value >= 0) ? value : (~0L >>> 32) & value;
+	public static long sizeOf(Class<?> clazz) {
+		if (clazz.equals(byte.class) || clazz.equals(char.class)) {
+			return 1L;
+		} else if (clazz.equals(short.class)) {
+			return 2L;
+		} else if (clazz.equals(int.class) || clazz.equals(float.class)) {
+			return 4L;
+		} else if (clazz.equals(long.class) || clazz.equals(double.class)) {
+			return 8L;
+		} else {
+			Field[] fields = clazz.getDeclaredFields();
+			long sz = 0;
+			for (Field f : fields) {
+				if (f.getType().isPrimitive()) {
+					sz += sizeOf(f.getType());
+				} else {
+					sz += 4; //ptr
+				}
+			}
+			sz += headerSize;
+			return sz;
+		}
+	}
+
+	public static long sizeOf(Object o) {
+		return sizeOf(o.getClass());
 	}
 
 	public static boolean arrayEquals(Object a, Object b) {
@@ -55,16 +103,16 @@ public class UnsafeUtil {
 		return true;
 	}
 
-	public static synchronized long getAddress(Object o) {
-		addressGet[0] = o;
-		switch (addressSize) {
-			case 4:
-				return $.getInt(addressGet, baseOffset);
-			case 8:
-				return $.getLong(addressGet, baseOffset);
-		}
+	public static Object fromAddress(long address) {
+		Pointer p = new Pointer();
+		p.setAddress(address);
+		return p.o;
+	}
 
-		throw new Error("unsupported address size: " + addressSize);
+	public static long addressOf(Object o) {
+		Pointer p = new Pointer();
+		p.o = o;
+		return p.getAddress();
 	}
 
 	public static <T> T createUninitialisedObject(Class<T> c) {
@@ -73,5 +121,75 @@ public class UnsafeUtil {
 		} catch (Exception e) {
 			throw new Error(e);
 		}
+	}
+
+	public static String info(Object o) {
+		return "size: " + sizeOf(o) + ", address: " + addressOf(o) + ", class: " + o.getClass().getSimpleName();
+	}
+
+	public static String debugOut(Object a) {
+		Class<?> c = a.getClass();
+		StringBuilder out = new StringBuilder();
+		boolean secondOrLater = false;
+		for (Field f : c.getDeclaredFields()) {
+			if ((f.getModifiers() & Modifier.STATIC) == Modifier.STATIC) {
+				continue;
+			}
+			f.setAccessible(true);
+			try {
+				if (secondOrLater) {
+					out.append('\n');
+				}
+				out
+						.append(f.getName())
+						.append(": ")
+						.append(f.getType().getName())
+						.append("; ");
+				Object value = f.get(a);
+				Class vC = value.getClass();
+				if (vC.isArray()) {
+					if (char[].class.equals(vC)) {
+						int s = Array.getLength(value);
+						for (int i = 0; i < s; i++) {
+							out.append(Array.getChar(value, i));
+						}
+					} else {
+						int s = Array.getLength(value);
+						for (int i = 0; i < s; i++) {
+							out.append(Array.get(value, i)).append(',');
+						}
+					}
+				} else {
+					out.append(value);
+				}
+			} catch (IllegalAccessException e) {
+				Log.severe("", e);
+			}
+			secondOrLater = true;
+		}
+		return out.toString();
+	}
+
+	public static String compare(Object a, Object b) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("a=b: ").append(a.equals(b)).append('\n');
+		sb.append("a: ").append(debugOut(a)).append('\n');
+		sb.append("b: ").append(debugOut(b)).append('\n');
+		sb.append('a').append(UnsafeUtil.info(a)).append('\n');
+		sb.append('b').append(UnsafeUtil.info(b)).append('\n');
+		return sb.toString();
+	}
+
+	public static void main(String[] args) {
+		for (int i = 0; i < 16; i++) {
+			Log.info(String.valueOf($.getInt(new Long[1], (long) i)));
+		}
+		Log.info(String.valueOf($.getInt(new Long[1], 12L)));
+		//Log.info(String.valueOf(baseOffset));
+		String a = "String 1";
+		String b = "String 2";
+		Log.info(compare(a, b));
+		UnsafeUtil.swap(a, b);
+		Log.info(compare(a, b));
 	}
 }
