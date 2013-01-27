@@ -334,7 +334,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 	@Override
 	@Declare
-	public void doNetworkTick() {
+	public void doNetworkTicks() {
 		long lastTime = 1;
 		for (long lastTick = 0L; serverRunning; ) {
 			long curTime = System.nanoTime();
@@ -424,7 +424,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 		@Override
 		public void run() {
-			minecraftServer.doNetworkTick();
+			minecraftServer.doNetworkTicks();
 		}
 	}
 }
