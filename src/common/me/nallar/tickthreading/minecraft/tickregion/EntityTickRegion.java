@@ -48,7 +48,6 @@ public class EntityTickRegion extends TickRegion {
 				}
 
 				if (entity.isDead) {
-					Log.info("Entity " + Log.toString(entity) + " died");
 					int entityX = entity.chunkCoordX;
 					int entityZ = entity.chunkCoordZ;
 

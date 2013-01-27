@@ -3,7 +3,6 @@ package me.nallar.tickthreading.minecraft.patched;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import me.nallar.tickthreading.Log;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemInWorldManager;
 import net.minecraft.network.packet.Packet29DestroyEntity;
@@ -33,7 +32,7 @@ public class PatchEntityPlayerMP extends EntityPlayerMP {
 			int[] var2 = new int[var1];
 			Iterator var3 = this.destroyedItemsNetCache.iterator();
 
-			for(int var4 = 0; var3.hasNext() && var4 < var1;) {
+			for (int var4 = 0; var3.hasNext() && var4 < var1; ) {
 				var2[var4++] = (Integer) var3.next();
 				var3.remove();
 			}
@@ -52,22 +51,18 @@ public class PatchEntityPlayerMP extends EntityPlayerMP {
 					int x = var9.chunkXPos;
 					int z = var9.chunkZPos;
 					var7.remove();
-					/*if (!worldObj.getChunkProvider().chunkExists(x, z)) {
-						continue;
-					}*/
 
 					if (this.worldObj.blockExists(var9.chunkXPos << 4, 0, var9.chunkZPos << 4)) {
 						var6.add(this.worldObj.getChunkFromChunkCoords(var9.chunkXPos, var9.chunkZPos));
 						//BugFix: 16 makes it load an extra chunk, which isn't associated with a player, which makes it not unload unless a player walks near it.
 						//ToDo: Find a way to efficiently clean abandoned chunks.
 						//var8.addAll(((WorldServer) this.worldObj).getAllTileEntityInBox(var9.chunkXPos * 16, 0, var9.chunkZPos * 16, var9.chunkXPos * 16 + 16, 256, var9.chunkZPos * 16 + 16));
-						var8.addAll(((WorldServer)this.worldObj).getAllTileEntityInBox(var9.chunkXPos * 16, 0, var9.chunkZPos * 16, var9.chunkXPos * 16 + 15, 256, var9.chunkZPos * 16 + 15));
+						var8.addAll(((WorldServer) this.worldObj).getAllTileEntityInBox(var9.chunkXPos * 16, 0, var9.chunkZPos * 16, var9.chunkXPos * 16 + 15, 256, var9.chunkZPos * 16 + 15));
 					}
 				}
 
 				if (!var6.isEmpty()) {
 					this.playerNetServerHandler.sendPacketToPlayer(new Packet56MapChunks(var6));
-					Log.info("Sending " + var6.size() + " chunks as a multi-chunk to " + getCommandSenderName());
 					Iterator var11 = var8.iterator();
 
 					while (var11.hasNext()) {
@@ -83,8 +78,6 @@ public class PatchEntityPlayerMP extends EntityPlayerMP {
 						MinecraftForge.EVENT_BUS.post(new ChunkWatchEvent.Watch(var10.getChunkCoordIntPair(), this));
 					}
 				}
-			} else {
-				Log.info("EntityPlayerMP.loadedChunks empty");
 			}
 		}
 	}

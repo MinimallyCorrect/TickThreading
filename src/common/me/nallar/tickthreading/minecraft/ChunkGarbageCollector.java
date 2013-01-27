@@ -30,7 +30,7 @@ public class ChunkGarbageCollector {
 			return;
 		}
 		profiler.startSection("chunkGC");
-		int viewDistance = MinecraftServer.getServer().getConfigurationManager().getViewDistance();
+		int viewDistance = MinecraftServer.getServer().getConfigurationManager().getViewDistance() + 1;
 		ChunkProviderServer chunkProvider = worldServer.theChunkProviderServer;
 		Set<Long> chunksToUnload = new HashSet<Long>();
 		for (Chunk chunk : chunkProvider.getLoadedChunks()) {
