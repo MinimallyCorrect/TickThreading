@@ -201,7 +201,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 		for (int var34 = 0; var34 < var7; ++var34) {
 			EnumCreatureType var35 = var33[var34];
 
-			if ((Math.random() < tpsFactor) && ((!var35.getPeacefulCreature() || par2) && (var35.getPeacefulCreature() || par1) && (!var35.getAnimal() || par3) && par0WorldServer.countEntities(var35.getCreatureClass()) <= var35.getMaxNumberOfCreature() * eligibleChunksForSpawning.size() / 256)) {
+			if ((tpsFactor >= 1 || Math.random() < tpsFactor) && ((!var35.getPeacefulCreature() || par2) && (var35.getPeacefulCreature() || par1) && (!var35.getAnimal() || par3) && par0WorldServer.countEntities(var35.getCreatureClass()) <= var35.getMaxNumberOfCreature() * eligibleChunksForSpawning.size() / 256)) {
 				ArrayList<ChunkCoordIntPair> tmp = new ArrayList<ChunkCoordIntPair>(eligibleChunksForSpawning.keySet());
 				Collections.shuffle(tmp);
 				Iterator<ChunkCoordIntPair> var37 = tmp.iterator();
