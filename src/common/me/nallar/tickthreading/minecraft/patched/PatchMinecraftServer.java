@@ -328,7 +328,12 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			}
 			this.theProfiler.endSection();
 
-			worldTickTimes.get(id)[this.tickCounter % 100] = System.nanoTime() - var2;
+			if (worldTickTimes != null) {
+				long[] tickTimes = worldTickTimes.get(id);
+				if (tickTimes != null) {
+					tickTimes[this.tickCounter % 100] = System.nanoTime() - var2;
+				}
+			}
 		}
 	}
 
