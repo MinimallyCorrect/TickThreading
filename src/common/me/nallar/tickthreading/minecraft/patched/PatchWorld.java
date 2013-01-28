@@ -20,6 +20,8 @@ import net.minecraft.world.WorldProvider;
 import net.minecraft.world.WorldSettings;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.storage.ISaveHandler;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 
 @SuppressWarnings ("ForLoopReplaceableByForEach")
 public abstract class PatchWorld extends World {
@@ -27,6 +29,20 @@ public abstract class PatchWorld extends World {
 		super(par1ISaveHandler, par2Str, par3WorldProvider, par4WorldSettings, par5Profiler);
 	}
 
+	@Override
+	public void addLoadedEntities(List par1List) {
+		for (int var2 = 0; var2 < par1List.size(); ++var2) {
+			Entity entity = (Entity) par1List.get(var2);
+			if (MinecraftForge.EVENT_BUS.post(new EntityJoinWorldEvent(entity, this))) {
+				par1List.remove(var2--);
+			} else {
+				loadedEntityList.add(entity);
+				this.obtainEntitySkin(entity);
+			}
+		}
+	}
+
+	@Override
 	@Declare
 	public boolean hasCollidingBoundingBoxes(Entity par1Entity, AxisAlignedBB par2AxisAlignedBB) {
 		List collidingBoundingBoxes = (List) ThreadLocals.collidingBoundingBoxes.get();

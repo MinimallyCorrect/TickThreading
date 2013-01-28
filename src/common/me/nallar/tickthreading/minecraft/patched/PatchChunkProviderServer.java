@@ -215,11 +215,11 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 					this.loadedChunks.add(var5);
 				}
 
-				var5.onChunkLoad();
 				var5.populateChunk(this, this, x, z);
 			}
 		}
 
+		var5.onChunkLoad();
 		chunkLoadLocks.remove(hash(x, z));
 
 		return var5;
