@@ -1,4 +1,4 @@
-package me.nallar.tickthreading.util;
+package me.nallar.tickthreading.util.concurrent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -6,8 +6,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
-
-import me.nallar.tickthreading.Log;
 
 /**
  * Derived from http://tutorials.jenkov.com/java-concurrency/read-write-locks.html#full
@@ -55,7 +53,7 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 	public synchronized void lockRead() {
 		Thread callingThread = Thread.currentThread();
 		readRequests++;
-		while (cantGrantReadAccess(callingThread)) {
+		while (writingThread != callingThread && (writingThread != null || (fair && readingThreads.get(callingThread) == null && writeRequests > 0))) {
 			try {
 				wait();
 			} catch (InterruptedException ignored) {
@@ -65,10 +63,6 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 
 		readingThreads.put(callingThread,
 				(getReadAccessCount(callingThread) + 1));
-	}
-
-	private boolean cantGrantReadAccess(Thread callingThread) {
-		return isNotWriter(callingThread) && (hasWriter() || (isNotReader(callingThread) && (fair && hasWriteRequests())));
 	}
 
 	public synchronized void unlockRead() {
@@ -90,9 +84,9 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 
 	public synchronized void lockWrite() {
 		writeRequests++;
-		//debug("lockwrite");
 		Thread callingThread = Thread.currentThread();
-		while (cantGrantWriteAccess(callingThread)) {
+		int size;
+		while ((writingThread != callingThread && writingThread != null) || ((size = readingThreads.size()) != 0 && (size != 1 || readingThreads.get(callingThread) == null))) {
 			try {
 				wait();
 			} catch (InterruptedException ignored) {
@@ -118,11 +112,6 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 		if (writeRequests > 0 || readRequests > 0) {
 			notifyAll();
 		}
-		//debug("unlockwrite");
-	}
-
-	private boolean cantGrantWriteAccess(Thread callingThread) {
-		return isNotOnlyReader(callingThread) && (hasReaders() || (writingThread != null && isNotWriter(callingThread)));
 	}
 
 	private int getReadAccessCount(Thread callingThread) {
@@ -133,33 +122,8 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 		return accessCount;
 	}
 
-	private boolean hasReaders() {
-		return !readingThreads.isEmpty();
-	}
-
-	private boolean isNotReader(Thread callingThread) {
-		return readingThreads.get(callingThread) == null;
-	}
-
-	private boolean isNotOnlyReader(Thread callingThread) {
-		return readingThreads.size() != 1 ||
-				readingThreads.get(callingThread) == null;
-	}
-
-	private boolean hasWriter() {
-		return writingThread != null;
-	}
-
 	private boolean isNotWriter(Thread callingThread) {
 		return writingThread != callingThread;
-	}
-
-	private boolean hasWriteRequests() {
-		return this.writeRequests > 0;
-	}
-
-	private void debug(String pos) {
-		Log.info(pos + ", r: " + readingThreads.size() + ", w: " + (writingThread == null) + ", wa: " + writeAccesses + ", wr: " + writeRequests);
 	}
 
 	private abstract static class SimpleLock implements Lock {
