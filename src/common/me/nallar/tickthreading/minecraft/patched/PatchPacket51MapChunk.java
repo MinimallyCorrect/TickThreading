@@ -11,12 +11,7 @@ public abstract class PatchPacket51MapChunk extends Packet51MapChunk {
 	static ThreadLocal<byte[]> temporaryData;
 
 	public static void staticConstruct() {
-		temporaryData = new ThreadLocal<byte[]>() {
-			@Override
-			public byte[] initialValue() {
-				return new byte[196864];
-			}
-		};
+		temporaryData = new ThreadLocalByteArray();
 	}
 
 	@Override
@@ -105,5 +100,12 @@ public abstract class PatchPacket51MapChunk extends Packet51MapChunk {
 		var6.field_74582_a = new byte[var3];
 		System.arraycopy(var7, 0, var6.field_74582_a, 0, var3);
 		return var6;
+	}
+
+	public static class ThreadLocalByteArray extends ThreadLocal<byte[]> {
+		@Override
+		public byte[] initialValue() {
+			return new byte[196864];
+		}
 	}
 }
