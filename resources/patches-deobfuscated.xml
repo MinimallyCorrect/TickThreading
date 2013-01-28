@@ -10,6 +10,8 @@
 		<class id="net.minecraft.server.MinecraftServer">
 			<addClass class="net.minecraft.network.packet.IPacketHandler"/>
 			<addClass class="me.nallar.tickthreading.Log"/>
+			<addClass class="me.nallar.tickthreading.Log$1"/>
+			<addClass class="me.nallar.tickthreading.Log$2"/>
 			<addClass class="me.nallar.tickthreading.LogFormatter"/>
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchMinecraftServer"/>
 			<public field="mcServer"/>
