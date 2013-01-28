@@ -10,7 +10,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import me.nallar.tickthreading.Log;
-import me.nallar.tickthreading.collections.TList;
 import me.nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
 import me.nallar.tickthreading.minecraft.tickregion.EntityTickRegion;
 import me.nallar.tickthreading.minecraft.tickregion.TickRegion;
@@ -26,7 +25,6 @@ public class TickManager {
 	public final int regionSize;
 	public boolean variableTickRate;
 	public boolean profilingEnabled = false;
-	private int rebuildCounter = 0;
 	public float averageTickLength = 0;
 	public int lastTickLength = 0;
 	public long lastStartTime = 0;
@@ -35,8 +33,8 @@ public class TickManager {
 	private final Map<Integer, EntityTickRegion> entityCallables = new HashMap<Integer, EntityTickRegion>();
 	private final List<TickRegion> tickRegions = new ArrayList<TickRegion>();
 	private final ThreadManager threadManager;
-	public final List<TileEntity> tileEntityList = new TList();
-	public final List<Entity> entityList = new TList();
+	public final List<TileEntity> tileEntityList = new ArrayList<TileEntity>();
+	public final List<Entity> entityList = new ArrayList<Entity>();
 	private final Map<Class<?>, Integer> entityClassToCountMap = new HashMap<Class<?>, Integer>();
 	public Object tileEntityLock = new Object();
 	public Object entityLock = new Object();
@@ -131,14 +129,6 @@ public class TickManager {
 						}
 						tickRegion.die();
 					}
-				}
-			}
-			if (rebuildCounter++ % 673 == 45) {
-				if (entityList instanceof TList) {
-					((TList) entityList).rebuild();
-				}
-				if (tileEntityList instanceof TList) {
-					((TList) tileEntityList).rebuild();
 				}
 			}
 		} catch (Exception e) {
