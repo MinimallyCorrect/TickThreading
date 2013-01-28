@@ -16,7 +16,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.ChunkWatchEvent;
 
-public class PatchEntityPlayerMP extends EntityPlayerMP {
+public abstract class PatchEntityPlayerMP extends EntityPlayerMP {
 	public PatchEntityPlayerMP(MinecraftServer par1MinecraftServer, World par2World, String par3Str, ItemInWorldManager par4ItemInWorldManager) {
 		super(par1MinecraftServer, par2World, par3Str, par4ItemInWorldManager);
 	}

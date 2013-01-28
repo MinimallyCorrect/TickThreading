@@ -6,7 +6,7 @@ import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.ServerConfigurationManager;
 
-public class PatchServerConfigurationManager extends ServerConfigurationManager {
+public abstract class PatchServerConfigurationManager extends ServerConfigurationManager {
 	@Declare
 	public java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock playerUpdateLock_;
 	@Declare
