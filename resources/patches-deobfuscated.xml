@@ -128,7 +128,7 @@
 		</class>
 		<class id="net.minecraft.server.management.ServerConfigurationManager">
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchServerConfigurationManager"/>
-			<lock field="playerUpdateLock">onChunkLoad,onChunkUnload,removeEntityAtIndex,addEntity,createPlayerForUser,sendPacketToAllPlayers,sendPlayerInfoToAllPlayers</lock>
+			<lock field="playerUpdateLock">createPlayerForUser,sendPacketToAllPlayers,sendPlayerInfoToAllPlayers</lock>
 			<lock field="playerUpdateLock">sendPacketToAllPlayersInDimension,getPlayerListAsString,getAllUsernames,getPlayerForUsername,findPlayers,sendToAllNearExcept</lock>
 			<lock field="playerUpdateLock">saveAllPlayerData,getPlayerList</lock>
 			<lock field="playersUpdateLock">playerLoggedIn,playerLoggedOut,respawnPlayer</lock>
