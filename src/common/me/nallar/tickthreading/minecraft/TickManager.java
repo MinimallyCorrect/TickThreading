@@ -26,6 +26,7 @@ public class TickManager {
 	public final int regionSize;
 	public boolean variableTickRate;
 	public boolean profilingEnabled = false;
+	private int rebuildCounter = 0;
 	public float averageTickLength = 0;
 	public int lastTickLength = 0;
 	public long lastStartTime = 0;
@@ -60,15 +61,18 @@ public class TickManager {
 	@SuppressWarnings ("NumericCastThatLosesPrecision")
 	private TileEntityTickRegion getOrCreateCallable(TileEntity tileEntity) {
 		int hashCode = getHashCode(tileEntity);
-		synchronized (tickRegions) {
-			TileEntityTickRegion callable = tileEntityCallables.get(hashCode);
-			if (callable == null) {
-				callable = new TileEntityTickRegion(world, this, tileEntity.xCoord / regionSize, tileEntity.zCoord / regionSize);
-				tileEntityCallables.put(hashCode, callable);
-				tickRegions.add(callable);
+		TileEntityTickRegion callable = tileEntityCallables.get(hashCode);
+		if (callable == null) {
+			synchronized (tickRegions) {
+				callable = tileEntityCallables.get(hashCode);
+				if (callable == null) {
+					callable = new TileEntityTickRegion(world, this, tileEntity.xCoord / regionSize, tileEntity.zCoord / regionSize);
+					tileEntityCallables.put(hashCode, callable);
+					tickRegions.add(callable);
+				}
 			}
-			return callable;
 		}
+		return callable;
 	}
 
 	public TickRegion getEntityCallable(int hashCode) {
@@ -80,15 +84,18 @@ public class TickManager {
 		int regionX = (int) entity.posX / regionSize;
 		int regionZ = (int) entity.posZ / regionSize;
 		int hashCode = getHashCodeFromRegionCoords(regionX, regionZ);
-		synchronized (tickRegions) {
-			EntityTickRegion callable = entityCallables.get(hashCode);
-			if (callable == null) {
-				callable = new EntityTickRegion(world, this, regionX, regionZ);
-				entityCallables.put(hashCode, callable);
-				tickRegions.add(callable);
+		EntityTickRegion callable = entityCallables.get(hashCode);
+		if (callable == null) {
+			synchronized (tickRegions) {
+				callable = entityCallables.get(hashCode);
+				if (callable == null) {
+					callable = new EntityTickRegion(world, this, regionX, regionZ);
+					entityCallables.put(hashCode, callable);
+					tickRegions.add(callable);
+				}
 			}
-			return callable;
 		}
+		return callable;
 	}
 
 	public int getHashCode(TileEntity tileEntity) {
@@ -124,6 +131,14 @@ public class TickManager {
 						}
 						tickRegion.die();
 					}
+				}
+			}
+			if (rebuildCounter++ % 673 == 45) {
+				if (entityList instanceof TList) {
+					((TList) entityList).rebuild();
+				}
+				if (tileEntityList instanceof TList) {
+					((TList) tileEntityList).rebuild();
 				}
 			}
 		} catch (Exception e) {
@@ -215,10 +230,6 @@ public class TickManager {
 		if (previousProfiling) {
 			world.theProfiler.profilingEnabled = true;
 		}
-	}
-
-	public ThreadManager getThreadManager() {
-		return threadManager;
 	}
 
 	public void unload() {

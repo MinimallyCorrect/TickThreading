@@ -2471,7 +2471,7 @@ public class TList extends AbstractList implements List, RandomAccess,
 		Object node, xnode;
 		Leaf nxlf = new Leaf();
 		nxlf.setRight(head);
-		int index = 0, first, last, pivot, wn;
+		int index = 0, first, pivot, wn;
 
 		set_leaves:
 		do {
@@ -2479,7 +2479,6 @@ public class TList extends AbstractList implements List, RandomAccess,
 			node = root;
 			wn = w;
 			first = 0;
-			last = w;
 
 			while (wn > 4) {
 
@@ -2489,7 +2488,6 @@ public class TList extends AbstractList implements List, RandomAccess,
 				pivot += wn;
 
 				if (index < pivot) {
-					last = pivot;
 					node = xnode;
 				} else {
 					first = pivot;
