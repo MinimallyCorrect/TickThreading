@@ -2861,23 +2861,23 @@ public class TList extends AbstractList implements List, RandomAccess,
 		 */
 		@Override
 		public Object get(int index) throws IndexOutOfBoundsException {
-				if (index < 0 || index >= size) {
-					throw new IndexOutOfBoundsException();
-				}
+			if (index < 0 || index >= size) {
+				throw new IndexOutOfBoundsException();
+			}
 
-				if (list instanceof SubTList) {
-					if (((SubTList) list).modCount != expectedModCount) {
-						throw new ConcurrentModificationException();
-					}
-				} else if (TList.this.modCount != expectedModCount) {
+			if (list instanceof SubTList) {
+				if (((SubTList) list).modCount != expectedModCount) {
 					throw new ConcurrentModificationException();
 				}
+			} else if (TList.this.modCount != expectedModCount) {
+				throw new ConcurrentModificationException();
+			}
 
-				if (list instanceof SubTList) {
-					return list.get(index + offset);
-				} else {
-					return TList.this.get(index + offset);
-				}
+			if (list instanceof SubTList) {
+				return list.get(index + offset);
+			} else {
+				return TList.this.get(index + offset);
+			}
 		}
 
 		Leaf getLeaf(int index) throws IndexOutOfBoundsException {

@@ -3,7 +3,6 @@ package me.nallar.tickthreading.minecraft.tickregion;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import me.nallar.tickthreading.minecraft.TickManager;
 import net.minecraft.world.World;
@@ -13,7 +12,6 @@ public abstract class TickRegion implements Runnable {
 	protected volatile boolean ticking = false;
 	protected final Set toRemove = new LinkedHashSet();
 	protected final Set toAdd = new LinkedHashSet();
-	volatile Lock thisLock = new ReentrantLock();
 	volatile Lock xPlusLock = null;
 	volatile Lock xMinusLock = null;
 	volatile Lock zPlusLock = null;
@@ -21,8 +19,8 @@ public abstract class TickRegion implements Runnable {
 	final World world;
 	final TickManager manager;
 	public final int hashCode;
-	private final int regionX;
-	private final int regionZ;
+	protected final int regionX;
+	protected final int regionZ;
 	private float averageTickTime = 1;
 
 	TickRegion(World world, TickManager manager, int regionX, int regionZ) {
@@ -35,34 +33,15 @@ public abstract class TickRegion implements Runnable {
 		setupLocks();
 	}
 
-	private void setupLocks() {
-		TickRegion tickRegion = getCallable(regionX + 1, regionZ);
-		if (tickRegion != null) {
-			tickRegion.xMinusLock = thisLock;
-			this.xPlusLock = tickRegion.thisLock;
-		}
-		tickRegion = getCallable(regionX - 1, regionZ);
-		if (tickRegion != null) {
-			tickRegion.xPlusLock = thisLock;
-			this.xMinusLock = tickRegion.thisLock;
-		}
-		tickRegion = getCallable(regionX, regionZ + 1);
-		if (tickRegion != null) {
-			tickRegion.zMinusLock = thisLock;
-			this.zPlusLock = tickRegion.thisLock;
-		}
-		tickRegion = getCallable(regionX, regionZ - 1);
-		if (tickRegion != null) {
-			tickRegion.zPlusLock = thisLock;
-			this.zMinusLock = tickRegion.thisLock;
-		}
+	protected void setupLocks() {
 	}
 
 	public void die() {
-		thisLock = null;
 		TickRegion tickRegion = getCallable(regionX + 1, regionZ);
 		if (tickRegion != null) {
-			tickRegion.xMinusLock = null;
+			synchronized (tickRegion) {
+				tickRegion.xMinusLock = null;
+			}
 		}
 		tickRegion = getCallable(regionX - 1, regionZ);
 		if (tickRegion != null) {
