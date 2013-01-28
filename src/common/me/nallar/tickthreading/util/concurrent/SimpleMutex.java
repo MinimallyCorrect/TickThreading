@@ -16,38 +16,51 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 
+import me.nallar.tickthreading.Log;
+
 public class SimpleMutex implements Lock {
 	protected boolean locked = false;
+	int waiting = 0;
 
 	@Override
 	public synchronized void lockInterruptibly() throws InterruptedException {
-		try {
-			while (locked) {
-				wait();
-			}
+		if (!locked) {
 			locked = true;
-		} catch (InterruptedException ex) {
-			notify();
-			throw ex;
+			return;
 		}
+		waiting++;
+		do {
+			wait();
+		} while (locked);
+		waiting--;
+		locked = true;
 	}
 
 	@Override
 	public synchronized void lock() {
+		if (!locked) {
+			locked = true;
+			return;
+		}
 		try {
-			while (locked) {
+			waiting++;
+			do {
 				wait();
-			}
+			} while (locked);
+			waiting--;
 			locked = true;
 		} catch (InterruptedException ex) {
-			notify();
+			// For better performance, we just assume interruption won't happen...
+			Log.severe("Interrupted while locking", ex);
 		}
 	}
 
 	@Override
 	public synchronized void unlock() {
 		locked = false;
-		notify();
+		if (waiting != 0) {
+			notify();
+		}
 	}
 
 	@Override

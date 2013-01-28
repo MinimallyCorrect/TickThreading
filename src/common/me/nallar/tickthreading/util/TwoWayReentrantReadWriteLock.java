@@ -16,6 +16,7 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 	private final Map<Thread, Integer> readingThreads = new HashMap<Thread, Integer>();
 	private volatile int writeAccesses = 0;
 	private volatile int writeRequests = 0;
+	private volatile int readRequests = 0;
 	protected boolean fair = true;
 	private volatile Thread writingThread = null;
 	private final Lock readLock = new SimpleLock() {
@@ -53,12 +54,14 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 
 	public synchronized void lockRead() {
 		Thread callingThread = Thread.currentThread();
+		readRequests++;
 		while (cantGrantReadAccess(callingThread)) {
 			try {
 				wait();
 			} catch (InterruptedException ignored) {
 			}
 		}
+		readRequests--;
 
 		readingThreads.put(callingThread,
 				(getReadAccessCount(callingThread) + 1));
@@ -77,7 +80,7 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 		}
 		if (accessCount_ == 1) {
 			readingThreads.remove(callingThread);
-			if (readingThreads.isEmpty()) {
+			if (writeRequests > 0 && readingThreads.isEmpty()) {
 				notify();
 			}
 		} else {
@@ -112,7 +115,9 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 		if (writeAccesses == 0) {
 			writingThread = null;
 		}
-		notifyAll();
+		if (writeRequests > 0 || readRequests > 0) {
+			notifyAll();
+		}
 		//debug("unlockwrite");
 	}
 

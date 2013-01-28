@@ -1,5 +1,6 @@
 package me.nallar.tickthreading.minecraft;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -31,7 +32,7 @@ public class TickManager {
 	public final World world;
 	private final Map<Integer, TileEntityTickRegion> tileEntityCallables = new HashMap<Integer, TileEntityTickRegion>();
 	private final Map<Integer, EntityTickRegion> entityCallables = new HashMap<Integer, EntityTickRegion>();
-	private final List<TickRegion> tickRegions = new TList();
+	private final List<TickRegion> tickRegions = new ArrayList<TickRegion>();
 	private final ThreadManager threadManager;
 	public final List<TileEntity> tileEntityList = new TList();
 	public final List<Entity> entityList = new TList();
