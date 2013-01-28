@@ -152,6 +152,7 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 
 		final Object lock = getLock(x, z);
 
+		// Lock on the lock for this chunk - prevent multiple instances of the same chunk
 		synchronized (lock) {
 			var5 = (Chunk) this.loadedChunkHashMap.getValueByKey(var3);
 			if (var5 != null) {
@@ -165,7 +166,17 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 				}
 			}
 		}
+		// Unlock this chunk - avoids a deadlock
+		// Thread A - requests chunk A - needs genned
+		// Thread B - requests chunk B - needs genned
+		// In thread A, redpower tries to load chunk B
+		// because its marble gen is buggy.
+		// Thread B is now waiting for the generate lock,
+		// Thread A is waiting for the lock on chunk B
 
+		// Lock the generation lock - ChunkProviderGenerate isn't threadsafe at all
+		// TODO: Possibly make ChunkProviderGenerate threadlocal? Would need many changes to
+		// structure code to get it to work properly.
 		synchronized (genLock) {
 			synchronized (lock) {
 				var5 = (Chunk) this.loadedChunkHashMap.getValueByKey(var3);
