@@ -29,6 +29,7 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 	public Map<Long, Object> chunkLoadLocks;
 	private Chunk lastChunk;
 	private net.minecraft.util.LongHashMap loadingChunkHashMap;
+	private int unloadTicks;
 
 	public void construct() {
 		chunkLoadLock = new Object();
@@ -99,7 +100,7 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 			}
 		}
 
-		if (this.currentServer.provider.dimensionId != 0 && loadedChunks.isEmpty() && ForgeChunkManager.getPersistentChunksFor(currentServer).isEmpty() && (!TickThreading.instance.shouldLoadSpawn || !DimensionManager.shouldLoadSpawn(currentServer.provider.dimensionId))) {
+		if (unloadTicks++ > 200 && this.currentServer.provider.dimensionId != 0 && loadedChunks.isEmpty() && ForgeChunkManager.getPersistentChunksFor(currentServer).isEmpty() && (!TickThreading.instance.shouldLoadSpawn || !DimensionManager.shouldLoadSpawn(currentServer.provider.dimensionId))) {
 			DimensionManager.unloadWorld(currentServer.provider.dimensionId);
 		}
 
