@@ -357,6 +357,12 @@ public class Patches {
 		if (initialise == null) {
 			initialise = "new " + clazz + "();";
 		}
+		try {
+			CtField ctField = ctClass.getDeclaredField(field);
+			Log.warning(field + " already exists as " + ctField);
+			return;
+		} catch (NotFoundException expected) {
+		}
 		CtClass newType = classRegistry.getClass(clazz);
 		CtField ctField = new CtField(newType, field, ctClass);
 		if (attributes.get("static") != null) {
