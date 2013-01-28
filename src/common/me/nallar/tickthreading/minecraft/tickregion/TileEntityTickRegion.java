@@ -146,6 +146,9 @@ public class TileEntityTickRegion extends TickRegion {
 	@Override
 	public void processChanges() {
 		synchronized (tickStateLock) {
+			if (ticking) {
+				return;
+			}
 			tileEntitySet.addAll(toAdd);
 			tileEntitySet.removeAll(toRemove);
 			toAdd.clear();
