@@ -21,7 +21,7 @@ public abstract class PatchPacket51MapChunk extends Packet51MapChunk {
 		this.tempLength = data.length;
 	}
 
-	public static Packet51MapChunkData getMapChunkData(Chunk par0Chunk, boolean par1, int par2) {
+	public static Packet51MapChunkData a(Chunk par0Chunk, boolean par1, int par2) {
 		int var3 = 0;
 		ExtendedBlockStorage[] var4 = par0Chunk.getBlockStorageArray();
 		int var5 = 0;
