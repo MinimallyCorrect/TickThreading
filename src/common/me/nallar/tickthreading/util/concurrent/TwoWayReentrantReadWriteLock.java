@@ -50,7 +50,7 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 		return writeLock;
 	}
 
-	public synchronized void lockRead() {
+	public final synchronized void lockRead() {
 		Thread callingThread = Thread.currentThread();
 		readRequests++;
 		while (writingThread != callingThread && (writingThread != null || (fair && readingThreads.get(callingThread) == null && writeRequests > 0))) {
@@ -61,11 +61,11 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 		}
 		readRequests--;
 
-		readingThreads.put(callingThread,
-				(getReadAccessCount(callingThread) + 1));
+		Integer count = readingThreads.get(callingThread);
+		readingThreads.put(callingThread, count == null ? 1 : count + 1);
 	}
 
-	public synchronized void unlockRead() {
+	public final synchronized void unlockRead() {
 		Thread callingThread = Thread.currentThread();
 		Integer accessCount_ = readingThreads.get(callingThread);
 		if (accessCount_ == null) {
@@ -82,7 +82,7 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 		}
 	}
 
-	public synchronized void lockWrite() {
+	public final synchronized void lockWrite() {
 		writeRequests++;
 		Thread callingThread = Thread.currentThread();
 		int size;
@@ -100,8 +100,8 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 		writingThread = callingThread;
 	}
 
-	public synchronized void unlockWrite() {
-		if (isNotWriter(Thread.currentThread())) {
+	public final synchronized void unlockWrite() {
+		if (writingThread != Thread.currentThread()) {
 			throw new IllegalMonitorStateException("Calling Thread does not" +
 					" hold the write lock on this ReadWriteLock");
 		}
@@ -112,18 +112,6 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 		if (writeRequests > 0 || readRequests > 0) {
 			notifyAll();
 		}
-	}
-
-	private int getReadAccessCount(Thread callingThread) {
-		Integer accessCount = readingThreads.get(callingThread);
-		if (accessCount == null) {
-			return 0;
-		}
-		return accessCount;
-	}
-
-	private boolean isNotWriter(Thread callingThread) {
-		return writingThread != callingThread;
 	}
 
 	private abstract static class SimpleLock implements Lock {

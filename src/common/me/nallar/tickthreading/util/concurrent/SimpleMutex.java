@@ -18,7 +18,7 @@ import java.util.concurrent.locks.Lock;
 
 import me.nallar.tickthreading.Log;
 
-public class SimpleMutex implements Lock {
+public final class SimpleMutex implements Lock {
 	protected boolean locked = false;
 	int waiting = 0;
 
