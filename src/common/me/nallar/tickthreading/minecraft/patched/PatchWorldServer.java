@@ -1,6 +1,7 @@
 package me.nallar.tickthreading.minecraft.patched;
 
 import java.util.Iterator;
+import java.util.Random;
 
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.ThreadManager;
@@ -20,12 +21,14 @@ import net.minecraft.world.storage.ISaveHandler;
 public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	private Iterator chunkCoordIterator;
 	private ThreadManager threadManager;
+	private ThreadLocal<Random> randoms;
 
 	public PatchWorldServer(MinecraftServer par1MinecraftServer, ISaveHandler par2ISaveHandler, String par3Str, int par4, WorldSettings par5WorldSettings, Profiler par6Profiler) {
 		super(par1MinecraftServer, par2ISaveHandler, par3Str, par4, par5WorldSettings, par6Profiler);
 	}
 
 	public void construct() {
+		randoms = new ThreadLocalRandom();
 		threadManager = new ThreadManager(TickThreading.instance.getThreadCount(), "Chunk Updates for " + Log.name(this));
 	}
 
@@ -54,6 +57,9 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	@Override
 	public void run() {
 		double tpsFactor = MinecraftServer.getTPS() / 20;
+		final Random rand = randoms.get();
+		// We use a random per thread - randoms are threadsafe, however synchronization is involved.
+		// This reduces contention -> slightly increased performance, woo! :P
 		while (true) {
 			ChunkCoordIntPair var4;
 			synchronized (chunkCoordIterator) {
@@ -63,7 +69,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 				var4 = (ChunkCoordIntPair) chunkCoordIterator.next();
 			}
 
-			if (tpsFactor < 1 && this.rand.nextFloat() > tpsFactor) {
+			if (tpsFactor < 1 && rand.nextFloat() > tpsFactor) {
 				continue;
 			}
 
@@ -82,7 +88,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 			int var11;
 
 			theProfiler.startSection("lightning");
-			if (provider.canDoLightning(chunk) && this.rand.nextInt(100000) == 0 && this.isRaining() && this.isThundering()) {
+			if (provider.canDoLightning(chunk) && rand.nextInt(100000) == 0 && this.isRaining() && this.isThundering()) {
 				this.updateLCG = this.updateLCG * 3 + 1013904223;
 				var8 = this.updateLCG >> 2;
 				var9 = xPos + (var8 & 15);
@@ -97,7 +103,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 			int var13;
 
 			theProfiler.endStartSection("precipitation");
-			if (provider.canDoRainSnowIce(chunk) && this.rand.nextInt(16) == 0) {
+			if (provider.canDoRainSnowIce(chunk) && rand.nextInt(16) == 0) {
 				this.updateLCG = this.updateLCG * 3 + 1013904223;
 				var8 = this.updateLCG >> 2;
 				var9 = var8 & 15;
@@ -143,12 +149,19 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 						Block var18 = Block.blocksList[var17];
 
 						if (var18 != null && var18.getTickRandomly()) {
-							var18.updateTick(this, var14 + xPos, var16 + var21.getYLocation(), var15 + zPos, this.rand);
+							var18.updateTick(this, var14 + xPos, var16 + var21.getYLocation(), var15 + zPos, rand);
 						}
 					}
 				}
 			}
 			theProfiler.endSection();
+		}
+	}
+
+	public static class ThreadLocalRandom extends ThreadLocal<Random> {
+		@Override
+		public Random initialValue() {
+			return new Random();
 		}
 	}
 }

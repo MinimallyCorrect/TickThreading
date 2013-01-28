@@ -341,4 +341,9 @@
 			<synchronize>loadCustomBlocks</synchronize>
 		</class>
 	</extraBiomesXL>
+	<portalGun>
+		<class id="portalgun.common.core.TickHandlerServer">
+			<synchronize field="$1.e">worldTick</synchronize>
+		</class>
+	</portalGun>
 </mods>
