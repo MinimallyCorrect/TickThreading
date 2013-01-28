@@ -188,6 +188,32 @@ public class TileEntityTickRegion extends TickRegion {
 	@Override
 	public void die() {
 		super.die();
+		synchronized (this) {
+			TickRegion tickRegion = getCallable(regionX + 1, regionZ);
+			if (tickRegion != null) {
+				synchronized (tickRegion) {
+					tickRegion.xMinusLock = null;
+				}
+			}
+			tickRegion = getCallable(regionX - 1, regionZ);
+			if (tickRegion != null) {
+				synchronized (tickRegion) {
+					tickRegion.xPlusLock = null;
+				}
+			}
+			tickRegion = getCallable(regionX, regionZ + 1);
+			if (tickRegion != null) {
+				synchronized (tickRegion) {
+					tickRegion.zMinusLock = null;
+				}
+			}
+			tickRegion = getCallable(regionX, regionZ - 1);
+			if (tickRegion != null) {
+				synchronized (tickRegion) {
+					tickRegion.zPlusLock = null;
+				}
+			}
+		}
 		tileEntitySet.clear();
 	}
 
