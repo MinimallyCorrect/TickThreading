@@ -90,7 +90,12 @@ public abstract class PatchAnvilChunkLoader extends AnvilChunkLoader {
 		try {
 			this.writeChunkNBTTags(var1);
 		} catch (Exception var4) {
-			Log.severe("Failed to save a chunk!", var4);
+			Log.severe("Failed to save a chunk, trying again.", var4);
+			try {
+				this.writeChunkNBTTags(var1);
+			} catch (Exception e) {
+				Log.severe("Completely failed to save a chunk! :(", e);
+			}
 		}
 
 		chunkCache.put(hash(var1.chunkCoordinate.chunkXPos, var1.chunkCoordinate.chunkZPos), var1.nbtTags);
