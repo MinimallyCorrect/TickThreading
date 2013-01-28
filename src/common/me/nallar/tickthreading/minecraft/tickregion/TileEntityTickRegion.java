@@ -3,11 +3,11 @@ package me.nallar.tickthreading.minecraft.tickregion;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.concurrent.locks.ReentrantLock;
 
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickManager;
 import me.nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
+import me.nallar.tickthreading.util.concurrent.SimpleMutex;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
@@ -26,7 +26,7 @@ public class TileEntityTickRegion extends TickRegion {
 		if (tickRegion != null) {
 			synchronized (tickRegion) {
 				if (xPlusLock == null) {
-					this.xPlusLock = tickRegion.xMinusLock = new ReentrantLock();
+					this.xPlusLock = tickRegion.xMinusLock = new SimpleMutex();
 				}
 			}
 		}
@@ -34,7 +34,7 @@ public class TileEntityTickRegion extends TickRegion {
 		if (tickRegion != null) {
 			synchronized (tickRegion) {
 				if (xMinusLock == null) {
-					this.xMinusLock = tickRegion.xPlusLock = new ReentrantLock();
+					this.xMinusLock = tickRegion.xPlusLock = new SimpleMutex();
 				}
 			}
 		}
@@ -42,7 +42,7 @@ public class TileEntityTickRegion extends TickRegion {
 		if (tickRegion != null) {
 			synchronized (tickRegion) {
 				if (zPlusLock == null) {
-					this.zPlusLock = tickRegion.zMinusLock = new ReentrantLock();
+					this.zPlusLock = tickRegion.zMinusLock = new SimpleMutex();
 				}
 			}
 		}
@@ -50,7 +50,7 @@ public class TileEntityTickRegion extends TickRegion {
 		if (tickRegion != null) {
 			synchronized (tickRegion) {
 				if (zMinusLock == null) {
-					this.zMinusLock = tickRegion.zPlusLock = new ReentrantLock();
+					this.zMinusLock = tickRegion.zPlusLock = new SimpleMutex();
 				}
 			}
 		}
@@ -63,7 +63,6 @@ public class TileEntityTickRegion extends TickRegion {
 		int maxPosition = (regionSize / 2) - 1;
 		int relativeXPos;
 		int relativeZPos;
-		boolean locked = false;
 		boolean xMinusLocked = false;
 		boolean xPlusLocked = false;
 		boolean zMinusLocked = false;
