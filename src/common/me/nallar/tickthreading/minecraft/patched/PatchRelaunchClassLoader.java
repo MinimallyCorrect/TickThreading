@@ -2,6 +2,7 @@ package me.nallar.tickthreading.minecraft.patched;
 
 import java.net.URL;
 
+import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.relauncher.IClassTransformer;
 import cpw.mods.fml.relauncher.RelaunchClassLoader;
 import me.nallar.tickthreading.Log;
@@ -14,7 +15,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 	@Override
 	protected byte[] runTransformers(String name, byte[] basicClass) {
 		if (basicClass == null) {
-			Log.warning("FML could not find the class " + name);
+			FMLLog.warning("Could not find the class " + name + ". This is not necessarily an issue.");
 		} else {
 			for (IClassTransformer transformer : transformers) {
 				try {
