@@ -24,7 +24,7 @@
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchPacket51MapChunk"/>
 		</class>
 		<class id="net.minecraft.network.packet.Packet56MapChunks">
-			<volatile field="field_73587_e"/>
+			<volatile field="chunkDataBuffer"/>
 		</class>
 		<class id="net.minecraft.network.NetworkListenThread">
 			<synchronize>addPlayer,networkTick</synchronize>
