@@ -56,7 +56,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 
 	@Override
 	public void run() {
-		double tpsFactor = MinecraftServer.getTPS() / 20;
+		double tpsFactor = MinecraftServer.getTPS() / MinecraftServer.getTargetTPS();
 		final Random rand = randoms.get();
 		// We use a random per thread - randoms are threadsafe, however synchronization is involved.
 		// This reduces contention -> slightly increased performance, woo! :P
@@ -69,16 +69,18 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 				var4 = (ChunkCoordIntPair) chunkCoordIterator.next();
 			}
 
-			if (tpsFactor < 1 && rand.nextFloat() > tpsFactor) {
+			int cX = var4.chunkXPos;
+			int cZ = var4.chunkZPos;
+			if ((tpsFactor < 1 && rand.nextFloat() > tpsFactor) || this.theChunkProviderServer.getChunksToUnloadSet().contains(ChunkCoordIntPair.chunkXZ2Int(cX, cZ))) {
 				continue;
 			}
 
-			if (!this.chunkExists(var4.chunkXPos, var4.chunkZPos)) {
+			int xPos = cX * 16;
+			int zPos = cZ * 16;
+			Chunk chunk = this.theChunkProviderServer.getChunkIfExists(cX, cZ);
+			if (chunk == null) {
 				continue;
 			}
-			int xPos = var4.chunkXPos * 16;
-			int zPos = var4.chunkZPos * 16;
-			Chunk chunk = this.getChunkFromChunkCoords(var4.chunkXPos, var4.chunkZPos);
 			this.moodSoundAndLightCheck(xPos, zPos, chunk);
 			theProfiler.endStartSection("chunkTick"); // endStart as moodSoundAndLightCheck starts a section.
 			chunk.updateSkylight();
@@ -155,6 +157,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 				}
 			}
 			theProfiler.endSection();
+			theProfiler.endStartSection("iterate");
 		}
 	}
 

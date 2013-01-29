@@ -108,6 +108,12 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 	}
 
 	@Override
+	@Declare
+	public Chunk getChunkIfExists(int x, int z) {
+		return (Chunk) this.loadedChunkHashMap.getValueByKey(ChunkCoordIntPair.chunkXZ2Int(x, z));
+	}
+
+	@Override
 	public Chunk provideChunk(int x, int z) {
 		Chunk chunk = lastChunk;
 		if (chunk == null || chunk.xPosition != x || chunk.zPosition != z) {
