@@ -61,6 +61,7 @@
 		</class>
 		<class id="net.minecraft.world.chunk.Chunk">
 			<!-- The entity list could be accessed from multiple threads, as usual causes problems during iteration -->
+			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchChunk"/>
 			<newField field="entityListReadWriteLock" class="me.nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock"/>
 			<newField field="entityListWriteLock" class="java.util.concurrent.locks.Lock" code="this.entityListReadWriteLock.writeLock();"/>
 			<newField field="entityListReadLock" class="java.util.concurrent.locks.Lock" code="this.entityListReadWriteLock.readLock();"/>
