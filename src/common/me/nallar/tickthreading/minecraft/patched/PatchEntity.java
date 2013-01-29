@@ -274,7 +274,7 @@ public abstract class PatchEntity extends Entity {
 							var39 = 1.0F;
 						}
 
-						this.func_85030_a("liquid.swim", var39, 1.0F + (this.rand.nextFloat() - this.rand.nextFloat()) * 0.4F);
+						this.playSound("liquid.swim", var39, 1.0F + (this.rand.nextFloat() - this.rand.nextFloat()) * 0.4F);
 					}
 
 					this.playStepSound(var37, var30, var31, var32);
@@ -300,7 +300,7 @@ public abstract class PatchEntity extends Entity {
 			}
 
 			if (var38 && this.fire > 0) {
-				this.func_85030_a("random.fizz", 0.7F, 1.6F + (this.rand.nextFloat() - this.rand.nextFloat()) * 0.4F);
+				this.playSound("random.fizz", 0.7F, 1.6F + (this.rand.nextFloat() - this.rand.nextFloat()) * 0.4F);
 				this.fire = -this.fireResistance;
 			}
 

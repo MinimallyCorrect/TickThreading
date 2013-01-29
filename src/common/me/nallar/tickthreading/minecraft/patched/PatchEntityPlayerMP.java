@@ -25,7 +25,7 @@ public abstract class PatchEntityPlayerMP extends EntityPlayerMP {
 	public void onUpdate() {
 		this.theItemInWorldManager.updateBlockRemoving();
 		--this.initialInvulnerability;
-		this.openContainer.updateCraftingResults();
+		this.openContainer.detectAndSendChanges();
 
 		while (!this.destroyedItemsNetCache.isEmpty()) {
 			int var1 = Math.min(this.destroyedItemsNetCache.size(), 127);

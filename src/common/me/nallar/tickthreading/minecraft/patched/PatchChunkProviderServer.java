@@ -46,8 +46,8 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 	public void unloadChunksIfNotNearSpawn(int par1, int par2) {
 		long hash = ChunkCoordIntPair.chunkXZ2Int(par1, par2);
 		if (loadedChunkHashMap.getValueByKey(hash) == null) {
-		} else if (TickThreading.instance.shouldLoadSpawn && this.currentServer.provider.canRespawnHere() && DimensionManager.shouldLoadSpawn(currentServer.provider.dimensionId)) {
-			ChunkCoordinates var3 = this.currentServer.getSpawnPoint();
+		} else if (TickThreading.instance.shouldLoadSpawn && this.worldObj.provider.canRespawnHere() && DimensionManager.shouldLoadSpawn(worldObj.provider.dimensionId)) {
+			ChunkCoordinates var3 = this.worldObj.getSpawnPoint();
 			int var4 = par1 * 16 + 8 - var3.posX;
 			int var5 = par2 * 16 + 8 - var3.posZ;
 			short var6 = 128;
@@ -69,8 +69,8 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 	 */
 	@Override
 	public boolean unload100OldestChunks() {
-		if (!this.currentServer.canNotSave) {
-			for (ChunkCoordIntPair forced : currentServer.getPersistentChunks().keySet()) {
+		if (!this.worldObj.canNotSave) {
+			for (ChunkCoordIntPair forced : worldObj.getPersistentChunks().keySet()) {
 				this.chunksToUnload.remove(ChunkCoordIntPair.chunkXZ2Int(forced.chunkXPos, forced.chunkZPos));
 			}
 
@@ -100,8 +100,8 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 			}
 		}
 
-		if (unloadTicks++ > 200 && this.currentServer.provider.dimensionId != 0 && loadedChunks.isEmpty() && ForgeChunkManager.getPersistentChunksFor(currentServer).isEmpty() && (!TickThreading.instance.shouldLoadSpawn || !DimensionManager.shouldLoadSpawn(currentServer.provider.dimensionId))) {
-			DimensionManager.unloadWorld(currentServer.provider.dimensionId);
+		if (unloadTicks++ > 200 && this.worldObj.provider.dimensionId != 0 && loadedChunks.isEmpty() && ForgeChunkManager.getPersistentChunksFor(worldObj).isEmpty() && (!TickThreading.instance.shouldLoadSpawn || !DimensionManager.shouldLoadSpawn(worldObj.provider.dimensionId))) {
+			DimensionManager.unloadWorld(worldObj.provider.dimensionId);
 		}
 
 		return this.currentChunkProvider.unload100OldestChunks();
@@ -118,7 +118,7 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 		Chunk chunk = lastChunk;
 		if (chunk == null || chunk.xPosition != x || chunk.zPosition != z) {
 			chunk = (Chunk) this.loadedChunkHashMap.getValueByKey(ChunkCoordIntPair.chunkXZ2Int(x, z));
-			chunk = (chunk == null ? (!this.currentServer.findingSpawnPoint && !this.loadChunkOnProvideRequest ? this.defaultEmptyChunk : this.loadChunk(x, z, false, null)) : chunk);
+			chunk = (chunk == null ? (!this.worldObj.findingSpawnPoint && !this.loadChunkOnProvideRequest ? this.defaultEmptyChunk : this.loadChunk(x, z, false, null)) : chunk);
 			lastChunk = chunk;
 			return chunk;
 		}
@@ -131,10 +131,10 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 			return null;
 		} else {
 			try {
-				Chunk chunk = this.currentChunkLoader.loadChunk(this.currentServer, x, z);
+				Chunk chunk = this.currentChunkLoader.loadChunk(this.worldObj, x, z);
 
 				if (chunk != null) {
-					chunk.lastSaveTime = this.currentServer.getTotalWorldTime();
+					chunk.lastSaveTime = this.worldObj.getTotalWorldTime();
 				}
 
 				return chunk;
@@ -249,7 +249,7 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 
 	@Override
 	public void unloadAllChunks() {
-		if (loadedChunks.size() == currentServer.getPersistentChunks().size()) {
+		if (loadedChunks.size() == worldObj.getPersistentChunks().size()) {
 			return;
 		}
 		synchronized (loadedChunks) {

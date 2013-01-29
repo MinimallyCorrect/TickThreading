@@ -36,10 +36,10 @@ public abstract class PatchPacket51MapChunk extends Packet51MapChunk {
 
 		for (var8 = 0; var8 < var4.length; ++var8) {
 			if (var4[var8] != null && (!par1 || !var4[var8].isEmpty()) && (par2 & 1 << var8) != 0) {
-				var6.field_74580_b |= 1 << var8;
+				var6.chunkExistFlag |= 1 << var8;
 
 				if (var4[var8].getBlockMSBArray() != null) {
-					var6.field_74581_c |= 1 << var8;
+					var6.chunkHasAddSectionFlag |= 1 << var8;
 					++var5;
 				}
 			}
@@ -97,8 +97,8 @@ public abstract class PatchPacket51MapChunk extends Packet51MapChunk {
 			var3 += var11.length;
 		}
 
-		var6.field_74582_a = new byte[var3];
-		System.arraycopy(var7, 0, var6.field_74582_a, 0, var3);
+		var6.compressedData = new byte[var3];
+		System.arraycopy(var7, 0, var6.compressedData, 0, var3);
 		return var6;
 	}
 
