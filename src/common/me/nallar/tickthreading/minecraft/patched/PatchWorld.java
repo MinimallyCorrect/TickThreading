@@ -16,6 +16,7 @@ import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ReportedException;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldManager;
 import net.minecraft.world.WorldProvider;
 import net.minecraft.world.WorldSettings;
 import net.minecraft.world.chunk.Chunk;
@@ -31,13 +32,14 @@ public abstract class PatchWorld extends World {
 
 	@Override
 	public void addLoadedEntities(List par1List) {
+		WorldManager worldManager = (WorldManager) worldAccesses.get(0); // On the server, we know there is only one.
 		for (int var2 = 0; var2 < par1List.size(); ++var2) {
 			Entity entity = (Entity) par1List.get(var2);
 			if (MinecraftForge.EVENT_BUS.post(new EntityJoinWorldEvent(entity, this))) {
 				par1List.remove(var2--);
 			} else {
 				loadedEntityList.add(entity);
-				this.obtainEntitySkin(entity);
+				worldManager.obtainEntitySkin(entity);
 			}
 		}
 	}
@@ -206,6 +208,19 @@ public abstract class PatchWorld extends World {
 		}
 
 		return var2;
+	}
+
+	@Override
+	public void unloadEntities(List entitiesToUnload) {
+		if (loadedEntityList instanceof EntityList) {
+			WorldManager worldManager = (WorldManager) worldAccesses.get(0); // On the server, we know there is only one.
+			for (Entity entity : (List<? extends Entity>) entitiesToUnload) {
+				this.loadedEntityList.remove(entity);
+				worldManager.releaseEntitySkin(entity);
+			}
+		} else {
+			this.unloadedEntityList.addAll(entitiesToUnload);
+		}
 	}
 
 	@Override

@@ -148,8 +148,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 						spawnedEntity.setLocationAndAngles((double) ssX, (double) ssY, (double) ssZ, worldServer.rand.nextFloat() * 360.0F, 0.0F);
 
 						Event.Result canSpawn = ForgeEventFactory.canEntitySpawn(spawnedEntity, worldServer, ssX, ssY, ssZ);
-						if (canSpawn == Event.Result.ALLOW || (canSpawn == Event.Result.DEFAULT && spawnedEntity.getCanSpawnHere()))
-						{
+						if (canSpawn == Event.Result.ALLOW || (canSpawn == Event.Result.DEFAULT && spawnedEntity.getCanSpawnHere())) {
 							worldServer.spawnEntityInWorld(spawnedEntity);
 							creatureSpecificInit(spawnedEntity, worldServer, ssX, ssY, ssZ);
 							spawnedMobs++;
@@ -272,8 +271,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 														var39.setLocationAndAngles((double) var24, (double) var25, (double) var26, par0WorldServer.rand.nextFloat() * 360.0F, 0.0F);
 
 														Event.Result canSpawn = ForgeEventFactory.canEntitySpawn(var39, par0WorldServer, var24, var25, var26);
-														if (canSpawn == Event.Result.ALLOW || (canSpawn == Event.Result.DEFAULT && var39.getCanSpawnHere()))
-														{
+														if (canSpawn == Event.Result.ALLOW || (canSpawn == Event.Result.DEFAULT && var39.getCanSpawnHere())) {
 															++var16;
 															par0WorldServer.spawnEntityInWorld(var39);
 															creatureSpecificInit(var39, par0WorldServer, var24, var25, var26);

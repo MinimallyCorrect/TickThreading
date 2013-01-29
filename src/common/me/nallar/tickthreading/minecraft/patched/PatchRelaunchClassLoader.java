@@ -6,7 +6,6 @@ import java.util.logging.Level;
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.relauncher.IClassTransformer;
 import cpw.mods.fml.relauncher.RelaunchClassLoader;
-import me.nallar.tickthreading.Log;
 
 public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 	public PatchRelaunchClassLoader(URL[] sources) {

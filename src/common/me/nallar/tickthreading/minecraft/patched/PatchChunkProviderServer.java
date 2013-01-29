@@ -78,7 +78,6 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 				Iterator<Long> i$ = chunksToUnload.iterator();
 				for (int i = 0; i < 200 && i$.hasNext(); ++i) {
 					Long var2 = i$.next();
-					i$.remove();
 					Chunk var3 = (Chunk) this.loadedChunkHashMap.getValueByKey(var2);
 					if (var3 != null) {
 						if (lastChunk == var3) {
@@ -92,6 +91,7 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 						}
 					}
 					this.loadedChunkHashMap.remove(var2);
+					i$.remove();
 				}
 			}
 
@@ -118,7 +118,7 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 		Chunk chunk = lastChunk;
 		if (chunk == null || chunk.xPosition != x || chunk.zPosition != z) {
 			chunk = (Chunk) this.loadedChunkHashMap.getValueByKey(ChunkCoordIntPair.chunkXZ2Int(x, z));
-			chunk = (chunk == null ? (!this.worldObj.findingSpawnPoint && !this.loadChunkOnProvideRequest ? this.defaultEmptyChunk : this.loadChunk(x, z)) : chunk);
+			chunk = (chunk == null ? (!this.loadChunkOnProvideRequest && !this.worldObj.findingSpawnPoint ? this.defaultEmptyChunk : this.loadChunk(x, z)) : chunk);
 			lastChunk = chunk;
 			return chunk;
 		}
@@ -149,10 +149,10 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 	public Chunk loadChunk(int x, int z) {
 		// TODO: replace most of CPS chunk-loading and related logic with Spigot-compatible variants
 		long var3 = ChunkCoordIntPair.chunkXZ2Int(x, z);
-			synchronized (chunksToUnload) {
-				this.chunksToUnload.remove(Long.valueOf(var3));
-			}
-		Chunk	var5 = (Chunk) this.loadedChunkHashMap.getValueByKey(var3);
+		synchronized (chunksToUnload) {
+			this.chunksToUnload.remove(Long.valueOf(var3));
+		}
+		Chunk var5 = (Chunk) this.loadedChunkHashMap.getValueByKey(var3);
 
 		if (var5 != null) {
 			return var5;
