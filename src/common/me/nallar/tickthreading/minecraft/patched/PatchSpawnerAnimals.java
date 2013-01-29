@@ -27,6 +27,8 @@ import net.minecraft.world.SpawnerAnimals;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.SpawnListEntry;
+import net.minecraftforge.event.Event;
+import net.minecraftforge.event.ForgeEventFactory;
 
 public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 	private static long hash(int x, int y) {
@@ -145,7 +147,9 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 
 						spawnedEntity.setLocationAndAngles((double) ssX, (double) ssY, (double) ssZ, worldServer.rand.nextFloat() * 360.0F, 0.0F);
 
-						if (spawnedEntity.getCanSpawnHere()) {
+						Event.Result canSpawn = ForgeEventFactory.canEntitySpawn(spawnedEntity, worldServer, ssX, ssY, ssZ);
+						if (canSpawn == Event.Result.ALLOW || (canSpawn == Event.Result.DEFAULT && spawnedEntity.getCanSpawnHere()))
+						{
 							worldServer.spawnEntityInWorld(spawnedEntity);
 							creatureSpecificInit(spawnedEntity, worldServer, ssX, ssY, ssZ);
 							spawnedMobs++;
