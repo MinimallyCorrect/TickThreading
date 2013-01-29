@@ -85,7 +85,8 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 	public final synchronized void lockWrite() {
 		writeRequests++;
 		Thread callingThread = Thread.currentThread();
-		while ((writingThread != callingThread && writingThread != null) || (readingThreads.size() > 1 || readingThreads.get(callingThread) == null)) {
+		int size;
+		while ((writingThread != callingThread && writingThread != null) || ((size = readingThreads.size()) > 1 || (size == 1 && readingThreads.get(callingThread) == null))) {
 			try {
 				wait();
 			} catch (InterruptedException ignored) {
@@ -93,9 +94,6 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 		}
 		writeRequests--;
 		writeAccesses++;
-		if (writingThread != null && writeAccesses == 1) {
-			throw new IllegalStateException("Writing thread was already set when granting write access");
-		}
 		writingThread = callingThread;
 	}
 

@@ -26,7 +26,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 					basicClass = transformer.transform(name, basicClass);
 					if (basicClass == null) {
 						basicClass = oldClass;
-						Log.severe(transformer.getClass() + " returned a null class during transformation, ignoring.");
+						FMLLog.severe(transformer.getClass() + " returned a null class during transformation, ignoring.");
 					}
 				} catch (Throwable throwable) {
 					if (DEBUG_CLASSLOADING || !throwable.getMessage().contains("for invalid side")) {
