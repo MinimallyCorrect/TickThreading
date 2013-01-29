@@ -118,7 +118,7 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 		Chunk chunk = lastChunk;
 		if (chunk == null || chunk.xPosition != x || chunk.zPosition != z) {
 			chunk = (Chunk) this.loadedChunkHashMap.getValueByKey(ChunkCoordIntPair.chunkXZ2Int(x, z));
-			chunk = (chunk == null ? (!this.currentServer.findingSpawnPoint && !this.loadChunkOnProvideRequest ? this.defaultEmptyChunk : this.loadChunk(x, z)) : chunk);
+			chunk = (chunk == null ? (!this.currentServer.findingSpawnPoint && !this.loadChunkOnProvideRequest ? this.defaultEmptyChunk : this.loadChunk(x, z, false, null)) : chunk);
 			lastChunk = chunk;
 			return chunk;
 		}
@@ -147,11 +147,26 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 
 	@Override
 	public Chunk loadChunk(int x, int z) {
+		return loadChunk(x, x, true, null);
+	}
+
+	@Override
+	@Declare
+	public Chunk loadChunk(int x, int z, Runnable runnable) {
+		return loadChunk(x, z, true, runnable);
+	}
+
+	@Override
+	@Declare
+	public Chunk loadChunk(int x, int z, boolean checkAvailable, Runnable runnable) {
 		long var3 = ChunkCoordIntPair.chunkXZ2Int(x, z);
-		synchronized (chunksToUnload) {
-			this.chunksToUnload.remove(Long.valueOf(var3));
+		Chunk var5 = null;
+		if (checkAvailable) {
+			synchronized (chunksToUnload) {
+				this.chunksToUnload.remove(Long.valueOf(var3));
+			}
+			var5 = (Chunk) this.loadedChunkHashMap.getValueByKey(var3);
 		}
-		Chunk var5 = (Chunk) this.loadedChunkHashMap.getValueByKey(var3);
 
 		if (var5 != null) {
 			return var5;
