@@ -26,7 +26,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 						Log.severe(transformer.getClass() + " returned a null class during transformation, ignoring.");
 					}
 				} catch (Throwable throwable) {
-					Log.severe("Failed to transform " + name, throwable);
+					FMLLog.severe("Failed to transform " + name, throwable);
 				}
 			}
 		}
