@@ -28,7 +28,7 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 
 	@Override
 	public void sendThisChunkToPlayer(EntityPlayerMP par1EntityPlayerMP) {
-		if (this.playersInChunk.contains(par1EntityPlayerMP)) {
+		if (this.playersInChunk.remove(par1EntityPlayerMP)) {
 			Packet51MapChunk packet51MapChunk = new Packet51MapChunk();
 			packet51MapChunk.includeInitialize = true;
 			packet51MapChunk.xCh = chunkLocation.chunkXPos;
@@ -37,7 +37,6 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 			packet51MapChunk.yChMin = 0;
 			packet51MapChunk.setData(unloadSequence);
 			par1EntityPlayerMP.playerNetServerHandler.sendPacketToPlayer(packet51MapChunk);
-			this.playersInChunk.remove(par1EntityPlayerMP);
 			par1EntityPlayerMP.loadedChunks.remove(this.chunkLocation);
 
 			MinecraftForge.EVENT_BUS.post(new ChunkWatchEvent.UnWatch(chunkLocation, par1EntityPlayerMP));
