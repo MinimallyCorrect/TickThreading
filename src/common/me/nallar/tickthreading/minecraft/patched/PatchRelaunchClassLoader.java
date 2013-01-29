@@ -1,6 +1,7 @@
 package me.nallar.tickthreading.minecraft.patched;
 
 import java.net.URL;
+import java.util.logging.Level;
 
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.relauncher.IClassTransformer;
@@ -15,7 +16,9 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 	@Override
 	protected byte[] runTransformers(String name, byte[] basicClass) {
 		if (basicClass == null) {
-			FMLLog.warning("Could not find the class " + name + ". This is not necessarily an issue.");
+			if (DEBUG_CLASSLOADING) {
+				FMLLog.warning("Could not find the class " + name + ". This is not necessarily an issue.");
+			}
 		} else {
 			for (IClassTransformer transformer : transformers) {
 				try {
@@ -26,7 +29,9 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 						Log.severe(transformer.getClass() + " returned a null class during transformation, ignoring.");
 					}
 				} catch (Throwable throwable) {
-					FMLLog.severe("Failed to transform " + name, throwable);
+					if (DEBUG_CLASSLOADING || !throwable.getMessage().contains("for invalid side")) {
+						FMLLog.log(Level.SEVERE, throwable, "Failed to transform " + name);
+					}
 				}
 			}
 		}
