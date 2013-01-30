@@ -53,11 +53,13 @@ public enum Timings {
 		final List<String> sortedKeysByTimePerTick = Ordering.natural().reverse().onResultOf(Functions.forMap(timePerTick)).immutableSortedCopy(timePerTick.keySet());
 		tf
 				.heading("Class")
-				.heading("Time/tick");
+				.heading("Time/tick")
+				.heading("Ticks");
 		for (int i = 0; i < 5 && i < sortedKeysByTimePerTick.size(); i++) {
 			tf
 					.row(niceName(sortedKeysByTimePerTick.get(i)))
-					.row(timePerTick.get(sortedKeysByTimePerTick.get(i)) / 1000000d);
+					.row(timePerTick.get(sortedKeysByTimePerTick.get(i)) / 1000000d)
+					.row(invocationCount.get(sortedKeysByTimePerTick.get(i)));
 		}
 		tf.finishTable();
 		return tf;
