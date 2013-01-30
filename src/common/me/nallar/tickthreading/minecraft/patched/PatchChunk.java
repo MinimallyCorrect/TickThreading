@@ -1,5 +1,8 @@
 package me.nallar.tickthreading.minecraft.patched;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import cpw.mods.fml.common.FMLLog;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.MathHelper;
@@ -7,14 +10,40 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityEvent;
+import net.minecraftforge.event.world.ChunkEvent;
 
 public abstract class PatchChunk extends Chunk {
+	private List<Entity> toAdd;
+
 	public PatchChunk(World par1World, int par2, int par3) {
 		super(par1World, par2, par3);
 	}
 
+	public void construct() {
+		toAdd = new ArrayList<Entity>();
+	}
+
+	@Override
+	public void onChunkLoad() {
+		this.worldObj.addTileEntity(this.chunkTileEntityMap.values());
+
+		for (int var1 = 0; var1 < this.entityLists.length; ++var1) {
+			this.worldObj.addLoadedEntities(this.entityLists[var1]);
+		}
+		MinecraftForge.EVENT_BUS.post(new ChunkEvent.Load(this));
+		this.isChunkLoaded = true;
+		for (Entity entity : toAdd) {
+			addEntity(entity);
+		}
+		toAdd.clear();
+	}
+
 	@Override
 	public void addEntity(Entity par1Entity) {
+		if (!this.isChunkLoaded) {
+			toAdd.add(par1Entity);
+			return;
+		}
 		int var2 = MathHelper.floor_double(par1Entity.posX / 16.0D);
 		int var3 = MathHelper.floor_double(par1Entity.posZ / 16.0D);
 
