@@ -140,18 +140,17 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 						EntityLiving spawnedEntity;
 						try {
 							spawnedEntity = (EntityLiving) creatureClass.entityClass.getConstructor(World.class).newInstance(worldServer);
+							spawnedEntity.setLocationAndAngles((double) ssX, (double) ssY, (double) ssZ, worldServer.rand.nextFloat() * 360.0F, 0.0F);
+
+							Event.Result canSpawn = ForgeEventFactory.canEntitySpawn(spawnedEntity, worldServer, ssX, ssY, ssZ);
+							if (canSpawn == Event.Result.ALLOW || (canSpawn == Event.Result.DEFAULT && spawnedEntity.getCanSpawnHere())) {
+								worldServer.spawnEntityInWorld(spawnedEntity);
+								creatureSpecificInit(spawnedEntity, worldServer, ssX, ssY, ssZ);
+								spawnedMobs++;
+							}
 						} catch (Exception e) {
-							Log.severe("Failed to spawn entity " + creatureClass, e);
+							Log.warning("Failed to spawn entity " + creatureClass, e);
 							break SpawnLoop;
-						}
-
-						spawnedEntity.setLocationAndAngles((double) ssX, (double) ssY, (double) ssZ, worldServer.rand.nextFloat() * 360.0F, 0.0F);
-
-						Event.Result canSpawn = ForgeEventFactory.canEntitySpawn(spawnedEntity, worldServer, ssX, ssY, ssZ);
-						if (canSpawn == Event.Result.ALLOW || (canSpawn == Event.Result.DEFAULT && spawnedEntity.getCanSpawnHere())) {
-							worldServer.spawnEntityInWorld(spawnedEntity);
-							creatureSpecificInit(spawnedEntity, worldServer, ssX, ssY, ssZ);
-							spawnedMobs++;
 						}
 					}
 				}
@@ -263,10 +262,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 
 														try {
 															var39 = (EntityLiving) var22.entityClass.getConstructor(World.class).newInstance(par0WorldServer);
-														} catch (Exception var31) {
-															FMLLog.log(Level.SEVERE, var31, "Exception creating an animal for spawning");
-															return var4;
-														}
+
 
 														var39.setLocationAndAngles((double) var24, (double) var25, (double) var26, par0WorldServer.rand.nextFloat() * 360.0F, 0.0F);
 
@@ -282,6 +278,10 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 														}
 
 														var4 += var16;
+														} catch (Exception var31) {
+															FMLLog.log(Level.WARNING, var31, "Exception spawning an entity");
+															return var4;
+														}
 													}
 												}
 											}
