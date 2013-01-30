@@ -11,7 +11,7 @@ import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.util.CollectionsUtil;
 
 public class MethodDescription {
-	private final String clazz;
+	public final String clazz;
 	private final String returnType;
 	private final String parameters;
 	private final String name;

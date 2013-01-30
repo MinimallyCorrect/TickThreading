@@ -28,7 +28,7 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 
 	@Override
 	public void sendThisChunkToPlayer(EntityPlayerMP par1EntityPlayerMP) {
-		if (this.playersInChunk.contains(par1EntityPlayerMP)) {
+		if (this.playersInChunk.remove(par1EntityPlayerMP)) {
 			Packet51MapChunk packet51MapChunk = new Packet51MapChunk();
 			packet51MapChunk.includeInitialize = true;
 			packet51MapChunk.xCh = chunkLocation.chunkXPos;
@@ -37,7 +37,6 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 			packet51MapChunk.yChMin = 0;
 			packet51MapChunk.setData(unloadSequence);
 			par1EntityPlayerMP.playerNetServerHandler.sendPacketToPlayer(packet51MapChunk);
-			this.playersInChunk.remove(par1EntityPlayerMP);
 			par1EntityPlayerMP.loadedChunks.remove(this.chunkLocation);
 
 			MinecraftForge.EVENT_BUS.post(new ChunkWatchEvent.UnWatch(chunkLocation, par1EntityPlayerMP));
@@ -46,13 +45,11 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 				long var2 = (long) this.chunkLocation.chunkXPos + 2147483647L | (long) this.chunkLocation.chunkZPos + 2147483647L << 32;
 				this.myManager.getChunkWatchers().remove(var2);
 
-				if (this.numberOfTilesToUpdate > 0) {
-					this.myManager.playerUpdateLock.lock();
-					try {
-						this.myManager.getChunkWatcherWithPlayers().remove(this);
-					} finally {
-						this.myManager.playerUpdateLock.unlock();
-					}
+				this.myManager.playerUpdateLock.lock();
+				try {
+					this.myManager.getChunkWatcherWithPlayers().remove(this);
+				} finally {
+					this.myManager.playerUpdateLock.unlock();
 				}
 
 				this.myManager.getWorldServer().theChunkProviderServer.unloadChunksIfNotNearSpawn(this.chunkLocation.chunkXPos, this.chunkLocation.chunkZPos);

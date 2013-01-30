@@ -47,7 +47,7 @@ public abstract class PatchPlayerManagerForge extends PlayerManager {
 				}
 			}
 		} catch (Exception e) {
-			Log.severe("Failed to unload some chunks", e);
+			Log.severe("Failed to send some chunks", e);
 		} finally {
 			playersUpdateLock.unlock();
 		}

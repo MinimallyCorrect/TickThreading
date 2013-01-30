@@ -28,6 +28,7 @@
 		</class>
 		<class id="net.minecraft.network.NetworkListenThread">
 			<synchronize>addPlayer,networkTick</synchronize>
+			<profile>networkTick</profile>
 			<replaceMethodCall code="{ $_ = null; }" method="log" index="1">networkTick</replaceMethodCall>
 		</class>
 		<class id="net.minecraft.network.TcpWriterThread">
@@ -38,10 +39,12 @@
 			<synchronize>func_82740_a,scheduleBlockUpdateFromLoad,getPendingBlockUpdates,addBlockEvent,tickUpdates</synchronize>
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchWorldServer"/>
 			<insertSuper>tickBlocksAndAmbiance</insertSuper>
+			<profile>tickBlocksAndAmbiance</profile>
 		</class>
 		<class id="net.minecraft.world.World">
 			<!-- Same list was used by multiple threads -->
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchWorld"/>
+			<profile>updateEntities</profile>
 			<public>releaseEntitySkin</public>
 			<newInitializer field="activeChunkSet" code="java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap());"/>
 		</class>
@@ -138,6 +141,7 @@
 		</class>
 		<class id="net.minecraft.server.management.PlayerManager">
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchPlayerManager"/>
+			<profile>updatePlayerInstances</profile>
 		</class>
 		<class id="net.minecraft.server.management.PlayerManager" env="mcpc">
 			<synchronize>addPlayer,removePlayer,updateMountedMovingPlayer,updatePlayerInstances</synchronize>

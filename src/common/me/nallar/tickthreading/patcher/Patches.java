@@ -44,6 +44,22 @@ public class Patches {
 		// A NOOP patch to make sure META-INF is removed
 	}
 
+	@Patch
+	public void profile(CtMethod ctMethod, Map<String, String> attributes) throws CannotCompileException {
+		CtClass ctClass = ctMethod.getDeclaringClass();
+		CtMethod replacement = CtNewMethod.copy(ctMethod, ctClass, null);
+		int i = 0;
+		try {
+			for (; true; i++) {
+				ctClass.getDeclaredMethod(ctMethod.getName() + "_t" + i);
+			}
+		} catch (NotFoundException ignored) {
+		}
+		ctMethod.setName(ctMethod.getName() + "_t" + i);
+		replacement.setBody("{ long st = 0; if (javassist.is.faulty.Timings.enabled) { st = System.nanoTime(); } " + ctMethod.getName() + "($$); if (javassist.is.faulty.Timings.enabled) { javassist.is.faulty.Timings.record(\"" + attributes.get("deobf") + "\", System.nanoTime() - st); } }");
+		ctClass.addMethod(replacement);
+	}
+
 	@Patch (
 			name = "volatile"
 	)

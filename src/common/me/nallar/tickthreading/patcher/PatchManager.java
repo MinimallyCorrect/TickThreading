@@ -116,6 +116,7 @@ public class PatchManager {
 			for (Element patchElement : DomUtil.elementList(patchElements)) {
 				List<MethodDescription> methodDescriptionList = MethodDescription.fromListString(deobfuscatedClass.name, patchElement.getTextContent());
 				if (!patchElement.getTextContent().isEmpty()) {
+					patchElement.setAttribute("deobf", methodDescriptionList.get(0).getShortName());
 					patchElement.setTextContent(MethodDescription.toListString(mappings.map(methodDescriptionList)));
 				}
 				String field = patchElement.getAttribute("field"), prefix = "";

@@ -2,6 +2,7 @@ package me.nallar.tickthreading.minecraft.commands;
 
 import java.util.List;
 
+import javassist.is.faulty.Timings;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
@@ -28,11 +29,15 @@ public class ProfileCommand extends Command {
 	public void processCommand(final ICommandSender commandSender, List<String> arguments) {
 		World world = DimensionManager.getWorld(0);
 		long time_ = 10;
+		boolean entity_ = false;
 		try {
 			if (!arguments.isEmpty()) {
-				time_ = Integer.valueOf(arguments.get(0));
+				entity_ = "e".equals(arguments.get(0));
 			}
 			if (arguments.size() > 1) {
+				time_ = Integer.valueOf(arguments.get(0));
+			}
+			if (arguments.size() > 2) {
 				world = DimensionManager.getWorld(Integer.valueOf(arguments.get(1)));
 			} else if (commandSender instanceof Entity) {
 				world = ((Entity) commandSender).worldObj;
@@ -41,12 +46,17 @@ public class ProfileCommand extends Command {
 			world = null;
 		}
 		if (world == null) {
-			sendChat(commandSender, "Usage: /profile [time=10] [dimensionid=current dimension]");
+			sendChat(commandSender, "Usage: /profile [type=a/e] [time=10] [dimensionid=current dimension]");
 			return;
 		}
 		final TickManager manager = TickThreading.instance.getManager(world);
 		final long time = time_;
-		manager.profilingEnabled = true;
+		final boolean entity = entity_;
+		if (entity) {
+			manager.profilingEnabled = true;
+		} else {
+			Timings.enabled = true;
+		}
 		Runnable profilingRunnable = new Runnable() {
 			@Override
 			public void run() {
@@ -54,12 +64,20 @@ public class ProfileCommand extends Command {
 					Thread.sleep(1000 * time);
 				} catch (InterruptedException ignored) {
 				}
-				manager.profilingEnabled = false;
+				if (entity) {
+					manager.profilingEnabled = false;
+				} else {
+					Timings.enabled = false;
+				}
 				try {
 					Thread.sleep(100 * time);
 				} catch (InterruptedException ignored) {
 				}
-				sendChat(commandSender, String.valueOf(manager.entityTickProfiler.writeData(new TableFormatter(commandSender))));
+				if (entity) {
+					sendChat(commandSender, String.valueOf(manager.entityTickProfiler.writeData(new TableFormatter(commandSender))));
+				} else {
+					sendChat(commandSender, String.valueOf(Timings.writeData(new TableFormatter(commandSender))));
+				}
 				manager.entityTickProfiler.clear();
 			}
 		};
