@@ -81,7 +81,9 @@ public abstract class PatchEntityPlayerMP extends EntityPlayerMP {
 						MinecraftForge.EVENT_BUS.post(new ChunkWatchEvent.Watch(var10.getChunkCoordIntPair(), this));
 					}
 				}
-				Timings.record("net.minecraft.entity.player.EntityPlayerMP/chunks", System.nanoTime() - st);
+				if (Timings.enabled) {
+					Timings.record("net.minecraft.entity.player.EntityPlayerMP/chunks", System.nanoTime() - st);
+				}
 			}
 		}
 	}
