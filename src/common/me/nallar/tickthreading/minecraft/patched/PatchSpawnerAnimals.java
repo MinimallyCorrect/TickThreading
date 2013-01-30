@@ -263,21 +263,20 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 														try {
 															var39 = (EntityLiving) var22.entityClass.getConstructor(World.class).newInstance(par0WorldServer);
 
+															var39.setLocationAndAngles((double) var24, (double) var25, (double) var26, par0WorldServer.rand.nextFloat() * 360.0F, 0.0F);
 
-														var39.setLocationAndAngles((double) var24, (double) var25, (double) var26, par0WorldServer.rand.nextFloat() * 360.0F, 0.0F);
+															Event.Result canSpawn = ForgeEventFactory.canEntitySpawn(var39, par0WorldServer, var24, var25, var26);
+															if (canSpawn == Event.Result.ALLOW || (canSpawn == Event.Result.DEFAULT && var39.getCanSpawnHere())) {
+																++var16;
+																par0WorldServer.spawnEntityInWorld(var39);
+																creatureSpecificInit(var39, par0WorldServer, var24, var25, var26);
 
-														Event.Result canSpawn = ForgeEventFactory.canEntitySpawn(var39, par0WorldServer, var24, var25, var26);
-														if (canSpawn == Event.Result.ALLOW || (canSpawn == Event.Result.DEFAULT && var39.getCanSpawnHere())) {
-															++var16;
-															par0WorldServer.spawnEntityInWorld(var39);
-															creatureSpecificInit(var39, par0WorldServer, var24, var25, var26);
-
-															if (var16 >= var39.getMaxSpawnedInChunk()) {
-																continue label110;
+																if (var16 >= var39.getMaxSpawnedInChunk()) {
+																	continue label110;
+																}
 															}
-														}
 
-														var4 += var16;
+															var4 += var16;
 														} catch (Exception var31) {
 															FMLLog.log(Level.WARNING, var31, "Exception spawning an entity");
 															return var4;

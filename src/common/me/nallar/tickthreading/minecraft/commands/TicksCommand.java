@@ -28,7 +28,7 @@ public class TicksCommand extends Command {
 		if (!arguments.isEmpty()) {
 			try {
 				world = DimensionManager.getWorld(Integer.valueOf(arguments.get(0)));
-			} catch(Exception ignored) {
+			} catch (Exception ignored) {
 			}
 		} else if (commandSender instanceof Entity) {
 			world = ((Entity) commandSender).worldObj;

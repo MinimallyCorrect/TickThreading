@@ -19,6 +19,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.ChunkCoordIntPair;
+import net.minecraft.world.MinecraftException;
 import net.minecraft.world.NextTickListEntry;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
@@ -26,6 +27,8 @@ import net.minecraft.world.chunk.storage.AnvilChunkLoader;
 import net.minecraft.world.chunk.storage.AnvilChunkLoaderPending;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import net.minecraft.world.chunk.storage.RegionFileCache;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.world.ChunkDataEvent;
 
 public abstract class PatchAnvilChunkLoader extends AnvilChunkLoader {
 	private Cache<Long, NBTTagCompound> chunkCache;
@@ -72,6 +75,22 @@ public abstract class PatchAnvilChunkLoader extends AnvilChunkLoader {
 		}
 
 		return this.checkedReadChunkFromNBT(par1World, par2, par3, var4);
+	}
+
+	@Override
+	public void saveChunk(World par1World, Chunk par2Chunk) throws MinecraftException, IOException {
+		par1World.checkSessionLock();
+
+		try {
+			NBTTagCompound var3 = new NBTTagCompound();
+			NBTTagCompound var4 = new NBTTagCompound();
+			var3.setTag("Level", var4);
+			this.writeChunkToNBT(par2Chunk, par1World, var4);
+			MinecraftForge.EVENT_BUS.post(new ChunkDataEvent.Save(par2Chunk, var3));
+			this.func_75824_a(par2Chunk.getChunkCoordIntPair(), var3);
+		} catch (Exception var5) {
+			FMLLog.log(Level.WARNING, var5, "Exception attempting to save a chunk");
+		}
 	}
 
 	@Override
