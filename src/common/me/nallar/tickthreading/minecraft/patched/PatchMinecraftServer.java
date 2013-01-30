@@ -2,6 +2,7 @@ package me.nallar.tickthreading.minecraft.patched;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -11,6 +12,7 @@ import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.relauncher.Side;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.ChunkGarbageCollector;
+import me.nallar.tickthreading.minecraft.DeadLockDetector;
 import me.nallar.tickthreading.minecraft.ThreadManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
@@ -39,6 +41,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	private static int NETWORK_TICK_TIME;
 	private static double currentTPS = 0;
 	private static double networkTPS = 0;
+	private ArrayList<Integer> exceptionCount;
 	private boolean tickNetworkInMainThread;
 	@Declare
 	public boolean currentlySaving_;
@@ -46,6 +49,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	public void construct() {
 		currentlySaving = false;
 		tickNetworkInMainThread = true;
+		exceptionCount = new ArrayList<Integer>();
 	}
 
 	public static void staticConstruct() {
@@ -102,6 +106,11 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				this.finalTick(null);
 			}
 		} catch (Throwable throwable) {
+			DeadLockDetector.sendChatSafely("The server has crashed - sorry about that. :(");
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException ignored) {
+			}
 			if (FMLCommonHandler.instance().shouldServerBeKilledQuietly()) {
 				return;
 			}
@@ -299,40 +308,60 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			long var2 = System.nanoTime();
 
 			WorldServer var4 = DimensionManager.getWorld(id);
-			this.theProfiler.startSection(var4.getWorldInfo().getWorldName());
-			this.theProfiler.startSection("pools");
-			var4.getWorldVec3Pool().clear();
-			this.theProfiler.endSection();
-
-			if (this.tickCounter % 60 == 0) {
-				this.theProfiler.startSection("timeSync");
-				this.serverConfigManager.sendPacketToAllPlayersInDimension(new Packet4UpdateTime(var4.getTotalWorldTime(), var4.getWorldTime()), var4.provider.dimensionId);
+			try {
+				this.theProfiler.startSection(var4.getWorldInfo().getWorldName());
+				this.theProfiler.startSection("pools");
+				var4.getWorldVec3Pool().clear();
 				this.theProfiler.endSection();
-			}
 
-			this.theProfiler.startSection("forgeTick");
-			FMLCommonHandler.instance().onPreWorldTick(var4);
-
-			this.theProfiler.endStartSection("worldTick");
-			var4.tick();
-			this.theProfiler.endStartSection("entityTick");
-			var4.updateEntities();
-			this.theProfiler.endStartSection("postForgeTick");
-			FMLCommonHandler.instance().onPostWorldTick(var4);
-			this.theProfiler.endSection();
-			this.theProfiler.startSection("tracker");
-			var4.getEntityTracker().updateTrackedEntities();
-			this.theProfiler.endSection();
-			if (this.tickCounter % TickThreading.instance.chunkGCInterval == 0) {
-				ChunkGarbageCollector.garbageCollect(var4);
-			}
-			this.theProfiler.endSection();
-
-			if (worldTickTimes != null) {
-				long[] tickTimes = worldTickTimes.get(id);
-				if (tickTimes != null) {
-					tickTimes[this.tickCounter % 100] = System.nanoTime() - var2;
+				if (this.tickCounter % 60 == 0) {
+					this.theProfiler.startSection("timeSync");
+					this.serverConfigManager.sendPacketToAllPlayersInDimension(new Packet4UpdateTime(var4.getTotalWorldTime(), var4.getWorldTime()), var4.provider.dimensionId);
+					this.theProfiler.endSection();
 				}
+
+				this.theProfiler.startSection("forgeTick");
+				FMLCommonHandler.instance().onPreWorldTick(var4);
+
+				this.theProfiler.endStartSection("worldTick");
+				var4.tick();
+				this.theProfiler.endStartSection("entityTick");
+				var4.updateEntities();
+				this.theProfiler.endStartSection("postForgeTick");
+				FMLCommonHandler.instance().onPostWorldTick(var4);
+				this.theProfiler.endSection();
+				this.theProfiler.startSection("tracker");
+				var4.getEntityTracker().updateTrackedEntities();
+				this.theProfiler.endSection();
+				if (this.tickCounter % TickThreading.instance.chunkGCInterval == 0) {
+					ChunkGarbageCollector.garbageCollect(var4);
+				}
+				if (this.tickCounter % 202 == 0) {
+					exceptionCount.set(id, 0);
+				}
+				this.theProfiler.endSection();
+
+				if (worldTickTimes != null) {
+					long[] tickTimes = worldTickTimes.get(id);
+					if (tickTimes != null) {
+						tickTimes[this.tickCounter % 100] = System.nanoTime() - var2;
+					}
+				}
+			} catch (Throwable t) {
+				Log.severe("Exception ticking world " + Log.name(var4), t);
+				Integer c = exceptionCount.get(id);
+				if (c == null) {
+					c = 0;
+				}
+				c++;
+				if (TickThreading.instance.exitOnDeadlock) {
+
+					if (c != null && c >= 200) {
+						DeadLockDetector.sendChatSafely("The world " + Log.name(var4) + " has become unstable, and the server will now restart.");
+						this.initiateShutdown();
+					}
+				}
+				exceptionCount.set(id, c);
 			}
 		}
 	}

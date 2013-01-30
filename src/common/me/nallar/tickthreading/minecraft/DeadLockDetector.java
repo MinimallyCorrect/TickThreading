@@ -67,7 +67,7 @@ public class DeadLockDetector {
 		return lastTickTime = System.currentTimeMillis();
 	}
 
-	private static void sendChatSafely(final String message) {
+	public static void sendChatSafely(final String message) {
 		// This might freeze, if the deadlock was related to the playerlist, so do it in another thread.
 		new Thread() {
 			@Override
