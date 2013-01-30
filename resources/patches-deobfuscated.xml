@@ -141,7 +141,6 @@
 		</class>
 		<class id="net.minecraft.server.management.PlayerManager">
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchPlayerManager"/>
-			<profile>updatePlayerInstances</profile>
 		</class>
 		<class id="net.minecraft.server.management.PlayerManager" env="mcpc">
 			<synchronize>addPlayer,removePlayer,updateMountedMovingPlayer,updatePlayerInstances</synchronize>
@@ -151,6 +150,9 @@
 			<synchronize>addPlayer,removePlayer</synchronize>
 			<synchronize field="$1.loadedChunks">addPlayer,removePlayer,filterChunkLoadQueue</synchronize>
 			<synchronize field="$1.loadedChunks">updateMountedMovingPlayer</synchronize>
+		</class>
+		<class id="net.minecraft.server.management.PlayerManager">
+			<profile>updatePlayerInstances</profile>
 		</class>
 		<class id="net.minecraft.server.management.PlayerInstance" env="forge">
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchPlayerInstance"/>
