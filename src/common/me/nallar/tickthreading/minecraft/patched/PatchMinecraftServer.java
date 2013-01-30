@@ -4,6 +4,8 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
@@ -41,7 +43,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	private static int NETWORK_TICK_TIME;
 	private static double currentTPS = 0;
 	private static double networkTPS = 0;
-	private ArrayList<Integer> exceptionCount;
+	private Map<Integer, Integer> exceptionCount;
 	private boolean tickNetworkInMainThread;
 	@Declare
 	public boolean currentlySaving_;
@@ -49,7 +51,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	public void construct() {
 		currentlySaving = false;
 		tickNetworkInMainThread = true;
-		exceptionCount = new ArrayList<Integer>();
+		exceptionCount = new HashMap<Integer, Integer>();
 	}
 
 	public static void staticConstruct() {
@@ -337,7 +339,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 					ChunkGarbageCollector.garbageCollect(var4);
 				}
 				if (this.tickCounter % 202 == 0) {
-					exceptionCount.set(id, 0);
+					exceptionCount.put(id, 0);
 				}
 				this.theProfiler.endSection();
 
@@ -361,7 +363,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 						this.initiateShutdown();
 					}
 				}
-				exceptionCount.set(id, c);
+				exceptionCount.put(id, c);
 			}
 		}
 	}
