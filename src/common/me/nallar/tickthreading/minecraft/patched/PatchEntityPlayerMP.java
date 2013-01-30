@@ -44,7 +44,8 @@ public abstract class PatchEntityPlayerMP extends EntityPlayerMP {
 		synchronized (loadedChunks) {
 			if (!this.loadedChunks.isEmpty()) {
 				long st = 0;
-				if (Timings.enabled) {
+				boolean timings = Timings.enabled;
+				if (timings) {
 					st = System.nanoTime();
 				}
 				ArrayList var6 = new ArrayList();
@@ -81,7 +82,7 @@ public abstract class PatchEntityPlayerMP extends EntityPlayerMP {
 						MinecraftForge.EVENT_BUS.post(new ChunkWatchEvent.Watch(var10.getChunkCoordIntPair(), this));
 					}
 				}
-				if (Timings.enabled) {
+				if (timings) {
 					Timings.record("net.minecraft.entity.player.EntityPlayerMP/chunks", System.nanoTime() - st);
 				}
 			}

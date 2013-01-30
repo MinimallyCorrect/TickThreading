@@ -56,7 +56,7 @@ public class Patches {
 		} catch (NotFoundException ignored) {
 		}
 		ctMethod.setName(ctMethod.getName() + "_t" + i);
-		replacement.setBody("{ long st = 0; if (javassist.is.faulty.Timings.enabled) { st = System.nanoTime(); } " + ctMethod.getName() + "($$); if (javassist.is.faulty.Timings.enabled) { javassist.is.faulty.Timings.record(\"" + attributes.get("deobf") + "\", System.nanoTime() - st); } }");
+		replacement.setBody("{ boolean timings = javassist.is.faulty.Timings.enabled; long st = 0; if (timings) { st = System.nanoTime(); } " + ctMethod.getName() + "($$); if (timings) { javassist.is.faulty.Timings.record(\"" + attributes.get("deobf") + "\", System.nanoTime() - st); } }");
 		ctClass.addMethod(replacement);
 	}
 
