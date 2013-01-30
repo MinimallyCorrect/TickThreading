@@ -67,6 +67,17 @@ public class DeadLockDetector {
 		return lastTickTime = System.currentTimeMillis();
 	}
 
+	private static void sendChatSafely(final String message) {
+		// This might freeze, if the deadlock was related to the playerlist, so do it in another thread.
+		new Thread() {
+			@Override
+			public void run() {
+				MinecraftServer.getServerConfigurationManager(MinecraftServer.getServer())
+						.sendPacketToAllPlayers(new Packet3Chat(message));
+			}
+		}.start();
+	}
+
 	public boolean checkForDeadlocks() {
 		Log.flush();
 		int deadTime = (int) (System.currentTimeMillis() - lastTickTime);
@@ -76,19 +87,16 @@ public class DeadLockDetector {
 		if (TickThreading.instance.exitOnDeadlock) {
 			if (sentWarningRecently && deadTime < 10000) {
 				sentWarningRecently = false;
-				MinecraftServer.getServerConfigurationManager(MinecraftServer.getServer())
-						.sendPacketToAllPlayers(new Packet3Chat("The server has recovered and will not need to restart. :)"));
+				sendChatSafely("The server has recovered and will not need to restart. :)");
 			} else if (deadTime > 10000) {
-				MinecraftServer.getServerConfigurationManager(MinecraftServer.getServer())
-						.sendPacketToAllPlayers(new Packet3Chat("The server appears to have frozen and will restart soon if it does not recover. :("));
+				sendChatSafely("The server appears to have frozen and will restart soon if it does not recover. :(");
 			}
 		}
 		if (deadTime < (TickThreading.instance.deadLockTime * 1000)) {
 			return true;
 		}
 		if (TickThreading.instance.exitOnDeadlock) {
-			MinecraftServer.getServerConfigurationManager(MinecraftServer.getServer())
-					.sendPacketToAllPlayers(new Packet3Chat("The server is restarting - be right back!"));
+			sendChatSafely("The server is restarting - be right back!");
 		}
 		TreeMap<String, Thread> sortedThreads = new TreeMap<String, Thread>();
 		StringBuilder sb = new StringBuilder();
