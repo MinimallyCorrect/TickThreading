@@ -257,6 +257,6 @@ public class TickThreading {
 	}
 
 	public int getThreadCount() {
-		return tickThreads == 0 ? runtime.availableProcessors() : tickThreads;
+		return tickThreads == 0 ? runtime.availableProcessors() + 1 : tickThreads;
 	}
 }
