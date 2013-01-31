@@ -70,12 +70,7 @@ public enum Timings {
 		String suffix = clazz.substring(slash);
 		String name = MappingUtil.debobfuscate(clazz.substring(0, slash));
 		if (name.contains(".")) {
-			String cName = name.substring(name.lastIndexOf('.') + 1);
-			String pName = name.substring(0, name.lastIndexOf('.'));
-			if (pName.contains(".")) {
-				pName = pName.substring(pName.lastIndexOf('.') + 1);
-			}
-			return pName + '.' + cName + suffix;
+			return name.substring(name.lastIndexOf('.') + 1) + suffix;
 		}
 		return name + suffix;
 	}
