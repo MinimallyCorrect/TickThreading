@@ -34,7 +34,6 @@ public abstract class PatchWorld extends World {
 
 	@Override
 	public void addLoadedEntities(List par1List) {
-		WorldManager worldManager = (WorldManager) worldAccesses.get(0); // On the server, we know there is only one.
 		EntityTracker entityTracker = null;
 		if (((Object) this instanceof WorldServer)) {
 			entityTracker = ((WorldServer) (Object) this).getEntityTracker();
@@ -45,7 +44,7 @@ public abstract class PatchWorld extends World {
 				par1List.remove(var2--);
 			} else if (entityTracker == null || !entityTracker.isTracking(entity.entityId)) {
 				loadedEntityList.add(entity);
-				worldManager.obtainEntitySkin(entity);
+				this.obtainEntitySkin(entity);
 			}
 		}
 	}
@@ -219,10 +218,9 @@ public abstract class PatchWorld extends World {
 	@Override
 	public void unloadEntities(List entitiesToUnload) {
 		if (loadedEntityList instanceof EntityList) {
-			WorldManager worldManager = (WorldManager) worldAccesses.get(0); // On the server, we know there is only one.
 			for (Entity entity : (List<? extends Entity>) entitiesToUnload) {
 				this.loadedEntityList.remove(entity);
-				worldManager.releaseEntitySkin(entity);
+				this.releaseEntitySkin(entity);
 			}
 		} else {
 			this.unloadedEntityList.addAll(entitiesToUnload);

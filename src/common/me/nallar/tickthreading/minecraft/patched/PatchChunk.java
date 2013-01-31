@@ -16,12 +16,12 @@ public abstract class PatchChunk extends Chunk {
 
 	@Override
 	public void onChunkLoad() {
+		this.isChunkLoaded = true;
 		this.worldObj.addTileEntity(this.chunkTileEntityMap.values());
 
 		for (int var1 = 0; var1 < this.entityLists.length; ++var1) {
 			this.worldObj.addLoadedEntities(this.entityLists[var1]);
 		}
-		this.isChunkLoaded = true;
 		MinecraftForge.EVENT_BUS.post(new ChunkEvent.Load(this));
 	}
 
