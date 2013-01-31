@@ -106,6 +106,7 @@
 		</class>
 		<class id="net.minecraft.entity.item.EntityItem">
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchEntityItem"/>
+			<insertSuper>onUpdate</insertSuper>
 		</class>
 		<class id="net.minecraft.tileentity.TileEntity">
 			<addMethod return="java.lang.String"
