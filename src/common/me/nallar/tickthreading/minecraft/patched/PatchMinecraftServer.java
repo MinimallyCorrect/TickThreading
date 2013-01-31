@@ -2,7 +2,6 @@ package me.nallar.tickthreading.minecraft.patched;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;

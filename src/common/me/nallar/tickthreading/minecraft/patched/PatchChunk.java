@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cpw.mods.fml.common.FMLLog;
+import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
@@ -14,12 +15,15 @@ import net.minecraftforge.event.world.ChunkEvent;
 
 public abstract class PatchChunk extends Chunk {
 	private List<Entity> toAdd;
+	@Declare
+	public boolean allowEntityAdding_;
 
 	public PatchChunk(World par1World, int par2, int par3) {
 		super(par1World, par2, par3);
 	}
 
 	public void construct() {
+		allowEntityAdding = true;
 		toAdd = new ArrayList<Entity>();
 	}
 
@@ -32,6 +36,7 @@ public abstract class PatchChunk extends Chunk {
 		}
 		MinecraftForge.EVENT_BUS.post(new ChunkEvent.Load(this));
 		this.isChunkLoaded = true;
+		this.allowEntityAdding = true;
 		for (Entity entity : toAdd) {
 			addEntity(entity);
 		}
@@ -40,7 +45,7 @@ public abstract class PatchChunk extends Chunk {
 
 	@Override
 	public void addEntity(Entity par1Entity) {
-		if (!this.isChunkLoaded) {
+		if (!this.allowEntityAdding) {
 			toAdd.add(par1Entity);
 			return;
 		}
