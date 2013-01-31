@@ -224,7 +224,6 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 				}
 
 				var5.populateChunk(this, this, x, z);
-				var5.allowEntityAdding = false;
 			}
 		}
 
