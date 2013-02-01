@@ -1,6 +1,8 @@
 package me.nallar.tickthreading.minecraft;
 
+import java.util.ConcurrentModificationException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -33,8 +35,11 @@ public class ChunkGarbageCollector {
 		int viewDistance = MinecraftServer.getServer().getConfigurationManager().getViewDistance() + 1;
 		ChunkProviderServer chunkProvider = worldServer.theChunkProviderServer;
 		Set<Long> chunksToUnload = new HashSet<Long>();
-		for (Chunk chunk : chunkProvider.getLoadedChunks()) {
-			chunksToUnload.add(ChunkCoordIntPair.chunkXZ2Int(chunk.xPosition, chunk.zPosition));
+		List<Chunk> loadedChunks = chunkProvider.getLoadedChunks();
+		synchronized (loadedChunks) {
+			for (Chunk chunk : loadedChunks) {
+				chunksToUnload.add(ChunkCoordIntPair.chunkXZ2Int(chunk.xPosition, chunk.zPosition));
+			}
 		}
 
 		for (Object player_ : worldServer.playerEntities) {

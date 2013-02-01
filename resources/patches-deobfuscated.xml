@@ -22,6 +22,7 @@
 		</class>
 		<class id="net.minecraft.network.NetServerHandler">
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchNetServerHandler"/>
+			<insertBefore code="teleported = true;">setPlayerLocation</insertBefore>
 		</class>
 		<class id="net.minecraft.network.packet.Packet10Flying">
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchPacket10Flying"/>
@@ -369,4 +370,9 @@
 			<disable>doSortingTreeEffect</disable>
 		</class>
 	</twilightForest>
+	<bukkitForge>
+		<class id="org.bukkit.plugin.SimplePluginManager">
+			<replaceMethod code="{ fireEvent($$); }">callEvent</replaceMethod>
+		</class>
+	</bukkitForge>
 </mods>

@@ -15,9 +15,12 @@ public abstract class PatchNetServerHandler extends NetServerHandler {
 	public double lastPX_;
 	@Declare
 	public double lastPZ_;
+	@Declare
+	public boolean teleported_;
 
 	public void construct() {
 		averageSpeed = -1;
+		teleported = true;
 	}
 
 	public PatchNetServerHandler(MinecraftServer par1, INetworkManager par2, EntityPlayerMP par3) {
