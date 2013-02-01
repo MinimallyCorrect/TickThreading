@@ -35,10 +35,10 @@ public class ProfileCommand extends Command {
 				entity_ = "e".equals(arguments.get(0));
 			}
 			if (arguments.size() > 1) {
-				time_ = Integer.valueOf(arguments.get(0));
+				time_ = Integer.valueOf(arguments.get(1));
 			}
 			if (arguments.size() > 2) {
-				world = DimensionManager.getWorld(Integer.valueOf(arguments.get(1)));
+				world = DimensionManager.getWorld(Integer.valueOf(arguments.get(2)));
 			} else if (commandSender instanceof Entity) {
 				world = ((Entity) commandSender).worldObj;
 			}
