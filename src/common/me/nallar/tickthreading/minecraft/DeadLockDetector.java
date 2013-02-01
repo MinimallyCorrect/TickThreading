@@ -180,6 +180,9 @@ public class DeadLockDetector {
 	}
 
 	private static String toString(ThreadInfo threadInfo, boolean name) {
+		if (threadInfo == null) {
+			return "";
+		}
 		StringBuilder sb = new StringBuilder();
 		if (name) {
 			sb.append('"').append(threadInfo.getThreadName()).append('"').append(" Id=").append(threadInfo.getThreadId())

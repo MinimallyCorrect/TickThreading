@@ -20,6 +20,12 @@
 		<class id="net.minecraft.profiler.Profiler">
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchProfiler"/>
 		</class>
+		<class id="net.minecraft.network.NetServerHandler">
+			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchNetServerHandler"/>
+		</class>
+		<class id="net.minecraft.network.packet.Packet10Flying">
+			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchPacket10Flying"/>
+		</class>
 		<class id="net.minecraft.network.packet.Packet51MapChunk">
 			<volatile field="chunkData"/>
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchPacket51MapChunk"/>
