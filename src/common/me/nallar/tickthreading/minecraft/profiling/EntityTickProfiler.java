@@ -50,11 +50,13 @@ public class EntityTickProfiler {
 		final List<Class<?>> sortedKeysByTimePerTick = Ordering.natural().reverse().onResultOf(Functions.forMap(timePerTick)).immutableSortedCopy(timePerTick.keySet());
 		tf
 				.heading("Class")
-				.heading("Time/tick");
+				.heading("Time/tick")
+				.heading("Calls");
 		for (int i = 0; i < 5 && i < sortedKeysByTimePerTick.size(); i++) {
 			tf
 					.row(niceName(sortedKeysByTimePerTick.get(i)))
-					.row(timePerTick.get(sortedKeysByTimePerTick.get(i)) / 1000000d);
+					.row(timePerTick.get(sortedKeysByTimePerTick.get(i)) / 1000000d)
+					.row(invocationCount.get(sortedKeysByTimePerTick.get(i)));
 		}
 		tf.finishTable();
 		return tf;
@@ -68,7 +70,7 @@ public class EntityTickProfiler {
 			if (pName.contains(".")) {
 				pName = pName.substring(pName.lastIndexOf('.') + 1);
 			}
-			return pName + '.' + cName;
+			return (cName.length() < 15 ? pName + '.' : "") + cName;
 		}
 		return name;
 	}
