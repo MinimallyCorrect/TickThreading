@@ -20,6 +20,7 @@ public abstract class PatchNetServerHandler extends NetServerHandler {
 
 	public void construct() {
 		teleported = true;
+		averageSpeed = -1000;
 	}
 
 	public PatchNetServerHandler(MinecraftServer par1, INetworkManager par2, EntityPlayerMP par3) {

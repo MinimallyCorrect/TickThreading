@@ -42,6 +42,7 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 					}
 					double averageSpeed = (nsh.averageSpeed = ((nsh.averageSpeed * 10 + speed) / 11));
 					ServerConfigurationManager serverConfigurationManager = MinecraftServer.getServer().getConfigurationManager();
+					speed /= allowedSpeedMultiplier(entityPlayerMP);
 					if (!serverConfigurationManager.areCommandsAllowed(entityPlayerMP.username) && (averageSpeed > 50 || (!entityPlayerMP.isRiding() && averageSpeed > 20))) {
 						nsh.kickPlayerFromServer("You moved too quickly!");
 						serverConfigurationManager.sendPacketToAllPlayers(new Packet3Chat(entityPlayerMP.username + " was caught speed-hacking or has a terrible connection"));
@@ -52,5 +53,14 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 			}
 		}
 		par1NetHandler.handleFlying(this);
+	}
+
+	private static double allowedSpeedMultiplier(EntityPlayerMP entityPlayerMP) {
+		for (int i = 0; i < 4; i++) {
+			if (entityPlayerMP.inventory.armorItemInSlot(i) != null) {
+				return 1.5;
+			}
+		}
+		return 1;
 	}
 }
