@@ -238,7 +238,8 @@
 			<synchronize field="facadeBlocks">blockCreated,getBlockId,getTile,computeConnections</synchronize>
 		</class>
 		<class id="buildcraft.transport.PipeTransportItems">
-			<newInitializer field="travelingEntities" class="java.util.concurrent.ConcurrentHashMap"/>
+			<addClass class="org.cliffc.high_scale_lib.NonBlockingHashMap"/>
+			<newInitializer field="travelingEntities" class="org.cliffc.high_scale_lib.NonBlockingHashMap"/>
 		</class>
 		<class id="buildcraft.transport.PipeTransportPower">
 			<newField field="staticLock" class="java.lang.Object" static=""/>
