@@ -14,6 +14,7 @@ import cpw.mods.fml.common.ITickHandler;
 import cpw.mods.fml.common.TickType;
 import cpw.mods.fml.common.registry.TickRegistry;
 import cpw.mods.fml.relauncher.Side;
+import javassist.is.faulty.Timings;
 import me.nallar.tickthreading.Log;
 import net.minecraft.network.packet.Packet3Chat;
 import net.minecraft.server.MinecraftServer;
@@ -28,6 +29,9 @@ public class DeadLockDetector {
 		@Override
 		public void tickStart(EnumSet<TickType> type, Object... tickData) {
 			tick("Server tick start");
+			if (type.contains(TickType.SERVER)) {
+				Timings.tick();
+			}
 		}
 
 		@Override

@@ -16,6 +16,7 @@ import org.cliffc.high_scale_lib.NonBlockingHashMap;
 public enum Timings {
 	;
 	public static boolean enabled = false;
+	private static int tickCount;
 
 	public static void record(String name, long time) {
 		if (time < 0) {
@@ -25,9 +26,16 @@ public enum Timings {
 		getInvocationCount(name).incrementAndGet();
 	}
 
+	public static void tick() {
+		if (enabled) {
+			tickCount++;
+		}
+	}
+
 	public static void clear() {
 		invocationCount.clear();
 		time.clear();
+		tickCount = 0;
 	}
 
 	public static TableFormatter writeData(TableFormatter tf) {
@@ -48,13 +56,13 @@ public enum Timings {
 		tf.sb.append('\n');
 		Map<String, Long> timePerTick = new HashMap<String, Long>();
 		for (Map.Entry<String, AtomicLong> entry : Timings.time.entrySet()) {
-			timePerTick.put(entry.getKey(), entry.getValue().get() / invocationCount.get(entry.getKey()).get());
+			timePerTick.put(entry.getKey(), entry.getValue().get() / tickCount);
 		}
 		final List<String> sortedKeysByTimePerTick = Ordering.natural().reverse().onResultOf(Functions.forMap(timePerTick)).immutableSortedCopy(timePerTick.keySet());
 		tf
 				.heading("Class")
 				.heading("Time/tick")
-				.heading("Ticks");
+				.heading("Calls");
 		for (int i = 0; i < 5 && i < sortedKeysByTimePerTick.size(); i++) {
 			tf
 					.row(niceName(sortedKeysByTimePerTick.get(i)))
