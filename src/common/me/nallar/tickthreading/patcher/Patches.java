@@ -16,6 +16,7 @@ import javassist.CtConstructor;
 import javassist.CtField;
 import javassist.CtMethod;
 import javassist.CtNewMethod;
+import javassist.CtPrimitiveType;
 import javassist.Modifier;
 import javassist.NotFoundException;
 import javassist.bytecode.BadBytecode;
@@ -45,7 +46,7 @@ public class Patches {
 	}
 
 	@Patch
-	public void profile(CtMethod ctMethod, Map<String, String> attributes) throws CannotCompileException {
+	public void profile(CtMethod ctMethod, Map<String, String> attributes) throws CannotCompileException, NotFoundException {
 		CtClass ctClass = ctMethod.getDeclaringClass();
 		CtMethod replacement = CtNewMethod.copy(ctMethod, ctClass, null);
 		int i = 0;
@@ -56,7 +57,11 @@ public class Patches {
 		} catch (NotFoundException ignored) {
 		}
 		ctMethod.setName(ctMethod.getName() + "_t" + i);
-		replacement.setBody("{ boolean timings = javassist.is.faulty.Timings.enabled; long st = 0; if (timings) { st = System.nanoTime(); } " + ctMethod.getName() + "($$); if (timings) { javassist.is.faulty.Timings.record(\"" + attributes.get("deobf") + "\", System.nanoTime() - st); } }");
+		if (ctMethod.getReturnType() == CtPrimitiveType.voidType) {
+			replacement.setBody("{ boolean timings = javassist.is.faulty.Timings.enabled; long st = 0; if (timings) { st = System.nanoTime(); } " + ctMethod.getName() + "($$); if (timings) { javassist.is.faulty.Timings.record(\"" + attributes.get("deobf") + "\", System.nanoTime() - st); } }");
+		} else {
+			replacement.setBody("{ boolean timings = javassist.is.faulty.Timings.enabled; long st = 0; if (timings) { st = System.nanoTime(); } try { return " + ctMethod.getName() + "($$); } finally { if (timings) { javassist.is.faulty.Timings.record(\"" + attributes.get("deobf") + "\", System.nanoTime() - st); } } }");
+		}
 		ctClass.addMethod(replacement);
 	}
 
