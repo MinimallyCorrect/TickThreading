@@ -1,6 +1,8 @@
 package me.nallar.tickthreading.minecraft;
 
+import java.lang.management.LockInfo;
 import java.lang.management.ManagementFactory;
+import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.util.EnumSet;
@@ -100,6 +102,7 @@ public class DeadLockDetector {
 		}
 		TreeMap<String, Thread> sortedThreads = new TreeMap<String, Thread>();
 		StringBuilder sb = new StringBuilder();
+		ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
 		sb.append("The server appears to have deadlocked.")
 				.append("\nLast tick ").append(deadTime).append("ms ago.")
 				.append("\nTicking: ").append(lastJob).append('\n');
@@ -111,18 +114,16 @@ public class DeadLockDetector {
 			sb.append("Current Thread: ").append(thread.getName()).append('\n').append("    PID: ").append(thread.getId())
 					.append(" | Alive: ").append(thread.isAlive()).append(" | State: ").append(thread.getState())
 					.append(" | Daemon: ").append(thread.isDaemon()).append(" | Priority:").append(thread.getPriority())
-					.append("    Stack:").append('\n');
-			for (StackTraceElement stackTraceElement : thread.getStackTrace()) {
-				sb.append("        ").append(stackTraceElement.toString()).append('\n');
-			}
+					.append('\n');
+			sb.append("    ").append(toString(threadMXBean.getThreadInfo(thread.getId(), Integer.MAX_VALUE), false)).append('\n');
 		}
-		ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
 		long[] deadlockedThreads = threadMXBean.findDeadlockedThreads();
+
 		if (deadlockedThreads != null) {
 			ThreadInfo[] infos = threadMXBean.getThreadInfo(deadlockedThreads, true, true);
 			sb.append("Definitely deadlocked: \n");
 			for (ThreadInfo threadInfo : infos) {
-				sb.append(threadInfo).append('\n');
+				sb.append(toString(threadInfo, true)).append('\n');
 			}
 		}
 		Log.severe(sb.toString());
@@ -157,10 +158,10 @@ public class DeadLockDetector {
 		Log.info("Attempting to stop mods and disconnect players cleanly");
 		try {
 			minecraftServer.stopServer();
+			FMLCommonHandler.instance().handleServerStopping(); // Try to get mods to save data - this may lock up, as we deadlocked.
 		} catch (Exception e) {
 			Log.severe("Error stopping server", e);
 		}
-		FMLCommonHandler.instance().handleServerStopping(); // Try to get mods to save data - this may lock up, as we deadlocked.
 		minecraftServer.saveEverything(); // Save again, in case they changed anything.
 		minecraftServer.initiateShutdown();
 		Log.flush();
@@ -172,5 +173,75 @@ public class DeadLockDetector {
 			Runtime.getRuntime().exit(1);
 		}
 		return false;
+	}
+
+	private static String toString(ThreadInfo threadInfo, boolean name) {
+		StringBuilder sb = new StringBuilder();
+		if (name) {
+			sb.append('"').append(threadInfo.getThreadName()).append('"').append(" Id=").append(threadInfo.getThreadId())
+					.append(' ');
+		}
+		sb.append(threadInfo.getThreadState());
+		if (threadInfo.getLockName() != null) {
+			sb.append(" on ").append(threadInfo.getLockName());
+		}
+		if (threadInfo.getLockOwnerName() != null) {
+			sb.append(" owned by \"").append(threadInfo.getLockOwnerName()).append("\" Id=").append(threadInfo.getLockOwnerId());
+		}
+		if (threadInfo.isSuspended()) {
+			sb.append(" (suspended)");
+		}
+		if (threadInfo.isInNative()) {
+			sb.append(" (in native)");
+		}
+		sb.append('\n');
+		int i = 0;
+		StackTraceElement[] stackTrace = threadInfo.getStackTrace();
+		for (; i < stackTrace.length; i++) {
+			StackTraceElement ste = stackTrace[i];
+			sb.append("\tat ").append(ste.toString());
+			sb.append('\n');
+			if (i == 0 && threadInfo.getLockInfo() != null) {
+				Thread.State ts = threadInfo.getThreadState();
+				switch (ts) {
+					case BLOCKED:
+						sb.append("\t-  blocked on ").append(threadInfo.getLockInfo());
+						sb.append('\n');
+						break;
+					case WAITING:
+						sb.append("\t-  waiting on ").append(threadInfo.getLockInfo());
+						sb.append('\n');
+						break;
+					case TIMED_WAITING:
+						sb.append("\t-  waiting on ").append(threadInfo.getLockInfo());
+						sb.append('\n');
+						break;
+					default:
+				}
+			}
+
+			for (MonitorInfo mi : threadInfo.getLockedMonitors()) {
+				if (mi.getLockedStackDepth() == i) {
+					sb.append("\t-  locked ").append(mi);
+					sb.append('\n');
+				}
+			}
+		}
+		if (i < stackTrace.length) {
+			sb.append("\t...");
+			sb.append('\n');
+		}
+
+		LockInfo[] locks = threadInfo.getLockedSynchronizers();
+		if (locks.length > 0) {
+			sb.append("\n\tNumber of locked synchronizers = ").append(locks.length);
+			sb.append('\n');
+			for (LockInfo li : locks) {
+				sb.append("\t- ").append(li);
+				sb.append('\n');
+			}
+		}
+		sb.append('\n');
+		return sb.toString();
 	}
 }
