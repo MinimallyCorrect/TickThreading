@@ -2,6 +2,7 @@ package me.nallar.tickthreading.minecraft;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -28,24 +29,27 @@ public class TickManager {
 	public float averageTickLength = 0;
 	public int lastTickLength = 0;
 	public long lastStartTime = 0;
+	private static final int shuffleInterval = 800;
+	private int shuffleCount;
+	private final boolean waitForCompletion;
+	public EntityTickProfiler entityTickProfiler = new EntityTickProfiler();
 	public final World world;
+	public final List<TileEntity> tileEntityList = new ArrayList<TileEntity>();
+	public final List<Entity> entityList = new ArrayList<Entity>();
+	public Object tileEntityLock = new Object();
+	public Object entityLock = new Object();
 	private final Map<Integer, TileEntityTickRegion> tileEntityCallables = new HashMap<Integer, TileEntityTickRegion>();
 	private final Map<Integer, EntityTickRegion> entityCallables = new HashMap<Integer, EntityTickRegion>();
 	private final List<TickRegion> tickRegions = new ArrayList<TickRegion>();
 	private final ThreadManager threadManager;
-	public final List<TileEntity> tileEntityList = new ArrayList<TileEntity>();
-	public final List<Entity> entityList = new ArrayList<Entity>();
 	private final Map<Class<?>, Integer> entityClassToCountMap = new HashMap<Class<?>, Integer>();
-	public Object tileEntityLock = new Object();
-	public Object entityLock = new Object();
-	private final boolean waitForCompletion;
-	public EntityTickProfiler entityTickProfiler = new EntityTickProfiler();
 
 	public TickManager(World world, int regionSize, int threads, boolean waitForCompletion) {
 		this.waitForCompletion = waitForCompletion;
 		threadManager = new ThreadManager(threads, "Tile/Entity Tick for " + Log.name(world));
 		this.world = world;
 		this.regionSize = regionSize;
+		shuffleCount = world.rand.nextInt(shuffleInterval);
 	}
 
 	public void setVariableTickRate(boolean variableTickRate) {
@@ -129,6 +133,9 @@ public class TickManager {
 						}
 						tickRegion.die();
 					}
+				}
+				if (shuffleCount++ % shuffleInterval == 0) {
+					Collections.shuffle(tickRegions);
 				}
 			}
 		} catch (Exception e) {
