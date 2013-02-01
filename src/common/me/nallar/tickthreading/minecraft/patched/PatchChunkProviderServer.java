@@ -227,6 +227,8 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 			}
 		}
 
+		// TODO: Do initial mob spawning here - doing it while locked is stupid and can cause deadlocks with some bukkit plugins
+
 		var5.onChunkLoad();
 		chunkLoadLocks.remove(hash(x, z));
 
