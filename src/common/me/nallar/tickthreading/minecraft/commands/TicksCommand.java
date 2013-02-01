@@ -24,16 +24,17 @@ public class TicksCommand extends Command {
 
 	@Override
 	public void processCommand(ICommandSender commandSender, List<String> arguments) {
-		World world = null;
-		if (!arguments.isEmpty()) {
-			try {
-				world = DimensionManager.getWorld(Integer.valueOf(arguments.get(0)));
-			} catch (Exception ignored) {
+		World world = DimensionManager.getWorld(0);
+		try {
+			if (!arguments.isEmpty()) {
+				try {
+					world = DimensionManager.getWorld(Integer.valueOf(arguments.get(0)));
+				} catch (Exception ignored) {
+				}
+			} else if (commandSender instanceof Entity) {
+				world = ((Entity) commandSender).worldObj;
 			}
-		} else if (commandSender instanceof Entity) {
-			world = ((Entity) commandSender).worldObj;
-		}
-		if (world == null) {
+		} catch (Exception e) {
 			sendChat(commandSender, "Usage: /ticks [dimensionid]");
 			return;
 		}
