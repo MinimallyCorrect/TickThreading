@@ -3,6 +3,7 @@
 	<minecraftCommon>
 		<class id="net.minecraft.world.SpawnerAnimals">
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchSpawnerAnimals"/>
+			<profile>findChunksForSpawning</profile>
 		</class>
 		<class id="net.minecraft.pathfinding.Path">
 			<newInitializer field="pathPoints" class="net.minecraft.pathfinding.PathPoint" arraySize="128"/>
