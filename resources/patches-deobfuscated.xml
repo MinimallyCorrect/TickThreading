@@ -27,6 +27,9 @@
 		<class id="net.minecraft.network.packet.Packet10Flying">
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchPacket10Flying"/>
 		</class>
+		<class id="net.minecraft.network.packet.Packet14BlockDig">
+			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchPacket14BlockDig"/>
+		</class>
 		<class id="net.minecraft.network.packet.Packet51MapChunk">
 			<volatile field="chunkData"/>
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchPacket51MapChunk"/>
@@ -181,6 +184,9 @@
 		</class>
 		<class id="net.minecraft.network.TcpConnection">
 			<addAll fromClass="me.nallar.tickthreading.minecraft.patched.PatchTcpConnection"/>
+		</class>
+		<class id="net.minecraft.network.TcpReaderThread">
+			<replace class="me.nallar.tickthreading.minecraft.patched.PatchTcpReaderThread"/>
 		</class>
 		<class id="net.minecraft.entity.ai.EntityAITasks">
 			<synchronize>addTask,func_85156_a,onUpdateTasks,func_75775_b</synchronize>

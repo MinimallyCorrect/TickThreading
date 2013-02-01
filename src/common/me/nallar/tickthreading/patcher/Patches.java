@@ -20,6 +20,7 @@ import javassist.CtPrimitiveType;
 import javassist.Modifier;
 import javassist.NotFoundException;
 import javassist.bytecode.BadBytecode;
+import javassist.bytecode.ClassFile;
 import javassist.expr.Cast;
 import javassist.expr.ConstructorCall;
 import javassist.expr.ExprEditor;
@@ -95,7 +96,10 @@ public class Patches {
 		String oldName = clazz.getName();
 		clazz.setName(oldName + "_old");
 		CtClass newClass = classRegistry.getClass(attributes.get("class"));
-		newClass.getClassFile2().setSuperclass(null);
+		ClassFile classFile = newClass.getClassFile2();
+		if (classFile.getSuperclass().equals(oldName)) {
+			classFile.setSuperclass(null);
+		}
 		newClass.setName(oldName);
 		newClass.setModifiers(newClass.getModifiers() & ~Modifier.ABSTRACT);
 		return newClass;

@@ -32,6 +32,16 @@ public abstract class PatchTcpConnection extends TcpConnection {
 	}
 
 	@Declare
+	public boolean readNetworkPacket() {
+		return this.readPacket();
+	}
+
+	@Declare
+	public boolean isRunning() {
+		return isRunning && !isServerTerminating;
+	}
+
+	@Declare
 	public static java.util.List<net.minecraft.network.packet.IPacketHandler> getPacketHandlers() {
 		if (packetHandlers == null) {
 			synchronized (IPacketHandler.class) {

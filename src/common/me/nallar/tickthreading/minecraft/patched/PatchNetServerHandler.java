@@ -19,7 +19,6 @@ public abstract class PatchNetServerHandler extends NetServerHandler {
 	public boolean teleported_;
 
 	public void construct() {
-		averageSpeed = -1;
 		teleported = true;
 	}
 

@@ -68,6 +68,7 @@ public class TickThreading {
 	public int chunkGCInterval = 600;
 	private int targetTPS = 20;
 	public boolean concurrentNetworkTicks = false;
+	public boolean antiCheat = false;
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load
@@ -141,6 +142,8 @@ public class TickThreading {
 		targetTPSProperty.comment = "TPS the server should try to run at.";
 		Property concurrentNetworkTicksProperty = config.get(Configuration.CATEGORY_GENERAL, "concurrentNetworkTicks", concurrentNetworkTicks);
 		concurrentNetworkTicksProperty.comment = "Whether network ticks should be ran in the main thread.";
+		Property antiCheatProperty = config.get(Configuration.CATEGORY_GENERAL, "antiCheat", antiCheat);
+		antiCheatProperty.comment = "Whether to enable some experimental anti-cheat features included in TT";
 		config.save();
 
 		TicksCommand.name = ticksCommandName.value;
@@ -167,6 +170,7 @@ public class TickThreading {
 		shouldLoadSpawn = shouldLoadSpawnProperty.getBoolean(shouldLoadSpawn);
 		waitForEntityTick = waitForEntityTickProperty.getBoolean(waitForEntityTick);
 		concurrentNetworkTicks = concurrentNetworkTicksProperty.getBoolean(concurrentNetworkTicks);
+		antiCheat = antiCheatProperty.getBoolean(antiCheat);
 		int[] disabledDimensions = disabledFastMobSpawningDimensionsProperty.getIntList();
 		disabledFastMobSpawningDimensions = new HashSet<Integer>(disabledDimensions.length);
 		for (int disabledDimension : disabledDimensions) {
