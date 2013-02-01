@@ -11,6 +11,7 @@ public abstract class PatchTcpReaderThread extends ThreadMinecraftServer {
 		this.tcpConnection = tcpConnection;
 	}
 
+	@Override
 	public void run() {
 		TcpConnection.field_74471_a.getAndIncrement();
 
@@ -20,7 +21,7 @@ public abstract class PatchTcpReaderThread extends ThreadMinecraftServer {
 					if (!tcpConnection.readNetworkPacket()) {
 						try {
 							sleep(2L);
-						} catch (InterruptedException var5) {
+						} catch (InterruptedException ignored) {
 						}
 					}
 				}

@@ -9,6 +9,7 @@ public abstract class PatchEntityTracker extends EntityTracker {
 		super(par1WorldServer);
 	}
 
+	@Override
 	@Declare
 	public boolean isTracking(int id) {
 		return this.trackedEntityIDs.containsItem(id);

@@ -1,6 +1,5 @@
 package me.nallar.tickthreading.minecraft;
 
-import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;

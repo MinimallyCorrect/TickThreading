@@ -386,7 +386,7 @@ public class Patches {
 			CtField ctField = ctClass.getDeclaredField(field);
 			Log.warning(field + " already exists as " + ctField);
 			return;
-		} catch (NotFoundException expected) {
+		} catch (NotFoundException ignored) {
 		}
 		CtClass newType = classRegistry.getClass(clazz);
 		CtField ctField = new CtField(newType, field, ctClass);

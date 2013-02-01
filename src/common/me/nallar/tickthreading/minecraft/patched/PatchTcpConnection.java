@@ -31,11 +31,13 @@ public abstract class PatchTcpConnection extends TcpConnection {
 		return true;
 	}
 
+	@Override
 	@Declare
 	public boolean readNetworkPacket() {
 		return this.readPacket();
 	}
 
+	@Override
 	@Declare
 	public boolean isRunning() {
 		return isRunning && !isServerTerminating;

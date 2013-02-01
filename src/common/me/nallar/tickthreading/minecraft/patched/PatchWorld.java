@@ -84,7 +84,7 @@ public abstract class PatchWorld extends World {
 								if (block != null) {
 									block.addCollidingBlockToList(this, x, y, z, par2AxisAlignedBB, collidingBoundingBoxes, par1Entity);
 								}
-								if (collidingBoundingBoxes.size() > 0) {
+								if (!collidingBoundingBoxes.isEmpty()) {
 									return true;
 								}
 							}

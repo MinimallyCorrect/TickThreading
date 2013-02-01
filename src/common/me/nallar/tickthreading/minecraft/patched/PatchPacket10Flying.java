@@ -35,7 +35,7 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 					if (time < 1) {
 						time = 1;
 					}
-					double speed = (Math.sqrt(dX*dX + dZ*dZ) * 1000) / time;
+					double speed = (Math.sqrt(dX * dX + dZ * dZ) * 1000) / time;
 					//Log.info(speed + "\t" + dX + '\t' + dZ + '\t' + time + '\t' + moving + '\t' + yPosition + '\t' + stance);
 					if (Double.isInfinite(speed) || Double.isNaN(speed)) {
 						speed = 1;
