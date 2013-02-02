@@ -3,8 +3,6 @@ package me.nallar.patched;
 import java.util.EnumSet;
 import java.util.List;
 
-import com.google.common.base.Objects;
-
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.IScheduledTickHandler;
 import cpw.mods.fml.common.TickType;
