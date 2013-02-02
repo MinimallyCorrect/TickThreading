@@ -287,6 +287,11 @@
 		<class id="com.eloraam.redpower.core.PipeLib">
 			<replaceMethodCall index="0" code="{ $_ = null; }" method="printf">registerForgeFluid</replaceMethodCall>
 		</class>
+		<class id="com.eloraam.redpower.base.ContainerBag">
+			<newMethod
+							code="public ur a(int i, int j, int k, qx l) { if (k == 2) { l.a(0); return null; } return super.a(i, j, k, l); }"
+							/>
+		</class>
 	</redPowerCore>
 	<industrialCraft>
 		<class id="ic2.core.EnergyNet">

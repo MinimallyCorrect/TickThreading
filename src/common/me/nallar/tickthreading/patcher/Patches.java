@@ -51,6 +51,13 @@ public class Patches {
 		ctMethod.setName(ctMethod.getName() + "_rem");
 	}
 
+	@Patch (
+			requiredAttributes = "code"
+	)
+	public void newMethod(CtClass ctClass, Map<String, String> attributes) throws CannotCompileException {
+		ctClass.addMethod(CtNewMethod.make(attributes.get("code"), ctClass));
+	}
+
 	@Patch
 	public void profile(CtMethod ctMethod, Map<String, String> attributes) throws CannotCompileException, NotFoundException {
 		CtClass ctClass = ctMethod.getDeclaringClass();
