@@ -95,6 +95,7 @@ public class DeadLockDetector {
 				sentWarningRecently = false;
 				sendChatSafely("The server has recovered and will not need to restart. :)");
 			} else if (deadTime > 10000) {
+				sentWarningRecently = true;
 				sendChatSafely("The server appears to have frozen and will restart soon if it does not recover. :(");
 			}
 		}
