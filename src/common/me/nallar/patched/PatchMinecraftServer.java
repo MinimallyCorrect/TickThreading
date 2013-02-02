@@ -111,7 +111,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				this.finalTick(null);
 			}
 		} catch (Throwable throwable) {
-			DeadLockDetector.sendChatSafely("The server has crashed - sorry about that. :(");
+			DeadLockDetector.sendChatSafely("The server has crashed due to an unexpected exception during the main tick loop: " + throwable.getClass().getSimpleName());
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException ignored) {
@@ -136,7 +136,9 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				logger.severe("We were unable to save this crash report to disk.");
 			}
 
-			this.finalTick(crashReport);
+			if (!TickThreading.instance.exitOnDeadlock) {
+				this.finalTick(crashReport);
+			}
 		} finally {
 			try {
 				if (!FMLCommonHandler.instance().shouldServerBeKilledQuietly()) {

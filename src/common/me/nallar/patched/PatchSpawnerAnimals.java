@@ -41,11 +41,11 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 
 	public static int spawnMobsQuickly(WorldServer worldServer, boolean peaceful, boolean hostile, boolean animal) {
 		worldServer.theProfiler.startSection("creatureTypes");
-		int entityMultiplier = worldServer.playerEntities.size();
-		int mobMultiplier = entityMultiplier * (worldServer.isDaytime() ? 1 : 2);
+		float entityMultiplier = worldServer.playerEntities.size() * 0.6f; // TODO: Make this configurable
+		float mobMultiplier = entityMultiplier * (worldServer.isDaytime() ? 1 : 2);
 		Map<EnumCreatureType, Integer> requiredSpawns = new EnumMap<EnumCreatureType, Integer>(EnumCreatureType.class);
 		for (EnumCreatureType creatureType : EnumCreatureType.values()) {
-			int count = (creatureType.getPeacefulCreature() ? entityMultiplier : mobMultiplier) * creatureType.getMaxNumberOfCreature();
+			int count = (int) ((creatureType.getPeacefulCreature() ? entityMultiplier : mobMultiplier) * creatureType.getMaxNumberOfCreature());
 			if (count > worldServer.countEntities(creatureType.getCreatureClass())) {
 				requiredSpawns.put(creatureType, count);
 			}
