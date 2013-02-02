@@ -6,11 +6,14 @@ import java.util.Random;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.ThreadManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
+import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.block.Block;
 import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.ChunkCoordIntPair;
+import net.minecraft.world.SpawnerAnimals;
+import net.minecraft.world.Teleporter;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.WorldSettings;
 import net.minecraft.world.biome.BiomeGenBase;
@@ -22,6 +25,8 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	private Iterator chunkCoordIterator;
 	private ThreadManager threadManager;
 	private ThreadLocal<Random> randoms;
+	@Declare
+	public int tickCount_;
 
 	public PatchWorldServer(MinecraftServer par1MinecraftServer, ISaveHandler par2ISaveHandler, String par3Str, int par4, WorldSettings par5WorldSettings, Profiler par6Profiler) {
 		super(par1MinecraftServer, par2ISaveHandler, par3Str, par4, par5WorldSettings, par6Profiler);
@@ -32,7 +37,58 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		threadManager = new ThreadManager(TickThreading.instance.getThreadCount(), "Chunk Updates for " + Log.name(this));
 	}
 
-	public long startTime = 0;
+	@Override
+	public void tick() {
+		int tickCount = this.tickCount++;
+		this.updateWeather();
+		if (this.difficultySetting < 3 && this.getWorldInfo().isHardcoreModeEnabled()) {
+			this.difficultySetting = 3;
+		}
+
+		if (tickCount % 600 == 0) {
+			this.provider.worldChunkMgr.cleanupCache();
+		}
+
+		if (tickCount % 2 == 0 && this.areAllPlayersAsleep()) {
+			long var2 = this.worldInfo.getWorldTime();
+			this.worldInfo.setWorldTime(var2 + var2 % 24000L);
+			this.wakeAllPlayers();
+		}
+
+		this.theProfiler.startSection("mobSpawner");
+
+		if (this.getGameRules().getGameRuleBooleanValue("doMobSpawning")) {
+			SpawnerAnimals.findChunksForSpawning(this, this.spawnHostileMobs, this.spawnPeacefulMobs, this.worldInfo.getWorldTotalTime() % 400L == 0L);
+		}
+
+		this.theProfiler.endStartSection("chunkSource");
+		this.chunkProvider.unload100OldestChunks();
+		int var4 = this.calculateSkylightSubtracted(1.0F);
+
+		if (var4 != this.skylightSubtracted) {
+			this.skylightSubtracted = var4;
+		}
+
+		this.sendAndApplyBlockEvents();
+		this.worldInfo.incrementTotalWorldTime(this.worldInfo.getWorldTotalTime() + 1L);
+		this.worldInfo.setWorldTime(this.worldInfo.getWorldTime() + 1L);
+		this.theProfiler.endStartSection("tickPending");
+		this.tickUpdates(false);
+		this.theProfiler.endStartSection("tickTiles");
+		this.tickBlocksAndAmbiance();
+		this.theProfiler.endStartSection("chunkMap");
+		this.thePlayerManager.updatePlayerInstances();
+		this.theProfiler.endStartSection("village");
+		this.villageCollectionObj.tick();
+		this.villageSiegeObj.tick();
+		this.theProfiler.endStartSection("portalForcer");
+		this.field_85177_Q.func_85189_a(this.getTotalWorldTime());
+		for (Teleporter tele : customTeleporters) {
+			tele.func_85189_a(getTotalWorldTime());
+		}
+		this.theProfiler.endSection();
+		this.sendAndApplyBlockEvents();
+	}
 
 	@Override
 	protected void tickBlocksAndAmbiance() {

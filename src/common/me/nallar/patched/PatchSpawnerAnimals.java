@@ -38,8 +38,12 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 	private static final int closeRange = 1;
 	private static final int farRange = 5;
 	private static final int spawnVariance = 6;
+	private static final int clumping = 4;
 
 	public static int spawnMobsQuickly(WorldServer worldServer, boolean peaceful, boolean hostile, boolean animal) {
+		if (worldServer.tickCount % clumping != 0) {
+			return 0;
+		}
 		worldServer.theProfiler.startSection("creatureTypes");
 		float entityMultiplier = worldServer.playerEntities.size() * 0.6f; // TODO: Make this configurable
 		float mobMultiplier = entityMultiplier * (worldServer.isDaytime() ? 1 : 2);
@@ -114,7 +118,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 				sY -= 2;
 			}
 			if (worldServer.getBlockMaterial(sX, sY, sZ) == creatureType.getCreatureMaterial()) {
-				for (int i = 0; i < 6; i++) {
+				for (int i = 0; i < (6 * clumping); i++) {
 					int ssX = sX + (worldServer.rand.nextInt(spawnVariance) - spawnVariance / 2);
 					int ssZ = sZ + (worldServer.rand.nextInt(spawnVariance) - spawnVariance / 2);
 					int ssY;

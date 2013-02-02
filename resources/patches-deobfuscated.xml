@@ -51,6 +51,7 @@
 			<addAll fromClass="me.nallar.patched.PatchWorldServer"/>
 			<insertSuper>tickBlocksAndAmbiance</insertSuper>
 			<profile>tickBlocksAndAmbiance</profile>
+			<profile>tick</profile>
 		</class>
 		<class id="net.minecraft.world.World">
 			<!-- Same list was used by multiple threads -->
@@ -169,7 +170,7 @@
 		</class>
 		<class id="net.minecraft.server.management.PlayerInstance" env="forge">
 			<addAll fromClass="me.nallar.patched.PatchPlayerInstance"/>
-			<lock field="this.myManager.playerUpdateLock">flagChunkForUpdate,sendChunkUpdate</lock>
+			<lock field="myManager.playerUpdateLock">flagChunkForUpdate,sendChunkUpdate</lock>
 			<replaceMethodCall index="1" code="{ $_ = null; }"/>
 			<synchronize field="$1.loadedChunks">addPlayerToChunkWatchingList,sendThisChunkToPlayer</synchronize>
 		</class>

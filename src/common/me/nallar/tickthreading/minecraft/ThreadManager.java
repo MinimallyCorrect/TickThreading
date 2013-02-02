@@ -14,7 +14,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ThreadMinecraftServer;
 import net.minecraft.util.AxisAlignedBB;
 
-public class ThreadManager {
+public final class ThreadManager {
 	private static final Profiler profiler = MinecraftServer.getServer().theProfiler;
 	private final boolean isServer = FMLCommonHandler.instance().getEffectiveSide().isServer();
 	private final BlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<Runnable>();
@@ -43,7 +43,7 @@ public class ThreadManager {
 				}
 				if (waiting.decrementAndGet() == 0) {
 					synchronized (readyLock) {
-						readyLock.notifyAll();
+						readyLock.notify();
 					}
 				}
 			}
@@ -68,7 +68,7 @@ public class ThreadManager {
 		while (waiting.get() > 0) {
 			try {
 				synchronized (readyLock) {
-					readyLock.wait(1);
+					readyLock.wait();
 				}
 			} catch (InterruptedException ignored) {
 			}

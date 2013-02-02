@@ -314,34 +314,34 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			int id = dimensionIdsToTick[i];
 			long var2 = System.nanoTime();
 
-			WorldServer var4 = DimensionManager.getWorld(id);
+			WorldServer world = DimensionManager.getWorld(id);
 			try {
-				this.theProfiler.startSection(var4.getWorldInfo().getWorldName());
+				this.theProfiler.startSection(world.getWorldInfo().getWorldName());
 				this.theProfiler.startSection("pools");
-				var4.getWorldVec3Pool().clear();
+				world.getWorldVec3Pool().clear();
 				this.theProfiler.endSection();
 
 				if (this.tickCounter % 60 == 0) {
 					this.theProfiler.startSection("timeSync");
-					this.serverConfigManager.sendPacketToAllPlayersInDimension(new Packet4UpdateTime(var4.getTotalWorldTime(), var4.getWorldTime()), var4.provider.dimensionId);
+					this.serverConfigManager.sendPacketToAllPlayersInDimension(new Packet4UpdateTime(world.getTotalWorldTime(), world.getWorldTime()), world.provider.dimensionId);
 					this.theProfiler.endSection();
 				}
 
 				this.theProfiler.startSection("forgeTick");
-				FMLCommonHandler.instance().onPreWorldTick(var4);
+				FMLCommonHandler.instance().onPreWorldTick(world);
 
 				this.theProfiler.endStartSection("worldTick");
-				var4.tick();
+				world.tick();
 				this.theProfiler.endStartSection("entityTick");
-				var4.updateEntities();
+				world.updateEntities();
 				this.theProfiler.endStartSection("postForgeTick");
-				FMLCommonHandler.instance().onPostWorldTick(var4);
+				FMLCommonHandler.instance().onPostWorldTick(world);
 				this.theProfiler.endSection();
 				this.theProfiler.startSection("tracker");
-				var4.getEntityTracker().updateTrackedEntities();
+				world.getEntityTracker().updateTrackedEntities();
 				this.theProfiler.endSection();
 				if (this.tickCounter % TickThreading.instance.chunkGCInterval == 0) {
-					ChunkGarbageCollector.garbageCollect(var4);
+					ChunkGarbageCollector.garbageCollect(world);
 				}
 				if (this.tickCounter % 202 == 0) {
 					exceptionCount.put(id, 0);
@@ -355,7 +355,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 					}
 				}
 			} catch (Throwable t) {
-				Log.severe("Exception ticking world " + Log.name(var4), t);
+				Log.severe("Exception ticking world " + Log.name(world), t);
 				Integer c = exceptionCount.get(id);
 				if (c == null) {
 					c = 0;
@@ -364,7 +364,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				if (TickThreading.instance.exitOnDeadlock) {
 
 					if (c != null && c >= 200) {
-						DeadLockDetector.sendChatSafely("The world " + Log.name(var4) + " has become unstable, and the server will now restart.");
+						DeadLockDetector.sendChatSafely("The world " + Log.name(world) + " has become unstable, and the server will now restart.");
 						this.initiateShutdown();
 					}
 				}
