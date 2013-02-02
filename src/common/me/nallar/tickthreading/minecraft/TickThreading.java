@@ -63,7 +63,7 @@ public class TickThreading {
 	public boolean aggressiveTicks = true;
 	public boolean enableFastMobSpawning = false;
 	private HashSet<Integer> disabledFastMobSpawningDimensions = new HashSet<Integer>();
-	private boolean waitForEntityTick = true;
+	private boolean waitForEntityTickCompletion = true;
 	public int chunkCacheSize = 2000;
 	public int chunkGCInterval = 600;
 	private int targetTPS = 20;
@@ -132,7 +132,7 @@ public class TickThreading {
 		enableFastMobSpawningProperty.comment = "If enabled, TT's alternative mob spawning implementation will be used. This is experimental!";
 		Property disabledFastMobSpawningDimensionsProperty = config.get(Configuration.CATEGORY_GENERAL, "disableFastMobSpawningDimensions", new int[]{-1});
 		disabledFastMobSpawningDimensionsProperty.comment = "List of dimensions not to enable fast spawning in.";
-		Property waitForEntityTickProperty = config.get(Configuration.CATEGORY_GENERAL, "waitForEntityTick", waitForEntityTick);
+		Property waitForEntityTickProperty = config.get(Configuration.CATEGORY_GENERAL, "waitForEntityTickCompletion", waitForEntityTickCompletion);
 		waitForEntityTickProperty.comment = "Whether we should wait until all Tile/Entity tick threads are finished before moving on with world tick. False = experimental, but may improve performance.";
 		Property chunkCacheSizeProperty = config.get(Configuration.CATEGORY_GENERAL, "chunkCacheSize", chunkCacheSize);
 		chunkCacheSizeProperty.comment = "Number of unloaded chunks to keep cached. Replacement for Forge's dormant chunk cache, which tends to break.";
@@ -168,7 +168,7 @@ public class TickThreading {
 		requireOpForProfileCommand = requireOpForProfileCommandProperty.getBoolean(requireOpForProfileCommand);
 		aggressiveTicks = aggressiveTicksProperty.getBoolean(aggressiveTicks);
 		shouldLoadSpawn = shouldLoadSpawnProperty.getBoolean(shouldLoadSpawn);
-		waitForEntityTick = waitForEntityTickProperty.getBoolean(waitForEntityTick);
+		waitForEntityTickCompletion = waitForEntityTickProperty.getBoolean(waitForEntityTickCompletion);
 		concurrentNetworkTicks = concurrentNetworkTicksProperty.getBoolean(concurrentNetworkTicks);
 		antiCheat = antiCheatProperty.getBoolean(antiCheat);
 		int[] disabledDimensions = disabledFastMobSpawningDimensionsProperty.getIntList();
@@ -200,7 +200,7 @@ public class TickThreading {
 
 	@ForgeSubscribe
 	public void onWorldLoad(WorldEvent.Load event) {
-		TickManager manager = new TickManager(event.world, regionSize, getThreadCount(), waitForEntityTick);
+		TickManager manager = new TickManager(event.world, regionSize, getThreadCount(), waitForEntityTickCompletion);
 		manager.setVariableTickRate(variableTickRate);
 		try {
 			if (enableTileEntityTickThreading) {
@@ -262,5 +262,13 @@ public class TickThreading {
 
 	public int getThreadCount() {
 		return tickThreads == 0 ? runtime.availableProcessors() + 1 : tickThreads;
+	}
+
+	public void waitForEntityTicks() {
+		if (!waitForEntityTickCompletion) {
+			for (TickManager manager : managers.values()) {
+				manager.tickEnd();
+			}
+		}
 	}
 }

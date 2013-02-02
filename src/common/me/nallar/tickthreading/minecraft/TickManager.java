@@ -213,15 +213,15 @@ public final class TickManager {
 			world.theProfiler.profilingEnabled = false;
 		}
 		threadManager.runList(tickRegions);
-		if (waitForCompletion) {
+		if (previousProfiling || waitForCompletion) {
 			threadManager.waitForCompletion();
+			threadManager.run(new Runnable() {
+				@Override
+				public void run() {
+					processChanges();
+				}
+			});
 		}
-		threadManager.run(new Runnable() {
-			@Override
-			public void run() {
-				processChanges();
-			}
-		});
 		lastTickLength = (int) (System.currentTimeMillis() - lastStartTime);
 		averageTickLength = ((averageTickLength * 127) + lastTickLength) / 128;
 		if (previousProfiling) {
@@ -229,6 +229,18 @@ public final class TickManager {
 		}
 		if (profilingEnabled) {
 			entityTickProfiler.tick();
+		}
+	}
+
+	public void tickEnd() {
+		if (!waitForCompletion) {
+			threadManager.waitForCompletion();
+			threadManager.run(new Runnable() {
+				@Override
+				public void run() {
+					processChanges();
+				}
+			});
 		}
 	}
 

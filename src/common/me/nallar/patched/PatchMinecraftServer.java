@@ -243,6 +243,8 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			doWorldTick();
 		}
 
+		TickThreading.instance.waitForEntityTicks();
+
 		this.theProfiler.endStartSection("players");
 		this.serverConfigManager.sendPlayerInfoToAllPlayers();
 
@@ -330,10 +332,10 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				this.theProfiler.startSection("forgeTick");
 				FMLCommonHandler.instance().onPreWorldTick(world);
 
-				this.theProfiler.endStartSection("worldTick");
-				world.tick();
 				this.theProfiler.endStartSection("entityTick");
 				world.updateEntities();
+				this.theProfiler.endStartSection("worldTick");
+				world.tick();
 				this.theProfiler.endStartSection("postForgeTick");
 				FMLCommonHandler.instance().onPostWorldTick(world);
 				this.theProfiler.endSection();
