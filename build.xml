@@ -219,8 +219,9 @@
 
 		<unzip dest="${classes.dir}/" src="${lib.dir}/javassist.jar"/>
 		<unzip dest="${classes.dir}/" src="${lib.dir}/high-scale-lib.jar"/>
-		<delete dir="${classes.dir}/META-INF"/>
 		<delete file="${classes.dir}/net/minecraft/server/MinecraftServer.class"/>
+		<delete dir="${classes.dir}/META-INF"/>
+		<delete dir="${classes.dir}/net/minecraftforge"/>
 		<delete dir="${classes.dir}/cpw/"/>
 		<delete>
 			<fileset dir="${classes.dir}">
