@@ -72,8 +72,13 @@ public class TileEntityTickRegion extends TickRegion {
 		long startTime = 0;
 		if (profilingEnabled) {
 			entityTickProfiler = manager.entityTickProfiler;
+			if (this.profilingEnabled) {
+				entityTickProfiler.tick();
+			}
 		}
 		//Lock classLock = null;
+		int xPos = 0;
+		int zPos = 0;
 		Iterator<TileEntity> tileEntitiesIterator = tileEntitySet.iterator();
 		while (tileEntitiesIterator.hasNext()) {
 			if (profilingEnabled) {
@@ -81,9 +86,10 @@ public class TileEntityTickRegion extends TickRegion {
 			}
 			TileEntity tileEntity = tileEntitiesIterator.next();
 			try {
-				//classLock = null;
-				relativeXPos = (tileEntity.xCoord % regionSize) / 2;
-				relativeZPos = (tileEntity.zCoord % regionSize) / 2;
+				xPos = tileEntity.xCoord;
+				zPos = tileEntity.zCoord;
+				relativeXPos = (xPos % regionSize) / 2;
+				relativeZPos = (zPos % regionSize) / 2;
 				xMinusLocked = relativeXPos == 0 && this.xMinusLock != null;
 				zMinusLocked = relativeZPos == 0 && this.zMinusLock != null;
 				xPlusLocked = relativeXPos == maxPosition && this.xPlusLock != null;
@@ -100,36 +106,32 @@ public class TileEntityTickRegion extends TickRegion {
 				if (xMinusLocked) {
 					this.xMinusLock.lock();
 				}
-				if (manager.getHashCode(tileEntity) != hashCode) {
+				if (manager.getHashCode(xPos, zPos) != hashCode) {
 					tileEntitiesIterator.remove();
 					manager.add(tileEntity);
 					if (hashCode != 0) {
 						Log.severe("Inconsistent state, a tile entity is in the wrong TickRegion"
-								+ "\n entity: " + Log.toString(tileEntity) + " at x,y,z:" + tileEntity.xCoord + ',' + tileEntity.yCoord + ',' + tileEntity.zCoord
+								+ "\n entity: " + Log.toString(tileEntity) + " at x,y,z:" + xPos + ',' + tileEntity.yCoord + ',' + zPos
 								+ "\n Has hashcode: " + manager.getHashCode(tileEntity)
 								+ "\n Region: " + toString());
 					}
-					continue;
-				}
-				if (!tileEntity.isInvalid() && tileEntity.func_70309_m() && world.blockExists(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord)) {
-					tileEntity.updateEntity();
-				}
-				//Yes, this is correct. Can't be simplified to else if, as it may be invalidated during updateEntity
-				if (tileEntity.isInvalid()) {
+				} else if (tileEntity.isInvalid()) {
 					tileEntitiesIterator.remove();
 					manager.removed(tileEntity);
 					tileEntity.onChunkUnload();
-					//Log.fine("Removed tile entity: " + tileEntity.xCoord + ", " + tileEntity.yCoord + ", " + tileEntity.zCoord + "\ttype:" + tileEntity.getClass().toString());
-					if (chunkProvider.chunkExists(tileEntity.xCoord >> 4, tileEntity.zCoord >> 4)) {
-						Chunk chunk = world.getChunkFromChunkCoords(tileEntity.xCoord >> 4, tileEntity.zCoord >> 4);
+					//Log.fine("Removed tile entity: " + xPos + ", " + tileEntity.yCoord + ", " + zPos + "\ttype:" + tileEntity.getClass().toString());
+					if (chunkProvider.chunkExists(xPos >> 4, zPos >> 4)) {
+						Chunk chunk = world.getChunkFromChunkCoords(xPos >> 4, zPos >> 4);
 						if (chunk != null) {
-							chunk.cleanChunkBlockTileEntity(tileEntity.xCoord & 0xf, tileEntity.yCoord, tileEntity.zCoord & 0xf);
+							chunk.cleanChunkBlockTileEntity(xPos, tileEntity.yCoord, zPos);
 						}
 					}
+				} else if (tileEntity.worldObj != null && chunkProvider.chunkExists(xPos >> 4, zPos >> 4)) {
+					tileEntity.updateEntity();
 				}
 			} catch (Throwable throwable) {
 				Log.severe("Exception during tile entity tick"
-						+ "\nticking: " + Log.toString(tileEntity) + " at x,y,z:" + tileEntity.xCoord + ',' + tileEntity.yCoord + ',' + tileEntity.zCoord
+						+ "\nticking: " + Log.toString(tileEntity) + " at x,y,z:" + xPos + ',' + tileEntity.yCoord + ',' + zPos
 						+ "\nTick region: " + toString() + ':', throwable);
 			} finally {
 				if (xMinusLocked) {

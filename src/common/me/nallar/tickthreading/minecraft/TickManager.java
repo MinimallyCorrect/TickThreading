@@ -22,7 +22,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 
-public class TickManager {
+public final class TickManager {
 	public final int regionSize;
 	public boolean variableTickRate;
 	public boolean profilingEnabled = false;
@@ -109,7 +109,7 @@ public class TickManager {
 		return getHashCode((int) entity.posX, (int) entity.posZ);
 	}
 
-	int getHashCode(int x, int z) {
+	public int getHashCode(int x, int z) {
 		return getHashCodeFromRegionCoords(x / regionSize, z / regionSize);
 	}
 
