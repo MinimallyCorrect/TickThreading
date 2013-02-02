@@ -22,7 +22,7 @@ public class EntityTickRegion extends TickRegion {
 	public void doTick() {
 		try {
 			IChunkProvider chunkProvider = world.getChunkProvider();
-			boolean profilingEnabled = manager.profilingEnabled;
+			boolean profilingEnabled = manager.profilingEnabled || this.profilingEnabled;
 			EntityTickProfiler entityTickProfiler = null;
 			long startTime = 0;
 			if (profilingEnabled) {

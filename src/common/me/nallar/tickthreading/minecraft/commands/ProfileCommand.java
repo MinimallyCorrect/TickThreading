@@ -30,9 +30,14 @@ public class ProfileCommand extends Command {
 		World world = DimensionManager.getWorld(0);
 		long time_ = 10;
 		boolean entity_ = false;
+		boolean location_ = false;
 		try {
 			if (!arguments.isEmpty()) {
 				entity_ = "e".equals(arguments.get(0));
+				if ("c".equals(arguments.get(0))) {
+					entity_ = true;
+					location_ = true;
+				}
 			}
 			if (arguments.size() > 1) {
 				time_ = Integer.valueOf(arguments.get(1));
@@ -46,14 +51,24 @@ public class ProfileCommand extends Command {
 			world = null;
 		}
 		if (world == null) {
-			sendChat(commandSender, "Usage: /profile [type=a/e] [time=10] [dimensionid=current dimension]");
+			sendChat(commandSender, "Usage: /profile [type=a/e/c] [time=10] [dimensionid=current dimension]");
 			return;
 		}
 		final TickManager manager = TickThreading.instance.getManager(world);
 		final long time = time_;
 		final boolean entity = entity_;
+		final boolean location = location_;
+		final int hashCode = commandSender instanceof Entity ? manager.getHashCode((Entity) commandSender) : 0;
 		if (entity) {
-			manager.profilingEnabled = true;
+			if (location) {
+				try {
+					manager.getEntityCallable(hashCode).profilingEnabled = true;
+					manager.getTileEntityCallable(hashCode).profilingEnabled = true;
+				} catch (NullPointerException ignored) {
+				}
+			} else {
+				manager.profilingEnabled = true;
+			}
 		} else {
 			Timings.enabled = true;
 		}
@@ -66,6 +81,13 @@ public class ProfileCommand extends Command {
 				}
 				if (entity) {
 					manager.profilingEnabled = false;
+					if (location) {
+						try {
+							manager.getEntityCallable(hashCode).profilingEnabled = false;
+							manager.getTileEntityCallable(hashCode).profilingEnabled = false;
+						} catch (NullPointerException ignored) {
+						}
+					}
 				} else {
 					Timings.enabled = false;
 				}
@@ -75,10 +97,11 @@ public class ProfileCommand extends Command {
 				}
 				if (entity) {
 					sendChat(commandSender, String.valueOf(manager.entityTickProfiler.writeData(new TableFormatter(commandSender))));
+					manager.entityTickProfiler.clear();
 				} else {
 					sendChat(commandSender, String.valueOf(Timings.writeData(new TableFormatter(commandSender))));
+					Timings.clear();
 				}
-				manager.entityTickProfiler.clear();
 			}
 		};
 		Thread profilingThread = new Thread(profilingRunnable);

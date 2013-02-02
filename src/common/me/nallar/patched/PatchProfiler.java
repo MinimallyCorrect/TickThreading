@@ -54,7 +54,7 @@ public abstract class PatchProfiler extends Profiler {
 	}
 
 	/**
-	 * Get profiling data
+	 * Get profilingEnabled data
 	 */
 	@Override
 	public List getProfilingData(String par1Str) {

@@ -22,6 +22,7 @@ public abstract class TickRegion implements Runnable {
 	protected final int regionX;
 	protected final int regionZ;
 	private float averageTickTime = 1;
+	public boolean profilingEnabled = false;
 
 	TickRegion(World world, TickManager manager, int regionX, int regionZ) {
 		super();

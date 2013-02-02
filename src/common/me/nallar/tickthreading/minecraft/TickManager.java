@@ -227,6 +227,9 @@ public class TickManager {
 		if (previousProfiling) {
 			world.theProfiler.profilingEnabled = true;
 		}
+		if (profilingEnabled) {
+			entityTickProfiler.tick();
+		}
 	}
 
 	public void unload() {

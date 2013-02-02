@@ -67,7 +67,7 @@ public class TileEntityTickRegion extends TickRegion {
 		boolean xPlusLocked = false;
 		boolean zMinusLocked = false;
 		boolean zPlusLocked = false;
-		boolean profilingEnabled = manager.profilingEnabled;
+		boolean profilingEnabled = manager.profilingEnabled || this.profilingEnabled;
 		EntityTickProfiler entityTickProfiler = null;
 		long startTime = 0;
 		if (profilingEnabled) {

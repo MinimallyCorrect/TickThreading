@@ -14,6 +14,8 @@ import me.nallar.tickthreading.util.TableFormatter;
 import org.cliffc.high_scale_lib.NonBlockingHashMap;
 
 public class EntityTickProfiler {
+	private int ticks;
+
 	public void record(Class<?> clazz, long time) {
 		if (time < 0) {
 			time = 0;
@@ -27,6 +29,10 @@ public class EntityTickProfiler {
 		time.clear();
 	}
 
+	public void tick() {
+		ticks++;
+	}
+
 	public TableFormatter writeData(TableFormatter tf) {
 		Map<Class<?>, Long> time = new HashMap<Class<?>, Long>();
 		for (Map.Entry<Class<?>, AtomicLong> entry : this.time.entrySet()) {
@@ -35,11 +41,11 @@ public class EntityTickProfiler {
 		final List<Class<?>> sortedKeysByTime = Ordering.natural().reverse().onResultOf(Functions.forMap(time)).immutableSortedCopy(time.keySet());
 		tf
 				.heading("Class")
-				.heading("Time");
+				.heading("Total Time/Tick");
 		for (int i = 0; i < 5 && i < sortedKeysByTime.size(); i++) {
 			tf
 					.row(niceName(sortedKeysByTime.get(i)))
-					.row(time.get(sortedKeysByTime.get(i)) / 1000000d);
+					.row(time.get(sortedKeysByTime.get(i)) / (1000000d * ticks));
 		}
 		tf.finishTable();
 		tf.sb.append('\n');
