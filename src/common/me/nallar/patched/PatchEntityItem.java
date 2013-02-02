@@ -10,7 +10,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.item.ItemExpireEvent;
 
 public abstract class PatchEntityItem extends EntityItem {
-	private static final double mergeRadius = 2D;
+	private static final double mergeRadius = 1.5D;
 
 	public PatchEntityItem(World par1World, double par2, double par4, double par6) {
 		super(par1World, par2, par4, par6);
@@ -94,6 +94,37 @@ public abstract class PatchEntityItem extends EntityItem {
 		for (Object o : this.worldObj.getEntitiesWithinAABB(EntityItem.class, this.boundingBox.expand(mergeRadius, mergeRadius, mergeRadius))) {
 			EntityItem var2 = (EntityItem) o;
 			this.combineItems(var2);
+		}
+	}
+
+	@Override
+	public boolean combineItems(EntityItem other) {
+		if (other == this) {
+			return false;
+		} else if (other.isEntityAlive() && this.isEntityAlive()) {
+			ItemStack thisStack = this.getEntityItem();
+			ItemStack otherStack = other.getEntityItem();
+
+			if (thisStack.getItem() != otherStack.getItem()) {
+				return false;
+			} else if (thisStack.hasTagCompound() ^ otherStack.hasTagCompound()) {
+				return false;
+			} else if (thisStack.hasTagCompound() && !thisStack.getTagCompound().equals(otherStack.getTagCompound())) {
+				return false;
+			} else if (thisStack.getItem().getHasSubtypes() && thisStack.getItemDamage() != otherStack.getItemDamage()) {
+				return false;
+			} else if (thisStack.stackSize + otherStack.stackSize > thisStack.getMaxStackSize()) {
+				return false;
+			} else {
+				thisStack.stackSize += otherStack.stackSize;
+				this.delayBeforeCanPickup = Math.max(other.delayBeforeCanPickup, this.delayBeforeCanPickup);
+				this.age = Math.min(other.age, this.age);
+				this.func_92058_a(thisStack);
+				other.setDead();
+				return true;
+			}
+		} else {
+			return false;
 		}
 	}
 }
