@@ -97,14 +97,15 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 		}
 		worldServer.theProfiler.endStartSection("spawnMobs");
 
+		int size = spawnableChunks.size();
+		if (size < 1) {
+			return 0;
+		}
+
 		SpawnLoop:
 		for (Map.Entry<EnumCreatureType, Integer> entry : requiredSpawns.entrySet()) {
 			EnumCreatureType creatureType = entry.getKey();
 			for (int k = 0; k < clumping; k++) {
-				int size = spawnableChunks.size();
-				if (size < 1) {
-					break;
-				}
 				long hash = spawnableChunks.get(worldServer.rand.nextInt(size));
 				int x = (int) (hash >> 32);
 				int z = (int) hash;
