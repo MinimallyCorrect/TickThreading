@@ -61,7 +61,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 		}
 
 		worldServer.theProfiler.startSection("spawnableChunks");
-		int spawnedMobs = 0;
+		int attemptedSpawnedMobs = 0;
 		Set<Long> closeChunks = new HashSet<Long>();
 		List<Long> spawnableChunks = new ArrayList<Long>();
 		for (Object entityPlayer_ : worldServer.playerEntities) {
@@ -151,8 +151,8 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 							if (canSpawn == Event.Result.ALLOW || (canSpawn == Event.Result.DEFAULT && spawnedEntity.getCanSpawnHere())) {
 								worldServer.spawnEntityInWorld(spawnedEntity);
 								creatureSpecificInit(spawnedEntity, worldServer, ssX, ssY, ssZ);
-								spawnedMobs++;
 							}
+							attemptedSpawnedMobs++;
 						} catch (Exception e) {
 							Log.warning("Failed to spawn entity " + creatureClass, e);
 							break SpawnLoop;
@@ -160,12 +160,12 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 					}
 				}
 			}
-			if (spawnedMobs >= 32) {
+			if (attemptedSpawnedMobs >= 32) {
 				break;
 			}
 		}
 		worldServer.theProfiler.endSection();
-		return spawnedMobs;
+		return attemptedSpawnedMobs;
 	}
 
 	public static int a(WorldServer par0WorldServer, boolean par1, boolean par2, boolean par3) {
