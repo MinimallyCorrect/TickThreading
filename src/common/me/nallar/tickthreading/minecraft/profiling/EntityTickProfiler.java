@@ -27,6 +27,7 @@ public class EntityTickProfiler {
 	public void clear() {
 		invocationCount.clear();
 		time.clear();
+		ticks = 0;
 	}
 
 	public void tick() {
