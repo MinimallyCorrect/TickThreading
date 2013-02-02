@@ -396,4 +396,9 @@
 			<synchronize>receiveEnergy,requestEnergy</synchronize>
 		</class>
 	</additionalPipes>
+	<MFFS>
+		<class id="chb.mods.mffs.common.item.ItemCardPowerLink">
+			<synchronize/>
+		</class>
+	</MFFS>
 </mods>
