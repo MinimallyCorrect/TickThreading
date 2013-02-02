@@ -1,7 +1,6 @@
 package me.nallar.tickthreading.minecraft;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -9,6 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import me.nallar.tickthreading.Log;
+import me.nallar.tickthreading.collections.ConcurrentIterableArrayList;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ThreadMinecraftServer;
@@ -76,16 +76,14 @@ public final class ThreadManager {
 		profiler.endSection();
 	}
 
-	public void runList(final List<? extends Runnable> tasks) {
+	public void runList(final ConcurrentIterableArrayList<? extends Runnable> tasks) {
+		tasks.reset();
 		Runnable arrayRunnable = new Runnable() {
-			private final AtomicInteger index = new AtomicInteger(0);
-			private final int size = tasks.size();
-
 			@Override
 			public void run() {
-				int c;
-				while ((c = index.getAndIncrement()) < size) {
-					tasks.get(c).run();
+				Runnable r;
+				while ((r = tasks.next()) != null) {
+					r.run();
 				}
 				AxisAlignedBB.getAABBPool().cleanPool();
 			}

@@ -47,6 +47,11 @@ public class Patches {
 	}
 
 	@Patch
+	public void remove(CtMethod ctMethod) {
+		ctMethod.setName(ctMethod.getName() + "_rem");
+	}
+
+	@Patch
 	public void profile(CtMethod ctMethod, Map<String, String> attributes) throws CannotCompileException, NotFoundException {
 		CtClass ctClass = ctMethod.getDeclaringClass();
 		CtMethod replacement = CtNewMethod.copy(ctMethod, ctClass, null);

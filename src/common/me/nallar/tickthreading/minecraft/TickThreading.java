@@ -13,6 +13,7 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.network.NetworkMod;
+import javassist.is.faulty.Timings;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.commands.ProfileCommand;
 import me.nallar.tickthreading.minecraft.commands.TPSCommand;
@@ -266,8 +267,16 @@ public class TickThreading {
 
 	public void waitForEntityTicks() {
 		if (!waitForEntityTickCompletion) {
+			long sT = 0;
+			boolean profiling = Timings.enabled;
+			if (profiling) {
+				sT = System.nanoTime();
+			}
 			for (TickManager manager : managers.values()) {
 				manager.tickEnd();
+			}
+			if (profiling) {
+				Timings.record("server/EntityTickWait", System.nanoTime() - sT);
 			}
 		}
 	}

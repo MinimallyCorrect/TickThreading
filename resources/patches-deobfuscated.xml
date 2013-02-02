@@ -340,6 +340,9 @@
 		<class id="com.shadwdrgn.soulshards.CommonProxy">
 			<replaceMethodCall index="0" code="{}" method="println">processShard</replaceMethodCall>
 		</class>
+		<class id="com.shadwdrgn.soulshards.EntitySpawnedSkeleton">
+			<remove>bG</remove>
+		</class>
 	</soulShards>
 	<extraBiomesXL>
 		<class id="extrabiomes.blocks.BlockAutumnLeaves$BlockType">
