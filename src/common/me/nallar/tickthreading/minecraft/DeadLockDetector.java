@@ -146,7 +146,6 @@ public class DeadLockDetector {
 		}
 		Log.info("Attempting to save");
 		Log.flush();
-		minecraftServer.saveEverything(); // Save first
 		new Thread() {
 			@Override
 			public void run() {
@@ -159,6 +158,7 @@ public class DeadLockDetector {
 				Runtime.getRuntime().halt(1);
 			}
 		}.start();
+		minecraftServer.saveEverything(); // Save first
 		Log.info("Attempting to stop mods and disconnect players cleanly");
 		try {
 			minecraftServer.stopServer();
