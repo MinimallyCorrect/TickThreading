@@ -32,7 +32,7 @@ public final class TickManager {
 	private static final int shuffleInterval = 800;
 	private int shuffleCount;
 	private final boolean waitForCompletion;
-	public EntityTickProfiler entityTickProfiler = new EntityTickProfiler();
+	public final EntityTickProfiler entityTickProfiler = new EntityTickProfiler();
 	public final World world;
 	public final List<TileEntity> tileEntityList = new ArrayList<TileEntity>();
 	public final List<Entity> entityList = new ArrayList<Entity>();
@@ -240,17 +240,6 @@ public final class TickManager {
 		tickRegions.clear();
 		entityList.clear();
 		entityClassToCountMap.clear();
-	}
-
-	public float getTickTime() {
-		float maxTickTime = 0;
-		for (TickRegion tickRegion : tickRegions) {
-			float averageTickTime = tickRegion.getAverageTickTime();
-			if (averageTickTime > maxTickTime) {
-				maxTickTime = averageTickTime;
-			}
-		}
-		return (maxTickTime > 55 && variableTickRate) ? 55 : maxTickTime;
 	}
 
 	public void writeStats(TableFormatter tf) {

@@ -15,7 +15,7 @@ public class TableFormatter {
 	public String splitter = " | ";
 	public String headingSplitter = " | ";
 	public String headingColour = "";
-	public String rowColour = "";
+	public final String rowColour = "";
 
 	public TableFormatter(ICommandSender commandSender) {
 		boolean chat = commandSender instanceof Entity;

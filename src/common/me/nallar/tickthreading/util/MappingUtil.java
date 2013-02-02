@@ -8,7 +8,7 @@ import me.nallar.tickthreading.Log;
 
 public enum MappingUtil {
 	;
-	private static Map<String, String> mappings = getMappings();
+	private static final Map<String, String> mappings = getMappings();
 
 	private static Map<String, String> getMappings() {
 		try {
