@@ -16,6 +16,8 @@ import cpw.mods.fml.common.registry.TickRegistry;
 import cpw.mods.fml.relauncher.Side;
 import javassist.is.faulty.Timings;
 import me.nallar.tickthreading.Log;
+import me.nallar.tickthreading.util.ChatFormat;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.packet.Packet3Chat;
 import net.minecraft.server.MinecraftServer;
 
@@ -93,17 +95,17 @@ public class DeadLockDetector {
 		if (TickThreading.instance.exitOnDeadlock) {
 			if (sentWarningRecently && deadTime < 10000) {
 				sentWarningRecently = false;
-				sendChatSafely("The server has recovered and will not need to restart. :)");
+				sendChatSafely(ChatFormat.GREEN + "The server has recovered and will not need to restart. :)");
 			} else if (deadTime > 10000 && !sentWarningRecently) {
 				sentWarningRecently = true;
-				sendChatSafely("The server appears to have frozen on '" + lastJob + "' and will restart soon if it does not recover. :(");
+				sendChatSafely(String.valueOf(ChatFormat.RED) + ChatFormat.BOLD + "The server appears to have frozen on '" + lastJob + "' and will restart soon if it does not recover. :(");
 			}
 		}
 		if (deadTime < (TickThreading.instance.deadLockTime * 1000)) {
 			return true;
 		}
 		if (TickThreading.instance.exitOnDeadlock) {
-			sendChatSafely("The server is restarting - be right back!");
+			sendChatSafely(ChatFormat.RED + "The server is saving the world and restarting - be right back!");
 		}
 		TreeMap<String, Thread> sortedThreads = new TreeMap<String, Thread>();
 		StringBuilder sb = new StringBuilder();
@@ -135,7 +137,20 @@ public class DeadLockDetector {
 		Log.flush();
 		// Yes, we save multiple times - handleServerStopping may freeze on the same thing we deadlocked on, but if it doesn't might change stuff
 		// which needs to be saved.
-		MinecraftServer minecraftServer = MinecraftServer.getServer();
+		final MinecraftServer minecraftServer = MinecraftServer.getServer();
+		minecraftServer.getNetworkThread().stopListening();
+		new Thread() {
+			@Override
+			public void run() {
+				for (EntityPlayerMP entityPlayerMP : (Iterable<EntityPlayerMP>) minecraftServer.getConfigurationManager().playerEntityList) {
+					entityPlayerMP.playerNetServerHandler.kickPlayerFromServer("Restarting");
+				}
+			}
+		}.start();
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException ignored) {
+		}
 		if (minecraftServer.currentlySaving) {
 			Log.severe("World state is possibly corrupted! Sleeping for 2 minutes - will force save after.");
 			Log.flush();
