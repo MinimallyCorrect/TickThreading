@@ -74,25 +74,29 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 				this.chunksToUnload.remove(ChunkCoordIntPair.chunkXZ2Int(forced.chunkXPos, forced.chunkZPos));
 			}
 
-			synchronized (chunksToUnload) {
-				Iterator<Long> i$ = chunksToUnload.iterator();
-				for (int i = 0; i < 200 && i$.hasNext(); ++i) {
-					Long var2 = i$.next();
-					Chunk var3 = (Chunk) this.loadedChunkHashMap.getValueByKey(var2);
-					if (var3 != null) {
-						if (lastChunk == var3) {
-							lastChunk = null;
-						}
-						this.safeSaveChunk(var3);
-						this.safeSaveExtraChunkData(var3);
-						var3.onChunkUnload();
-						synchronized (loadedChunks) {
-							this.loadedChunks.remove(var3);
-						}
+			for (int i = 0; i < 200; ++i) {
+				long var2;
+				synchronized (chunksToUnload) {
+					Iterator<Long> i$ = chunksToUnload.iterator();
+					if (!i$.hasNext()) {
+						break;
 					}
-					this.loadedChunkHashMap.remove(var2);
+					var2 = i$.next();
 					i$.remove();
 				}
+				Chunk var3 = (Chunk) this.loadedChunkHashMap.getValueByKey(var2);
+				if (var3 != null) {
+					if (lastChunk == var3) {
+						lastChunk = null;
+					}
+					this.safeSaveChunk(var3);
+					this.safeSaveExtraChunkData(var3);
+					var3.onChunkUnload();
+					synchronized (loadedChunks) {
+						this.loadedChunks.remove(var3);
+					}
+				}
+				this.loadedChunkHashMap.remove(var2);
 			}
 
 			if (this.currentChunkLoader != null) {
