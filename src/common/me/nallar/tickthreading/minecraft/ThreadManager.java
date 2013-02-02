@@ -65,12 +65,12 @@ public final class ThreadManager {
 
 	public void waitForCompletion() {
 		profiler.startSection(namePrefix);
-		while (waiting.get() > 0) {
-			try {
-				synchronized (readyLock) {
-					readyLock.wait();
+		synchronized (readyLock) {
+			while (waiting.get() > 0) {
+				try {
+						readyLock.wait();
+				} catch (InterruptedException ignored) {
 				}
-			} catch (InterruptedException ignored) {
 			}
 		}
 		profiler.endSection();
