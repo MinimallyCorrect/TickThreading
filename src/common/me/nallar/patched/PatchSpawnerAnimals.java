@@ -100,67 +100,69 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 		SpawnLoop:
 		for (Map.Entry<EnumCreatureType, Integer> entry : requiredSpawns.entrySet()) {
 			EnumCreatureType creatureType = entry.getKey();
-			int size = spawnableChunks.size();
-			if (size < 1) {
-				break;
-			}
-			long hash = spawnableChunks.get(worldServer.rand.nextInt(size));
-			int x = (int) (hash >> 32);
-			int z = (int) hash;
-			int sX = x * 16 + worldServer.rand.nextInt(16);
-			int sZ = z * 16 + worldServer.rand.nextInt(16);
-			int sY = worldServer.getHeightValue(sX, sZ);
-			if (creatureType == EnumCreatureType.waterCreature) {
-				String biomeName = worldServer.getBiomeGenForCoords(sX, sZ).biomeName;
-				if (!"Ocean".equals(biomeName) && !"River".equals(biomeName)) {
-					continue;
+			for (int k = 0; k < clumping; k++) {
+				int size = spawnableChunks.size();
+				if (size < 1) {
+					break;
 				}
-				sY -= 2;
-			}
-			if (worldServer.getBlockMaterial(sX, sY, sZ) == creatureType.getCreatureMaterial()) {
-				for (int i = 0; i < (6 * clumping); i++) {
-					int ssX = sX + (worldServer.rand.nextInt(spawnVariance) - spawnVariance / 2);
-					int ssZ = sZ + (worldServer.rand.nextInt(spawnVariance) - spawnVariance / 2);
-					int ssY;
-
-					if (creatureType == EnumCreatureType.waterCreature) {
-						ssY = sY;
-					} else if (creatureType == EnumCreatureType.ambient) {
-						ssY = worldServer.rand.nextInt(63) + 1;
-					} else {
-						ssY = worldServer.getHeightValue(ssX, ssZ);
-						if (!worldServer.getBlockMaterial(ssX, ssY - 1, ssZ).isOpaque() ||
-								!Block.blocksList[worldServer.getBlockId(ssX, ssY - 1, ssZ)].canCreatureSpawn(creatureType, worldServer, ssX, ssY - 1, ssZ)) {
-							continue;
-						}
+				long hash = spawnableChunks.get(worldServer.rand.nextInt(size));
+				int x = (int) (hash >> 32);
+				int z = (int) hash;
+				int sX = x * 16 + worldServer.rand.nextInt(16);
+				int sZ = z * 16 + worldServer.rand.nextInt(16);
+				int sY = worldServer.getHeightValue(sX, sZ);
+				if (creatureType == EnumCreatureType.waterCreature) {
+					String biomeName = worldServer.getBiomeGenForCoords(sX, sZ).biomeName;
+					if (!"Ocean".equals(biomeName) && !"River".equals(biomeName)) {
+						continue;
 					}
+					sY -= 2;
+				}
+				if (worldServer.getBlockMaterial(sX, sY, sZ) == creatureType.getCreatureMaterial()) {
+					for (int i = 0; i < 6; i++) {
+						int ssX = sX + (worldServer.rand.nextInt(spawnVariance) - spawnVariance / 2);
+						int ssZ = sZ + (worldServer.rand.nextInt(spawnVariance) - spawnVariance / 2);
+						int ssY;
 
-					if (creatureType == EnumCreatureType.waterCreature || (!worldServer.getBlockMaterial(ssX, ssY - 1, ssZ).isLiquid())) {
-						SpawnListEntry creatureClass = worldServer.spawnRandomCreature(creatureType, ssX, ssY, ssZ);
-						if (creatureClass == null) {
-							break;
-						}
-
-						EntityLiving spawnedEntity;
-						try {
-							spawnedEntity = (EntityLiving) creatureClass.entityClass.getConstructor(World.class).newInstance(worldServer);
-							spawnedEntity.setLocationAndAngles((double) ssX, (double) ssY, (double) ssZ, worldServer.rand.nextFloat() * 360.0F, 0.0F);
-
-							Event.Result canSpawn = ForgeEventFactory.canEntitySpawn(spawnedEntity, worldServer, ssX, ssY, ssZ);
-							if (canSpawn == Event.Result.ALLOW || (canSpawn == Event.Result.DEFAULT && spawnedEntity.getCanSpawnHere())) {
-								worldServer.spawnEntityInWorld(spawnedEntity);
-								creatureSpecificInit(spawnedEntity, worldServer, ssX, ssY, ssZ);
-								spawnedMobs++;
+						if (creatureType == EnumCreatureType.waterCreature) {
+							ssY = sY;
+						} else if (creatureType == EnumCreatureType.ambient) {
+							ssY = worldServer.rand.nextInt(63) + 1;
+						} else {
+							ssY = worldServer.getHeightValue(ssX, ssZ);
+							if (!worldServer.getBlockMaterial(ssX, ssY - 1, ssZ).isOpaque() ||
+									!Block.blocksList[worldServer.getBlockId(ssX, ssY - 1, ssZ)].canCreatureSpawn(creatureType, worldServer, ssX, ssY - 1, ssZ)) {
+								continue;
 							}
-						} catch (Exception e) {
-							Log.warning("Failed to spawn entity " + creatureClass, e);
-							break SpawnLoop;
+						}
+
+						if (creatureType == EnumCreatureType.waterCreature || (!worldServer.getBlockMaterial(ssX, ssY - 1, ssZ).isLiquid())) {
+							SpawnListEntry creatureClass = worldServer.spawnRandomCreature(creatureType, ssX, ssY, ssZ);
+							if (creatureClass == null) {
+								break;
+							}
+
+							EntityLiving spawnedEntity;
+							try {
+								spawnedEntity = (EntityLiving) creatureClass.entityClass.getConstructor(World.class).newInstance(worldServer);
+								spawnedEntity.setLocationAndAngles((double) ssX, (double) ssY, (double) ssZ, worldServer.rand.nextFloat() * 360.0F, 0.0F);
+
+								Event.Result canSpawn = ForgeEventFactory.canEntitySpawn(spawnedEntity, worldServer, ssX, ssY, ssZ);
+								if (canSpawn == Event.Result.ALLOW || (canSpawn == Event.Result.DEFAULT && spawnedEntity.getCanSpawnHere())) {
+									worldServer.spawnEntityInWorld(spawnedEntity);
+									creatureSpecificInit(spawnedEntity, worldServer, ssX, ssY, ssZ);
+									spawnedMobs++;
+								}
+							} catch (Exception e) {
+								Log.warning("Failed to spawn entity " + creatureClass, e);
+								break SpawnLoop;
+							}
 						}
 					}
 				}
-			}
-			if (spawnedMobs >= 32) {
-				break;
+				if (spawnedMobs >= 32) {
+					break;
+				}
 			}
 		}
 		worldServer.theProfiler.endSection();

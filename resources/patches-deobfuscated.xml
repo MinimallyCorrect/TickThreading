@@ -247,10 +247,8 @@
 			<synchronize field="facadeBlocks">blockCreated,getBlockId,getTile,computeConnections</synchronize>
 		</class>
 		<class id="buildcraft.transport.PipeTransportItems">
-			<!--
 			<addClass class="org.cliffc.high_scale_lib.NonBlockingHashMap"/>
 			<newInitializer field="travelingEntities" class="org.cliffc.high_scale_lib.NonBlockingHashMap"/>
-			-->
 		</class>
 		<class id="buildcraft.transport.PipeTransportPower">
 			<newField field="staticLock" class="java.lang.Object" static=""/>
@@ -393,4 +391,9 @@
 			<replaceMethod code="{ fireEvent($$); }">callEvent</replaceMethod>
 		</class>
 	</bukkitForge>
+	<additionalPipes>
+		<class id="buildcraft.additionalpipes.pipes.PipePowerTeleport">
+			<synchronize>receiveEnergy,requestEnergy</synchronize>
+		</class>
+	</additionalPipes>
 </mods>
