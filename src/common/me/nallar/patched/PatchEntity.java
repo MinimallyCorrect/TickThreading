@@ -250,7 +250,7 @@ public abstract class PatchEntity extends Entity {
 				int var32 = this.worldObj.getBlockId(var37, var30, var31);
 
 				if (var32 == 0) {
-					int var33 = this.worldObj.func_85175_e(var37, var30 - 1, var31);
+					int var33 = this.worldObj.blockGetRenderType(var37, var30 - 1, var31);
 
 					if (var33 == 11 || var33 == 32 || var33 == 21) {
 						var32 = this.worldObj.getBlockId(var37, var30 - 1, var31);

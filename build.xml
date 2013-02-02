@@ -18,7 +18,7 @@
 	<property name="mcpsrc.dir" value="${mcp.dir}/src"/>
 
 	<property name="mc.version" value="1.4.7"/>
-	<property name="forge.version" value="6.6.0.499"/>
+	<property name="forge.version" value="6.6.0.515"/>
 	<property name="project.version" value="1.0.0"/>
 
 	<property name="forge.name" value="minecraftforge-src-${mc.version}-${forge.version}.zip"/>
@@ -139,7 +139,7 @@
 				<path refid="class.path"/>
 				<pathelement location="${classes.dir}"/>
 			</classpath>
-			<arg value="${src.dir}/common/me/nallar/tickthreading/minecraft/patched"/>
+			<arg value="${src.dir}/common/me/nallar/patched"/>
 			<arg value="${mcpsrc.dir}/minecraft"/>
 		</java>
 	</target>
