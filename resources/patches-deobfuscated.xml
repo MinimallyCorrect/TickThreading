@@ -28,7 +28,7 @@
 			<addAll fromClass="me.nallar.patched.PatchPacket10Flying"/>
 		</class>
 		<class id="net.minecraft.network.packet.Packet14BlockDig">
-			<addAll fromClass="me.nallar.patched.PatchPacket14BlockDig"/>
+			<addAll fromClass="me.nallar.patched.PatchPacketAsync"/>
 		</class>
 		<class id="net.minecraft.network.packet.Packet51MapChunk">
 			<volatile field="chunkData"/>
@@ -36,6 +36,9 @@
 		</class>
 		<class id="net.minecraft.network.packet.Packet56MapChunks">
 			<volatile field="chunkDataBuffer"/>
+		</class>
+		<class id="net.minecraft.network.packet.Packet254ServerPing">
+			<addAll fromClass="me.nallar.patched.PatchPacketAsync"/>
 		</class>
 		<class id="net.minecraft.network.NetworkListenThread">
 			<synchronize>addPlayer,networkTick</synchronize>
