@@ -1,6 +1,6 @@
 package me.nallar.patched;
 
-import java.util.WeakHashMap;
+import java.util.HashMap;
 
 import com.google.common.collect.ImmutableSetMultimap;
 
@@ -10,7 +10,7 @@ import net.minecraftforge.common.ForgeChunkManager;
 
 public abstract class PatchForgeChunkManager extends ForgeChunkManager {
 	public static void staticConstruct() {
-		forcedChunks = new WeakHashMap<World, ImmutableSetMultimap<ChunkCoordIntPair, Ticket>>();
+		forcedChunks = new HashMap<World, ImmutableSetMultimap<ChunkCoordIntPair, Ticket>>();
 	}
 
 	public static ImmutableSetMultimap<ChunkCoordIntPair, Ticket> getPersistentChunksFor(World world) {
