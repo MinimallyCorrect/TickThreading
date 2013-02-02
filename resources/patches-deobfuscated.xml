@@ -169,7 +169,7 @@
 		</class>
 		<class id="net.minecraft.server.management.PlayerInstance" env="forge">
 			<addAll fromClass="me.nallar.patched.PatchPlayerInstance"/>
-			<lockMethodCall field="this.myManager.playerUpdateLock" method="add">flagChunkForUpdate</lockMethodCall>
+			<lock field="this.myManager.playerUpdateLock">flagChunkForUpdate,sendChunkUpdate</lock>
 			<replaceMethodCall index="1" code="{ $_ = null; }"/>
 			<synchronize field="$1.loadedChunks">addPlayerToChunkWatchingList,sendThisChunkToPlayer</synchronize>
 		</class>

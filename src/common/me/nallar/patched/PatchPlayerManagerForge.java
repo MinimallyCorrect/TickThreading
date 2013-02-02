@@ -46,13 +46,12 @@ public abstract class PatchPlayerManagerForge extends PlayerManager {
 					((PlayerInstance) chunkWatcherWithPlayer).sendChunkUpdate();
 				}
 			}
+			this.chunkWatcherWithPlayers.clear();
 		} catch (Exception e) {
 			Log.severe("Failed to send some chunks", e);
 		} finally {
 			playersUpdateLock.unlock();
 		}
-
-		this.chunkWatcherWithPlayers.clear();
 
 		if (this.players.isEmpty()) {
 			this.theWorldServer.theChunkProviderServer.unloadAllChunks();
