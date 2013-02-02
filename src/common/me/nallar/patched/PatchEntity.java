@@ -2,6 +2,7 @@ package me.nallar.patched;
 
 import java.util.List;
 
+import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -10,6 +11,9 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 
 public abstract class PatchEntity extends Entity {
+	@Declare
+	public Boolean isForced_;
+
 	public PatchEntity(World par1World) {
 		super(par1World);
 	}

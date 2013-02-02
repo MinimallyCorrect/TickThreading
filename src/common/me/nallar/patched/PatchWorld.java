@@ -16,6 +16,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ReportedException;
+import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldProvider;
 import net.minecraft.world.WorldServer;
@@ -27,8 +28,89 @@ import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 
 @SuppressWarnings ("ForLoopReplaceableByForEach")
 public abstract class PatchWorld extends World {
+	private int forcedUpdateCount;
+
 	public PatchWorld(ISaveHandler par1ISaveHandler, String par2Str, WorldProvider par3WorldProvider, WorldSettings par4WorldSettings, Profiler par5Profiler) {
 		super(par1ISaveHandler, par2Str, par3WorldProvider, par4WorldSettings, par5Profiler);
+	}
+
+	@Override
+	public void updateEntityWithOptionalForce(Entity par1Entity, boolean par2) {
+		int var3 = MathHelper.floor_double(par1Entity.posX);
+		int var4 = MathHelper.floor_double(par1Entity.posZ);
+
+		Boolean isForced = par1Entity.isForced;
+		if (isForced == null || forcedUpdateCount++ % 7 == 0) {
+			par1Entity.isForced = isForced = getPersistentChunks().containsKey(new ChunkCoordIntPair(var3 >> 4, var4 >> 4));
+		}
+		byte var5 = isForced ? (byte) 0 : 32;
+		boolean canUpdate = !par2 || this.checkChunksExist(var3 - var5, 0, var4 - var5, var3 + var5, 0, var4 + var5);
+		if (canUpdate) {
+			par1Entity.lastTickPosX = par1Entity.posX;
+			par1Entity.lastTickPosY = par1Entity.posY;
+			par1Entity.lastTickPosZ = par1Entity.posZ;
+			par1Entity.prevRotationYaw = par1Entity.rotationYaw;
+			par1Entity.prevRotationPitch = par1Entity.rotationPitch;
+
+			if (par2 && par1Entity.addedToChunk) {
+				if (par1Entity.ridingEntity != null) {
+					par1Entity.updateRidden();
+				} else {
+					++par1Entity.ticksExisted;
+					par1Entity.onUpdate();
+				}
+			}
+
+			this.theProfiler.startSection("chunkCheck");
+
+			if (Double.isNaN(par1Entity.posX) || Double.isInfinite(par1Entity.posX)) {
+				par1Entity.posX = par1Entity.lastTickPosX;
+			}
+
+			if (Double.isNaN(par1Entity.posY) || Double.isInfinite(par1Entity.posY)) {
+				par1Entity.posY = par1Entity.lastTickPosY;
+			}
+
+			if (Double.isNaN(par1Entity.posZ) || Double.isInfinite(par1Entity.posZ)) {
+				par1Entity.posZ = par1Entity.lastTickPosZ;
+			}
+
+			if (Double.isNaN((double) par1Entity.rotationPitch) || Double.isInfinite((double) par1Entity.rotationPitch)) {
+				par1Entity.rotationPitch = par1Entity.prevRotationPitch;
+			}
+
+			if (Double.isNaN((double) par1Entity.rotationYaw) || Double.isInfinite((double) par1Entity.rotationYaw)) {
+				par1Entity.rotationYaw = par1Entity.prevRotationYaw;
+			}
+
+			int var6 = MathHelper.floor_double(par1Entity.posX / 16.0D);
+			int var7 = MathHelper.floor_double(par1Entity.posY / 16.0D);
+			int var8 = MathHelper.floor_double(par1Entity.posZ / 16.0D);
+
+			if (!par1Entity.addedToChunk || par1Entity.chunkCoordX != var6 || par1Entity.chunkCoordY != var7 || par1Entity.chunkCoordZ != var8) {
+				if (par1Entity.addedToChunk && this.chunkExists(par1Entity.chunkCoordX, par1Entity.chunkCoordZ)) {
+					this.getChunkFromChunkCoords(par1Entity.chunkCoordX, par1Entity.chunkCoordZ).removeEntityAtIndex(par1Entity, par1Entity.chunkCoordY);
+				}
+
+				if (this.chunkExists(var6, var8)) {
+					par1Entity.addedToChunk = true;
+					this.getChunkFromChunkCoords(var6, var8).addEntity(par1Entity);
+				} else {
+					par1Entity.addedToChunk = false;
+				}
+			}
+
+			this.theProfiler.endSection();
+
+			if (par2 && par1Entity.addedToChunk && par1Entity.riddenByEntity != null) {
+				if (!par1Entity.riddenByEntity.isDead && par1Entity.riddenByEntity.ridingEntity == par1Entity) {
+					this.updateEntity(par1Entity.riddenByEntity);
+				} else {
+					par1Entity.riddenByEntity.ridingEntity = null;
+					par1Entity.riddenByEntity = null;
+				}
+			}
+		}
 	}
 
 	@Override
