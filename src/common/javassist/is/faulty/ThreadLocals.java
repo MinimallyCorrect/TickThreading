@@ -15,10 +15,11 @@ public class ThreadLocals {
 	public static final ThreadLocal entitiesWithinAABBExcludingEntity = new ArrayListThreadLocal();
 	public static final ThreadLocal collidingBoundingBoxes = new ArrayListThreadLocal();
 	public static final ThreadLocal redPowerBlockUpdateSet = new HashSetThreadLocal();
-	public static final ThreadLocal redPowerPowerSearchTest = new HashSetThreadLocal();
 	public static final ThreadLocal redPowerPowerSearch = new LinkedListThreadLocal();
+	public static final ThreadLocal redPowerPowerSearchTest = new HashSetThreadLocal();
 	public static final ThreadLocal redPowerIsSearching = new BooleanThreadLocal();
 	public static final ThreadLocal eligibleChunksForSpawning = new HashMapThreadLocal();
+	public static final ThreadLocal factorizationFindLightAirParentToVisit = new HashSetThreadLocal();
 
 	private static class ArrayListThreadLocal extends ThreadLocal {
 		@Override

@@ -223,7 +223,7 @@
 	<factorization>
 		<class id="factorization.common.TileEntityWrathLamp">
 			<!-- ಠ_ಠ -->
-			<synchronize>findLightAirParent</synchronize>
+			<threadLocal field="toVisit" type="java.util.HashSet" threadLocalField="javassist.is.faulty.ThreadLocals.factorizationFindLightAirParentToVisit"/>
 		</class>
 		<class id="factorization.api.Charge">
 			<newField field="staticLock" class="java.lang.Object" static=""/>
