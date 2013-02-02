@@ -192,6 +192,11 @@
 			<synchronize>addTask,func_85156_a,onUpdateTasks,func_75775_b</synchronize>
 		</class>
 	</minecraftCommon>
+	<forge>
+		<class id="net.minecraftforge.common.ForgeChunkManager">
+			<addAll fromClass="me.nallar.patched.PatchForgeChunkManager"/>
+		</class>
+	</forge>
 	<forgeModLoader>
 		<class id="cpw.mods.fml.common.asm.FMLSanityChecker">
 			<replaceMethodCall code="{ $_ = null; }" method="severe">call</replaceMethodCall>

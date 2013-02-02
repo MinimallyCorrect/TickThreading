@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import javassist.is.faulty.ThreadLocals;
+import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.entitylist.EntityList;
 import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.block.Block;
@@ -27,8 +28,19 @@ import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 
 @SuppressWarnings ("ForLoopReplaceableByForEach")
 public abstract class PatchWorld extends World {
+	private int hashCode;
+
 	public PatchWorld(ISaveHandler par1ISaveHandler, String par2Str, WorldProvider par3WorldProvider, WorldSettings par4WorldSettings, Profiler par5Profiler) {
 		super(par1ISaveHandler, par2Str, par3WorldProvider, par4WorldSettings, par5Profiler);
+	}
+
+	public void construct() {
+		hashCode = System.identityHashCode(this);
+	}
+
+	@Override
+	public int hashCode() {
+		return hashCode;
 	}
 
 	@Override
