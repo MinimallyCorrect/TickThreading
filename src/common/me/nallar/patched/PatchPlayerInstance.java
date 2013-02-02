@@ -45,11 +45,13 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 				long var2 = (long) this.chunkLocation.chunkXPos + 2147483647L | (long) this.chunkLocation.chunkZPos + 2147483647L << 32;
 				this.myManager.getChunkWatchers().remove(var2);
 
-				this.myManager.playerUpdateLock.lock();
-				try {
-					this.myManager.getChunkWatcherWithPlayers().remove(this);
-				} finally {
-					this.myManager.playerUpdateLock.unlock();
+				if (numberOfTilesToUpdate > 0) {
+					this.myManager.playerUpdateLock.lock();
+					try {
+						this.myManager.getChunkWatcherWithPlayers().remove(this);
+					} finally {
+						this.myManager.playerUpdateLock.unlock();
+					}
 				}
 
 				this.myManager.getWorldServer().theChunkProviderServer.unloadChunksIfNotNearSpawn(this.chunkLocation.chunkXPos, this.chunkLocation.chunkZPos);
