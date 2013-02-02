@@ -49,7 +49,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 			this.provider.worldChunkMgr.cleanupCache();
 		}
 
-		if (tickCount % 2 == 0 && this.areAllPlayersAsleep()) {
+		if (this.areAllPlayersAsleep()) {
 			long var2 = this.worldInfo.getWorldTime();
 			this.worldInfo.setWorldTime(var2 + var2 % 24000L);
 			this.wakeAllPlayers();
