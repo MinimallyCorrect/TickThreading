@@ -72,7 +72,7 @@ public class DeadLockDetector {
 
 	public static synchronized long tick(String name) {
 		lastJob = name;
-		return lastTickTime = System.currentTimeMillis();
+		return lastTickTime = System.nanoTime();
 	}
 
 	public static void sendChatSafely(final String message) {
@@ -88,20 +88,20 @@ public class DeadLockDetector {
 
 	public boolean checkForDeadlocks() {
 		Log.flush();
-		int deadTime = (int) (System.currentTimeMillis() - lastTickTime);
-		if (lastTickTime == 0 || (!MinecraftServer.getServer().isServerRunning() && deadTime < (TickThreading.instance.deadLockTime * 10000))) {
+		long deadTime = (System.nanoTime() - lastTickTime);
+		if (lastTickTime == 0 || (!MinecraftServer.getServer().isServerRunning() && deadTime < (TickThreading.instance.deadLockTime * 10000000000l))) {
 			return true;
 		}
 		if (TickThreading.instance.exitOnDeadlock) {
-			if (sentWarningRecently && deadTime < 10000) {
+			if (sentWarningRecently && deadTime < 10000000000l) {
 				sentWarningRecently = false;
 				sendChatSafely(ChatFormat.GREEN + "The server has recovered and will not need to restart. :)");
-			} else if (deadTime > 10000 && !sentWarningRecently) {
+			} else if (deadTime > 10000000000l && !sentWarningRecently) {
 				sentWarningRecently = true;
 				sendChatSafely(String.valueOf(ChatFormat.RED) + ChatFormat.BOLD + "The server appears to have frozen on '" + lastJob + "' and will restart soon if it does not recover. :(");
 			}
 		}
-		if (deadTime < (TickThreading.instance.deadLockTime * 1000)) {
+		if (deadTime < (TickThreading.instance.deadLockTime * 1000000000l)) {
 			return true;
 		}
 		if (TickThreading.instance.exitOnDeadlock) {
@@ -111,7 +111,7 @@ public class DeadLockDetector {
 		StringBuilder sb = new StringBuilder();
 		ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
 		sb.append("The server appears to have deadlocked.")
-				.append("\nLast tick ").append(deadTime).append("ms ago.")
+				.append("\nLast tick ").append(deadTime / 1000000000).append("s ago.")
 				.append("\nTicking: ").append(lastJob).append('\n');
 		Map<Thread, StackTraceElement[]> traces = Thread.getAllStackTraces();
 		for (Thread thread : traces.keySet()) {

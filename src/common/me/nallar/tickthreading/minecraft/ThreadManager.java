@@ -23,6 +23,7 @@ public final class ThreadManager {
 	private final Object readyLock = new Object();
 	private final AtomicInteger waiting = new AtomicInteger();
 	private final Runnable killTask = new KillRunnable();
+	public long endTime = 0;
 	private final Runnable workerTask = new Runnable() {
 		@Override
 		public void run() {
@@ -42,6 +43,7 @@ public final class ThreadManager {
 					Log.severe("Unhandled exception in worker thread " + Thread.currentThread().getName(), e);
 				}
 				if (waiting.decrementAndGet() == 0) {
+					endTime = System.nanoTime();
 					synchronized (readyLock) {
 						readyLock.notify();
 					}
@@ -63,7 +65,7 @@ public final class ThreadManager {
 		addThreads(threads);
 	}
 
-	public void waitForCompletion() {
+	public long waitForCompletion() {
 		profiler.startSection(namePrefix);
 		synchronized (readyLock) {
 			while (waiting.get() > 0) {
@@ -74,6 +76,7 @@ public final class ThreadManager {
 			}
 		}
 		profiler.endSection();
+		return endTime;
 	}
 
 	public void runList(final ConcurrentIterableArrayList<? extends Runnable> tasks) {

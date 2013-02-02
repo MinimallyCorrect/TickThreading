@@ -27,8 +27,8 @@ public final class TickManager {
 	public final int regionSize;
 	public boolean variableTickRate;
 	public boolean profilingEnabled = false;
-	public float averageTickLength = 0;
-	public int lastTickLength = 0;
+	public double averageTickLength = 0;
+	public long lastTickLength = 0;
 	public long lastStartTime = 0;
 	private static final int shuffleInterval = 800;
 	private int shuffleCount;
@@ -215,7 +215,8 @@ public final class TickManager {
 		}
 		threadManager.runList(tickRegions);
 		if (previousProfiling || waitForCompletion) {
-			threadManager.waitForCompletion();
+			lastTickLength = (threadManager.waitForCompletion() - lastStartTime);
+			averageTickLength = ((averageTickLength * 127) + lastTickLength) / 128;
 			threadManager.run(new Runnable() {
 				@Override
 				public void run() {
@@ -223,8 +224,6 @@ public final class TickManager {
 				}
 			});
 		}
-		lastTickLength = (int) (System.currentTimeMillis() - lastStartTime);
-		averageTickLength = ((averageTickLength * 127) + lastTickLength) / 128;
 		if (previousProfiling) {
 			world.theProfiler.profilingEnabled = true;
 		}
@@ -235,7 +234,8 @@ public final class TickManager {
 
 	public void tickEnd() {
 		if (!waitForCompletion) {
-			threadManager.waitForCompletion();
+			lastTickLength = (threadManager.waitForCompletion() - lastStartTime);
+			averageTickLength = ((averageTickLength * 127) + lastTickLength) / 128;
 			threadManager.run(new Runnable() {
 				@Override
 				public void run() {
@@ -303,8 +303,8 @@ public final class TickManager {
 			stats.append("---- World stats ----");
 			stats.append("\nAverage tick time: ").append(averageAverageTickTime).append("ms");
 			stats.append("\nMax tick time: ").append(maxTickTime).append("ms");
-			stats.append("\nEffective tick time: ").append(lastTickLength).append("ms");
-			stats.append("\nAverage effective tick time: ").append(averageTickLength).append("ms");
+			stats.append("\nEffective tick time: ").append(lastTickLength / 1000000f).append("ms");
+			stats.append("\nAverage effective tick time: ").append((float) averageTickLength / 1000000).append("ms");
 		}
 		return tf;
 	}

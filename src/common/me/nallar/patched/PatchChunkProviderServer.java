@@ -93,9 +93,9 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 					if (lastChunk == var3) {
 						lastChunk = null;
 					}
+					var3.onChunkUnload();
 					this.safeSaveChunk(var3);
 					this.safeSaveExtraChunkData(var3);
-					var3.onChunkUnload();
 					synchronized (loadedChunks) {
 						this.loadedChunks.remove(var3);
 					}
