@@ -100,7 +100,11 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 					currentTPS = (currentTPS * 0.99) + (1E9 / (curTime - lastTick) * 0.01);
 					lastTick = curTime;
 					tickCounter++;
-					this.tick();
+					try {
+						this.tick();
+					} catch (Exception e) {
+						Log.severe("Exception in main tick loop", e);
+					}
 				}
 				FMLCommonHandler.instance().handleServerStopping();
 			} else {
