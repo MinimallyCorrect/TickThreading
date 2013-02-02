@@ -4,7 +4,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import javassist.is.faulty.ThreadLocals;
-import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.entitylist.EntityList;
 import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.block.Block;
