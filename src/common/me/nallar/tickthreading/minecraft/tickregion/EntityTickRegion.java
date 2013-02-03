@@ -74,6 +74,11 @@ public class EntityTickRegion extends TickRegion {
 		}
 	}
 
+	@Override
+	protected String getShortTypeName() {
+		return "E";
+	}
+
 	public void add(Entity entity) {
 		synchronized (tickStateLock) {
 			if (ticking) {

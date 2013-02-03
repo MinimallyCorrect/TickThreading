@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.concurrent.locks.Lock;
 
 import me.nallar.tickthreading.minecraft.TickManager;
+import me.nallar.tickthreading.util.TableFormatter;
 import net.minecraft.world.World;
 
 public abstract class TickRegion implements Runnable {
@@ -43,7 +44,7 @@ public abstract class TickRegion implements Runnable {
 	@Override
 	public void run() {
 		if (shouldTick()) {
-			long startTime = System.currentTimeMillis();
+			long startTime = System.nanoTime();
 			synchronized (tickStateLock) {
 				ticking = true;
 			}
@@ -51,19 +52,30 @@ public abstract class TickRegion implements Runnable {
 			synchronized (tickStateLock) {
 				ticking = false;
 			}
-			averageTickTime = ((averageTickTime * 127) + (System.currentTimeMillis() - startTime)) / 128;
+			averageTickTime = ((averageTickTime * 127) + (System.nanoTime() - startTime)) / 128;
 		}
 	}
 
 	boolean shouldTick() {
-		return !manager.variableTickRate || averageTickTime < 55 || Math.random() < ((float) 55) / averageTickTime;
+		return !manager.variableTickRate || averageTickTime < 55000000 || Math.random() < 55000000d / averageTickTime;
 	}
 
 	protected abstract void doTick();
 
 	public float getAverageTickTime() {
-		return averageTickTime;
+		return averageTickTime / 1000000f;
 	}
+
+	public TableFormatter writeStats(TableFormatter tf) {
+		return tf
+				.row(this.getShortTypeName())
+				.row(regionX * manager.regionSize)
+				.row(regionZ * manager.regionSize)
+				.row(size())
+				.row(getAverageTickTime());
+	}
+
+	protected abstract String getShortTypeName();
 
 	public String getStats() {
 		return this.getClass().getSimpleName() + " - X: " + regionX * manager.regionSize + ", Z: " + regionZ * manager.regionSize + ", time: " + getAverageTickTime() + "ms"

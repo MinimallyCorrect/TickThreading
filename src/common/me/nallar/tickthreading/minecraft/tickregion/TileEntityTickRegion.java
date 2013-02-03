@@ -153,6 +153,11 @@ public class TileEntityTickRegion extends TickRegion {
 		}
 	}
 
+	@Override
+	protected String getShortTypeName() {
+		return "T";
+	}
+
 	public void add(TileEntity tileEntity) {
 		synchronized (tickStateLock) {
 			if (ticking) {

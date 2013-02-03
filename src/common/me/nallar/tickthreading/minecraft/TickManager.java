@@ -210,6 +210,9 @@ public final class TickManager {
 	public void doTick() {
 		boolean previousProfiling = world.theProfiler.profilingEnabled;
 		lastStartTime = DeadLockDetector.tick("TickManager.doTick: " + Log.name(world));
+		if (tickRegions.isEmpty()) {
+			return;
+		}
 		threadManager.waitForCompletion();
 		if (previousProfiling) {
 			world.theProfiler.profilingEnabled = false;
@@ -296,11 +299,18 @@ public final class TickManager {
 			}
 			Collection<TickRegion> var = sortedTickCallables.values();
 			TickRegion[] sortedTickCallablesArray = var.toArray(new TickRegion[var.size()]);
-			for (int i = sortedTickCallablesArray.length - 1; i >= sortedTickCallablesArray.length - 6; i--) {
-				if (i >= 0 && sortedTickCallablesArray[i].getAverageTickTime() > 1.5) {
-					stats.append(sortedTickCallablesArray[i].getStats()).append('\n');
+			tf
+					.heading("")
+					.heading("X")
+					.heading("Z")
+					.heading("N")
+					.heading("Time");
+			for (int i = sortedTickCallablesArray.length - 1; i >= sortedTickCallablesArray.length - 7; i--) {
+				if (i >= 0 && sortedTickCallablesArray[i].getAverageTickTime() > 0.2) {
+					sortedTickCallablesArray[i].writeStats(tf);
 				}
 			}
+			tf.finishTable();
 			averageAverageTickTime /= tickRegions.size();
 			stats.append("---- World stats ----");
 			stats.append("\nAverage tick time: ").append(averageAverageTickTime).append("ms");
