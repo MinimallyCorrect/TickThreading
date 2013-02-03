@@ -349,9 +349,21 @@ public class Patches {
 		String arraySize = attributes.get("arraySize");
 		initialise = "{ " + field + " = " + (initialise == null ? ("new " + clazz + (arraySize == null ? "()" : '[' + arraySize + ']')) : initialise) + "; }";
 		// Return value ignored - just used to cause a NotFoundException if the field doesn't exist.
-		ctClass.getDeclaredField(field);
-		for (CtConstructor ctConstructor : ctClass.getConstructors()) {
-			ctConstructor.insertAfter(initialise);
+		if ((ctClass.getDeclaredField(field).getModifiers() & Modifier.STATIC) == Modifier.STATIC) {
+			ctClass.makeClassInitializer().insertAfter(initialise);
+		} else {
+			CtMethod runConstructors;
+			try {
+				runConstructors = ctClass.getDeclaredMethod("runConstructors");
+			} catch (NotFoundException e) {
+				runConstructors = CtNewMethod.make("public void runConstructors() { }", ctClass);
+				ctClass.addMethod(runConstructors);
+				ctClass.addField(new CtField(classRegistry.getClass("boolean"), "isConstructed", ctClass), CtField.Initializer.constant(false));
+				for (CtBehavior ctBehavior : ctClass.getDeclaredConstructors()) {
+					ctBehavior.insertAfter("{ if(!this.isConstructed) { this.isConstructed = true; this.runConstructors(); } }");
+				}
+			}
+			runConstructors.insertAfter(initialise);
 		}
 		if (clazz != null) {
 			classRegistry.add(ctClass, clazz);
@@ -561,7 +573,7 @@ public class Patches {
 			} catch (NotFoundException ignored) {
 			}
 			ctMethod.setName(ctMethod.getName() + "_s" + i);
-			replacement.setBody("synchronized(" + field + ") { return this." + ctMethod.getName() + "($$); }");
+			replacement.setBody("synchronized(" + field + ") { return " + ctMethod.getName() + "($$); }");
 			ctClass.addMethod(replacement);
 		}
 	}

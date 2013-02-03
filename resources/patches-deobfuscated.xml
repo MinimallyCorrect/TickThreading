@@ -298,22 +298,11 @@
 	<industrialCraft>
 		<class id="ic2.core.EnergyNet">
 			<replaceMethodCall index="1" method="warning" code="{}">emitEnergyFrom</replaceMethodCall>
+			<newInitializer field="worldToEnergyNetMap" class="java.util.HashMap"/>
+			<newInitializer field="energySourceToEnergyPathMap" class="java.util.HashMap"/>
+			<newInitializer field="entityLivingToShockEnergyMap" class="java.util.HashMap"/>
+			<synchronize field="ic2.core.EnergyNet.class">getForWorld</synchronize>
 			<synchronize>addTileEntity,removeTileEntity,emitEnergyFrom,discover</synchronize>
-			<replaceMethod
-							code="{
-							ic2.core.EnergyNet energyNet = (ic2.core.EnergyNet) worldToEnergyNetMap.get($1);
-							if (energyNet == null) {
-								synchronized(ic2.core.EnergyNet.class) {
-									energyNet = (ic2.core.EnergyNet) worldToEnergyNetMap.get($1);
-									if (energyNet == null) {
-										energyNet = new ic2.core.EnergyNet($1);
-										worldToEnergyNetMap.put($1, energyNet);
-									}
-								}
-         			}
-         			return energyNet;
-         			}"
-							>getForWorld</replaceMethod>
 		</class>
 	</industrialCraft>
 	<gregTech>
