@@ -22,7 +22,7 @@
 		</class>
 		<class id="net.minecraft.network.NetServerHandler">
 			<addAll fromClass="me.nallar.patched.PatchNetServerHandler"/>
-			<insertBefore code="teleported = true;">setPlayerLocation</insertBefore>
+			<insertBefore code="teleported = 30;">setPlayerLocation</insertBefore>
 			<replaceMethodCall method="warning"
 												 code="{ javassist.is.faulty.Redirects.notifyAdmins($1); }"
 							>handleFlying</replaceMethodCall>
@@ -160,7 +160,7 @@
 			<lock field="playersUpdateLock">playerLoggedIn,playerLoggedOut,respawnPlayer</lock>
 			<synchronize field="$1.loadedChunks">transferPlayerToDimension(Lnet.minecraft.entity.player.EntityPlayerMP;ILnet.minecraft.world.Teleporter;)V</synchronize>
 			<synchronize field="$1.loadedChunks">respawnPlayer</synchronize>
-			<synchronize field="$1.loadedChunks">initializeConnectionToPlayer</synchronize>
+			<synchronize field="$2.loadedChunks">initializeConnectionToPlayer</synchronize>
 		</class>
 		<class id="net.minecraft.server.management.PlayerManager">
 			<addAll fromClass="me.nallar.patched.PatchPlayerManager"/>

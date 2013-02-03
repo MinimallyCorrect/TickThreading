@@ -20,12 +20,13 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 	public void processPacket(NetHandler par1NetHandler) {
 		NetServerHandler nsh = (NetServerHandler) par1NetHandler;
 		EntityPlayerMP entityPlayerMP = nsh.playerEntity;
-		if (TickThreading.instance.antiCheatNotify && moving && yPosition != -999.0D && stance != -999.0D) {
-			if (nsh.teleported) {
-				nsh.lastPZ = this.zPosition;
-				nsh.lastPX = this.xPosition;
-				nsh.averageSpeed = -50d;
-			} else {
+		if (nsh.teleported > 0) {
+			nsh.lastPZ = this.zPosition;
+			nsh.lastPX = this.xPosition;
+			nsh.averageSpeed = -50d;
+			nsh.teleported--;
+		} else {
+			if (TickThreading.instance.antiCheatNotify && moving && yPosition != -999.0D && stance != -999.0D) {
 				long currentTime = System.currentTimeMillis();
 				long time = Math.min(5000, currentTime - nsh.lastMovement);
 				double dX = (xPosition - nsh.lastPX);
@@ -61,10 +62,10 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 						par1NetHandler.handleFlying(this);
 					}
 				}
-			}
-		} else {
-			synchronized (entityPlayerMP.loadedChunks) {
-				par1NetHandler.handleFlying(this);
+			} else {
+				synchronized (entityPlayerMP.loadedChunks) {
+					par1NetHandler.handleFlying(this);
+				}
 			}
 		}
 	}

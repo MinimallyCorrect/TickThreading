@@ -16,12 +16,12 @@ public abstract class PatchNetServerHandler extends NetServerHandler {
 	@Declare
 	public double lastPZ_;
 	@Declare
-	public volatile boolean teleported_;
+	public volatile int teleported_;
 	@Declare
 	public long lastNotify_;
 
 	public void construct() {
-		teleported = true;
+		teleported = 20;
 		averageSpeed = -1000;
 	}
 
