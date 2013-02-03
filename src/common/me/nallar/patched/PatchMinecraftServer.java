@@ -85,7 +85,6 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				// This block is derived from Spigot code,
 				// LGPL
 				this.serverIsRunning = true;
-				this.tick();
 				if (TickThreading.instance.concurrentNetworkTicks) {
 					tickNetworkInMainThread = false;
 					new FakeServerThread(new NetworkTickRunnable(this), "Network Tick", false).start();
@@ -332,10 +331,10 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				this.theProfiler.startSection("forgeTick");
 				FMLCommonHandler.instance().onPreWorldTick(world);
 
-				this.theProfiler.endStartSection("entityTick");
-				world.updateEntities();
 				this.theProfiler.endStartSection("worldTick");
 				world.tick();
+				this.theProfiler.endStartSection("entityTick");
+				world.updateEntities();
 				this.theProfiler.endStartSection("postForgeTick");
 				FMLCommonHandler.instance().onPostWorldTick(world);
 				this.theProfiler.endSection();
