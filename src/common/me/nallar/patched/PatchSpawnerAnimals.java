@@ -45,7 +45,11 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 			return 0;
 		}
 		worldServer.theProfiler.startSection("creatureTypes");
-		float entityMultiplier = worldServer.playerEntities.size() * 0.6f; // TODO: Make this configurable
+		float loadFactor = 1 - (float) (MinecraftServer.getTickTime() / MinecraftServer.getTargetTickTime());
+		if (loadFactor < 0.5f) {
+			loadFactor = 0.5f;
+		}
+		float entityMultiplier = worldServer.playerEntities.size() * loadFactor; // TODO: Make this configurable
 		float mobMultiplier = entityMultiplier * (worldServer.isDaytime() ? 1 : 2);
 		Map<EnumCreatureType, Integer> requiredSpawns = new EnumMap<EnumCreatureType, Integer>(EnumCreatureType.class);
 		for (EnumCreatureType creatureType : EnumCreatureType.values()) {
