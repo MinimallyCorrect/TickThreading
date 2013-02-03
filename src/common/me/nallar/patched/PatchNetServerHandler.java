@@ -17,6 +17,8 @@ public abstract class PatchNetServerHandler extends NetServerHandler {
 	public double lastPZ_;
 	@Declare
 	public boolean teleported_;
+	@Declare
+	public long lastNotify_;
 
 	public void construct() {
 		teleported = true;
