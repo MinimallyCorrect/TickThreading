@@ -289,7 +289,7 @@
 		</class>
 		<class id="com.eloraam.redpower.base.ContainerBag">
 			<newMethod
-							code="public ur a(int i, int j, int k, qx l) { if (k == 2) { l.a(0); return null; } return super.a(i, j, k, l); }"
+							code="public ur a(int i, int j, int k, qx l) { if (k == 2) { javassist.is.faulty.Redirects.notifyAdmins(String.valueOf(l) + &quot; tried to dupe&quot;); l.a(0); return null; } return super.a(i, j, k, l); }"
 							/>
 		</class>
 	</redPowerCore>
