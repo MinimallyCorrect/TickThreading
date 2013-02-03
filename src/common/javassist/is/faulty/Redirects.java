@@ -1,11 +1,13 @@
 package javassist.is.faulty;
 
+import me.nallar.tickthreading.Log;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.ServerConfigurationManager;
 
 public class Redirects {
 	public static void notifyAdmins(String message) {
+		Log.warning("Admin notify: " + message);
 		ServerConfigurationManager serverConfigurationManager = MinecraftServer.getServer().getConfigurationManager();
 		serverConfigurationManager.playerUpdateLock.lock();
 		try {
