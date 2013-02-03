@@ -136,6 +136,7 @@ public class PatchManager {
 							}
 							if (parameters.size() == 1) {
 								MethodDescription methodDescription = mappings.rmap(mappings.map(methodDescriptionList.get(0)));
+								methodDescription = methodDescription == null ? methodDescriptionList.get(0) : methodDescription;
 								type = methodDescription.getParameterList().get(Integer.valueOf(field.substring(1)) - 1);
 								prefix = field + '.';
 								field = after.substring(1);
