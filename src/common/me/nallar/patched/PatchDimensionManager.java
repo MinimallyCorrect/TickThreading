@@ -11,7 +11,7 @@ import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.WorldEvent;
 
-public class PatchDimensionManager extends DimensionManager {
+public abstract class PatchDimensionManager extends DimensionManager {
 	public static void unloadWorlds(Hashtable<Integer, long[]> worldTickTimes) {
 		for (int id : unloadQueue) {
 			WorldServer w = worlds.get(id);

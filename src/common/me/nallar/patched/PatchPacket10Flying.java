@@ -18,16 +18,15 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 
 	@Override
 	public void processPacket(NetHandler par1NetHandler) {
-		if (TickThreading.instance.antiCheatNotify && moving && yPosition != -999.0D && stance != -999.0D && par1NetHandler instanceof NetServerHandler) {
-			NetServerHandler nsh = (NetServerHandler) par1NetHandler;
+		NetServerHandler nsh = (NetServerHandler) par1NetHandler;
+		EntityPlayerMP entityPlayerMP = nsh.playerEntity;
+		if (TickThreading.instance.antiCheatNotify && moving && yPosition != -999.0D && stance != -999.0D) {
 			if (nsh.teleported) {
-				nsh.teleported = false;
 				nsh.lastPZ = this.zPosition;
 				nsh.lastPX = this.xPosition;
-				nsh.averageSpeed = -900d;
+				nsh.averageSpeed = -50d;
 			} else {
 				long currentTime = System.currentTimeMillis();
-				EntityPlayerMP entityPlayerMP = nsh.playerEntity;
 				long time = Math.min(5000, currentTime - nsh.lastMovement);
 				double dX = (xPosition - nsh.lastPX);
 				double dZ = (zPosition - nsh.lastPZ);
@@ -58,10 +57,16 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 					}
 					nsh.lastPZ = this.zPosition;
 					nsh.lastPX = this.xPosition;
+					synchronized (entityPlayerMP.loadedChunks) {
+						par1NetHandler.handleFlying(this);
+					}
 				}
 			}
+		} else {
+			synchronized (entityPlayerMP.loadedChunks) {
+				par1NetHandler.handleFlying(this);
+			}
 		}
-		par1NetHandler.handleFlying(this);
 	}
 
 	private static double allowedSpeedMultiplier(EntityPlayerMP entityPlayerMP) {

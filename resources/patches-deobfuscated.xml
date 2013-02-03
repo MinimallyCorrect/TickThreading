@@ -160,6 +160,7 @@
 			<lock field="playersUpdateLock">playerLoggedIn,playerLoggedOut,respawnPlayer</lock>
 			<synchronize field="$1.loadedChunks">transferPlayerToDimension(Lnet.minecraft.entity.player.EntityPlayerMP;ILnet.minecraft.world.Teleporter;)V</synchronize>
 			<synchronize field="$1.loadedChunks">respawnPlayer</synchronize>
+			<synchronize field="$1.loadedChunks">initializeConnectionToPlayer</synchronize>
 		</class>
 		<class id="net.minecraft.server.management.PlayerManager">
 			<addAll fromClass="me.nallar.patched.PatchPlayerManager"/>
