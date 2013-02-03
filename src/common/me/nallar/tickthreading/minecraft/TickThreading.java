@@ -70,7 +70,7 @@ public class TickThreading {
 	private int targetTPS = 20;
 	public boolean concurrentNetworkTicks = false;
 	public boolean antiCheatKick = false;
-	public boolean antiCheatNotify = false;
+	public boolean antiCheatNotify = true;
 	public boolean cleanWorlds = true;
 
 	public TickThreading() {

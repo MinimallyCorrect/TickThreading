@@ -1,6 +1,7 @@
 package me.nallar.patched;
 
 import javassist.is.faulty.Redirects;
+import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.util.TableFormatter;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -47,14 +48,14 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 					double averageSpeed = (nsh.averageSpeed = ((nsh.averageSpeed * 10 + speed) / 11));
 					ServerConfigurationManager serverConfigurationManager = MinecraftServer.getServer().getConfigurationManager();
 					speed /= allowedSpeedMultiplier(entityPlayerMP);
-					if ((currentTime + 30000) < nsh.lastNotify && !serverConfigurationManager.areCommandsAllowed(entityPlayerMP.username) && (averageSpeed > 50 || (!entityPlayerMP.isRiding() && averageSpeed > 20))) {
+					if (currentTime > nsh.lastNotify && !serverConfigurationManager.areCommandsAllowed(entityPlayerMP.username) && (averageSpeed > 50 || (!entityPlayerMP.isRiding() && averageSpeed > 20))) {
 						if (TickThreading.instance.antiCheatKick) {
 							nsh.kickPlayerFromServer("You moved too quickly. " + TableFormatter.formatDoubleWithPrecision(averageSpeed, 3) + "m/s");
 						} else {
 							entityPlayerMP.sendChatToPlayer("You moved too quickly. " + TableFormatter.formatDoubleWithPrecision(averageSpeed, 3) + "m/s");
 						}
 						Redirects.notifyAdmins(entityPlayerMP.username + " was travelling too fast: " + TableFormatter.formatDoubleWithPrecision(averageSpeed, 3) + "m/s");
-						nsh.lastNotify = currentTime;
+						nsh.lastNotify = currentTime + 30000;
 					}
 					nsh.lastPZ = this.zPosition;
 					nsh.lastPX = this.xPosition;

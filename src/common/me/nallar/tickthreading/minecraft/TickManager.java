@@ -210,9 +210,6 @@ public final class TickManager {
 	public void doTick() {
 		boolean previousProfiling = world.theProfiler.profilingEnabled;
 		lastStartTime = DeadLockDetector.tick("TickManager.doTick: " + Log.name(world));
-		if (tickRegions.isEmpty()) {
-			return;
-		}
 		threadManager.waitForCompletion();
 		if (previousProfiling) {
 			world.theProfiler.profilingEnabled = false;
@@ -311,6 +308,7 @@ public final class TickManager {
 				}
 			}
 			tf.finishTable();
+			stats.append('\n');
 			averageAverageTickTime /= tickRegions.size();
 			stats.append("---- World stats ----");
 			stats.append("\nAverage tick time: ").append(averageAverageTickTime).append("ms");
