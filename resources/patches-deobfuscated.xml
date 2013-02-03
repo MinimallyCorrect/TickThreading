@@ -392,6 +392,9 @@
 		</class>
 	</portalGun>
 	<twilightForest>
+		<class id="twilightforest.TFEventListener">
+			<synchronize>worldSave</synchronize>
+		</class>
 		<class id="twilightforest.block.BlockTFMagicLogSpecial">
 			<!-- Spams logs, slow -->
 			<disable>doSortingTreeEffect</disable>
