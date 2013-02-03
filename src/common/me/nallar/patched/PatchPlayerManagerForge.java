@@ -52,7 +52,7 @@ public abstract class PatchPlayerManagerForge extends PlayerManager {
 				}
 			}
 			this.chunkWatcherWithPlayers.clear();
-		}  finally {
+		} finally {
 			playersUpdateLock.unlock();
 		}
 

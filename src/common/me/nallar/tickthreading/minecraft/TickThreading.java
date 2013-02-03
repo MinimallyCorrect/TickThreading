@@ -71,6 +71,7 @@ public class TickThreading {
 	public boolean concurrentNetworkTicks = false;
 	public boolean antiCheatKick = false;
 	public boolean antiCheatNotify = false;
+	public boolean cleanWorlds = true;
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load
@@ -148,6 +149,8 @@ public class TickThreading {
 		antiCheatKickProperty.comment = "Whether to kick players for detected cheating";
 		Property antiCheatNotifyProperty = config.get(Configuration.CATEGORY_GENERAL, "antiCheatNotify", antiCheatNotify);
 		antiCheatNotifyProperty.comment = "Whether to notify admins if TT anti-cheat detects cheating";
+		Property cleanWorldsProperty = config.get(Configuration.CATEGORY_GENERAL, "cleanWorlds", cleanWorlds);
+		cleanWorldsProperty.comment = "Whether to clean worlds on unload - this should fix some memory leaks due to mods holding on to world objects";
 		config.save();
 
 		TicksCommand.name = ticksCommandName.value;
@@ -176,6 +179,7 @@ public class TickThreading {
 		concurrentNetworkTicks = concurrentNetworkTicksProperty.getBoolean(concurrentNetworkTicks);
 		antiCheatKick = antiCheatKickProperty.getBoolean(antiCheatKick);
 		antiCheatNotify = antiCheatNotifyProperty.getBoolean(antiCheatNotify);
+		cleanWorlds = cleanWorldsProperty.getBoolean(cleanWorlds);
 		int[] disabledDimensions = disabledFastMobSpawningDimensionsProperty.getIntList();
 		disabledFastMobSpawningDimensions = new HashSet<Integer>(disabledDimensions.length);
 		for (int disabledDimension : disabledDimensions) {

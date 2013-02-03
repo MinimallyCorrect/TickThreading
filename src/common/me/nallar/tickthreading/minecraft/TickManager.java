@@ -17,6 +17,7 @@ import me.nallar.tickthreading.minecraft.tickregion.EntityTickRegion;
 import me.nallar.tickthreading.minecraft.tickregion.TickRegion;
 import me.nallar.tickthreading.minecraft.tickregion.TileEntityTickRegion;
 import me.nallar.tickthreading.util.TableFormatter;
+import me.nallar.unsafe.UnsafeUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
@@ -253,6 +254,7 @@ public final class TickManager {
 		tickRegions.clear();
 		entityList.clear();
 		entityClassToCountMap.clear();
+		UnsafeUtil.clean(this);
 	}
 
 	public void writeStats(TableFormatter tf) {

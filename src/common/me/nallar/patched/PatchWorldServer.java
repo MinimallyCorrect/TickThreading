@@ -1,5 +1,6 @@
 package me.nallar.patched;
 
+import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.Random;
 
@@ -122,7 +123,11 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 				if (!chunkCoordIterator.hasNext()) {
 					break;
 				}
-				var4 = (ChunkCoordIntPair) chunkCoordIterator.next();
+				try {
+					var4 = (ChunkCoordIntPair) chunkCoordIterator.next();
+				} catch (ConcurrentModificationException e) {
+					break;
+				}
 			}
 
 			int cX = var4.chunkXPos;

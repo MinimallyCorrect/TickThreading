@@ -192,4 +192,24 @@ public class UnsafeUtil {
 		UnsafeUtil.swap(a, b);
 		Log.info(compare(a, b));
 	}
+
+	public static void clean(Object o) {
+		//Log.info("Clearing " + o.getClass() + '@' + System.identityHashCode(o));
+		Class c = o.getClass();
+		while (c != null) {
+			for (Field field : c.getDeclaredFields()) {
+				if (field.getType().isPrimitive() || (field.getModifiers() & Modifier.STATIC) == Modifier.STATIC) {
+					continue;
+				}
+				try {
+					field.setAccessible(true);
+					field.set(o, null);
+					//Log.info("Cleaned field " + MappingUtil.debobfuscate(field.getType().getName()) + ':' + field.getName());
+				} catch (IllegalAccessException e) {
+					Log.warning("Exception cleaning " + o.getClass() + '@' + System.identityHashCode(o), e);
+				}
+			}
+			c = c.getSuperclass();
+		}
+	}
 }
