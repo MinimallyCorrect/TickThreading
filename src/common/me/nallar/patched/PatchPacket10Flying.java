@@ -18,7 +18,7 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 
 	@Override
 	public void processPacket(NetHandler par1NetHandler) {
-		if (moving && yPosition != -999.0D && stance != -999.0D && par1NetHandler instanceof NetServerHandler) {
+		if (TickThreading.instance.antiCheatNotify && moving && yPosition != -999.0D && stance != -999.0D && par1NetHandler instanceof NetServerHandler) {
 			NetServerHandler nsh = (NetServerHandler) par1NetHandler;
 			if (nsh.teleported) {
 				nsh.teleported = false;
@@ -48,8 +48,10 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 					ServerConfigurationManager serverConfigurationManager = MinecraftServer.getServer().getConfigurationManager();
 					speed /= allowedSpeedMultiplier(entityPlayerMP);
 					if ((currentTime + 30000) < nsh.lastNotify && !serverConfigurationManager.areCommandsAllowed(entityPlayerMP.username) && (averageSpeed > 50 || (!entityPlayerMP.isRiding() && averageSpeed > 20))) {
-						if (TickThreading.instance.antiCheat) {
+						if (TickThreading.instance.antiCheatKick) {
 							nsh.kickPlayerFromServer("You moved too quickly. " + TableFormatter.formatDoubleWithPrecision(averageSpeed, 3) + "m/s");
+						} else {
+							entityPlayerMP.sendChatToPlayer("You moved too quickly. " + TableFormatter.formatDoubleWithPrecision(averageSpeed, 3) + "m/s");
 						}
 						Redirects.notifyAdmins(entityPlayerMP.username + " was travelling too fast: " + TableFormatter.formatDoubleWithPrecision(averageSpeed, 3) + "m/s");
 						nsh.lastNotify = currentTime;

@@ -69,7 +69,8 @@ public class TickThreading {
 	public int chunkGCInterval = 600;
 	private int targetTPS = 20;
 	public boolean concurrentNetworkTicks = false;
-	public boolean antiCheat = false;
+	public boolean antiCheatKick = false;
+	public boolean antiCheatNotify = false;
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load
@@ -143,8 +144,10 @@ public class TickThreading {
 		targetTPSProperty.comment = "TPS the server should try to run at.";
 		Property concurrentNetworkTicksProperty = config.get(Configuration.CATEGORY_GENERAL, "concurrentNetworkTicks", concurrentNetworkTicks);
 		concurrentNetworkTicksProperty.comment = "Whether network ticks should be ran in the main thread.";
-		Property antiCheatProperty = config.get(Configuration.CATEGORY_GENERAL, "antiCheat", antiCheat);
-		antiCheatProperty.comment = "Whether to enable some experimental anti-cheat features included in TT";
+		Property antiCheatKickProperty = config.get(Configuration.CATEGORY_GENERAL, "antiCheatKick", antiCheatKick);
+		antiCheatKickProperty.comment = "Whether to kick players for detected cheating";
+		Property antiCheatNotifyProperty = config.get(Configuration.CATEGORY_GENERAL, "antiCheatNotify", antiCheatNotify);
+		antiCheatNotifyProperty.comment = "Whether to notify admins if TT anti-cheat detects cheating";
 		config.save();
 
 		TicksCommand.name = ticksCommandName.value;
@@ -171,7 +174,8 @@ public class TickThreading {
 		shouldLoadSpawn = shouldLoadSpawnProperty.getBoolean(shouldLoadSpawn);
 		waitForEntityTickCompletion = waitForEntityTickProperty.getBoolean(waitForEntityTickCompletion);
 		concurrentNetworkTicks = concurrentNetworkTicksProperty.getBoolean(concurrentNetworkTicks);
-		antiCheat = antiCheatProperty.getBoolean(antiCheat);
+		antiCheatKick = antiCheatKickProperty.getBoolean(antiCheatKick);
+		antiCheatNotify = antiCheatNotifyProperty.getBoolean(antiCheatNotify);
 		int[] disabledDimensions = disabledFastMobSpawningDimensionsProperty.getIntList();
 		disabledFastMobSpawningDimensions = new HashSet<Integer>(disabledDimensions.length);
 		for (int disabledDimension : disabledDimensions) {
