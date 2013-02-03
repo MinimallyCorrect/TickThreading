@@ -309,6 +309,35 @@ public final class TickManager {
 		return tf;
 	}
 
+	public TableFormatter writeEntityStats(TableFormatter tf) {
+		tf
+				.heading("Main")
+				.heading("Map")
+				.heading("Region");
+		tf
+				.row(entityList.size())
+				.row(getTotalEntityCountFromMap())
+				.row(getTotalEntityCountFromRegions());
+		tf.finishTable();
+		return tf;
+	}
+
+	private int getTotalEntityCountFromRegions() {
+		int count = 0;
+		for (EntityTickRegion entityTickRegion : entityCallables.values()) {
+			count += entityTickRegion.size();
+		}
+		return count;
+	}
+
+	private int getTotalEntityCountFromMap() {
+		int count = 0;
+		for (Map.Entry<Class<?>, Integer> entry : entityClassToCountMap.entrySet()) {
+			count += entry.getValue();
+		}
+		return count;
+	}
+
 	public int getEntityCount(Class<?> clazz) {
 		int count = 0;
 		for (Map.Entry<Class<?>, Integer> entry : entityClassToCountMap.entrySet()) {

@@ -27,6 +27,12 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 	}
 
 	@Override
+	@Declare
+	public void clearTileCount() {
+		this.numberOfTilesToUpdate = 0;
+	}
+
+	@Override
 	public void sendThisChunkToPlayer(EntityPlayerMP par1EntityPlayerMP) {
 		if (this.playersInChunk.remove(par1EntityPlayerMP)) {
 			Packet51MapChunk packet51MapChunk = new Packet51MapChunk();
