@@ -1,11 +1,11 @@
 package me.nallar.patched;
 
+import javassist.is.faulty.Redirects;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.NetServerHandler;
 import net.minecraft.network.packet.NetHandler;
 import net.minecraft.network.packet.Packet10Flying;
-import net.minecraft.network.packet.Packet3Chat;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.ServerConfigurationManager;
 
@@ -45,7 +45,7 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 					speed /= allowedSpeedMultiplier(entityPlayerMP);
 					if (!serverConfigurationManager.areCommandsAllowed(entityPlayerMP.username) && (averageSpeed > 50 || (!entityPlayerMP.isRiding() && averageSpeed > 20))) {
 						nsh.kickPlayerFromServer("You moved too quickly!");
-						serverConfigurationManager.sendPacketToAllPlayers(new Packet3Chat(entityPlayerMP.username + " was caught speed-hacking or has a terrible connection"));
+						Redirects.notifyAdmins(entityPlayerMP.username + " was caught speed-hacking or has a bad connection");
 					}
 					nsh.lastPZ = this.zPosition;
 					nsh.lastPX = this.xPosition;
