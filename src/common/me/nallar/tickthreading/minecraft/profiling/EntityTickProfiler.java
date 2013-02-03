@@ -3,6 +3,7 @@ package me.nallar.tickthreading.minecraft.profiling;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -15,11 +16,16 @@ import org.cliffc.high_scale_lib.NonBlockingHashMap;
 
 public class EntityTickProfiler {
 	private int ticks;
+	private StringBuffer slowTicks = new StringBuffer(); // buffer for threadsafety
 
-	public void record(Class<?> clazz, long time) {
+
+	public void record(Object o, long time) {
 		if (time < 0) {
 			time = 0;
+		} else if (time > 25000000) {
+			slowTicks.append("\n" + o + " took too long: " + time / 1000000 + "ms"); // No chained append for threadsafety
 		}
+		Class<?> clazz = o.getClass();
 		getTime(clazz).addAndGet(time);
 		getInvocationCount(clazz).incrementAndGet();
 	}
@@ -66,6 +72,7 @@ public class EntityTickProfiler {
 					.row(invocationCount.get(sortedKeysByTimePerTick.get(i)));
 		}
 		tf.finishTable();
+		tf.sb.append(slowTicks);
 		return tf;
 	}
 

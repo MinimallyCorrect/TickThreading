@@ -66,7 +66,7 @@ public class EntityTickRegion extends TickRegion {
 					// Entities are supposed to move, of course this will happen!
 				}
 				if (profilingEnabled) {
-					entityTickProfiler.record(entity.getClass(), System.nanoTime() - startTime);
+					entityTickProfiler.record(entity, System.nanoTime() - startTime);
 				}
 			}
 		} catch (Throwable throwable) {

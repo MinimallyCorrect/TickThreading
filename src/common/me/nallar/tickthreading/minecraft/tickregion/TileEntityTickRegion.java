@@ -147,7 +147,7 @@ public class TileEntityTickRegion extends TickRegion {
 					this.xPlusLock.unlock();
 				}
 				if (profilingEnabled) {
-					entityTickProfiler.record(tileEntity.getClass(), System.nanoTime() - startTime);
+					entityTickProfiler.record(tileEntity, System.nanoTime() - startTime);
 				}
 			}
 		}
