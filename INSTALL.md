@@ -13,5 +13,5 @@ Extra Performance Hints For Servers
 ==========
 
 - Your start.bat/sh should look something like this (replace 8192 with the RAM the server should be allowed to use, in megabytes):
-- java -server -XX:UseSSE=4 -XX:+UseCMSCompactAtFullCollection -XX:ParallelGCThreads=6 -XX:+UseConcMarkSweepGC -XX:+DisableExplicitGC -XX:+CMSIncrementalMode -XX:+CMSIncrementalPacing -XX:+UseCompressedOops -XX:+AggressiveOpts -Xmx8192M -jar server.jar nogui
+- java -server -XX:+HeapDumpOnOutOfMemoryError -XX:UseSSE=4 -XX:+UseCMSCompactAtFullCollection -XX:ParallelGCThreads=6 -XX:+UseConcMarkSweepGC -XX:+DisableExplicitGC -XX:+CMSIncrementalMode -XX:+CMSIncrementalPacing -XX:+UseCompressedOops -XX:+AggressiveOpts -Xmx8192M -jar server.jar nogui
 - Replace the "6" in -XX:ParallelGCThreads=6 with the number of cores your server has.
