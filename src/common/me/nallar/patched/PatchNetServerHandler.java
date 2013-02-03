@@ -21,8 +21,14 @@ public abstract class PatchNetServerHandler extends NetServerHandler {
 	public long lastNotify_;
 
 	public void construct() {
-		teleported = 20;
+		teleported = 30;
 		averageSpeed = -1000;
+	}
+
+	@Override
+	@Declare
+	public void setHasMoved() {
+		this.hasMoved = true;
 	}
 
 	public PatchNetServerHandler(MinecraftServer par1, INetworkManager par2, EntityPlayerMP par3) {

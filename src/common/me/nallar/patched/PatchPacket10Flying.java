@@ -1,7 +1,6 @@
 package me.nallar.patched;
 
 import javassist.is.faulty.Redirects;
-import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.util.TableFormatter;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -27,6 +26,7 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 			nsh.averageSpeed = -50d;
 			nsh.teleported--;
 		} else {
+			nsh.setHasMoved();
 			if (TickThreading.instance.antiCheatNotify && moving && yPosition != -999.0D && stance != -999.0D) {
 				long currentTime = System.currentTimeMillis();
 				long time = Math.min(5000, currentTime - nsh.lastMovement);
