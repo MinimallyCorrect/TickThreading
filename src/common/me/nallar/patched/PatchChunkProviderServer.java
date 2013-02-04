@@ -69,16 +69,16 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 	 */
 	@Override
 	public boolean unload100OldestChunks() {
-		if (worldObj.tickCount % 2 == 0 && !this.worldObj.canNotSave && !chunksToUnload.isEmpty()) {
+		if (worldObj.tickCount % 3 == 0 && !this.worldObj.canNotSave && !chunksToUnload.isEmpty()) {
 			int i = 0;
 			for (ChunkCoordIntPair forced : worldObj.getPersistentChunks().keySet()) {
 				if (this.chunksToUnload.remove(ChunkCoordIntPair.chunkXZ2Int(forced.chunkXPos, forced.chunkZPos)) && chunksToUnload.isEmpty()) {
-					i = 400;
+					i = 600;
 					break;
 				}
 			}
 
-			for (; i < 400; ++i) {
+			for (; i < 600; ++i) {
 				long var2;
 				synchronized (chunksToUnload) {
 					Iterator<Long> i$ = chunksToUnload.iterator();
