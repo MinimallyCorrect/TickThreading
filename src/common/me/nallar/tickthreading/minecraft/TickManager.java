@@ -248,8 +248,10 @@ public final class TickManager {
 
 	public void unload() {
 		threadManager.stop();
-		for (TickRegion tickRegion : tickRegions) {
-			tickRegion.die();
+		synchronized (tickRegions) {
+			for (TickRegion tickRegion : tickRegions) {
+				tickRegion.die();
+			}
 		}
 		tickRegions.clear();
 		entityList.clear();
