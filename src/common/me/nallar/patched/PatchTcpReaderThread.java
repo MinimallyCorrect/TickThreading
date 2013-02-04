@@ -5,6 +5,7 @@ import net.minecraft.server.ThreadMinecraftServer;
 import net.minecraft.util.AxisAlignedBB;
 
 public abstract class PatchTcpReaderThread extends ThreadMinecraftServer {
+	int count;
 	final TcpConnection tcpConnection;
 
 	public PatchTcpReaderThread(TcpConnection tcpConnection, String name) {
@@ -20,11 +21,13 @@ public abstract class PatchTcpReaderThread extends ThreadMinecraftServer {
 			while (tcpConnection.isRunning()) {
 				while (true) {
 					if (!tcpConnection.readNetworkPacket()) {
-						AxisAlignedBB.getAABBPool().cleanPool();
 						try {
 							sleep(2L);
 						} catch (InterruptedException ignored) {
 						}
+					}
+					if (count++ % 30 == 0) {
+						AxisAlignedBB.getAABBPool().cleanPool();
 					}
 				}
 			}
