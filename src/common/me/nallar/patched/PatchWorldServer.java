@@ -121,7 +121,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 			this.difficultySetting = 3;
 		}
 
-		if (tickCount % 600 == 0) {
+		if (tickCount % 200 == 0) {
 			this.provider.worldChunkMgr.cleanupCache();
 		}
 
@@ -139,11 +139,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 
 		this.theProfiler.endStartSection("chunkSource");
 		this.chunkProvider.unload100OldestChunks();
-		int var4 = this.calculateSkylightSubtracted(1.0F);
-
-		if (var4 != this.skylightSubtracted) {
-			this.skylightSubtracted = var4;
-		}
+		this.skylightSubtracted = this.calculateSkylightSubtracted(1.0F);
 
 		this.sendAndApplyBlockEvents();
 		this.worldInfo.incrementTotalWorldTime(this.worldInfo.getWorldTotalTime() + 1L);

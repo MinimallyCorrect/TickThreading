@@ -63,6 +63,7 @@
 			<!-- Same list was used by multiple threads -->
 			<addAll fromClass="me.nallar.patched.PatchWorld"/>
 			<profile>updateEntities</profile>
+			<profile>setActivePlayerChunksAndCheckLight</profile>
 			<public>releaseEntitySkin</public>
 			<newInitializer field="activeChunkSet" code="java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap());"/>
 		</class>
