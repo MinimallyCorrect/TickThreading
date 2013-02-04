@@ -261,13 +261,17 @@ public final class TickManager {
 
 	public void writeStats(TableFormatter tf) {
 		long timeTotal = 0;
-		long[] tickTimes = MinecraftServer.getServer().worldTickTimes.get(world.provider.dimensionId);
-		for (long tick : tickTimes) {
-			timeTotal += tick;
-		}
-		double time = (timeTotal) / (double) tickTimes.length;
-		if (time == 0) {
-			time = 0.1;
+		double time = Double.NaN;
+		try {
+			long[] tickTimes = MinecraftServer.getServer().worldTickTimes.get(world.provider.dimensionId);
+			for (long tick : tickTimes) {
+				timeTotal += tick;
+			}
+			time = (timeTotal) / (double) tickTimes.length;
+			if (time == 0) {
+				time = 0.1;
+			}
+		} catch(NullPointerException ignored) {
 		}
 		tf
 				.row(Log.name(world))
