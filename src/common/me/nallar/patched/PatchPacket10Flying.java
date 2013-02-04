@@ -27,7 +27,7 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 			nsh.teleported--;
 		} else {
 			nsh.setHasMoved();
-			if (TickThreading.instance.antiCheatNotify && moving && yPosition != -999.0D && stance != -999.0D) {
+			if (false && TickThreading.instance.antiCheatNotify && moving && yPosition != -999.0D && stance != -999.0D) {
 				long currentTime = System.currentTimeMillis();
 				long time = Math.min(5000, currentTime - nsh.lastMovement);
 				double dX = (xPosition - nsh.lastPX);
