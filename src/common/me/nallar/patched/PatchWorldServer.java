@@ -51,7 +51,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		int var2 = this.pendingTickListEntries.size();
 
 		if (var2 != this.field_73064_N.size()) {
-			FMLLog.warning("TickNextTick list out of sync - attempting to recover!");
+			FMLLog.severe("TickNextTick list out of sync - attempting to recover!");
 			Iterator<NextTickListEntry> nextTickListEntryIterator = (Iterator<NextTickListEntry>) field_73064_N.iterator();
 			while (nextTickListEntryIterator.hasNext()) {
 				NextTickListEntry nextTickListEntry = nextTickListEntryIterator.next();
