@@ -45,7 +45,7 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 					if (Double.isInfinite(speed) || Double.isNaN(speed)) {
 						speed = 1;
 					}
-					double averageSpeed = (nsh.averageSpeed = ((nsh.averageSpeed * 10 + speed) / 11));
+					double averageSpeed = (nsh.averageSpeed = ((nsh.averageSpeed * 50 + speed) / 51));
 					ServerConfigurationManager serverConfigurationManager = MinecraftServer.getServer().getConfigurationManager();
 					speed /= allowedSpeedMultiplier(entityPlayerMP);
 					if (currentTime > nsh.lastNotify && !serverConfigurationManager.areCommandsAllowed(entityPlayerMP.username) && (averageSpeed > 50 || (!entityPlayerMP.isRiding() && averageSpeed > 20))) {
