@@ -2,6 +2,7 @@ package me.nallar.patched;
 
 import net.minecraft.network.TcpConnection;
 import net.minecraft.server.ThreadMinecraftServer;
+import net.minecraft.util.AxisAlignedBB;
 
 public abstract class PatchTcpReaderThread extends ThreadMinecraftServer {
 	final TcpConnection tcpConnection;
@@ -19,6 +20,7 @@ public abstract class PatchTcpReaderThread extends ThreadMinecraftServer {
 			while (tcpConnection.isRunning()) {
 				while (true) {
 					if (!tcpConnection.readNetworkPacket()) {
+						AxisAlignedBB.getAABBPool().cleanPool();
 						try {
 							sleep(2L);
 						} catch (InterruptedException ignored) {
