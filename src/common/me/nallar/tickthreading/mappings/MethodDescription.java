@@ -82,13 +82,21 @@ public class MethodDescription {
 	}
 
 	public CtMethod inClass(CtClass ctClass) {
+		CtMethod possible = null;
 		for (CtMethod ctMethod : ctClass.getDeclaredMethods()) {
-			if (new MethodDescription(ctMethod).equals(this)) {
+			MethodDescription methodDescription = new MethodDescription(ctMethod);
+			if (methodDescription.equals(this)) {
 				return ctMethod;
+			}
+			if (methodDescription.name.equals(this.name) && (!this.parameters.isEmpty() && methodDescription.getParameterList().size() == this.getParameterList().size())) {
+				possible = ctMethod;
 			}
 		}
 		if (isExact()) {
 			Log.warning("Failed to find exact match for " + this.getMCPName() + ", trying to find similar methods.");
+		}
+		if (possible != null) {
+			return possible;
 		}
 		for (CtMethod ctMethod : ctClass.getDeclaredMethods()) {
 			if (new MethodDescription(ctMethod).similar(this)) {
