@@ -273,6 +273,12 @@
 			<newField field="tickLock" class="java.lang.Object" static=""/>
 			<synchronize field="tickLock">updateGridIfNull</synchronize>
 		</class>
+		<class id="thermalexpansion.transport.GridLiquid">
+			<synchronize>transferLiquid</synchronize>
+		</class>
+		<class id="thermalexpansion.transport.GridEnergy">
+			<synchronize>transferEnergy</synchronize>
+		</class>
 	</thermalExpansionTransport>
 	<redPowerCore>
 		<class id="com.eloraam.redpower.core.RedPowerLib">
