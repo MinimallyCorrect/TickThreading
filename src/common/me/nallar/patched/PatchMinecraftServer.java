@@ -372,6 +372,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				exceptionCount.put(id, c);
 			}
 		}
+		AxisAlignedBB.getAABBPool().cleanPool();
 	}
 
 	@Override
