@@ -74,7 +74,7 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 	private static double allowedSpeedMultiplier(EntityPlayerMP entityPlayerMP) {
 		for (int i = 0; i < 4; i++) {
 			if (entityPlayerMP.inventory.armorItemInSlot(i) != null) {
-				return 1.5;
+				return 2;
 			}
 		}
 		return 1;
