@@ -4,15 +4,22 @@ import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.Random;
 
+import com.google.common.collect.ImmutableSetMultimap;
+
+import cpw.mods.fml.common.FMLLog;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.ThreadManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.block.Block;
+import net.minecraft.crash.CrashReport;
+import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ReportedException;
 import net.minecraft.world.ChunkCoordIntPair;
+import net.minecraft.world.NextTickListEntry;
 import net.minecraft.world.SpawnerAnimals;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.WorldServer;
@@ -21,6 +28,7 @@ import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import net.minecraft.world.storage.ISaveHandler;
+import net.minecraftforge.common.ForgeChunkManager;
 
 public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	private Iterator chunkCoordIterator;
@@ -36,6 +44,73 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	public void construct() {
 		randoms = new ThreadLocalRandom();
 		threadManager = new ThreadManager(TickThreading.instance.getThreadCount(), "Chunk Updates for " + Log.name(this));
+	}
+
+	@Override
+	public boolean tickUpdates(boolean par1) {
+		int var2 = this.pendingTickListEntries.size();
+
+		if (var2 != this.field_73064_N.size()) {
+			FMLLog.warning("TickNextTick list out of sync - attempting to recover!");
+			Iterator<NextTickListEntry> nextTickListEntryIterator = (Iterator<NextTickListEntry>) field_73064_N.iterator();
+			while (nextTickListEntryIterator.hasNext()) {
+				NextTickListEntry nextTickListEntry = nextTickListEntryIterator.next();
+				if (!pendingTickListEntries.contains(nextTickListEntry)) {
+					nextTickListEntryIterator.remove();
+				}
+			}
+			nextTickListEntryIterator = (Iterator<NextTickListEntry>) pendingTickListEntries.iterator();
+			while (nextTickListEntryIterator.hasNext()) {
+				NextTickListEntry nextTickListEntry = nextTickListEntryIterator.next();
+				if (!field_73064_N.contains(nextTickListEntry)) {
+					nextTickListEntryIterator.remove();
+				}
+			}
+			return true;
+		} else {
+			if (var2 > 1000) {
+				var2 = 1000;
+			}
+
+			ImmutableSetMultimap<ChunkCoordIntPair, ForgeChunkManager.Ticket> persistentChunks = getPersistentChunks();
+			for (int var3 = 0; var3 < var2; ++var3) {
+				NextTickListEntry var4 = (NextTickListEntry) this.pendingTickListEntries.first();
+
+				if (!par1 && var4.scheduledTime > this.worldInfo.getWorldTotalTime()) {
+					break;
+				}
+
+				this.pendingTickListEntries.remove(var4);
+				this.field_73064_N.remove(var4);
+				boolean isForced = persistentChunks.containsKey(new ChunkCoordIntPair(var4.xCoord >> 4, var4.zCoord >> 4));
+				byte var5 = isForced ? (byte) 0 : 8;
+
+				if (this.checkChunksExist(var4.xCoord - var5, var4.yCoord - var5, var4.zCoord - var5, var4.xCoord + var5, var4.yCoord + var5, var4.zCoord + var5)) {
+					int var6 = this.getBlockId(var4.xCoord, var4.yCoord, var4.zCoord);
+
+					if (var6 == var4.blockID && var6 > 0) {
+						try {
+							Block.blocksList[var6].updateTick(this, var4.xCoord, var4.yCoord, var4.zCoord, this.rand);
+						} catch (Throwable var13) {
+							CrashReport var8 = CrashReport.makeCrashReport(var13, "Exception while ticking a block");
+							CrashReportCategory var9 = var8.makeCategory("Block being ticked");
+							int var10;
+
+							try {
+								var10 = this.getBlockMetadata(var4.xCoord, var4.yCoord, var4.zCoord);
+							} catch (Throwable var12) {
+								var10 = -1;
+							}
+
+							CrashReportCategory.func_85068_a(var9, var4.xCoord, var4.yCoord, var4.zCoord, var6, var10);
+							throw new ReportedException(var8);
+						}
+					}
+				}
+			}
+
+			return !this.pendingTickListEntries.isEmpty();
+		}
 	}
 
 	@Override
