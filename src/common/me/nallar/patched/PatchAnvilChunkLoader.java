@@ -34,7 +34,9 @@ public abstract class PatchAnvilChunkLoader extends AnvilChunkLoader {
 	private Cache<Long, NBTTagCompound> chunkCache;
 
 	public void construct() {
-		chunkCache = CacheBuilder.newBuilder().maximumSize(TickThreading.instance.chunkCacheSize).build();
+		if (TickThreading.instance.chunkCacheSize > 0) {
+			chunkCache = CacheBuilder.newBuilder().maximumSize(TickThreading.instance.chunkCacheSize).build();
+		}
 	}
 
 	public PatchAnvilChunkLoader(File par1File) {
@@ -59,7 +61,7 @@ public abstract class PatchAnvilChunkLoader extends AnvilChunkLoader {
 
 		if (var4 == null) {
 			long cacheHash = hash(par2, par3);
-			var4 = chunkCache.getIfPresent(cacheHash);
+			var4 = chunkCache == null ? null : chunkCache.getIfPresent(cacheHash);
 
 			if (var4 == null) {
 				DataInputStream var10 = RegionFileCache.getChunkInputStream(this.chunkSaveLocation, par2, par3);
@@ -104,6 +106,9 @@ public abstract class PatchAnvilChunkLoader extends AnvilChunkLoader {
 
 			var1 = (AnvilChunkLoaderPending) this.chunksToRemove.remove(0);
 			this.pendingAnvilChunksCoordinates.remove(var1.chunkCoordinate);
+			if (chunkCache != null) {
+				chunkCache.put(hash(var1.chunkCoordinate.chunkXPos, var1.chunkCoordinate.chunkZPos), var1.nbtTags);
+			}
 		}
 
 		try {
@@ -117,7 +122,7 @@ public abstract class PatchAnvilChunkLoader extends AnvilChunkLoader {
 			}
 		}
 
-		chunkCache.put(hash(var1.chunkCoordinate.chunkXPos, var1.chunkCoordinate.chunkZPos), var1.nbtTags);
+
 
 		return true;
 	}
