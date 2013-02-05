@@ -21,7 +21,7 @@ public abstract class PatchNetServerHandler extends NetServerHandler {
 	public long lastNotify_;
 
 	public void construct() {
-		teleported = 30;
+		teleported = 3;
 		averageSpeed = -1000;
 	}
 
