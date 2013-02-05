@@ -187,8 +187,8 @@
 		<class id="net.minecraft.world.ChunkCoordIntPair">
 			<addAll fromClass="me.nallar.patched.PatchChunkCoordIntPair"/>
 		</class>
-		<class id="net.minecraft.crash.CrashReportCategory">
-			<addAll fromClass="me.nallar.patched.PatchClassReportCategory"/>
+		<class id="net.minecraft.crash.CrashReport">
+			<addAll fromClass="me.nallar.patched.PatchCrashReport"/>
 		</class>
 		<class id="net.minecraft.block.BlockRedstoneWire">
 			<synchronize>calculateCurrentChanges,updateAndPropagateCurrentStrength</synchronize>
@@ -275,7 +275,7 @@
 			<synchronize field="tickLock">updateGridIfNull</synchronize>
 		</class>
 		<class id="thermalexpansion.transport.GridLiquid">
-			<synchronize>transferLiquid,extractLiquid,removeNode,removeConduit,setNewGrid,changeMode,increaseTracker,addNode,addConduit</synchronize>
+			<synchronize>transferLiquid,removeNode,removeConduit,setNewGrid,changeMode,increaseTracker,addNode,addConduit</synchronize>
 		</class>
 		<class id="thermalexpansion.transport.GridEnergy">
 			<synchronize>transferEnergy,removeNode,removeConduit,setNewGrid,changeMode,increaseTracker,addNode,addConduit</synchronize>
