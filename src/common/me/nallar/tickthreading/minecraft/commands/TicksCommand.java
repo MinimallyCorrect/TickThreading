@@ -27,20 +27,20 @@ public class TicksCommand extends Command {
 		World world = DimensionManager.getWorld(0);
 		boolean entities = false;
 		try {
+			if (!arguments.isEmpty() && "e".equals(arguments.get(0))) {
+				entities = true;
+				arguments.remove(0);
+			}
 			if (!arguments.isEmpty()) {
 				try {
-					if ("e".equals(arguments.get(0))) {
-						entities = true;
-					} else {
-						world = DimensionManager.getWorld(Integer.valueOf(arguments.get(0)));
-					}
+					world = DimensionManager.getWorld(Integer.valueOf(arguments.get(0)));
 				} catch (Exception ignored) {
 				}
 			} else if (commandSender instanceof Entity) {
 				world = ((Entity) commandSender).worldObj;
 			}
 		} catch (Exception e) {
-			sendChat(commandSender, "Usage: /ticks [dimensionid]");
+			sendChat(commandSender, "Usage: /ticks [e?] [dimensionid]");
 			return;
 		}
 		if (entities) {

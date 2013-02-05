@@ -19,6 +19,7 @@ import me.nallar.tickthreading.minecraft.tickregion.TileEntityTickRegion;
 import me.nallar.tickthreading.util.TableFormatter;
 import me.nallar.unsafe.UnsafeUtil;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
@@ -329,11 +330,13 @@ public final class TickManager {
 		tf
 				.heading("Main")
 				.heading("Map")
-				.heading("Region");
+				.heading("Region")
+				.heading("Player");
 		tf
 				.row(entityList.size())
 				.row(getTotalEntityCountFromMap())
-				.row(getTotalEntityCountFromRegions());
+				.row(getTotalEntityCountFromRegions())
+				.row(getEntityCount(EntityPlayer.class));
 		tf.finishTable();
 		return tf;
 	}
