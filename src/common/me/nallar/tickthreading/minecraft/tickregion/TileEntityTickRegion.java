@@ -124,7 +124,6 @@ public class TileEntityTickRegion extends TickRegion {
 				} else if (tileEntity.isInvalid()) {
 					tileEntitiesIterator.remove();
 					manager.removed(tileEntity);
-					tileEntity.onChunkUnload();
 					//Log.fine("Removed tile entity: " + xPos + ", " + tileEntity.yCoord + ", " + zPos + "\ttype:" + tileEntity.getClass().toString());
 					if (chunkProvider.chunkExists(xPos >> 4, zPos >> 4)) {
 						Chunk chunk = world.getChunkFromChunkCoords(xPos >> 4, zPos >> 4);
