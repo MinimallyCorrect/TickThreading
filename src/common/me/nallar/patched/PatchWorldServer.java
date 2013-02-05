@@ -67,6 +67,11 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 					nextTickListEntryIterator.remove();
 				}
 			}
+			if (pendingTickListEntries.size() != field_73064_N.size()) {
+				FMLLog.severe("Failed to fix the TickNextTick lists, clearing them");
+				field_73064_N.clear();
+				pendingTickListEntries.clear();
+			}
 			return true;
 		} else {
 			if (var2 > 1000) {
