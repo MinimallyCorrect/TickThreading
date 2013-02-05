@@ -72,6 +72,7 @@ public class TickThreading {
 	public boolean antiCheatKick = false;
 	public boolean antiCheatNotify = true;
 	public boolean cleanWorlds = true;
+	public boolean lockRegionBorders = true;
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load
@@ -151,6 +152,8 @@ public class TickThreading {
 		antiCheatNotifyProperty.comment = "Whether to notify admins if TT anti-cheat detects cheating";
 		Property cleanWorldsProperty = config.get(Configuration.CATEGORY_GENERAL, "cleanWorlds", cleanWorlds);
 		cleanWorldsProperty.comment = "Whether to clean worlds on unload - this should fix some memory leaks due to mods holding on to world objects";
+		Property lockRegionBordersProperty = config.get(Configuration.CATEGORY_GENERAL, "lockRegionBorders", lockRegionBorders);
+		lockRegionBordersProperty.comment = "Whether to prevent blocks next to each other on region borders from ticking concurrently. false = faster but experimental";
 		config.save();
 
 		TicksCommand.name = ticksCommandName.value;

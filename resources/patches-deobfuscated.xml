@@ -394,6 +394,9 @@
 		</class>
 	</portalGun>
 	<twilightForest>
+		<class id="twilightforest.TFFeatureCache">
+			<synchronize>save</synchronize>
+		</class>
 		<class id="twilightforest.TFEventListener">
 			<synchronize>worldSave</synchronize>
 		</class>

@@ -271,7 +271,7 @@ public final class TickManager {
 			if (time == 0) {
 				time = 0.1;
 			}
-		} catch(NullPointerException ignored) {
+		} catch (NullPointerException ignored) {
 		}
 		tf
 				.row(Log.name(world))

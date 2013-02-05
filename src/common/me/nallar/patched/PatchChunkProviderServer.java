@@ -7,13 +7,12 @@ import java.util.Map;
 import java.util.Set;
 
 import cpw.mods.fml.common.FMLLog;
+import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
-import net.minecraft.crash.CrashReport;
-import net.minecraft.crash.CrashReportCategory;
+import me.nallar.unsafe.UnsafeAccess;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.IProgressUpdate;
-import net.minecraft.util.ReportedException;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
@@ -207,12 +206,8 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 						try {
 							var5 = this.currentChunkProvider.provideChunk(x, z);
 						} catch (Throwable var9) {
-							CrashReport var7 = CrashReport.makeCrashReport(var9, "Exception generating new chunk");
-							CrashReportCategory var8 = var7.makeCategory("Chunk to be generated");
-							var8.addCrashSection("Location", String.format("%d,%d", x, z));
-							var8.addCrashSection("Position hash", var3);
-							var8.addCrashSection("Generator", this.currentChunkProvider.makeString());
-							throw new ReportedException(var7);
+							Log.severe("Failed to generate a chunk in " + Log.name(worldObj) + " at chunk coords " + x + ',' + z);
+							UnsafeAccess.$.throwException(var9);
 						}
 					}
 				} else {

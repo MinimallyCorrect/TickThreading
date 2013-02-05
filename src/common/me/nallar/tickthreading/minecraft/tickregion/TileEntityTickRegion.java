@@ -6,6 +6,7 @@ import java.util.Set;
 
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickManager;
+import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
 import me.nallar.tickthreading.util.concurrent.SimpleMutex;
 import net.minecraft.tileentity.TileEntity;
@@ -22,35 +23,37 @@ public class TileEntityTickRegion extends TickRegion {
 
 	@Override
 	protected synchronized void setupLocks() {
-		TickRegion tickRegion = getCallable(regionX + 1, regionZ);
-		if (tickRegion != null) {
-			synchronized (tickRegion) {
-				if (xPlusLock == null) {
-					this.xPlusLock = tickRegion.xMinusLock = new SimpleMutex();
+		if (TickThreading.instance.lockRegionBorders) {
+			TickRegion tickRegion = getCallable(regionX + 1, regionZ);
+			if (tickRegion != null) {
+				synchronized (tickRegion) {
+					if (xPlusLock == null) {
+						this.xPlusLock = tickRegion.xMinusLock = new SimpleMutex();
+					}
 				}
 			}
-		}
-		tickRegion = getCallable(regionX - 1, regionZ);
-		if (tickRegion != null) {
-			synchronized (tickRegion) {
-				if (xMinusLock == null) {
-					this.xMinusLock = tickRegion.xPlusLock = new SimpleMutex();
+			tickRegion = getCallable(regionX - 1, regionZ);
+			if (tickRegion != null) {
+				synchronized (tickRegion) {
+					if (xMinusLock == null) {
+						this.xMinusLock = tickRegion.xPlusLock = new SimpleMutex();
+					}
 				}
 			}
-		}
-		tickRegion = getCallable(regionX, regionZ + 1);
-		if (tickRegion != null) {
-			synchronized (tickRegion) {
-				if (zPlusLock == null) {
-					this.zPlusLock = tickRegion.zMinusLock = new SimpleMutex();
+			tickRegion = getCallable(regionX, regionZ + 1);
+			if (tickRegion != null) {
+				synchronized (tickRegion) {
+					if (zPlusLock == null) {
+						this.zPlusLock = tickRegion.zMinusLock = new SimpleMutex();
+					}
 				}
 			}
-		}
-		tickRegion = getCallable(regionX, regionZ - 1);
-		if (tickRegion != null) {
-			synchronized (tickRegion) {
-				if (zMinusLock == null) {
-					this.zMinusLock = tickRegion.zPlusLock = new SimpleMutex();
+			tickRegion = getCallable(regionX, regionZ - 1);
+			if (tickRegion != null) {
+				synchronized (tickRegion) {
+					if (zMinusLock == null) {
+						this.zMinusLock = tickRegion.zPlusLock = new SimpleMutex();
+					}
 				}
 			}
 		}
@@ -63,6 +66,7 @@ public class TileEntityTickRegion extends TickRegion {
 		int maxPosition = (regionSize / 2) - 1;
 		int relativeXPos;
 		int relativeZPos;
+		boolean lockable = TickThreading.instance.lockRegionBorders;
 		boolean xMinusLocked = false;
 		boolean xPlusLocked = false;
 		boolean zMinusLocked = false;
@@ -88,23 +92,25 @@ public class TileEntityTickRegion extends TickRegion {
 			try {
 				xPos = tileEntity.xCoord;
 				zPos = tileEntity.zCoord;
-				relativeXPos = (xPos % regionSize) / 2;
-				relativeZPos = (zPos % regionSize) / 2;
-				xMinusLocked = relativeXPos == 0 && this.xMinusLock != null;
-				zMinusLocked = relativeZPos == 0 && this.zMinusLock != null;
-				xPlusLocked = relativeXPos == maxPosition && this.xPlusLock != null;
-				zPlusLocked = relativeZPos == maxPosition && this.zPlusLock != null;
-				if (xPlusLocked) {
-					this.xPlusLock.lock();
-				}
-				if (zPlusLocked) {
-					this.zPlusLock.lock();
-				}
-				if (zMinusLocked) {
-					this.zMinusLock.lock();
-				}
-				if (xMinusLocked) {
-					this.xMinusLock.lock();
+				if (lockable) {
+					relativeXPos = (xPos % regionSize) / 2;
+					relativeZPos = (zPos % regionSize) / 2;
+					xMinusLocked = relativeXPos == 0 && this.xMinusLock != null;
+					zMinusLocked = relativeZPos == 0 && this.zMinusLock != null;
+					xPlusLocked = relativeXPos == maxPosition && this.xPlusLock != null;
+					zPlusLocked = relativeZPos == maxPosition && this.zPlusLock != null;
+					if (xPlusLocked) {
+						this.xPlusLock.lock();
+					}
+					if (zPlusLocked) {
+						this.zPlusLock.lock();
+					}
+					if (zMinusLocked) {
+						this.zMinusLock.lock();
+					}
+					if (xMinusLocked) {
+						this.xMinusLock.lock();
+					}
 				}
 				if (manager.getHashCode(xPos, zPos) != hashCode) {
 					tileEntitiesIterator.remove();
@@ -134,17 +140,19 @@ public class TileEntityTickRegion extends TickRegion {
 						+ "\nticking: " + Log.toString(tileEntity) + " at x,y,z:" + xPos + ',' + tileEntity.yCoord + ',' + zPos
 						+ "\nTick region: " + toString() + ':', throwable);
 			} finally {
-				if (xMinusLocked) {
-					this.xMinusLock.unlock();
-				}
-				if (zMinusLocked) {
-					this.zMinusLock.unlock();
-				}
-				if (zPlusLocked) {
-					this.zPlusLock.unlock();
-				}
-				if (xPlusLocked) {
-					this.xPlusLock.unlock();
+				if (lockable) {
+					if (xMinusLocked) {
+						this.xMinusLock.unlock();
+					}
+					if (zMinusLocked) {
+						this.zMinusLock.unlock();
+					}
+					if (zPlusLocked) {
+						this.zPlusLock.unlock();
+					}
+					if (xPlusLocked) {
+						this.xPlusLock.unlock();
+					}
 				}
 				if (profilingEnabled) {
 					entityTickProfiler.record(tileEntity, System.nanoTime() - startTime);
