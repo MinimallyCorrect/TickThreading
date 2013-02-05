@@ -1,14 +1,26 @@
 package me.nallar.patched;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+
 import javassist.is.faulty.Redirects;
+import javassist.is.faulty.Timings;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.util.TableFormatter;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.NetServerHandler;
 import net.minecraft.network.packet.NetHandler;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet10Flying;
+import net.minecraft.network.packet.Packet56MapChunks;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.ServerConfigurationManager;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.ChunkCoordIntPair;
+import net.minecraft.world.WorldServer;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.world.ChunkWatchEvent;
 
 public abstract class PatchPacket10Flying extends Packet10Flying {
 	@Override
@@ -59,14 +71,11 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 					}
 					nsh.lastPZ = this.zPosition;
 					nsh.lastPX = this.xPosition;
-					synchronized (entityPlayerMP.loadedChunks) {
-						par1NetHandler.handleFlying(this);
-					}
 				}
-			} else {
-				synchronized (entityPlayerMP.loadedChunks) {
-					par1NetHandler.handleFlying(this);
-				}
+			}
+			synchronized (entityPlayerMP.loadedChunks) {
+				par1NetHandler.handleFlying(this);
+				sendChunks(entityPlayerMP);
 			}
 		}
 	}
@@ -78,5 +87,55 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 			}
 		}
 		return 1;
+	}
+
+	private static void sendChunks(EntityPlayerMP entityPlayerMP) {
+		NetServerHandler netServerHandler = entityPlayerMP.playerNetServerHandler;
+		if (!entityPlayerMP.loadedChunks.isEmpty()) {
+			long st = 0;
+			boolean timings = Timings.enabled;
+			if (timings) {
+				st = System.nanoTime();
+			}
+			ArrayList var6 = new ArrayList();
+			Iterator var7 = entityPlayerMP.loadedChunks.iterator();
+			ArrayList var8 = new ArrayList();
+
+			while (var7.hasNext() && var6.size() < 5) {
+				ChunkCoordIntPair var9 = (ChunkCoordIntPair) var7.next();
+				int x = var9.chunkXPos;
+				int z = var9.chunkZPos;
+				var7.remove();
+
+				var6.add(entityPlayerMP.worldObj.getChunkFromChunkCoords(x, z));
+				//BugFix: 16 makes it load an extra chunk, which isn't associated with a player, which makes it not unload unless a player walks near it.
+				//ToDo: Find a way to efficiently clean abandoned chunks.
+				//var8.addAll(((WorldServer) entityPlayerMP.worldObj).getAllTileEntityInBox(var9.chunkXPos * 16, 0, var9.chunkZPos * 16, var9.chunkXPos * 16 + 16, 256, var9.chunkZPos * 16 + 16));
+				var8.addAll(((WorldServer) entityPlayerMP.worldObj).getAllTileEntityInBox(x * 16, 0, z * 16, x * 16 + 15, 256, z * 16 + 15));
+			}
+
+			if (!var6.isEmpty()) {
+				netServerHandler.sendPacketToPlayer(new Packet56MapChunks(var6));
+				Iterator var11 = var8.iterator();
+
+				while (var11.hasNext()) {
+					Packet var5 = ((TileEntity) var11.next()).getDescriptionPacket();
+					if (var5 != null) {
+						netServerHandler.sendPacketToPlayer(var5);
+					}
+				}
+
+				var11 = var6.iterator();
+
+				while (var11.hasNext()) {
+					Chunk var10 = (Chunk) var11.next();
+					entityPlayerMP.getServerForPlayer().getEntityTracker().func_85172_a(entityPlayerMP, var10);
+					MinecraftForge.EVENT_BUS.post(new ChunkWatchEvent.Watch(var10.getChunkCoordIntPair(), entityPlayerMP));
+				}
+			}
+			if (timings) {
+				Timings.record("net.minecraft.entity.player.EntityPlayerMP/chunks", System.nanoTime() - st);
+			}
+		}
 	}
 }

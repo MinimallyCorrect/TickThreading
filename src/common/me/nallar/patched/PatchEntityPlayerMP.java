@@ -40,52 +40,5 @@ public abstract class PatchEntityPlayerMP extends EntityPlayerMP {
 
 			this.playerNetServerHandler.sendPacketToPlayer(new Packet29DestroyEntity(var2));
 		}
-
-		synchronized (loadedChunks) {
-			if (!this.loadedChunks.isEmpty()) {
-				long st = 0;
-				boolean timings = Timings.enabled;
-				if (timings) {
-					st = System.nanoTime();
-				}
-				ArrayList var6 = new ArrayList();
-				Iterator var7 = this.loadedChunks.iterator();
-				ArrayList var8 = new ArrayList();
-
-				while (var7.hasNext() && var6.size() < 5) {
-					ChunkCoordIntPair var9 = (ChunkCoordIntPair) var7.next();
-					int x = var9.chunkXPos;
-					int z = var9.chunkZPos;
-					var7.remove();
-
-					var6.add(this.worldObj.getChunkFromChunkCoords(x, z));
-					//BugFix: 16 makes it load an extra chunk, which isn't associated with a player, which makes it not unload unless a player walks near it.
-					//ToDo: Find a way to efficiently clean abandoned chunks.
-					//var8.addAll(((WorldServer) this.worldObj).getAllTileEntityInBox(var9.chunkXPos * 16, 0, var9.chunkZPos * 16, var9.chunkXPos * 16 + 16, 256, var9.chunkZPos * 16 + 16));
-					var8.addAll(((WorldServer) this.worldObj).getAllTileEntityInBox(x * 16, 0, z * 16, x * 16 + 15, 256, z * 16 + 15));
-				}
-
-				if (!var6.isEmpty()) {
-					this.playerNetServerHandler.sendPacketToPlayer(new Packet56MapChunks(var6));
-					Iterator var11 = var8.iterator();
-
-					while (var11.hasNext()) {
-						TileEntity var5 = (TileEntity) var11.next();
-						this.sendTileEntityToPlayer(var5);
-					}
-
-					var11 = var6.iterator();
-
-					while (var11.hasNext()) {
-						Chunk var10 = (Chunk) var11.next();
-						this.getServerForPlayer().getEntityTracker().func_85172_a(this, var10);
-						MinecraftForge.EVENT_BUS.post(new ChunkWatchEvent.Watch(var10.getChunkCoordIntPair(), this));
-					}
-				}
-				if (timings) {
-					Timings.record("net.minecraft.entity.player.EntityPlayerMP/chunks", System.nanoTime() - st);
-				}
-			}
-		}
 	}
 }
