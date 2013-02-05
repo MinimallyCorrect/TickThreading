@@ -192,42 +192,47 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 		// Lock the generation lock - ChunkProviderGenerate isn't threadsafe at all
 		// TODO: Possibly make ChunkProviderGenerate threadlocal? Would need many changes to
 		// structure code to get it to work properly.
-		synchronized (genLock) {
-			synchronized (lock) {
-				var5 = (Chunk) this.loadedChunkHashMap.getValueByKey(var3);
-				if (var5 != null) {
-					return var5;
-				}
-				var5 = (Chunk) this.loadingChunkHashMap.getValueByKey(var3);
-				if (var5 == null) {
-					if (this.currentChunkProvider == null) {
-						var5 = this.defaultEmptyChunk;
+		try {
+			synchronized (genLock) {
+				synchronized (lock) {
+					worldObj.worldGenInProgress.set(true);
+					var5 = (Chunk) this.loadedChunkHashMap.getValueByKey(var3);
+					if (var5 != null) {
+						return var5;
+					}
+					var5 = (Chunk) this.loadingChunkHashMap.getValueByKey(var3);
+					if (var5 == null) {
+						if (this.currentChunkProvider == null) {
+							var5 = this.defaultEmptyChunk;
+						} else {
+							try {
+								var5 = this.currentChunkProvider.provideChunk(x, z);
+							} catch (Throwable var9) {
+								Log.severe("Failed to generate a chunk in " + Log.name(worldObj) + " at chunk coords " + x + ',' + z);
+								UnsafeAccess.$.throwException(var9);
+							}
+						}
 					} else {
-						try {
-							var5 = this.currentChunkProvider.provideChunk(x, z);
-						} catch (Throwable var9) {
-							Log.severe("Failed to generate a chunk in " + Log.name(worldObj) + " at chunk coords " + x + ',' + z);
-							UnsafeAccess.$.throwException(var9);
+						if (this.currentChunkProvider != null) {
+							this.currentChunkProvider.recreateStructures(x, z);
 						}
 					}
-				} else {
-					if (this.currentChunkProvider != null) {
-						this.currentChunkProvider.recreateStructures(x, z);
+
+					if (var5 == null) {
+						throw new IllegalStateException("Null chunk was provided!");
 					}
-				}
 
-				if (var5 == null) {
-					throw new IllegalStateException("Null chunk was provided!");
-				}
+					this.loadingChunkHashMap.remove(var3);
+					this.loadedChunkHashMap.add(var3, var5);
+					synchronized (loadedChunks) {
+						this.loadedChunks.add(var5);
+					}
 
-				this.loadingChunkHashMap.remove(var3);
-				this.loadedChunkHashMap.add(var3, var5);
-				synchronized (loadedChunks) {
-					this.loadedChunks.add(var5);
+					var5.populateChunk(this, this, x, z);
 				}
-
-				var5.populateChunk(this, this, x, z);
 			}
+		} finally {
+			worldObj.worldGenInProgress.set(false);
 		}
 
 		// TODO: Do initial mob spawning here - doing it while locked is stupid and can cause deadlocks with some bukkit plugins

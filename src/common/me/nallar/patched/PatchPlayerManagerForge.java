@@ -5,15 +5,16 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.patcher.Declare;
+import me.nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock;
 import net.minecraft.server.management.PlayerInstance;
 import net.minecraft.server.management.PlayerManager;
 import net.minecraft.world.WorldServer;
 
 public abstract class PatchPlayerManagerForge extends PlayerManager {
 	@Declare
-	public java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock playerUpdateLock_;
+	public java.util.concurrent.locks.Lock playerUpdateLock_;
 	@Declare
-	public java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock playersUpdateLock_;
+	public java.util.concurrent.locks.Lock playersUpdateLock_;
 
 	public void construct() {
 		ReentrantReadWriteLock reentrantReadWriteLock = new ReentrantReadWriteLock();

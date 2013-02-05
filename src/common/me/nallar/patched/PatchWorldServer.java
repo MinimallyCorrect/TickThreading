@@ -21,6 +21,7 @@ import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ReportedException;
 import net.minecraft.world.ChunkCoordIntPair;
+import net.minecraft.world.IWorldAccess;
 import net.minecraft.world.NextTickListEntry;
 import net.minecraft.world.SpawnerAnimals;
 import net.minecraft.world.Teleporter;
@@ -37,6 +38,8 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	private ThreadManager threadManager;
 	private ThreadLocal<Random> randoms;
 	@Declare
+	public ThreadLocal<Boolean> worldGenInProgress_;
+	@Declare
 	public int tickCount_;
 
 	public PatchWorldServer(MinecraftServer par1MinecraftServer, ISaveHandler par2ISaveHandler, String par3Str, int par4, WorldSettings par5WorldSettings, Profiler par6Profiler) {
@@ -48,6 +51,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		threadManager = new ThreadManager(TickThreading.instance.getThreadCount(), "Chunk Updates for " + Log.name(this));
 		field_73064_N = null;
 		pendingTickListEntries = new TreeHashSet();
+		worldGenInProgress = new BooleanThreadLocal();
 	}
 
 	@Override
@@ -374,6 +378,24 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		@Override
 		public Random initialValue() {
 			return new Random();
+		}
+	}
+
+	@Override
+	public void markBlockForUpdate(int par1, int par2, int par3)
+	{
+		if (!worldGenInProgress.get()) {
+			for (int var4 = 0; var4 < this.worldAccesses.size(); ++var4)
+			{
+				((IWorldAccess)this.worldAccesses.get(var4)).markBlockForUpdate(par1, par2, par3);
+			}
+		}
+	}
+
+	public static class BooleanThreadLocal extends ThreadLocal<Boolean> {
+		@Override
+		public Boolean initialValue() {
+			return false;
 		}
 	}
 }
