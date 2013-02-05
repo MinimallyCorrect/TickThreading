@@ -106,9 +106,6 @@ public abstract class PatchAnvilChunkLoader extends AnvilChunkLoader {
 
 			var1 = (AnvilChunkLoaderPending) this.chunksToRemove.remove(0);
 			this.pendingAnvilChunksCoordinates.remove(var1.chunkCoordinate);
-			if (chunkCache != null) {
-				chunkCache.put(hash(var1.chunkCoordinate.chunkXPos, var1.chunkCoordinate.chunkZPos), var1.nbtTags);
-			}
 		}
 
 		try {
@@ -122,7 +119,9 @@ public abstract class PatchAnvilChunkLoader extends AnvilChunkLoader {
 			}
 		}
 
-
+		if (chunkCache != null) {
+			chunkCache.put(hash(var1.chunkCoordinate.chunkXPos, var1.chunkCoordinate.chunkZPos), var1.nbtTags);
+		}
 
 		return true;
 	}
