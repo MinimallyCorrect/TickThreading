@@ -15,22 +15,25 @@ import org.cliffc.high_scale_lib.NonBlockingHashMap;
 
 public class EntityTickProfiler {
 	private int ticks;
-	private StringBuffer slowTicks = new StringBuffer(); // buffer for threadsafety
+	private final AtomicLong totalTime = new AtomicLong();
+	private final StringBuffer slowTicks = new StringBuffer(); // buffer for threadsafety
 
 	public void record(Object o, long time) {
 		if (time < 0) {
 			time = 0;
 		} else if (time > 25000000) {
-			slowTicks.append("\n" + o + " took too long: " + time / 1000000 + "ms"); // No chained append for threadsafety
+			slowTicks.append(o + " took too long: " + time / 1000000 + "ms\n"); // No chained append for threadsafety
 		}
 		Class<?> clazz = o.getClass();
 		getTime(clazz).addAndGet(time);
 		getInvocationCount(clazz).incrementAndGet();
+		totalTime.addAndGet(time);
 	}
 
 	public void clear() {
 		invocationCount.clear();
 		time.clear();
+		totalTime.set(0);
 		ticks = 0;
 	}
 
@@ -39,6 +42,7 @@ public class EntityTickProfiler {
 	}
 
 	public TableFormatter writeData(TableFormatter tf) {
+		tf.sb.append(slowTicks);
 		Map<Class<?>, Long> time = new HashMap<Class<?>, Long>();
 		for (Map.Entry<Class<?>, AtomicLong> entry : this.time.entrySet()) {
 			time.put(entry.getKey(), entry.getValue().get());
@@ -46,11 +50,13 @@ public class EntityTickProfiler {
 		final List<Class<?>> sortedKeysByTime = Ordering.natural().reverse().onResultOf(Functions.forMap(time)).immutableSortedCopy(time.keySet());
 		tf
 				.heading("Class")
-				.heading("Total Time/Tick");
+				.heading("Total Time/Tick")
+				.heading("%");
 		for (int i = 0; i < 5 && i < sortedKeysByTime.size(); i++) {
 			tf
 					.row(niceName(sortedKeysByTime.get(i)))
-					.row(time.get(sortedKeysByTime.get(i)) / (1000000d * ticks));
+					.row(time.get(sortedKeysByTime.get(i)) / (1000000d * ticks))
+					.row((time.get(sortedKeysByTime.get(i)) / (double) totalTime.get()) * 100);
 		}
 		tf.finishTable();
 		tf.sb.append('\n');
@@ -70,7 +76,6 @@ public class EntityTickProfiler {
 					.row(invocationCount.get(sortedKeysByTimePerTick.get(i)));
 		}
 		tf.finishTable();
-		tf.sb.append(slowTicks);
 		return tf;
 	}
 
