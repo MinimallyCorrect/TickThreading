@@ -1,21 +1,12 @@
 package me.nallar.patched;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 
-import javassist.is.faulty.Timings;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemInWorldManager;
 import net.minecraft.network.packet.Packet29DestroyEntity;
-import net.minecraft.network.packet.Packet56MapChunks;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.world.ChunkWatchEvent;
 
 public abstract class PatchEntityPlayerMP extends EntityPlayerMP {
 	public PatchEntityPlayerMP(MinecraftServer par1MinecraftServer, World par2World, String par3Str, ItemInWorldManager par4ItemInWorldManager) {

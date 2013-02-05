@@ -1,7 +1,5 @@
 package me.nallar.tickthreading.collections;
 
-import java.lang.Object;
-import java.lang.Override;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
