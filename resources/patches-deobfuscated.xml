@@ -58,6 +58,7 @@
 			<insertSuper>tickBlocksAndAmbiance</insertSuper>
 			<profile>tickBlocksAndAmbiance</profile>
 			<profile>tick</profile>
+			<insertSuper>initialize</insertSuper>
 		</class>
 		<class id="net.minecraft.world.World">
 			<!-- Same list was used by multiple threads -->

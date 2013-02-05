@@ -2,6 +2,7 @@ package me.nallar.patched;
 
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -9,6 +10,7 @@ import java.util.Random;
 import com.google.common.collect.ImmutableSetMultimap;
 
 import me.nallar.tickthreading.Log;
+import me.nallar.tickthreading.collections.TreeHashSet;
 import me.nallar.tickthreading.minecraft.ThreadManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
@@ -46,6 +48,20 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		randoms = new ThreadLocalRandom();
 		threadManager = new ThreadManager(TickThreading.instance.getThreadCount(), "Chunk Updates for " + Log.name(this));
 		field_73064_N = null;
+		pendingTickListEntries = new TreeHashSet();
+	}
+
+	@Override
+	protected void initialize(WorldSettings par1WorldSettings) {
+		if (this.entityIdMap == null) {
+			this.entityIdMap = new net.minecraft.util.IntHashMap();
+		}
+
+		if (this.pendingTickListEntries == null) {
+			this.pendingTickListEntries = new TreeHashSet();
+		}
+
+		this.createSpawnPosition(par1WorldSettings);
 	}
 
 	@Override
