@@ -1,13 +1,13 @@
 package me.nallar.patched;
 
+import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
 
 import com.google.common.collect.ImmutableSetMultimap;
 
-import cpw.mods.fml.common.FMLLog;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.ThreadManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
@@ -45,38 +45,91 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	public void construct() {
 		randoms = new ThreadLocalRandom();
 		threadManager = new ThreadManager(TickThreading.instance.getThreadCount(), "Chunk Updates for " + Log.name(this));
+		field_73064_N = null;
+	}
+
+	@Override
+	public List getPendingBlockUpdates(Chunk par1Chunk, boolean par2) {
+		ArrayList var3 = null;
+		ChunkCoordIntPair var4 = par1Chunk.getChunkCoordIntPair();
+		int var5 = var4.chunkXPos << 4;
+		int var6 = var5 + 16;
+		int var7 = var4.chunkZPos << 4;
+		int var8 = var7 + 16;
+		synchronized (pendingTickListEntries) {
+			Iterator var9 = this.pendingTickListEntries.iterator();
+
+			while (var9.hasNext()) {
+				NextTickListEntry var10 = (NextTickListEntry) var9.next();
+
+				if (var10.xCoord >= var5 && var10.xCoord < var6 && var10.zCoord >= var7 && var10.zCoord < var8) {
+					if (par2) {
+						var9.remove();
+					}
+
+					if (var3 == null) {
+						var3 = new ArrayList();
+					}
+
+					var3.add(var10);
+				}
+			}
+		}
+
+		return var3;
+	}
+
+	@Override
+	public void func_82740_a(int par1, int par2, int par3, int par4, int par5, int par6) {
+		NextTickListEntry var7 = new NextTickListEntry(par1, par2, par3, par4);
+		boolean isForced = getPersistentChunks().containsKey(new ChunkCoordIntPair(var7.xCoord >> 4, var7.zCoord >> 4));
+		byte var8 = isForced ? (byte) 0 : 8;
+
+		if (this.scheduledUpdatesAreImmediate && par4 > 0) {
+			if (Block.blocksList[par4].func_82506_l()) {
+				if (this.checkChunksExist(var7.xCoord - var8, var7.yCoord - var8, var7.zCoord - var8, var7.xCoord + var8, var7.yCoord + var8, var7.zCoord + var8)) {
+					int var9 = this.getBlockId(var7.xCoord, var7.yCoord, var7.zCoord);
+
+					if (var9 == var7.blockID && var9 > 0) {
+						Block.blocksList[var9].updateTick(this, var7.xCoord, var7.yCoord, var7.zCoord, this.rand);
+					}
+				}
+
+				return;
+			}
+
+			par5 = 1;
+		}
+
+		if (this.checkChunksExist(par1 - var8, par2 - var8, par3 - var8, par1 + var8, par2 + var8, par3 + var8)) {
+			if (par4 > 0) {
+				var7.setScheduledTime((long) par5 + this.worldInfo.getWorldTotalTime());
+				var7.func_82753_a(par6);
+			}
+
+			synchronized (pendingTickListEntries) {
+				this.pendingTickListEntries.add(var7);
+			}
+		}
+	}
+
+	@Override
+	public void scheduleBlockUpdateFromLoad(int par1, int par2, int par3, int par4, int par5) {
+		NextTickListEntry var6 = new NextTickListEntry(par1, par2, par3, par4);
+
+		if (par4 > 0) {
+			var6.setScheduledTime((long) par5 + this.worldInfo.getWorldTotalTime());
+		}
+
+		synchronized (pendingTickListEntries) {
+			this.pendingTickListEntries.add(var6);
+		}
 	}
 
 	@Override
 	public boolean tickUpdates(boolean par1) {
-		int var2 = this.pendingTickListEntries.size();
-
-		if (var2 != this.field_73064_N.size()) {
-			FMLLog.severe("TickNextTick list out of sync - attempting to recover!");
-			Iterator<NextTickListEntry> nextTickListEntryIterator = (Iterator<NextTickListEntry>) field_73064_N.iterator();
-			while (nextTickListEntryIterator.hasNext()) {
-				NextTickListEntry nextTickListEntry = nextTickListEntryIterator.next();
-				if (!pendingTickListEntries.contains(nextTickListEntry)) {
-					nextTickListEntryIterator.remove();
-				}
-			}
-			nextTickListEntryIterator = (Iterator<NextTickListEntry>) pendingTickListEntries.iterator();
-			while (nextTickListEntryIterator.hasNext()) {
-				NextTickListEntry nextTickListEntry = nextTickListEntryIterator.next();
-				if (!field_73064_N.contains(nextTickListEntry)) {
-					nextTickListEntryIterator.remove();
-				}
-			}
-			if (pendingTickListEntries.size() != field_73064_N.size()) {
-				FMLLog.severe("Failed to fix the TickNextTick lists, clearing them");
-				field_73064_N.clear();
-				pendingTickListEntries.clear();
-			}
-			return true;
-		} else {
-			if (var2 > 1000) {
-				var2 = 1000;
-			}
+		synchronized (pendingTickListEntries) {
+			int var2 = Math.min(1000, this.pendingTickListEntries.size());
 
 			ImmutableSetMultimap<ChunkCoordIntPair, ForgeChunkManager.Ticket> persistentChunks = getPersistentChunks();
 			for (int var3 = 0; var3 < var2; ++var3) {
@@ -87,7 +140,6 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 				}
 
 				this.pendingTickListEntries.remove(var4);
-				this.field_73064_N.remove(var4);
 				boolean isForced = persistentChunks.containsKey(new ChunkCoordIntPair(var4.xCoord >> 4, var4.zCoord >> 4));
 				byte var5 = isForced ? (byte) 0 : 8;
 
@@ -291,7 +343,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 						if (var18 != null && var18.getTickRandomly()) {
 							try {
 								var18.updateTick(this, var14 + xPos, var16 + var21.getYLocation(), var15 + zPos, rand);
-							} catch(Exception e) {
+							} catch (Exception e) {
 								Log.severe("Exception ticking block " + var18 + " at x" + var14 + xPos + 'y' + var16 + var21.getYLocation() + 'z' + var15 + zPos, e);
 							}
 						}
