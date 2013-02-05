@@ -3,6 +3,7 @@ package me.nallar.patched;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import com.google.common.collect.ImmutableSetMultimap;
 
@@ -283,7 +284,11 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 						Block var18 = Block.blocksList[var17];
 
 						if (var18 != null && var18.getTickRandomly()) {
-							var18.updateTick(this, var14 + xPos, var16 + var21.getYLocation(), var15 + zPos, rand);
+							try {
+								var18.updateTick(this, var14 + xPos, var16 + var21.getYLocation(), var15 + zPos, rand);
+							} catch(Exception e) {
+								Log.severe("Exception ticking block " + var18 + " at x" + var14 + xPos + 'y' + var16 + var21.getYLocation() + 'z' + var15 + zPos, e);
+							}
 						}
 					}
 				}
