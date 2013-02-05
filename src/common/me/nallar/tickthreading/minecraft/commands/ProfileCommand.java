@@ -28,7 +28,7 @@ public class ProfileCommand extends Command {
 	@Override
 	public void processCommand(final ICommandSender commandSender, List<String> arguments) {
 		World world = DimensionManager.getWorld(0);
-		long time_ = 10;
+		long time_ = 7;
 		boolean entity_ = false;
 		boolean location_ = false;
 		try {
@@ -51,7 +51,7 @@ public class ProfileCommand extends Command {
 			world = null;
 		}
 		if (world == null) {
-			sendChat(commandSender, "Usage: /profile [type=a/e/c] [time=10] [dimensionid=current dimension]");
+			sendChat(commandSender, "Usage: /profile [type=a/e/c] [time=7] [dimensionid=current dimension]");
 			return;
 		}
 		final TickManager manager = TickThreading.instance.getManager(world);
@@ -60,6 +60,10 @@ public class ProfileCommand extends Command {
 		final boolean location = location_;
 		final int hashCode = commandSender instanceof Entity ? manager.getHashCode((Entity) commandSender) : 0;
 		if (entity) {
+			if (manager.profilingEnabled) {
+				sendChat(commandSender, "Someone else is currently profiling, please wait and try again.");
+				return;
+			}
 			if (location) {
 				try {
 					manager.getEntityCallable(hashCode).profilingEnabled = true;
@@ -70,6 +74,10 @@ public class ProfileCommand extends Command {
 				manager.profilingEnabled = true;
 			}
 		} else {
+			if (Timings.enabled) {
+				sendChat(commandSender, "Someone else is currently profiling, please wait and try again.");
+				return;
+			}
 			Timings.enabled = true;
 		}
 		Runnable profilingRunnable = new Runnable() {
