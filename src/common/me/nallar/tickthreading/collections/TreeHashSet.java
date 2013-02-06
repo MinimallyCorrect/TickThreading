@@ -13,7 +13,7 @@ public class TreeHashSet extends TreeSet {
 	}
 
 	@Override
-	public boolean add(Object o) {
+	public synchronized boolean add(Object o) {
 		if (internalHashSet.add(o)) {
 			super.add(o);
 			return true;
@@ -22,7 +22,7 @@ public class TreeHashSet extends TreeSet {
 	}
 
 	@Override
-	public boolean remove(Object o) {
+	public synchronized boolean remove(Object o) {
 		if (internalHashSet.remove(o)) {
 			super.remove(o);
 			return true;
@@ -31,7 +31,7 @@ public class TreeHashSet extends TreeSet {
 	}
 
 	@Override
-	public void clear() {
+	public synchronized void clear() {
 		super.clear();
 		internalHashSet.clear();
 	}
