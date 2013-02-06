@@ -63,7 +63,6 @@ public class DeadLockDetector {
 				}
 			}
 		});
-		deadlockThread.setDaemon(true);
 		deadlockThread.setName("Deadlock Detector");
 		deadlockThread.start();
 		TickRegistry.registerTickHandler(tickHandler, Side.SERVER);
@@ -99,6 +98,7 @@ public class DeadLockDetector {
 			} else if (deadTime > 10000000000l && !sentWarningRecently) {
 				sentWarningRecently = true;
 				sendChatSafely(String.valueOf(ChatFormat.RED) + ChatFormat.BOLD + "The server appears to have frozen on '" + lastJob + "' and will restart soon if it does not recover. :(");
+				return true;
 			}
 		}
 		if (deadTime < (TickThreading.instance.deadLockTime * 1000000000l)) {
