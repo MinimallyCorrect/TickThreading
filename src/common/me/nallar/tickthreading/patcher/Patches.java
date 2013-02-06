@@ -66,11 +66,11 @@ public class Patches {
 		try {
 			//noinspection InfiniteLoopStatement
 			for (; true; i++) {
-				ctClass.getDeclaredMethod(ctMethod.getName() + "_t" + i);
+				ctClass.getDeclaredMethod(ctMethod.getName() + "_profile" + i);
 			}
 		} catch (NotFoundException ignored) {
 		}
-		ctMethod.setName(ctMethod.getName() + "_t" + i);
+		ctMethod.setName(ctMethod.getName() + "_profile" + i);
 		if (ctMethod.getReturnType() == CtPrimitiveType.voidType) {
 			replacement.setBody("{ boolean timings = javassist.is.faulty.Timings.enabled; long st = 0; if (timings) { st = System.nanoTime(); } " + ctMethod.getName() + "($$); if (timings) { javassist.is.faulty.Timings.record(\"" + attributes.get("deobf") + "\", System.nanoTime() - st); } }");
 		} else {
@@ -385,7 +385,7 @@ public class Patches {
 		String arraySize = attributes.get("arraySize");
 		initialise = "{ " + field + " = " + (initialise == null ? ("new " + clazz + (arraySize == null ? "()" : '[' + arraySize + ']')) : initialise) + "; }";
 		CtField oldField = ctClass.getDeclaredField(field);
-		oldField.setName(oldField.getName() + "_old");
+		oldField.setName(oldField.getName() + "_rem");
 		CtField newField = new CtField(classRegistry.getClass(type), field, ctClass);
 		newField.setModifiers(oldField.getModifiers());
 		ctClass.addField(newField);
@@ -459,7 +459,7 @@ public class Patches {
 		String field = attributes.get("field");
 		CtClass ctClass = ctMethod.getDeclaringClass();
 		CtMethod replacement = CtNewMethod.copy(ctMethod, ctClass, null);
-		ctMethod.setName(ctMethod.getName() + "_nolock");
+		ctMethod.setName(ctMethod.getName() + "_lock");
 		replacement.setBody("{ this." + field + ".lock(); try { return " + (attributes.get("methodcall") == null ? "$proceed" : ctMethod.getName()) + "($$); } finally { this." + field + ".unlock(); } }", "this", ctMethod.getName());
 		ctClass.addMethod(replacement);
 	}
@@ -570,11 +570,11 @@ public class Patches {
 			try {
 				//noinspection InfiniteLoopStatement
 				for (; true; i++) {
-					ctClass.getDeclaredMethod(ctMethod.getName() + "_s" + i);
+					ctClass.getDeclaredMethod(ctMethod.getName() + "_sync" + i);
 				}
 			} catch (NotFoundException ignored) {
 			}
-			ctMethod.setName(ctMethod.getName() + "_s" + i);
+			ctMethod.setName(ctMethod.getName() + "_sync" + i);
 			replacement.setBody("synchronized(" + field + ") { return " + ctMethod.getName() + "($$); }");
 			ctClass.addMethod(replacement);
 		}
