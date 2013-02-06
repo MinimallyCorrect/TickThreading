@@ -21,7 +21,7 @@ public class EntityTickProfiler {
 	public void record(Object o, long time) {
 		if (time < 0) {
 			time = 0;
-		} else if (time > 25000000) {
+		} else if (time > 25000000 && slowTicks.length() <= 500) {
 			slowTicks.append(o + " took too long: " + time / 1000000 + "ms\n"); // No chained append for threadsafety
 		}
 		Class<?> clazz = o.getClass();
