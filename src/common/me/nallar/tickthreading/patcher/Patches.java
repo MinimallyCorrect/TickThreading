@@ -64,6 +64,7 @@ public class Patches {
 		CtMethod replacement = CtNewMethod.copy(ctMethod, ctClass, null);
 		int i = 0;
 		try {
+			//noinspection InfiniteLoopStatement
 			for (; true; i++) {
 				ctClass.getDeclaredMethod(ctMethod.getName() + "_t" + i);
 			}
@@ -567,6 +568,7 @@ public class Patches {
 			CtMethod replacement = CtNewMethod.copy(ctMethod, ctClass, null);
 			int i = 0;
 			try {
+				//noinspection InfiniteLoopStatement
 				for (; true; i++) {
 					ctClass.getDeclaredMethod(ctMethod.getName() + "_s" + i);
 				}

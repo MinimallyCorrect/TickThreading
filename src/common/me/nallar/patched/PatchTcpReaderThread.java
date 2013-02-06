@@ -13,12 +13,13 @@ public abstract class PatchTcpReaderThread extends ThreadMinecraftServer {
 		this.tcpConnection = tcpConnection;
 	}
 
+	@SuppressWarnings ("InfiniteLoopStatement")
 	@Override
 	public void run() {
 		TcpConnection.field_74471_a.getAndIncrement();
 
 		try {
-			while (tcpConnection.isRunning()) {
+			if (tcpConnection.isRunning()) {
 				while (true) {
 					if (!tcpConnection.readNetworkPacket()) {
 						try {

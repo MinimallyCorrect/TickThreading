@@ -25,7 +25,7 @@ public enum CollectionsUtil {
 		return new ArrayList<String>(Arrays.asList(input.split(delimiter)));
 	}
 
-	public static List<?> toObjects(Iterable<String> stringIterable, Class type) {
+	public static List<?> toObjects(Iterable<String> stringIterable, Class<?> type) {
 		Constructor<?> constructor;
 		try {
 			constructor = type.getConstructor(String.class);

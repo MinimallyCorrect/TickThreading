@@ -7,6 +7,7 @@ import java.util.TreeSet;
 public class TreeHashSet extends TreeSet {
 	private final Set internalHashSet = new HashSet();
 
+	@Override
 	public boolean contains(Object o) {
 		return internalHashSet.contains(o);
 	}
