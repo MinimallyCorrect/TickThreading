@@ -488,4 +488,14 @@ public abstract class PatchWorld extends World {
 		this.theProfiler.endSection();
 		this.theProfiler.endSection();
 	}
+
+	@Override
+	public void markTileEntityForDespawn(TileEntity par1TileEntity) {
+		if (loadedTileEntityList instanceof EntityList) {
+			((EntityList) loadedTileEntityList).manager.remove(par1TileEntity);
+			par1TileEntity.onChunkUnload();
+		} else {
+			this.entityRemoval.add(par1TileEntity);
+		}
+	}
 }
