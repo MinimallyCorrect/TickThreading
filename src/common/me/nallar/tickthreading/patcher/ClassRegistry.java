@@ -41,7 +41,7 @@ public class ClassRegistry {
 	private final Map<File, Map<String, byte[]>> additionalClasses = new HashMap<File, Map<String, byte[]>>();
 	private final Set<File> loadedFiles = new HashSet<File>();
 	private final Set<File> updatedFiles = new HashSet<File>();
-	private final Map<String, Set<File>> unsafeClassNames = new HashMap<String, Set<File>>();
+	private final Map<String, Set<File>> duplicateClassNamesToLocations = new HashMap<String, Set<File>>();
 	private final Set<ClassPath> classPathSet = new HashSet<ClassPath>();
 	private final Map<String, byte[]> replacementFiles = new HashMap<String, byte[]>();
 	private final Map<String, Set<File>> packageLocations = new HashMap<String, Set<File>>();
@@ -59,7 +59,7 @@ public class ClassRegistry {
 		classNameToLocation.clear();
 		additionalClasses.clear();
 		updatedFiles.clear();
-		unsafeClassNames.clear();
+		duplicateClassNamesToLocations.clear();
 		replacementFiles.clear();
 		loadedFiles.clear();
 		packageLocations.clear();
@@ -117,11 +117,11 @@ public class ClassRegistry {
 				}
 				packageLocation.add(file);
 				if (classNameToLocation.containsKey(className)) {
-					Set<File> locations = unsafeClassNames.get(className);
+					Set<File> locations = duplicateClassNamesToLocations.get(className);
 					if (locations == null) {
 						locations = new HashSet<File>();
 						locations.add(classNameToLocation.get(className));
-						unsafeClassNames.put(className, locations);
+						duplicateClassNamesToLocations.put(className, locations);
 					}
 					locations.add(file);
 				} else {
@@ -138,8 +138,8 @@ public class ClassRegistry {
 	}
 
 	public void update(String className, byte[] replacement) {
-		if (unsafeClassNames.containsKey(className)) {
-			Log.warning(className + " is in multiple jars: " + CollectionsUtil.join(unsafeClassNames.get(className), ", "));
+		if (duplicateClassNamesToLocations.containsKey(className)) {
+			Log.warning(className + " is in multiple jars: " + CollectionsUtil.join(duplicateClassNamesToLocations.get(className), ", "));
 		}
 		String packageName = getPackage(className);
 		File location = classNameToLocation.get(className);
