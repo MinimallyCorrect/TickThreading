@@ -74,19 +74,13 @@ public class ClassRegistry {
 					if (!".disabled".equals(file.getName())) {
 						loadFiles(Arrays.asList(file.listFiles()));
 					}
-				} else if ("jar".equals(extension)) {
-					loadJar(new JarFile(file));
-				} else if ("zip".equals(extension) || "litemod".equals(extension)) {
+				} else if ("jar".equals(extension) || "zip".equals(extension) || "litemod".equals(extension)) {
 					loadZip(new ZipFile(file));
 				}
 			} catch (ZipException e) {
 				throw new ZipException(e.getMessage() + " file: " + file);
 			}
 		}
-	}
-
-	void loadJar(JarFile jar) throws IOException {
-		loadZip(jar);
 	}
 
 	void appendClassPath(String path) throws NotFoundException {
