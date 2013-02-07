@@ -3,16 +3,16 @@ package me.nallar.tickthreading.minecraft.tickregion;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
 
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
-import me.nallar.tickthreading.util.concurrent.SimpleMutex;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.IChunkProvider;
+import net.minecraft.world.gen.ChunkProviderServer;
 
 public class TileEntityTickRegion extends TickRegion {
 	private final Set<TileEntity> tileEntitySet = new LinkedHashSet<TileEntity>();
@@ -22,56 +22,23 @@ public class TileEntityTickRegion extends TickRegion {
 	}
 
 	@Override
-	protected synchronized void setupLocks() {
-		if (TickThreading.instance.lockRegionBorders) {
-			TickRegion tickRegion = getCallable(regionX + 1, regionZ);
-			if (tickRegion != null) {
-				synchronized (tickRegion) {
-					if (xPlusLock == null) {
-						this.xPlusLock = tickRegion.xMinusLock = new SimpleMutex();
-					}
-				}
-			}
-			tickRegion = getCallable(regionX - 1, regionZ);
-			if (tickRegion != null) {
-				synchronized (tickRegion) {
-					if (xMinusLock == null) {
-						this.xMinusLock = tickRegion.xPlusLock = new SimpleMutex();
-					}
-				}
-			}
-			tickRegion = getCallable(regionX, regionZ + 1);
-			if (tickRegion != null) {
-				synchronized (tickRegion) {
-					if (zPlusLock == null) {
-						this.zPlusLock = tickRegion.zMinusLock = new SimpleMutex();
-					}
-				}
-			}
-			tickRegion = getCallable(regionX, regionZ - 1);
-			if (tickRegion != null) {
-				synchronized (tickRegion) {
-					if (zMinusLock == null) {
-						this.zMinusLock = tickRegion.zPlusLock = new SimpleMutex();
-					}
-				}
-			}
-		}
-	}
-
-	@Override
 	public void doTick() {
-		IChunkProvider chunkProvider = world.getChunkProvider();
-		int regionSize = manager.regionSize;
-		int maxPosition = (regionSize / 2) - 1;
+		final ChunkProviderServer chunkProvider = (ChunkProviderServer) world.getChunkProvider();
+		final World world = this.world;
+		final boolean lockable = TickThreading.instance.lockRegionBorders;
+		final boolean profilingEnabled = manager.profilingEnabled || this.profilingEnabled;
+		final int regionSize = manager.regionSize;
+		final int maxPosition = (regionSize / 2) - 1;
 		int relativeXPos;
 		int relativeZPos;
-		boolean lockable = TickThreading.instance.lockRegionBorders;
 		boolean xMinusLocked = false;
 		boolean xPlusLocked = false;
 		boolean zMinusLocked = false;
 		boolean zPlusLocked = false;
-		boolean profilingEnabled = manager.profilingEnabled || this.profilingEnabled;
+		Lock xPlusLock = null;
+		Lock xMinusLock = null;
+		Lock zPlusLock = null;
+		Lock zMinusLock = null;
 		EntityTickProfiler entityTickProfiler = null;
 		long startTime = 0;
 		if (profilingEnabled) {
@@ -83,7 +50,7 @@ public class TileEntityTickRegion extends TickRegion {
 		//Lock classLock = null;
 		int xPos = 0;
 		int zPos = 0;
-		Iterator<TileEntity> tileEntitiesIterator = tileEntitySet.iterator();
+		final Iterator<TileEntity> tileEntitiesIterator = tileEntitySet.iterator();
 		while (tileEntitiesIterator.hasNext()) {
 			if (profilingEnabled) {
 				startTime = System.nanoTime();
@@ -93,23 +60,24 @@ public class TileEntityTickRegion extends TickRegion {
 				xPos = tileEntity.xCoord;
 				zPos = tileEntity.zCoord;
 				if (lockable) {
-					relativeXPos = (xPos % regionSize) / 2;
-					relativeZPos = (zPos % regionSize) / 2;
-					xMinusLocked = relativeXPos == 0 && this.xMinusLock != null;
-					zMinusLocked = relativeZPos == 0 && this.zMinusLock != null;
-					xPlusLocked = relativeXPos == maxPosition && this.xPlusLock != null;
-					zPlusLocked = relativeZPos == maxPosition && this.zPlusLock != null;
-					if (xPlusLocked) {
-						this.xPlusLock.lock();
+					if (tileEntity.lastTTX != xPos || tileEntity.lastTTY != tileEntity.yCoord || tileEntity.lastTTZ != zPos) {
+						manager.lock(tileEntity);
 					}
-					if (zPlusLocked) {
-						this.zPlusLock.lock();
+					xPlusLock = tileEntity.xPlusLock;
+					zPlusLock = tileEntity.zPlusLock;
+					zMinusLock = tileEntity.zMinusLock;
+					xMinusLock = tileEntity.xMinusLock;
+					if (xPlusLock != null) {
+						xPlusLock.lock();
 					}
-					if (zMinusLocked) {
-						this.zMinusLock.lock();
+					if (zPlusLock != null) {
+						zPlusLock.lock();
 					}
-					if (xMinusLocked) {
-						this.xMinusLock.lock();
+					if (zMinusLock != null) {
+						zMinusLock.lock();
+					}
+					if (xMinusLock != null) {
+						xMinusLock.lock();
 					}
 				}
 				if (manager.getHashCode(xPos, zPos) != hashCode) {
@@ -140,17 +108,17 @@ public class TileEntityTickRegion extends TickRegion {
 						+ "\nTick region: " + toString() + ':', throwable);
 			} finally {
 				if (lockable) {
-					if (xMinusLocked) {
-						this.xMinusLock.unlock();
+					if (xMinusLock != null) {
+						xMinusLock.unlock();
 					}
-					if (zMinusLocked) {
-						this.zMinusLock.unlock();
+					if (zMinusLock != null) {
+						zMinusLock.unlock();
 					}
-					if (zPlusLocked) {
-						this.zPlusLock.unlock();
+					if (zPlusLock != null) {
+						zPlusLock.unlock();
 					}
-					if (xPlusLocked) {
-						this.xPlusLock.unlock();
+					if (xPlusLock != null) {
+						xPlusLock.unlock();
 					}
 				}
 				if (profilingEnabled) {
@@ -201,32 +169,6 @@ public class TileEntityTickRegion extends TickRegion {
 	@Override
 	public void die() {
 		super.die();
-		synchronized (this) {
-			TickRegion tickRegion = getCallable(regionX + 1, regionZ);
-			if (tickRegion != null) {
-				synchronized (tickRegion) {
-					tickRegion.xMinusLock = null;
-				}
-			}
-			tickRegion = getCallable(regionX - 1, regionZ);
-			if (tickRegion != null) {
-				synchronized (tickRegion) {
-					tickRegion.xPlusLock = null;
-				}
-			}
-			tickRegion = getCallable(regionX, regionZ + 1);
-			if (tickRegion != null) {
-				synchronized (tickRegion) {
-					tickRegion.zMinusLock = null;
-				}
-			}
-			tickRegion = getCallable(regionX, regionZ - 1);
-			if (tickRegion != null) {
-				synchronized (tickRegion) {
-					tickRegion.zPlusLock = null;
-				}
-			}
-		}
 		tileEntitySet.clear();
 	}
 

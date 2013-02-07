@@ -2,7 +2,6 @@ package me.nallar.tickthreading.minecraft.tickregion;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.concurrent.locks.Lock;
 
 import me.nallar.tickthreading.minecraft.TickManager;
 import me.nallar.tickthreading.util.TableFormatter;
@@ -13,10 +12,6 @@ public abstract class TickRegion implements Runnable {
 	protected volatile boolean ticking = false;
 	protected final Set toRemove = new LinkedHashSet();
 	protected final Set toAdd = new LinkedHashSet();
-	volatile Lock xPlusLock = null;
-	volatile Lock xMinusLock = null;
-	volatile Lock zPlusLock = null;
-	volatile Lock zMinusLock = null;
 	final World world;
 	final TickManager manager;
 	public final int hashCode;
@@ -32,10 +27,6 @@ public abstract class TickRegion implements Runnable {
 		this.hashCode = TickManager.getHashCodeFromRegionCoords(regionX, regionZ);
 		this.regionX = regionX;
 		this.regionZ = regionZ;
-		setupLocks();
-	}
-
-	protected void setupLocks() {
 	}
 
 	public void die() {

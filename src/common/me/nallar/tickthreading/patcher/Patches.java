@@ -96,6 +96,23 @@ public class Patches {
 		}
 	}
 
+	@Patch (
+			name = "final"
+	)
+	public void final_(CtClass ctClass, Map<String, String> attributes) throws NotFoundException {
+		String field = attributes.get("field");
+		if (field == null) {
+			for (CtField ctField : ctClass.getDeclaredFields()) {
+				if (ctField.getType().isPrimitive()) {
+					ctField.setModifiers(ctField.getModifiers() | Modifier.FINAL);
+				}
+			}
+		} else {
+			CtField ctField = ctClass.getDeclaredField(field);
+			ctField.setModifiers(ctField.getModifiers() | Modifier.FINAL);
+		}
+	}
+
 	@Patch
 	public void disable(CtMethod ctMethod, Map<String, String> attributes) throws NotFoundException, CannotCompileException {
 		ctMethod.setBody("{ }");

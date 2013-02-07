@@ -382,12 +382,10 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	}
 
 	@Override
-	public void markBlockForUpdate(int par1, int par2, int par3)
-	{
+	public void markBlockForUpdate(int par1, int par2, int par3) {
 		if (!worldGenInProgress.get()) {
-			for (int var4 = 0; var4 < this.worldAccesses.size(); ++var4)
-			{
-				((IWorldAccess)this.worldAccesses.get(var4)).markBlockForUpdate(par1, par2, par3);
+			for (int var4 = 0; var4 < this.worldAccesses.size(); ++var4) {
+				((IWorldAccess) this.worldAccesses.get(var4)).markBlockForUpdate(par1, par2, par3);
 			}
 		}
 	}

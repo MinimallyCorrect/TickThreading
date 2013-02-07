@@ -35,6 +35,16 @@ public abstract class PatchWorld extends World {
 	}
 
 	@Override
+	public TileEntity getBlockTileEntity(int x, int y, int z) {
+		if (y >= 256) {
+			return null;
+		} else {
+			Chunk chunk = this.getChunkFromChunkCoords(x >> 4, z >> 4);
+			return chunk == null ? null : chunk.getChunkBlockTileEntity(x & 15, y, z & 15);
+		}
+	}
+
+	@Override
 	public void updateEntityWithOptionalForce(Entity par1Entity, boolean par2) {
 		int var3 = MathHelper.floor_double(par1Entity.posX);
 		int var4 = MathHelper.floor_double(par1Entity.posZ);

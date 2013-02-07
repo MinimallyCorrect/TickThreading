@@ -75,6 +75,9 @@
 		<class id="net.minecraft.world.gen.ChunkProviderServer">
 			<!-- MCPC compatibility - get MCPC to make LongHashSet implement Set<Long>, give it that type. -->
 			<public field="loadedChunks"/>
+			<final field="worldObj"/>
+			<final field="loadedChunkHashMap"/>
+			<final field="loadedChunks"/>
 			<addAll fromClass="me.nallar.patched.PatchChunkProviderServer"/>
 			<synchronize field="chunkLoadLock">unloadAllChunks,saveChunks,unload100OldestChunks</synchronize>
 			<synchronize field="genLock">populate</synchronize>
@@ -132,6 +135,7 @@
 			<addMethod return="java.lang.String"
 								 name="toString"
 								 code="return super.toString() + &quot; x,y,z: &quot; + l + &quot;, &quot; + m + &quot;, &quot; + n;"/>
+			<addAll fromClass="me.nallar.patched.PatchTileEntity"/>
 		</class>
 		<class id="net.minecraft.entity.EntityTracker">
 			<!-- Yet more comodification exceptions -->
