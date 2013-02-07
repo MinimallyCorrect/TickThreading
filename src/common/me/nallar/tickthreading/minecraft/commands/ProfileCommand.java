@@ -31,12 +31,18 @@ public class ProfileCommand extends Command {
 		long time_ = 7;
 		boolean entity_ = false;
 		boolean location_ = false;
+		Integer x = null;
+		Integer z = null;
 		try {
 			if (!arguments.isEmpty()) {
 				entity_ = "e".equals(arguments.get(0));
 				if ("c".equals(arguments.get(0))) {
 					entity_ = true;
 					location_ = true;
+					if (arguments.size() > 2) {
+						x = Integer.valueOf(arguments.remove(1));
+						z = Integer.valueOf(arguments.remove(1));
+					}
 				}
 			}
 			if (arguments.size() > 1) {
@@ -51,14 +57,14 @@ public class ProfileCommand extends Command {
 			world = null;
 		}
 		if (world == null) {
-			sendChat(commandSender, "Usage: /profile [type=a/e/c] [time=7] [dimensionid=current dimension]");
+			sendChat(commandSender, "Usage: /profile [type=a/e/(c [x] [z])] [time=7] [dimensionid=current dimension]");
 			return;
 		}
 		final TickManager manager = TickThreading.instance.getManager(world);
 		final long time = time_;
 		final boolean entity = entity_;
 		final boolean location = location_;
-		final int hashCode = commandSender instanceof Entity ? manager.getHashCode((Entity) commandSender) : 0;
+		final int hashCode = x != null ? manager.getHashCode(x, z): (commandSender instanceof Entity ? manager.getHashCode((Entity) commandSender) : 0);
 		if (entity) {
 			if (manager.profilingEnabled) {
 				sendChat(commandSender, "Someone else is currently profiling, please wait and try again.");
