@@ -41,6 +41,7 @@ public class EntityTickProfiler {
 		invocationCount.clear();
 		time.clear();
 		totalTime.set(0);
+		singleTime.clear();
 		ticks = 0;
 	}
 
