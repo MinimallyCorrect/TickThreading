@@ -16,13 +16,18 @@ import org.cliffc.high_scale_lib.NonBlockingHashMap;
 public class EntityTickProfiler {
 	private int ticks;
 	private final AtomicLong totalTime = new AtomicLong();
-	private final StringBuffer slowTicks = new StringBuffer(); // buffer for threadsafety
 
 	public void record(Object o, long time) {
 		if (time < 0) {
 			time = 0;
-		} else if (time > 25000000 && slowTicks.length() <= 500) {
-			slowTicks.append(o + " took too long: " + time / 1000000 + "ms\n"); // No chained append for threadsafety
+		} else if (time > 500000) {
+			AtomicLong currentTime = getSingleTime(o);
+			synchronized (currentTime) {
+				if (currentTime.get() < time) {
+					currentTime.set(time);
+				}
+			}
+			//slowTicks.append(o + " took too long: " + time / 1000000 + "ms\n"); // No chained append for threadsafety
 		}
 		Class<?> clazz = o.getClass();
 		getTime(clazz).addAndGet(time);
@@ -42,11 +47,25 @@ public class EntityTickProfiler {
 	}
 
 	public TableFormatter writeData(TableFormatter tf) {
-		tf.sb.append(slowTicks);
 		Map<Class<?>, Long> time = new HashMap<Class<?>, Long>();
 		for (Map.Entry<Class<?>, AtomicLong> entry : this.time.entrySet()) {
 			time.put(entry.getKey(), entry.getValue().get());
 		}
+		Map<Object, Long> singleTime = new HashMap<Object, Long>();
+		for (Map.Entry<Object, AtomicLong> entry : this.singleTime.entrySet()) {
+			singleTime.put(entry.getKey(), entry.getValue().get());
+		}
+		final List<Object> sortedSingleKeysByTime = Ordering.natural().reverse().onResultOf(Functions.forMap(singleTime)).immutableSortedCopy(singleTime.keySet());
+		tf
+				.heading("Obj")
+				.heading("Max Time(ms)");
+		for (int i = 0; i < 5 && i < sortedSingleKeysByTime.size(); i++) {
+			tf
+					.row(sortedSingleKeysByTime.get(i).toString().substring(0, 48))
+					.row(singleTime.get(sortedSingleKeysByTime.get(i)) / 1000000d);
+		}
+		tf.finishTable();
+		tf.sb.append('\n');
 		final List<Class<?>> sortedKeysByTime = Ordering.natural().reverse().onResultOf(Functions.forMap(time)).immutableSortedCopy(time.keySet());
 		tf
 				.heading("Class")
@@ -94,6 +113,7 @@ public class EntityTickProfiler {
 
 	private final Map<Class<?>, AtomicInteger> invocationCount = new NonBlockingHashMap<Class<?>, AtomicInteger>();
 	private final Map<Class<?>, AtomicLong> time = new NonBlockingHashMap<Class<?>, AtomicLong>();
+	private final Map<Object, AtomicLong> singleTime = new NonBlockingHashMap<Object, AtomicLong>();
 
 	// We synchronize on the class name as it is always the same object
 	// We do not synchronize on the class object as that would also
@@ -110,6 +130,20 @@ public class EntityTickProfiler {
 			}
 		}
 		return i;
+	}
+
+	private AtomicLong getSingleTime(Object o) {
+		AtomicLong t = singleTime.get(o);
+		if (t == null) {
+			synchronized (o) {
+				t = singleTime.get(o);
+				if (t == null) {
+					t = new AtomicLong();
+					singleTime.put(o, t);
+				}
+			}
+		}
+		return t;
 	}
 
 	private AtomicLong getTime(Class<?> clazz) {
