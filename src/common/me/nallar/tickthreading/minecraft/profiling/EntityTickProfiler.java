@@ -11,6 +11,8 @@ import com.google.common.collect.Ordering;
 
 import me.nallar.tickthreading.util.MappingUtil;
 import me.nallar.tickthreading.util.TableFormatter;
+import net.minecraft.entity.Entity;
+import net.minecraft.tileentity.TileEntity;
 import org.cliffc.high_scale_lib.NonBlockingHashMap;
 
 public class EntityTickProfiler {
@@ -58,10 +60,10 @@ public class EntityTickProfiler {
 		final List<Object> sortedSingleKeysByTime = Ordering.natural().reverse().onResultOf(Functions.forMap(singleTime)).immutableSortedCopy(singleTime.keySet());
 		tf
 				.heading("Obj")
-				.heading("Max Time(ms)");
+				.heading("Max Time");
 		for (int i = 0; i < 5 && i < sortedSingleKeysByTime.size(); i++) {
 			tf
-					.row(sortedSingleKeysByTime.get(i).toString().substring(0, 48))
+					.row(niceName(sortedSingleKeysByTime.get(i)))
 					.row(singleTime.get(sortedSingleKeysByTime.get(i)) / 1000000d);
 		}
 		tf.finishTable();
@@ -96,6 +98,15 @@ public class EntityTickProfiler {
 		}
 		tf.finishTable();
 		return tf;
+	}
+
+	private static Object niceName(Object o) {
+		if (o instanceof TileEntity) {
+			return niceName(o.getClass()) + ' ' + ((TileEntity) o).xCoord + ',' + ((TileEntity) o).yCoord + ',' + ((TileEntity) o).zCoord;
+		} else if (o instanceof Entity) {
+			return niceName(o.getClass()) + ' ' + (int) ((Entity) o).posX + ',' + (int) ((Entity) o).posY + ',' + (int) ((Entity) o).posZ;
+		}
+		return o.toString().substring(0, 48);
 	}
 
 	private static String niceName(Class<?> clazz) {
