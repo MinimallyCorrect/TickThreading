@@ -37,10 +37,10 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 				nsh.lastPZ = this.zPosition;
 				nsh.lastPX = this.xPosition;
 				nsh.averageSpeed = -50d;
-				if (--nsh.teleported <= 1 || nsh.tpPosY > yPosition + 0.02) {
+				if (--nsh.teleported <= 1 || (nsh.teleported < 10 && nsh.tpPosY > yPosition + 0.02)) {
 					nsh.updatePositionAfterTP();
+					((WorldServer) entityPlayerMP.worldObj).getPlayerManager().updateMountedMovingPlayer(entityPlayerMP);
 				}
-				((WorldServer) entityPlayerMP.worldObj).getPlayerManager().updateMountedMovingPlayer(entityPlayerMP);
 				synchronized (entityPlayerMP.loadedChunks) {
 					sendChunks(entityPlayerMP);
 				}
