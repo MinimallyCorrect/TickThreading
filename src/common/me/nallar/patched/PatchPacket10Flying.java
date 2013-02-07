@@ -31,53 +31,61 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 	@Override
 	public void processPacket(NetHandler par1NetHandler) {
 		NetServerHandler nsh = (NetServerHandler) par1NetHandler;
-		EntityPlayerMP entityPlayerMP = nsh.playerEntity;
-		if (nsh.teleported > 0) {
-			nsh.lastPZ = this.zPosition;
-			nsh.lastPX = this.xPosition;
-			nsh.averageSpeed = -50d;
-			if (--nsh.teleported == 0) {
-				((WorldServer) entityPlayerMP.worldObj).getPlayerManager().updateMountedMovingPlayer(entityPlayerMP);
-			}
-		} else {
-			nsh.setHasMoved();
-			if (false && TickThreading.instance.antiCheatNotify && moving && yPosition != -999.0D && stance != -999.0D) {
-				long currentTime = System.currentTimeMillis();
-				long time = Math.min(5000, currentTime - nsh.lastMovement);
-				double dX = (xPosition - nsh.lastPX);
-				double dZ = (zPosition - nsh.lastPZ);
-				if (time == 0) {
-					nsh.lastPZ += dZ;
-					nsh.lastPX += dX;
-				} else {
-					nsh.lastMovement = currentTime;
-					if (time < 1) {
-						time = 1;
-					}
-					double speed = (Math.sqrt(dX * dX + dZ * dZ) * 1000) / time;
-					//Log.info(speed + "\t" + dX + '\t' + dZ + '\t' + time + '\t' + moving + '\t' + yPosition + '\t' + stance);
-					if (Double.isInfinite(speed) || Double.isNaN(speed)) {
-						speed = 1;
-					}
-					double averageSpeed = (nsh.averageSpeed = ((nsh.averageSpeed * 100 + speed) / 101));
-					ServerConfigurationManager serverConfigurationManager = MinecraftServer.getServer().getConfigurationManager();
-					speed /= allowedSpeedMultiplier(entityPlayerMP);
-					if (currentTime > nsh.lastNotify && !serverConfigurationManager.areCommandsAllowed(entityPlayerMP.username) && (averageSpeed > 50 || (!entityPlayerMP.isRiding() && averageSpeed > 20))) {
-						if (TickThreading.instance.antiCheatKick) {
-							nsh.kickPlayerFromServer("You moved too quickly. " + TableFormatter.formatDoubleWithPrecision(averageSpeed, 3) + "m/s");
-						} else {
-							entityPlayerMP.sendChatToPlayer("You moved too quickly. " + TableFormatter.formatDoubleWithPrecision(averageSpeed, 3) + "m/s");
-						}
-						Redirects.notifyAdmins(entityPlayerMP.username + " was travelling too fast: " + TableFormatter.formatDoubleWithPrecision(averageSpeed, 3) + "m/s");
-						nsh.lastNotify = currentTime + 30000;
-					}
-					nsh.lastPZ = this.zPosition;
-					nsh.lastPX = this.xPosition;
+		synchronized (nsh) {
+			EntityPlayerMP entityPlayerMP = nsh.playerEntity;
+			if (nsh.teleported > 0 || nsh.tpPosY > yPosition + 0.02) {
+				nsh.lastPZ = this.zPosition;
+				nsh.lastPX = this.xPosition;
+				nsh.averageSpeed = -50d;
+				if (--nsh.teleported <= 1 || nsh.tpPosY > yPosition + 0.02) {
+					nsh.updatePositionAfterTP();
 				}
-			}
-			synchronized (entityPlayerMP.loadedChunks) {
-				par1NetHandler.handleFlying(this);
-				sendChunks(entityPlayerMP);
+				((WorldServer) entityPlayerMP.worldObj).getPlayerManager().updateMountedMovingPlayer(entityPlayerMP);
+				synchronized (entityPlayerMP.loadedChunks) {
+					sendChunks(entityPlayerMP);
+				}
+			} else {
+				nsh.tpPosX = Double.NaN;
+				nsh.setHasMoved();
+				nsh.tpPosY = -256;
+				if (false && TickThreading.instance.antiCheatNotify && moving && yPosition != -999.0D && stance != -999.0D) {
+					long currentTime = System.currentTimeMillis();
+					long time = Math.min(5000, currentTime - nsh.lastMovement);
+					double dX = (xPosition - nsh.lastPX);
+					double dZ = (zPosition - nsh.lastPZ);
+					if (time == 0) {
+						nsh.lastPZ += dZ;
+						nsh.lastPX += dX;
+					} else {
+						nsh.lastMovement = currentTime;
+						if (time < 1) {
+							time = 1;
+						}
+						double speed = (Math.sqrt(dX * dX + dZ * dZ) * 1000) / time;
+						//Log.info(speed + "\t" + dX + '\t' + dZ + '\t' + time + '\t' + moving + '\t' + yPosition + '\t' + stance);
+						if (Double.isInfinite(speed) || Double.isNaN(speed)) {
+							speed = 1;
+						}
+						double averageSpeed = (nsh.averageSpeed = ((nsh.averageSpeed * 100 + speed) / 101));
+						ServerConfigurationManager serverConfigurationManager = MinecraftServer.getServer().getConfigurationManager();
+						speed /= allowedSpeedMultiplier(entityPlayerMP);
+						if (currentTime > nsh.lastNotify && !serverConfigurationManager.areCommandsAllowed(entityPlayerMP.username) && (averageSpeed > 50 || (!entityPlayerMP.isRiding() && averageSpeed > 20))) {
+							if (TickThreading.instance.antiCheatKick) {
+								nsh.kickPlayerFromServer("You moved too quickly. " + TableFormatter.formatDoubleWithPrecision(averageSpeed, 3) + "m/s");
+							} else {
+								entityPlayerMP.sendChatToPlayer("You moved too quickly. " + TableFormatter.formatDoubleWithPrecision(averageSpeed, 3) + "m/s");
+							}
+							Redirects.notifyAdmins(entityPlayerMP.username + " was travelling too fast: " + TableFormatter.formatDoubleWithPrecision(averageSpeed, 3) + "m/s");
+							nsh.lastNotify = currentTime + 30000;
+						}
+						nsh.lastPZ = this.zPosition;
+						nsh.lastPX = this.xPosition;
+					}
+				}
+				synchronized (entityPlayerMP.loadedChunks) {
+					par1NetHandler.handleFlying(this);
+					sendChunks(entityPlayerMP);
+				}
 			}
 		}
 	}

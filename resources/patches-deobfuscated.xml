@@ -22,7 +22,6 @@
 		</class>
 		<class id="net.minecraft.network.NetServerHandler">
 			<addAll fromClass="me.nallar.patched.PatchNetServerHandler"/>
-			<insertBefore code="teleported = 20;">setPlayerLocation</insertBefore>
 			<replaceMethodCall method="warning"
 												 code="{ javassist.is.faulty.Redirects.notifyAdmins($1); }"
 							>handleFlying</replaceMethodCall>

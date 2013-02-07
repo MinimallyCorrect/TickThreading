@@ -115,9 +115,6 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				Thread.sleep(1000);
 			} catch (InterruptedException ignored) {
 			}
-			if (FMLCommonHandler.instance().shouldServerBeKilledQuietly()) {
-				return;
-			}
 			FMLLog.log(Level.SEVERE, throwable, "Encountered an unexpected exception" + throwable.getClass().getSimpleName());
 			CrashReport crashReport;
 
