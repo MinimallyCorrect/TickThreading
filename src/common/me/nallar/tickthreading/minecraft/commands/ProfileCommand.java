@@ -120,7 +120,7 @@ public class ProfileCommand extends Command {
 		};
 		Thread profilingThread = new Thread(profilingRunnable);
 		profilingThread.setName("TT Profiler");
-		sendChat(commandSender, "Profiling for " + time + " seconds in " + Log.name(world));
+		sendChat(commandSender, "Profiling for " + time + " seconds in " + Log.name(world) + (hashCode != 0 ? " at h:" + hashCode : ""));
 		profilingThread.start();
 	}
 }
