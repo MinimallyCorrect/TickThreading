@@ -48,6 +48,7 @@ public final class TickManager {
 	private final ConcurrentIterableArrayList<TickRegion> tickRegions = new ConcurrentIterableArrayList<TickRegion>();
 	private final ThreadManager threadManager;
 	private final Map<Class<?>, Integer> entityClassToCountMap = new HashMap<Class<?>, Integer>();
+	private final boolean lock = TickThreading.instance.lockRegionBorders;
 
 	public TickManager(World world, int regionSize, int threads, boolean waitForCompletion) {
 		this.waitForCompletion = waitForCompletion;
@@ -180,7 +181,9 @@ public final class TickManager {
 	public void batchRemove(Collection<TileEntity> tileEntities) {
 		for (TileEntity tileEntity : tileEntities) {
 			getOrCreateCallable(tileEntity).remove(tileEntity);
-			unlock(tileEntity);
+			if (lock) {
+				unlock(tileEntity);
+			}
 			tileEntity.onChunkUnload();
 		}
 		synchronized (tileEntityLock) {
@@ -202,10 +205,9 @@ public final class TickManager {
 		synchronized (tileEntityLock) {
 			tileEntityList.remove(tileEntity);
 		}
-		if (!TickThreading.instance.lockRegionBorders) {
-			return;
+		if (lock) {
+			unlock(tileEntity);
 		}
-		unlock(tileEntity);
 	}
 
 	public void unlock(TileEntity tileEntity) {
@@ -220,7 +222,7 @@ public final class TickManager {
 		// If this order is not followed, we may deadlock.
 		if (relativeXPos == 0) { // minus X needs locked
 			synchronized (tileEntity) { // Lock this (+ve) first
-				TileEntity lockTileEntity = world.getBlockTileEntity(xPos - 1, yPos, zPos);
+				TileEntity lockTileEntity = world.getTEWithoutLoad(xPos - 1, yPos, zPos);
 				if (lockTileEntity != null) {
 					synchronized (lockTileEntity) {
 						lockTileEntity.xPlusLock = tileEntity.xMinusLock = null;
@@ -228,7 +230,7 @@ public final class TickManager {
 				}
 			}
 		} else if (relativeXPos == maxPosition) { // plus X needs locked
-			TileEntity lockTileEntity = world.getBlockTileEntity(xPos + 1, yPos, zPos);
+			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos + 1, yPos, zPos);
 			if (lockTileEntity != null) {
 				synchronized (lockTileEntity) { // Lock other (+ve) first
 					synchronized (tileEntity) {
@@ -239,7 +241,7 @@ public final class TickManager {
 		}
 		if (relativeZPos == 0) { // minus Z needs locked
 			synchronized (tileEntity) { // Lock this (+ve) first
-				TileEntity lockTileEntity = world.getBlockTileEntity(xPos, yPos, zPos - 1);
+				TileEntity lockTileEntity = world.getTEWithoutLoad(xPos, yPos, zPos - 1);
 				if (lockTileEntity != null) {
 					synchronized (lockTileEntity) {
 						lockTileEntity.zPlusLock = tileEntity.zMinusLock = null;
@@ -247,7 +249,7 @@ public final class TickManager {
 				}
 			}
 		} else if (relativeZPos == maxPosition) { // plus Z needs locked
-			TileEntity lockTileEntity = world.getBlockTileEntity(xPos, yPos, zPos + 1);
+			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos, yPos, zPos + 1);
 			if (lockTileEntity != null) {
 				synchronized (lockTileEntity) { // Lock other (+ve) first
 					synchronized (tileEntity) {
@@ -275,7 +277,7 @@ public final class TickManager {
 		// If this order is not followed, we may deadlock.
 		if (relativeXPos == 0) { // minus X needs locked
 			synchronized (tileEntity) { // Lock this (+ve) first
-				TileEntity lockTileEntity = world.getBlockTileEntity(xPos - 1, yPos, zPos);
+				TileEntity lockTileEntity = world.getTEWithoutLoad(xPos - 1, yPos, zPos);
 				if (lockTileEntity != null) {
 					synchronized (lockTileEntity) {
 						if (tileEntity.xMinusLock == null) {
@@ -285,7 +287,7 @@ public final class TickManager {
 				}
 			}
 		} else if (relativeXPos == maxPosition) { // plus X needs locked
-			TileEntity lockTileEntity = world.getBlockTileEntity(xPos + 1, yPos, zPos);
+			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos + 1, yPos, zPos);
 			if (lockTileEntity != null) {
 				synchronized (lockTileEntity) { // Lock other (+ve) first
 					synchronized (tileEntity) {
@@ -298,7 +300,7 @@ public final class TickManager {
 		}
 		if (relativeZPos == 0) { // minus Z needs locked
 			synchronized (tileEntity) { // Lock this (+ve) first
-				TileEntity lockTileEntity = world.getBlockTileEntity(xPos, yPos, zPos - 1);
+				TileEntity lockTileEntity = world.getTEWithoutLoad(xPos, yPos, zPos - 1);
 				if (lockTileEntity != null) {
 					synchronized (lockTileEntity) {
 						if (tileEntity.zMinusLock == null) {
@@ -308,7 +310,7 @@ public final class TickManager {
 				}
 			}
 		} else if (relativeZPos == maxPosition) { // plus Z needs locked
-			TileEntity lockTileEntity = world.getBlockTileEntity(xPos, yPos, zPos + 1);
+			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos, yPos, zPos + 1);
 			if (lockTileEntity != null) {
 				synchronized (lockTileEntity) { // Lock other (+ve) first
 					synchronized (tileEntity) {

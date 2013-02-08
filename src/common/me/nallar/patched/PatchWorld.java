@@ -23,6 +23,7 @@ import net.minecraft.world.WorldProvider;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.WorldSettings;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.gen.ChunkProviderServer;
 import net.minecraft.world.storage.ISaveHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
@@ -47,6 +48,16 @@ public abstract class PatchWorld extends World {
 			return null;
 		} else {
 			Chunk chunk = this.getChunkFromChunkCoords(x >> 4, z >> 4);
+			return chunk == null ? null : chunk.getChunkBlockTileEntity(x & 15, y, z & 15);
+		}
+	}
+
+	@Declare
+	public TileEntity getTEWithoutLoad(int x, int y, int z) {
+		if (y >= 256) {
+			return null;
+		} else {
+			Chunk chunk = ((ChunkProviderServer) this.chunkProvider).getChunkIfExists(x >> 4, z >> 4);
 			return chunk == null ? null : chunk.getChunkBlockTileEntity(x & 15, y, z & 15);
 		}
 	}
