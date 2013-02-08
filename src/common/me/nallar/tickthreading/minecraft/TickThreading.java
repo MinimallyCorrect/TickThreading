@@ -27,6 +27,7 @@ import me.nallar.tickthreading.util.LocationUtil;
 import me.nallar.tickthreading.util.PatchUtil;
 import me.nallar.tickthreading.util.VersionUtil;
 import net.minecraft.command.ServerCommandManager;
+import net.minecraft.network.packet.PacketCount;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
@@ -188,6 +189,7 @@ public class TickThreading {
 		for (int disabledDimension : disabledDimensions) {
 			disabledFastMobSpawningDimensions.add(disabledDimension);
 		}
+		PacketCount.allowCounting = false;
 	}
 
 	@Mod.ServerStarting

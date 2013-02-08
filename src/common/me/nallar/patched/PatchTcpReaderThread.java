@@ -27,7 +27,7 @@ public abstract class PatchTcpReaderThread extends ThreadMinecraftServer {
 						} catch (InterruptedException ignored) {
 						}
 					}
-					if (count++ % 30 == 0) {
+					if (count++ % 5 == 0) {
 						AxisAlignedBB.getAABBPool().cleanPool();
 					}
 				}
