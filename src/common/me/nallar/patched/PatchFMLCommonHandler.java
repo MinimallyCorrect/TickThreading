@@ -2,6 +2,8 @@ package me.nallar.patched;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.IScheduledTickHandler;
@@ -12,12 +14,23 @@ import net.minecraft.profiler.Profiler;
 
 public abstract class PatchFMLCommonHandler extends FMLCommonHandler {
 	public Profiler theProfiler = null;
+	private Lock tickReadLock;
+	private Lock tickWriteLock;
+
+	public void construct() {
+		ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+		tickReadLock = readWriteLock.readLock();
+		tickWriteLock = readWriteLock.writeLock();
+	}
 
 	@Override
 	public void rescheduleTicks(Side side) {
 		List<IScheduledTickHandler> scheduledTicks = side.isClient() ? scheduledClientTicks : scheduledServerTicks;
-		synchronized (scheduledTicks) {
+		try {
+			tickWriteLock.lock();
 			TickRegistry.updateTickQueue(scheduledTicks, side);
+		} finally {
+			tickWriteLock.unlock();
 		}
 	}
 
@@ -28,7 +41,8 @@ public abstract class PatchFMLCommonHandler extends FMLCommonHandler {
 		}
 		final List<IScheduledTickHandler> scheduledTicks = side.isClient() ? scheduledClientTicks : scheduledServerTicks;
 
-		synchronized (scheduledTicks) {
+		try {
+			tickReadLock.lock();
 			if (scheduledTicks.isEmpty()) {
 				return;
 			}
@@ -46,6 +60,8 @@ public abstract class PatchFMLCommonHandler extends FMLCommonHandler {
 					theProfiler.endSection();
 				}
 			}
+		} finally {
+			tickReadLock.unlock();
 		}
 	}
 
@@ -53,7 +69,8 @@ public abstract class PatchFMLCommonHandler extends FMLCommonHandler {
 	public void tickEnd(EnumSet<TickType> ticks, Side side, Object... data) {
 		final List<IScheduledTickHandler> scheduledTicks = side.isClient() ? scheduledClientTicks : scheduledServerTicks;
 
-		synchronized (scheduledTicks) {
+		try {
+			tickReadLock.lock();
 			if (scheduledTicks.isEmpty()) {
 				return;
 			}
@@ -71,6 +88,8 @@ public abstract class PatchFMLCommonHandler extends FMLCommonHandler {
 					theProfiler.endSection();
 				}
 			}
+		} finally {
+			tickReadLock.unlock();
 		}
 	}
 }
