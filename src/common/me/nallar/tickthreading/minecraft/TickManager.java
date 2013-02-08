@@ -177,6 +177,16 @@ public final class TickManager {
 		}
 	}
 
+	public void batchRemove(Collection<TileEntity> tileEntities) {
+		for (TileEntity tileEntity : tileEntities) {
+			unlock(tileEntity);
+			tileEntity.onChunkUnload();
+		}
+		synchronized (tileEntityLock) {
+			tileEntityList.removeAll(tileEntities);
+		}
+	}
+
 	public void remove(TileEntity tileEntity) {
 		getOrCreateCallable(tileEntity).remove(tileEntity);
 		removed(tileEntity);

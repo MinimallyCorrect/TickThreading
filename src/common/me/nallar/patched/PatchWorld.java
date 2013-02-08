@@ -5,6 +5,7 @@ import java.util.List;
 
 import javassist.is.faulty.ThreadLocals;
 import me.nallar.tickthreading.minecraft.entitylist.EntityList;
+import me.nallar.tickthreading.minecraft.entitylist.LoadedTileEntityList;
 import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.block.Block;
 import net.minecraft.crash.CrashReport;
@@ -468,10 +469,14 @@ public abstract class PatchWorld extends World {
 		this.theProfiler.endStartSection("removingTileEntities");
 
 		if (!this.entityRemoval.isEmpty()) {
-			for (Object tile : entityRemoval) {
-				((TileEntity) tile).onChunkUnload();
+			if (loadedTileEntityList instanceof LoadedTileEntityList) {
+				((LoadedTileEntityList) loadedTileEntityList).manager.batchRemove(entityRemoval);
+			} else {
+				for (Object tile : entityRemoval) {
+					((TileEntity) tile).onChunkUnload();
+				}
+				this.loadedTileEntityList.removeAll(this.entityRemoval);
 			}
-			this.loadedTileEntityList.removeAll(this.entityRemoval);
 			this.entityRemoval.clear();
 		}
 
