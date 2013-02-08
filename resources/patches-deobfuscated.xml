@@ -163,7 +163,6 @@
 			<lock field="playerUpdateLock">sendPacketToAllPlayersInDimension,getPlayerListAsString,getAllUsernames,getPlayerForUsername,findPlayers,sendToAllNearExcept</lock>
 			<lock field="playerUpdateLock">saveAllPlayerData,getPlayerList</lock>
 			<lock field="playersUpdateLock">playerLoggedIn,playerLoggedOut,respawnPlayer</lock>
-			<synchronize field="$1.loadedChunks">transferPlayerToDimension(Lnet.minecraft.entity.player.EntityPlayerMP;ILnet.minecraft.world.Teleporter;)V</synchronize>
 			<synchronize field="$1.loadedChunks">respawnPlayer</synchronize>
 			<synchronize field="$2.loadedChunks">initializeConnectionToPlayer</synchronize>
 		</class>
@@ -175,9 +174,9 @@
 		</class>
 		<class id="net.minecraft.server.management.PlayerManager" env="forge">
 			<addAll fromClass="me.nallar.patched.PatchPlayerManagerForge"/>
-			<synchronize>addPlayer,removePlayer</synchronize>
 			<synchronize field="$1.loadedChunks">addPlayer,removePlayer,filterChunkLoadQueue</synchronize>
 			<synchronize field="$1.loadedChunks">updateMountedMovingPlayer</synchronize>
+			<synchronize>addPlayer,removePlayer</synchronize>
 		</class>
 		<class id="net.minecraft.server.management.PlayerManager">
 			<profile>updatePlayerInstances</profile>
