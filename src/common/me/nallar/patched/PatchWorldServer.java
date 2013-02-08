@@ -346,29 +346,30 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 			ExtendedBlockStorage[] var19 = chunk.getBlockStorageArray();
 			var9 = var19.length;
 
+			int updateLCG = this.updateLCG;
 			for (var10 = 0; var10 < var9; ++var10) {
-				ExtendedBlockStorage var21 = var19[var10];
+				ExtendedBlockStorage ebs = var19[var10];
 
-				if (var21 != null && var21.getNeedsRandomTick()) {
-					for (int var20 = 0; var20 < 3; ++var20) {
-						this.updateLCG = this.updateLCG * 3 + 1013904223;
-						var13 = this.updateLCG >> 2;
-						int var14 = var13 & 15;
-						int var15 = var13 >> 8 & 15;
-						int var16 = var13 >> 16 & 15;
-						int var17 = var21.getExtBlockID(var14, var16, var15);
-						Block var18 = Block.blocksList[var17];
+				if (ebs != null && ebs.getNeedsRandomTick()) {
+					for (int i = 0; i < 3; ++i) {
+						updateLCG = updateLCG * 1664525 + 1013904223;
+						var13 = updateLCG >> 2;
+						int x = var13 & 15;
+						int y = var13 >> 8 & 15;
+						int z = var13 >> 16 & 15;
+						Block var18 = Block.blocksList[ebs.getExtBlockID(x, z, y)];
 
 						if (var18 != null && var18.getTickRandomly()) {
 							try {
-								var18.updateTick(this, var14 + xPos, var16 + var21.getYLocation(), var15 + zPos, rand);
+								var18.updateTick(this, x + xPos, z + ebs.getYLocation(), y + zPos, rand);
 							} catch (Exception e) {
-								Log.severe("Exception ticking block " + var18 + " at x" + var14 + xPos + 'y' + var16 + var21.getYLocation() + 'z' + var15 + zPos, e);
+								Log.severe("Exception ticking block " + var18 + " at x" + x + xPos + 'y' + z + ebs.getYLocation() + 'z' + y + zPos, e);
 							}
 						}
 					}
 				}
 			}
+			this.updateLCG += updateLCG * 1664525;
 			theProfiler.endSection();
 			theProfiler.endStartSection("iterate");
 		}
