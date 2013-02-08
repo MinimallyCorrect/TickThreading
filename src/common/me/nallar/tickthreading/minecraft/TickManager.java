@@ -194,6 +194,7 @@ public final class TickManager {
 		if (!TickThreading.instance.lockRegionBorders) {
 			return;
 		}
+		unlock(tileEntity);
 	}
 
 	public void unlock(TileEntity tileEntity) {
