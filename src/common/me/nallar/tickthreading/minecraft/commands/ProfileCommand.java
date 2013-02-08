@@ -64,7 +64,7 @@ public class ProfileCommand extends Command {
 		final long time = time_;
 		final boolean entity = entity_;
 		final boolean location = location_;
-		final int hashCode = x != null ? manager.getHashCode(x, z): (commandSender instanceof Entity ? manager.getHashCode((Entity) commandSender) : 0);
+		final int hashCode = x != null ? manager.getHashCode(x, z) : (commandSender instanceof Entity ? manager.getHashCode((Entity) commandSender) : 0);
 		if (entity) {
 			if (manager.profilingEnabled) {
 				sendChat(commandSender, "Someone else is currently profiling, please wait and try again.");

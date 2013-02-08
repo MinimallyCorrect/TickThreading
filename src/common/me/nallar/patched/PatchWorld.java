@@ -29,6 +29,12 @@ import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 @SuppressWarnings ("ForLoopReplaceableByForEach")
 public abstract class PatchWorld extends World {
 	private int forcedUpdateCount;
+	@Declare
+	public int tickCount_;
+
+	public void construct() {
+		tickCount = rand.nextInt(5);
+	}
 
 	public PatchWorld(ISaveHandler par1ISaveHandler, String par2Str, WorldProvider par3WorldProvider, WorldSettings par4WorldSettings, Profiler par5Profiler) {
 		super(par1ISaveHandler, par2Str, par3WorldProvider, par4WorldSettings, par5Profiler);

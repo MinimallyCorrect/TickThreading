@@ -30,6 +30,7 @@ import net.minecraft.world.WorldSettings;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
+import net.minecraft.world.gen.ChunkProviderServer;
 import net.minecraft.world.storage.ISaveHandler;
 import net.minecraftforge.common.ForgeChunkManager;
 
@@ -39,8 +40,6 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	private ThreadLocal<Random> randoms;
 	@Declare
 	public ThreadLocal<Boolean> worldGenInProgress_;
-	@Declare
-	public int tickCount_;
 
 	public PatchWorldServer(MinecraftServer par1MinecraftServer, ISaveHandler par2ISaveHandler, String par3Str, int par4, WorldSettings par5WorldSettings, Profiler par6Profiler) {
 		super(par1MinecraftServer, par2ISaveHandler, par3Str, par4, par5WorldSettings, par6Profiler);
@@ -241,11 +240,14 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 
 	@Override
 	protected void tickBlocksAndAmbiance() {
-		TickThreading tickThreading = TickThreading.instance;
-		boolean concurrentTicks = tickThreading.enableChunkTickThreading && !mcServer.theProfiler.profilingEnabled;
+		boolean concurrentTicks = TickThreading.instance.enableChunkTickThreading && !mcServer.theProfiler.profilingEnabled;
 
 		if (concurrentTicks) {
 			threadManager.waitForCompletion();
+		}
+
+		if (tickCount % 5 == 0) {
+			this.setActivePlayerChunksAndCheckLight();
 		}
 
 		chunkCoordIterator = this.activeChunkSet.iterator();
@@ -263,6 +265,11 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	public void run() {
 		double tpsFactor = MinecraftServer.getTPS() / MinecraftServer.getTargetTPS();
 		final Random rand = randoms.get();
+		final Iterator<ChunkCoordIntPair> chunkCoordIterator = this.chunkCoordIterator;
+		final ChunkProviderServer chunkProviderServer = this.theChunkProviderServer;
+		final boolean isRaining = this.isRaining();
+		final boolean isThundering = this.isThundering();
+		int updateLCG = this.updateLCG;
 		// We use a random per thread - randoms are threadsafe, however synchronization is involved.
 		// This reduces contention -> slightly increased performance, woo! :P
 		while (true) {
@@ -272,7 +279,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 					break;
 				}
 				try {
-					var4 = (ChunkCoordIntPair) chunkCoordIterator.next();
+					var4 = chunkCoordIterator.next();
 				} catch (ConcurrentModificationException e) {
 					break;
 				}
@@ -280,13 +287,13 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 
 			int cX = var4.chunkXPos;
 			int cZ = var4.chunkZPos;
-			if ((tpsFactor < 1 && rand.nextFloat() > tpsFactor) || this.theChunkProviderServer.getChunksToUnloadSet().contains(ChunkCoordIntPair.chunkXZ2Int(cX, cZ))) {
+			if ((tpsFactor < 1 && rand.nextFloat() > tpsFactor) || chunkProviderServer.getChunksToUnloadSet().contains(ChunkCoordIntPair.chunkXZ2Int(cX, cZ))) {
 				continue;
 			}
 
 			int xPos = cX * 16;
 			int zPos = cZ * 16;
-			Chunk chunk = this.theChunkProviderServer.getChunkIfExists(cX, cZ);
+			Chunk chunk = chunkProviderServer.getChunkIfExists(cX, cZ);
 			if (chunk == null) {
 				continue;
 			}
@@ -299,9 +306,9 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 			int var11;
 
 			theProfiler.startSection("lightning");
-			if (provider.canDoLightning(chunk) && rand.nextInt(100000) == 0 && this.isRaining() && this.isThundering()) {
-				this.updateLCG = this.updateLCG * 3 + 1013904223;
-				var8 = this.updateLCG >> 2;
+			if (isRaining && isThundering && provider.canDoLightning(chunk) && rand.nextInt(100000) == 0) {
+				updateLCG = updateLCG * 1664525 + 1013904223;
+				var8 = updateLCG >> 2;
 				var9 = xPos + (var8 & 15);
 				var10 = zPos + (var8 >> 8 & 15);
 				var11 = this.getPrecipitationHeight(var9, var10);
@@ -315,8 +322,8 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 
 			theProfiler.endStartSection("precipitation");
 			if (provider.canDoRainSnowIce(chunk) && rand.nextInt(16) == 0) {
-				this.updateLCG = this.updateLCG * 3 + 1013904223;
-				var8 = this.updateLCG >> 2;
+				updateLCG = updateLCG * 1664525 + 1013904223;
+				var8 = updateLCG >> 2;
 				var9 = var8 & 15;
 				var10 = var8 >> 8 & 15;
 				var11 = this.getPrecipitationHeight(var9 + xPos, var10 + zPos);
@@ -325,11 +332,11 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 					this.setBlockWithNotify(var9 + xPos, var11 - 1, var10 + zPos, Block.ice.blockID);
 				}
 
-				if (this.isRaining() && this.canSnowAt(var9 + xPos, var11, var10 + zPos)) {
-					this.setBlockWithNotify(var9 + xPos, var11, var10 + zPos, Block.snow.blockID);
-				}
+				if (isRaining) {
+					if (this.canSnowAt(var9 + xPos, var11, var10 + zPos)) {
+						this.setBlockWithNotify(var9 + xPos, var11, var10 + zPos, Block.snow.blockID);
+					}
 
-				if (this.isRaining()) {
 					BiomeGenBase var12 = this.getBiomeGenForCoords(var9 + xPos, var10 + zPos);
 
 					if (var12.canSpawnLightningBolt()) {
@@ -346,7 +353,6 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 			ExtendedBlockStorage[] var19 = chunk.getBlockStorageArray();
 			var9 = var19.length;
 
-			int updateLCG = this.updateLCG;
 			for (var10 = 0; var10 < var9; ++var10) {
 				ExtendedBlockStorage ebs = var19[var10];
 
@@ -369,10 +375,10 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 					}
 				}
 			}
-			this.updateLCG += updateLCG * 1664525;
 			theProfiler.endSection();
 			theProfiler.endStartSection("iterate");
 		}
+		this.updateLCG += updateLCG * 1664525;
 	}
 
 	public static class ThreadLocalRandom extends ThreadLocal<Random> {
@@ -383,10 +389,11 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	}
 
 	@Override
-	public void markBlockForUpdate(int par1, int par2, int par3) {
+	public void markBlockForUpdate(int x, int y, int z) {
 		if (!worldGenInProgress.get()) {
-			for (int var4 = 0; var4 < this.worldAccesses.size(); ++var4) {
-				((IWorldAccess) this.worldAccesses.get(var4)).markBlockForUpdate(par1, par2, par3);
+			final List<IWorldAccess> worldAccesses = this.worldAccesses;
+			for (int i = 0; i < worldAccesses.size(); ++i) {
+				worldAccesses.get(i).markBlockForUpdate(x, y, z);
 			}
 		}
 	}

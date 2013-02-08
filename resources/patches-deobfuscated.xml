@@ -54,18 +54,18 @@
 			<!-- Fixes an issue where the tickNextTickLists would become out of sync -->
 			<synchronize>func_82740_a,scheduleBlockUpdateFromLoad,getPendingBlockUpdates,addBlockEvent,tickUpdates,initialize</synchronize>
 			<addAll fromClass="me.nallar.patched.PatchWorldServer"/>
-			<insertSuper>tickBlocksAndAmbiance</insertSuper>
 			<profile>tickBlocksAndAmbiance</profile>
 			<profile>tick</profile>
 			<insertSuper>initialize</insertSuper>
 		</class>
 		<class id="net.minecraft.world.World">
-			<!-- Same list was used by multiple threads -->
 			<addAll fromClass="me.nallar.patched.PatchWorld"/>
 			<profile>updateEntities</profile>
 			<profile>setActivePlayerChunksAndCheckLight</profile>
 			<public>releaseEntitySkin</public>
-			<newInitializer field="activeChunkSet" code="java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap());"/>
+			<final field="worldAccesses"/>
+			<final field="provider"/>
+			<final field="theProfiler"/>
 		</class>
 		<class id="net.minecraft.world.biome.WorldChunkManager">
 			<newField field="staticLock" class="java.lang.Object" static=""/>
