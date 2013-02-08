@@ -211,7 +211,6 @@ public final class TickManager {
 	}
 
 	public void unlock(TileEntity tileEntity) {
-		ChunkProviderServer chunkProvider = (ChunkProviderServer) world.getChunkProvider();
 		int xPos = tileEntity.lastTTX;
 		int yPos = tileEntity.lastTTY;
 		int zPos = tileEntity.lastTTZ;
