@@ -39,7 +39,6 @@ public class TileEntityTickRegion extends TickRegion {
 				entityTickProfiler.tick();
 			}
 		}
-		//Lock classLock = null;
 		int xPos = 0;
 		int zPos = 0;
 		final Iterator<TileEntity> tileEntitiesIterator = tileEntitySet.iterator();

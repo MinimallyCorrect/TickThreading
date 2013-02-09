@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import javassist.is.faulty.ThreadLocals;
+import me.nallar.tickthreading.collections.ForcedChunksRedirectMap;
 import me.nallar.tickthreading.minecraft.entitylist.EntityList;
 import me.nallar.tickthreading.minecraft.entitylist.LoadedTileEntityList;
 import me.nallar.tickthreading.patcher.Declare;
@@ -25,6 +26,7 @@ import net.minecraft.world.WorldSettings;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.ChunkProviderServer;
 import net.minecraft.world.storage.ISaveHandler;
+import net.minecraftforge.common.ForgeChunkManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 
@@ -32,10 +34,13 @@ import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 public abstract class PatchWorld extends World {
 	private int forcedUpdateCount;
 	@Declare
+	public com.google.common.collect.ImmutableSetMultimap<ChunkCoordIntPair, ForgeChunkManager.Ticket> forcedChunks_;
+	@Declare
 	public int tickCount_;
 
 	public void construct() {
 		tickCount = rand.nextInt(5);
+		forcedChunks = ForcedChunksRedirectMap.emptyMap;
 	}
 
 	public PatchWorld(ISaveHandler par1ISaveHandler, String par2Str, WorldProvider par3WorldProvider, WorldSettings par4WorldSettings, Profiler par5Profiler) {
