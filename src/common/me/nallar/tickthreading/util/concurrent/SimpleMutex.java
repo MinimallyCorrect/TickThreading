@@ -30,7 +30,7 @@ public final class SimpleMutex implements Lock {
 		}
 		waiting++;
 		do {
-			wait();
+			wait(1L);
 		} while (locked);
 		waiting--;
 		locked = true;
@@ -45,7 +45,7 @@ public final class SimpleMutex implements Lock {
 		try {
 			waiting++;
 			do {
-				wait();
+				wait(1L);
 			} while (locked);
 			waiting--;
 			locked = true;
