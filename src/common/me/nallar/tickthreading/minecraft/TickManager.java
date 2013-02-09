@@ -198,12 +198,16 @@ public final class TickManager {
 	}
 
 	public void remove(TileEntity tileEntity) {
-		tileEntity.tickRegion.remove(tileEntity);
+		if (tileEntity.tickRegion != null) {
+			tileEntity.tickRegion.remove(tileEntity);
+		}
 		removed(tileEntity);
 	}
 
 	public void remove(Entity entity) {
-		entity.tickRegion.remove(entity);
+		if (entity.tickRegion != null) {
+			entity.tickRegion.remove(entity);
+		}
 		removed(entity);
 	}
 
