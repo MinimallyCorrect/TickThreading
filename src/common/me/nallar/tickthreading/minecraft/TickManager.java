@@ -183,8 +183,10 @@ public final class TickManager {
 
 	public void batchRemove(Collection<TileEntity> tileEntities) {
 		for (TileEntity tileEntity : tileEntities) {
-			tileEntity.tickRegion.remove(tileEntity);
-			tileEntity.tickRegion = null;
+			if (tileEntity.tickRegion != null) {
+				tileEntity.tickRegion.remove(tileEntity);
+				tileEntity.tickRegion = null;
+			}
 			if (lock) {
 				unlock(tileEntity);
 			}

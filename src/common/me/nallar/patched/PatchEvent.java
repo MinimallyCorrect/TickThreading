@@ -1,16 +1,16 @@
 package me.nallar.patched;
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import net.minecraftforge.event.Cancelable;
 import net.minecraftforge.event.Event;
-import org.cliffc.high_scale_lib.NonBlockingHashMap;
 
 public abstract class PatchEvent extends Event {
 	private static Map<Class, Boolean> annotationMap; // Class -> boolean instead of Class -> (Class -> boolean) because forge ignores annotation type
 
 	public static void staticConstruct() {
-		annotationMap = new NonBlockingHashMap<Class, Boolean>();
+		annotationMap = new ConcurrentHashMap<Class, Boolean>();
 	}
 
 	@Override
