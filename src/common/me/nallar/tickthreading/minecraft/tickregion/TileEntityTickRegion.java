@@ -27,14 +27,6 @@ public class TileEntityTickRegion extends TickRegion {
 		final World world = this.world;
 		final boolean lockable = TickThreading.instance.lockRegionBorders;
 		final boolean profilingEnabled = manager.profilingEnabled || this.profilingEnabled;
-		final int regionSize = manager.regionSize;
-		final int maxPosition = (regionSize / 2) - 1;
-		int relativeXPos;
-		int relativeZPos;
-		boolean xMinusLocked = false;
-		boolean xPlusLocked = false;
-		boolean zMinusLocked = false;
-		boolean zPlusLocked = false;
 		Lock xPlusLock = null;
 		Lock xMinusLock = null;
 		Lock zPlusLock = null;

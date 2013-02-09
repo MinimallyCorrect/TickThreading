@@ -2,8 +2,6 @@ package me.nallar.patched;
 
 import java.util.List;
 
-import me.nallar.tickthreading.minecraft.tickregion.EntityTickRegion;
-import me.nallar.tickthreading.minecraft.tickregion.TileEntityTickRegion;
 import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;

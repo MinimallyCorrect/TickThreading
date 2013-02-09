@@ -1,6 +1,5 @@
 package me.nallar.patched;
 
-import me.nallar.tickthreading.minecraft.tickregion.TileEntityTickRegion;
 import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.tileentity.TileEntity;
 
