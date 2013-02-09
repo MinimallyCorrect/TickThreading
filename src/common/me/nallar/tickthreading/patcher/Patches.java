@@ -63,18 +63,21 @@ public class Patches {
 		CtClass ctClass = ctMethod.getDeclaringClass();
 		CtMethod replacement = CtNewMethod.copy(ctMethod, ctClass, null);
 		int i = 0;
+
+		String deobf = attributes.get("deobf");
+		String suffix = '_' + deobf.replace('/', '_').replace('.', '_') + "_p";
 		try {
 			//noinspection InfiniteLoopStatement
 			for (; true; i++) {
-				ctClass.getDeclaredMethod(ctMethod.getName() + "_profile" + i);
+				ctClass.getDeclaredMethod(ctMethod.getName() + suffix + i, ctMethod.getParameterTypes());
 			}
 		} catch (NotFoundException ignored) {
 		}
-		ctMethod.setName(ctMethod.getName() + "_profile" + i);
+		ctMethod.setName(ctMethod.getName() + suffix + i);
 		if (ctMethod.getReturnType() == CtPrimitiveType.voidType) {
-			replacement.setBody("{ boolean timings = javassist.is.faulty.Timings.enabled; long st = 0; if (timings) { st = System.nanoTime(); } " + ctMethod.getName() + "($$); if (timings) { javassist.is.faulty.Timings.record(\"" + attributes.get("deobf") + "\", System.nanoTime() - st); } }");
+			replacement.setBody("{ boolean timings = javassist.is.faulty.Timings.enabled; long st = 0; if (timings) { st = System.nanoTime(); } " + ctMethod.getName() + "($$); if (timings) { javassist.is.faulty.Timings.record(\"" + deobf + "\", System.nanoTime() - st); } }");
 		} else {
-			replacement.setBody("{ boolean timings = javassist.is.faulty.Timings.enabled; long st = 0; if (timings) { st = System.nanoTime(); } try { return " + ctMethod.getName() + "($$); } finally { if (timings) { javassist.is.faulty.Timings.record(\"" + attributes.get("deobf") + "\", System.nanoTime() - st); } } }");
+			replacement.setBody("{ boolean timings = javassist.is.faulty.Timings.enabled; long st = 0; if (timings) { st = System.nanoTime(); } try { return " + ctMethod.getName() + "($$); } finally { if (timings) { javassist.is.faulty.Timings.record(\"" + deobf + "\", System.nanoTime() - st); } } }");
 		}
 		ctClass.addMethod(replacement);
 	}
