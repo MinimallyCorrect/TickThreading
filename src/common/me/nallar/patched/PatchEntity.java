@@ -2,6 +2,8 @@ package me.nallar.patched;
 
 import java.util.List;
 
+import me.nallar.tickthreading.minecraft.tickregion.EntityTickRegion;
+import me.nallar.tickthreading.minecraft.tickregion.TileEntityTickRegion;
 import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
@@ -13,6 +15,8 @@ import net.minecraft.world.World;
 public abstract class PatchEntity extends Entity {
 	@Declare
 	public Boolean isForced_;
+	@Declare
+	public me.nallar.tickthreading.minecraft.tickregion.EntityTickRegion tickRegion_;
 
 	public PatchEntity(World par1World) {
 		super(par1World);

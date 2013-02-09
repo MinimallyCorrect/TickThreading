@@ -61,12 +61,12 @@ public final class TickManager {
 		this.variableTickRate = variableTickRate;
 	}
 
-	public TickRegion getTileEntityCallable(int hashCode) {
+	public TickRegion getTileEntityRegion(int hashCode) {
 		return tileEntityCallables.get(hashCode);
 	}
 
 	@SuppressWarnings ("NumericCastThatLosesPrecision")
-	private TileEntityTickRegion getOrCreateCallable(TileEntity tileEntity) {
+	private TileEntityTickRegion getOrCreateRegion(TileEntity tileEntity) {
 		int hashCode = getHashCode(tileEntity);
 		TileEntityTickRegion callable = tileEntityCallables.get(hashCode);
 		if (callable == null) {
@@ -82,12 +82,12 @@ public final class TickManager {
 		return callable;
 	}
 
-	public TickRegion getEntityCallable(int hashCode) {
+	public TickRegion getEntityRegion(int hashCode) {
 		return entityCallables.get(hashCode);
 	}
 
 	@SuppressWarnings ("NumericCastThatLosesPrecision")
-	private EntityTickRegion getOrCreateCallable(Entity entity) {
+	private EntityTickRegion getOrCreateRegion(Entity entity) {
 		int regionX = (int) entity.posX / regionSize;
 		int regionZ = (int) entity.posZ / regionSize;
 		int hashCode = getHashCodeFromRegionCoords(regionX, regionZ);
@@ -149,7 +149,9 @@ public final class TickManager {
 	}
 
 	public void add(TileEntity tileEntity) {
-		getOrCreateCallable(tileEntity).add(tileEntity);
+		TileEntityTickRegion tileEntityTickRegion = getOrCreateRegion(tileEntity);
+		tileEntityTickRegion.add(tileEntity);
+		tileEntity.tickRegion = tileEntityTickRegion;
 		synchronized (tileEntityLock) {
 			if (!tileEntityList.contains(tileEntity)) {
 				tileEntityList.add(tileEntity);
@@ -158,7 +160,9 @@ public final class TickManager {
 	}
 
 	public void add(Entity entity) {
-		getOrCreateCallable(entity).add(entity);
+		EntityTickRegion entityTickRegion = getOrCreateRegion(entity);
+		entityTickRegion.add(entity);
+		entity.tickRegion = entityTickRegion;
 		boolean added;
 		synchronized (entityLock) {
 			if (added = !entityList.contains(entity)) {
@@ -179,7 +183,8 @@ public final class TickManager {
 
 	public void batchRemove(Collection<TileEntity> tileEntities) {
 		for (TileEntity tileEntity : tileEntities) {
-			getOrCreateCallable(tileEntity).remove(tileEntity);
+			tileEntity.tickRegion.remove(tileEntity);
+			tileEntity.tickRegion = null;
 			if (lock) {
 				unlock(tileEntity);
 			}
@@ -191,16 +196,17 @@ public final class TickManager {
 	}
 
 	public void remove(TileEntity tileEntity) {
-		getOrCreateCallable(tileEntity).remove(tileEntity);
+		tileEntity.tickRegion.remove(tileEntity);
 		removed(tileEntity);
 	}
 
 	public void remove(Entity entity) {
-		getOrCreateCallable(entity).remove(entity);
+		entity.tickRegion.remove(entity);
 		removed(entity);
 	}
 
 	public void removed(TileEntity tileEntity) {
+		tileEntity.tickRegion = null;
 		synchronized (tileEntityLock) {
 			tileEntityList.remove(tileEntity);
 		}
@@ -218,7 +224,7 @@ public final class TickManager {
 		int relativeZPos = (zPos % regionSize) / 2;
 		// Locking orders - lock most +ve first
 		// If this order is not followed, we may deadlock.
-		if (relativeXPos == 0) { // minus X needs locked
+		if (relativeXPos == 0 && tileEntity.xMinusLock != null) { // minus X needs locked
 			synchronized (tileEntity) { // Lock this (+ve) first
 				TileEntity lockTileEntity = world.getTEWithoutLoad(xPos - 1, yPos, zPos);
 				if (lockTileEntity != null) {
@@ -227,7 +233,7 @@ public final class TickManager {
 					}
 				}
 			}
-		} else if (relativeXPos == maxPosition) { // plus X needs locked
+		} else if (relativeXPos == maxPosition && tileEntity.xPlusLock != null) { // plus X needs locked
 			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos + 1, yPos, zPos);
 			if (lockTileEntity != null) {
 				synchronized (lockTileEntity) { // Lock other (+ve) first
@@ -237,7 +243,7 @@ public final class TickManager {
 				}
 			}
 		}
-		if (relativeZPos == 0) { // minus Z needs locked
+		if (relativeZPos == 0 && tileEntity.zMinusLock != null) { // minus Z needs locked
 			synchronized (tileEntity) { // Lock this (+ve) first
 				TileEntity lockTileEntity = world.getTEWithoutLoad(xPos, yPos, zPos - 1);
 				if (lockTileEntity != null) {
@@ -246,7 +252,7 @@ public final class TickManager {
 					}
 				}
 			}
-		} else if (relativeZPos == maxPosition) { // plus Z needs locked
+		} else if (relativeZPos == maxPosition && tileEntity.zPlusLock != null) { // plus Z needs locked
 			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos, yPos, zPos + 1);
 			if (lockTileEntity != null) {
 				synchronized (lockTileEntity) { // Lock other (+ve) first
@@ -323,6 +329,7 @@ public final class TickManager {
 
 	public void removed(Entity entity) {
 		boolean removed;
+		entity.tickRegion = null;
 		synchronized (entityLock) {
 			removed = entityList.remove(entity);
 		}

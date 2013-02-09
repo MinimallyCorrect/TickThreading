@@ -72,8 +72,8 @@ public class ProfileCommand extends Command {
 			}
 			if (location) {
 				try {
-					manager.getEntityCallable(hashCode).profilingEnabled = true;
-					manager.getTileEntityCallable(hashCode).profilingEnabled = true;
+					manager.getEntityRegion(hashCode).profilingEnabled = true;
+					manager.getTileEntityRegion(hashCode).profilingEnabled = true;
 				} catch (NullPointerException ignored) {
 				}
 			} else {
@@ -97,8 +97,8 @@ public class ProfileCommand extends Command {
 					manager.profilingEnabled = false;
 					if (location) {
 						try {
-							manager.getEntityCallable(hashCode).profilingEnabled = false;
-							manager.getTileEntityCallable(hashCode).profilingEnabled = false;
+							manager.getEntityRegion(hashCode).profilingEnabled = false;
+							manager.getTileEntityRegion(hashCode).profilingEnabled = false;
 						} catch (NullPointerException ignored) {
 						}
 					}

@@ -174,7 +174,7 @@ public class TileEntityTickRegion extends TickRegion {
 
 	@Override
 	protected TickRegion getCallable(int regionX, int regionY) {
-		return manager.getTileEntityCallable(TickManager.getHashCodeFromRegionCoords(regionX, regionY));
+		return manager.getTileEntityRegion(TickManager.getHashCodeFromRegionCoords(regionX, regionY));
 	}
 
 	@Override
