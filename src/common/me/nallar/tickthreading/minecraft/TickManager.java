@@ -186,11 +186,11 @@ public final class TickManager {
 			if (tileEntity.tickRegion != null) {
 				tileEntity.tickRegion.remove(tileEntity);
 				tileEntity.tickRegion = null;
+				tileEntity.onChunkUnload();
 			}
 			if (lock) {
 				unlock(tileEntity);
 			}
-			tileEntity.onChunkUnload();
 		}
 		synchronized (tileEntityLock) {
 			tileEntityList.removeAll(tileEntities);
