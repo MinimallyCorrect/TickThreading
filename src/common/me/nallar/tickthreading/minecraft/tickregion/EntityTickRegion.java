@@ -10,7 +10,9 @@ import me.nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.passive.EntitySheep;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
+import net.minecraft.world.gen.ChunkProviderServer;
 
 public class EntityTickRegion extends TickRegion {
 	private final Set<Entity> entitySet = new LinkedHashSet<Entity>();
@@ -22,7 +24,7 @@ public class EntityTickRegion extends TickRegion {
 	@Override
 	public void doTick() {
 		try {
-			IChunkProvider chunkProvider = world.getChunkProvider();
+			ChunkProviderServer chunkProvider = (ChunkProviderServer) world.getChunkProvider();
 			boolean profilingEnabled = manager.profilingEnabled || this.profilingEnabled;
 			EntityTickProfiler entityTickProfiler = null;
 			long startTime = 0;
@@ -52,8 +54,11 @@ public class EntityTickRegion extends TickRegion {
 					int entityX = entity.chunkCoordX;
 					int entityZ = entity.chunkCoordZ;
 
-					if (entity.addedToChunk && chunkProvider.chunkExists(entityX, entityZ)) {
-						world.getChunkFromChunkCoords(entityX, entityZ).removeEntity(entity);
+					if (entity.addedToChunk) {
+						Chunk chunk = chunkProvider.getChunkIfExists(entityX, entityZ);
+						if (chunk != null) {
+							chunk.removeEntity(entity);
+						}
 					}
 
 					entitiesIterator.remove();
