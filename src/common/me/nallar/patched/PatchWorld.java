@@ -1,7 +1,9 @@
 package me.nallar.patched;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javassist.is.faulty.ThreadLocals;
 import me.nallar.tickthreading.collections.ForcedChunksRedirectMap;
@@ -33,6 +35,7 @@ import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 @SuppressWarnings ("ForLoopReplaceableByForEach")
 public abstract class PatchWorld extends World {
 	private int forcedUpdateCount;
+	private Set<TileEntity> tileEntityRemovalSet;
 	@Declare
 	public com.google.common.collect.ImmutableSetMultimap<ChunkCoordIntPair, ForgeChunkManager.Ticket> forcedChunks_;
 	@Declare
@@ -41,6 +44,7 @@ public abstract class PatchWorld extends World {
 	public void construct() {
 		tickCount = rand.nextInt(5);
 		forcedChunks = ForcedChunksRedirectMap.emptyMap;
+		tileEntityRemovalSet = new HashSet<TileEntity>();
 	}
 
 	public PatchWorld(ISaveHandler par1ISaveHandler, String par2Str, WorldProvider par3WorldProvider, WorldSettings par4WorldSettings, Profiler par5Profiler) {
@@ -484,16 +488,16 @@ public abstract class PatchWorld extends World {
 
 		this.theProfiler.endStartSection("removingTileEntities");
 
-		if (!this.entityRemoval.isEmpty()) {
+		if (!this.tileEntityRemovalSet.isEmpty()) {
 			if (loadedTileEntityList instanceof LoadedTileEntityList) {
-				((LoadedTileEntityList) loadedTileEntityList).manager.batchRemove(entityRemoval);
+				((LoadedTileEntityList) loadedTileEntityList).manager.batchRemove(tileEntityRemovalSet);
 			} else {
-				for (Object tile : entityRemoval) {
+				for (Object tile : tileEntityRemovalSet) {
 					((TileEntity) tile).onChunkUnload();
 				}
-				this.loadedTileEntityList.removeAll(this.entityRemoval);
+				this.loadedTileEntityList.removeAll(tileEntityRemovalSet);
 			}
-			this.entityRemoval.clear();
+			tileEntityRemovalSet.clear();
 		}
 
 		this.scanningTileEntities = false;
@@ -524,5 +528,10 @@ public abstract class PatchWorld extends World {
 
 		this.theProfiler.endSection();
 		this.theProfiler.endSection();
+	}
+
+	@Override
+	public void markTileEntityForDespawn(TileEntity tileEntity) {
+		tileEntityRemovalSet.add(tileEntity);
 	}
 }
