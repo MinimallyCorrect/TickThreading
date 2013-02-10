@@ -96,7 +96,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 						Thread.sleep(wait / 1000000);
 						continue;
 					}
-					currentTPS = (currentTPS * 0.99) + (1E9 / (curTime - lastTick) * 0.01);
+					currentTPS = (currentTPS * 0.98) + (1E9 / (curTime - lastTick) * 0.02);
 					lastTick = curTime;
 					tickCounter++;
 					try {
