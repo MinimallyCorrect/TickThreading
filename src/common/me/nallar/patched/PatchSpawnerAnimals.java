@@ -54,7 +54,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 		Map<EnumCreatureType, Integer> requiredSpawns = new EnumMap<EnumCreatureType, Integer>(EnumCreatureType.class);
 		for (EnumCreatureType creatureType : EnumCreatureType.values()) {
 			int count = (int) ((creatureType.getPeacefulCreature() ? entityMultiplier : mobMultiplier) * creatureType.getMaxNumberOfCreature());
-			if (!(creatureType.getPeacefulCreature() && !peaceful || creatureType.getAnimal() && !animal || !creatureType.getPeacefulCreature() && !hostile) &&count > worldServer.countEntities(creatureType.getCreatureClass())) {
+			if (!(creatureType.getPeacefulCreature() && !peaceful || creatureType.getAnimal() && !animal || !creatureType.getPeacefulCreature() && !hostile) && count > worldServer.countEntities(creatureType.getCreatureClass())) {
 				requiredSpawns.put(creatureType, count);
 			}
 		}

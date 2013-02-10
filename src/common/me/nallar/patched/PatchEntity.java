@@ -4,6 +4,7 @@ import java.util.List;
 
 import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.AxisAlignedBB;
@@ -15,9 +16,16 @@ public abstract class PatchEntity extends Entity {
 	public Boolean isForced_;
 	@Declare
 	public me.nallar.tickthreading.minecraft.tickregion.EntityTickRegion tickRegion_;
+	private int lavaCheckTicks;
+	private boolean inLava;
 
 	public PatchEntity(World par1World) {
 		super(par1World);
+	}
+
+	@Override
+	public boolean handleLavaMovement() {
+		return (lavaCheckTicks++ % 10 == 0) ? inLava = this.worldObj.isMaterialInBB(this.boundingBox.expand(-0.10000000149011612D, -0.4000000059604645D, -0.10000000149011612D), Material.lava) : inLava;
 	}
 
 	@Override

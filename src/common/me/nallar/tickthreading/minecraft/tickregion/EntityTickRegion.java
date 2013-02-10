@@ -8,6 +8,7 @@ import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickManager;
 import me.nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.passive.EntitySheep;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunkProvider;
 
@@ -44,7 +45,11 @@ public class EntityTickRegion extends TickRegion {
 				}
 
 				if (!entity.isDead) {
-					world.updateEntity(entity);
+					if (entity.getClass() == EntitySheep.class) {
+						entity.setDead();
+					} else {
+						world.updateEntity(entity);
+					}
 				}
 
 				if (entity.isDead) {

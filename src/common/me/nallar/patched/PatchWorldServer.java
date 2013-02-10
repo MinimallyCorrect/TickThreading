@@ -20,7 +20,6 @@ import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.MathHelper;
 import net.minecraft.util.ReportedException;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.IWorldAccess;

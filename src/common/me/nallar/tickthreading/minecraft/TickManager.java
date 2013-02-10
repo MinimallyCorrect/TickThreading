@@ -204,6 +204,7 @@ public final class TickManager {
 			world.releaseEntitySkin(entity);
 
 			if (entity.tickRegion != null) {
+				entity.tickRegion.remove(entity);
 				entity.tickRegion = null;
 				Class entityClass = entity.getClass();
 				synchronized (entityClassToCountMap) {

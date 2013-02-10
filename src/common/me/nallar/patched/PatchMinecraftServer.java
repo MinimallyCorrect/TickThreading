@@ -96,7 +96,6 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 						Thread.sleep(wait / 1000000);
 						continue;
 					}
-					currentTPS = (currentTPS * 0.98) + (1E9 / (curTime - lastTick) * 0.02);
 					lastTick = curTime;
 					tickCounter++;
 					try {
@@ -104,6 +103,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 					} catch (Exception e) {
 						Log.severe("Exception in main tick loop", e);
 					}
+					currentTPS = TARGET_TICK_TIME * TARGET_TPS / tickTime;
 				}
 				FMLCommonHandler.instance().handleServerStopping();
 			} else {
@@ -210,7 +210,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 		this.theProfiler.endSection();
 		this.theProfiler.endSection();
-		tickTime = (tickTime * 127 + ((this.tickTimeArray[this.tickCounter % 100] = System.nanoTime() - var1))) / 128;
+		tickTime = tickTime * 0.98f + ((this.tickTimeArray[this.tickCounter % 100] = System.nanoTime() - var1) * 0.02f);
 	}
 
 	@Override
@@ -271,7 +271,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 	@Declare
 	public static double getTPS() {
-		return currentTPS;
+		return currentTPS > TARGET_TPS ? TARGET_TPS : currentTPS;
 	}
 
 	@Declare

@@ -127,9 +127,13 @@
 			<addAll fromClass="me.nallar.patched.PatchEntity"/>
 		</class>
 		<class id="net.minecraft.entity.Entity">
+			<final field="rand"/>
 			<newField static="" field="nextEntityID_" class="java.util.concurrent.atomic.AtomicInteger"/>
 			<insertAfter field="entityId" code="this.$field = this.nextEntityID_.getAndIncrement();"/>
 			<insertBefore code="if ($1 == 0 &amp;&amp; $2 == 0 &amp;&amp; $3 == 0) { return; }">moveEntity</insertBefore>
+		</class>
+		<class id="net.minecraft.entity.EntityLiving">
+			<addAll fromClass="me.nallar.patched.PatchEntityLiving"/>
 		</class>
 		<class id="net.minecraft.entity.item.EntityItem">
 			<addAll fromClass="me.nallar.patched.PatchEntityItem"/>
