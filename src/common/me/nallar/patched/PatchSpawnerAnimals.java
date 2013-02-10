@@ -46,8 +46,8 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 		}
 		worldServer.theProfiler.startSection("creatureTypes");
 		float loadFactor = 1 - (float) (MinecraftServer.getTickTime() / MinecraftServer.getTargetTickTime());
-		if (loadFactor < 0.5f) {
-			loadFactor = 0.5f;
+		if (loadFactor < 0.3f) {
+			loadFactor = 0.3f;
 		}
 		float entityMultiplier = worldServer.playerEntities.size() * loadFactor; // TODO: Make this configurable
 		float mobMultiplier = entityMultiplier * (worldServer.isDaytime() ? 1 : 2);
