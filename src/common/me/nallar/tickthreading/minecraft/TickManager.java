@@ -25,6 +25,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.gen.ChunkProviderServer;
 
 public final class TickManager {
 	public final int regionSize;
@@ -181,7 +183,41 @@ public final class TickManager {
 		}
 	}
 
-	public void batchRemove(Collection<TileEntity> tileEntities) {
+	public void batchRemoveEntities(Collection<Entity> entities) {
+		ChunkProviderServer chunkProviderServer = (ChunkProviderServer) world.getChunkProvider();
+
+		synchronized (entityLock) {
+			entityList.removeAll(entities);
+		}
+
+		for (Entity entity : entities) {
+			int x = entity.chunkCoordX;
+			int z = entity.chunkCoordZ;
+
+			if (entity.addedToChunk) {
+				Chunk chunk = chunkProviderServer.getChunkIfExists(x, z);
+				if (chunk != null) {
+					chunk.removeEntity(entity);
+				}
+			}
+
+			world.releaseEntitySkin(entity);
+
+			if (entity.tickRegion != null) {
+				entity.tickRegion = null;
+				Class entityClass = entity.getClass();
+				synchronized (entityClassToCountMap) {
+					Integer count = entityClassToCountMap.get(entityClass);
+					if (count == null) {
+						throw new IllegalStateException("Removed an entity which should not have been in the entityList");
+					}
+					entityClassToCountMap.put(entityClass, count - 1);
+				}
+			}
+		}
+	}
+
+	public void batchRemoveTileEntities(Collection<TileEntity> tileEntities) {
 		for (TileEntity tileEntity : tileEntities) {
 			if (tileEntity.tickRegion != null) {
 				tileEntity.tickRegion.remove(tileEntity);
@@ -218,6 +254,24 @@ public final class TickManager {
 		}
 		if (lock) {
 			unlock(tileEntity);
+		}
+	}
+
+	public void removed(Entity entity) {
+		boolean removed;
+		entity.tickRegion = null;
+		synchronized (entityLock) {
+			removed = entityList.remove(entity);
+		}
+		if (removed) {
+			Class entityClass = entity.getClass();
+			synchronized (entityClassToCountMap) {
+				Integer count = entityClassToCountMap.get(entityClass);
+				if (count == null) {
+					throw new IllegalStateException("Removed an entity which should not have been in the entityList");
+				}
+				entityClassToCountMap.put(entityClass, count - 1);
+			}
 		}
 	}
 
@@ -329,24 +383,6 @@ public final class TickManager {
 						}
 					}
 				}
-			}
-		}
-	}
-
-	public void removed(Entity entity) {
-		boolean removed;
-		entity.tickRegion = null;
-		synchronized (entityLock) {
-			removed = entityList.remove(entity);
-		}
-		if (removed) {
-			synchronized (entityClassToCountMap) {
-				Class entityClass = entity.getClass();
-				Integer count = entityClassToCountMap.get(entityClass);
-				if (count == null) {
-					throw new IllegalStateException("Removed an entity which should not have been in the entityList");
-				}
-				entityClassToCountMap.put(entityClass, count - 1);
 			}
 		}
 	}

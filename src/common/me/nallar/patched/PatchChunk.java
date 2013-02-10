@@ -1,7 +1,10 @@
 package me.nallar.patched;
 
+import java.util.Set;
+
 import cpw.mods.fml.common.FMLLog;
 import net.minecraft.entity.Entity;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
@@ -15,9 +18,24 @@ public abstract class PatchChunk extends Chunk {
 	}
 
 	@Override
+	public void onChunkUnload() {
+		this.isChunkLoaded = false;
+
+		Set<TileEntity> removalSet = worldObj.tileEntityRemovalSet;
+		for (TileEntity var2 : (Iterable<TileEntity>) this.chunkTileEntityMap.values()) {
+			removalSet.add(var2);
+		}
+
+		for (int var3 = 0; var3 < this.entityLists.length; ++var3) {
+			this.worldObj.unloadEntities(this.entityLists[var3]);
+		}
+		MinecraftForge.EVENT_BUS.post(new ChunkEvent.Unload(this));
+	}
+
+	@Override
 	public void onChunkLoad() {
 		this.isChunkLoaded = true;
-		this.worldObj.addTileEntity(this.chunkTileEntityMap.values());
+		worldObj.addTileEntity(this.chunkTileEntityMap.values());
 
 		for (int var1 = 0; var1 < this.entityLists.length; ++var1) {
 			this.worldObj.addLoadedEntities(this.entityLists[var1]);

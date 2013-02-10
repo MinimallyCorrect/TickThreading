@@ -35,7 +35,10 @@ import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 @SuppressWarnings ("ForLoopReplaceableByForEach")
 public abstract class PatchWorld extends World {
 	private int forcedUpdateCount;
-	private Set<TileEntity> tileEntityRemovalSet;
+	@Declare
+	public Set<Entity> unloadedEntitySet_;
+	@Declare
+	public Set<TileEntity> tileEntityRemovalSet_;
 	@Declare
 	public com.google.common.collect.ImmutableSetMultimap<ChunkCoordIntPair, ForgeChunkManager.Ticket> forcedChunks_;
 	@Declare
@@ -45,6 +48,7 @@ public abstract class PatchWorld extends World {
 		tickCount = rand.nextInt(5);
 		forcedChunks = ForcedChunksRedirectMap.emptyMap;
 		tileEntityRemovalSet = new HashSet<TileEntity>();
+		unloadedEntitySet = new HashSet<Entity>();
 	}
 
 	public PatchWorld(ISaveHandler par1ISaveHandler, String par2Str, WorldProvider par3WorldProvider, WorldSettings par4WorldSettings, Profiler par5Profiler) {
@@ -335,14 +339,7 @@ public abstract class PatchWorld extends World {
 
 	@Override
 	public void unloadEntities(List entitiesToUnload) {
-		if (loadedEntityList instanceof EntityList) {
-			for (Entity entity : (List<? extends Entity>) entitiesToUnload) {
-				this.loadedEntityList.remove(entity);
-				this.releaseEntitySkin(entity);
-			}
-		} else {
-			this.unloadedEntityList.addAll(entitiesToUnload);
-		}
+		this.unloadedEntitySet.addAll(entitiesToUnload);
 	}
 
 	@Override
@@ -374,25 +371,25 @@ public abstract class PatchWorld extends World {
 		}
 
 		this.theProfiler.endStartSection("remove");
-		this.loadedEntityList.removeAll(this.unloadedEntityList);
 		int var3;
 		int var13;
+		if (this.loadedEntityList instanceof EntityList) {
+			((EntityList) this.loadedEntityList).manager.batchRemoveEntities(unloadedEntitySet);
+		} else {
+			this.loadedEntityList.removeAll(this.unloadedEntitySet);
 
-		for (var1 = 0; var1 < this.unloadedEntityList.size(); ++var1) {
-			var2 = (Entity) this.unloadedEntityList.get(var1);
-			var3 = var2.chunkCoordX;
-			var13 = var2.chunkCoordZ;
+			for (Entity entity : unloadedEntitySet) {
+				var3 = entity.chunkCoordX;
+				var13 = entity.chunkCoordZ;
 
-			if (var2.addedToChunk && this.chunkExists(var3, var13)) {
-				this.getChunkFromChunkCoords(var3, var13).removeEntity(var2);
+				if (entity.addedToChunk && this.chunkExists(var3, var13)) {
+					this.getChunkFromChunkCoords(var3, var13).removeEntity(entity);
+				}
+
+				releaseEntitySkin(entity);
 			}
 		}
-
-		for (var1 = 0; var1 < this.unloadedEntityList.size(); ++var1) {
-			this.releaseEntitySkin((Entity) this.unloadedEntityList.get(var1));
-		}
-
-		this.unloadedEntityList.clear();
+		this.unloadedEntitySet.clear();
 		this.theProfiler.endStartSection("regular");
 
 		boolean shouldTickThreadingTick = true;
@@ -490,7 +487,7 @@ public abstract class PatchWorld extends World {
 
 		if (!this.tileEntityRemovalSet.isEmpty()) {
 			if (loadedTileEntityList instanceof LoadedTileEntityList) {
-				((LoadedTileEntityList) loadedTileEntityList).manager.batchRemove(tileEntityRemovalSet);
+				((LoadedTileEntityList) loadedTileEntityList).manager.batchRemoveTileEntities(tileEntityRemovalSet);
 			} else {
 				for (Object tile : tileEntityRemovalSet) {
 					((TileEntity) tile).onChunkUnload();

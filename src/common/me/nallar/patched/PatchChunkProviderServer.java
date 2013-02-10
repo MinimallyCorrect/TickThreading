@@ -117,7 +117,14 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 	@Override
 	@Declare
 	public Chunk getChunkIfExists(int x, int z) {
-		return (Chunk) this.loadedChunkHashMap.getValueByKey(ChunkCoordIntPair.chunkXZ2Int(x, z));
+		Chunk chunk = lastChunk;
+		if (chunk == null || chunk.xPosition != x || chunk.zPosition != z) {
+			chunk = (Chunk) this.loadedChunkHashMap.getValueByKey(ChunkCoordIntPair.chunkXZ2Int(x, z));
+			if (chunk != null) {
+				lastChunk = chunk;
+			}
+		}
+		return chunk;
 	}
 
 	@Override
@@ -127,7 +134,6 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 			chunk = (Chunk) this.loadedChunkHashMap.getValueByKey(ChunkCoordIntPair.chunkXZ2Int(x, z));
 			chunk = (chunk == null ? (!this.loadChunkOnProvideRequest && !this.worldObj.findingSpawnPoint ? this.defaultEmptyChunk : this.loadChunk(x, z)) : chunk);
 			lastChunk = chunk;
-			return chunk;
 		}
 		return chunk;
 	}
