@@ -46,6 +46,9 @@ public abstract class PatchServerConfigurationManager extends ServerConfiguratio
 			entityPlayerMP.dimension = toDimensionId;
 			WorldServer toDimension = this.mcServer.worldServerForDimension(toDimensionId);
 			if (fromDimension == toDimension) {
+				if (!toDimension.playerEntities.contains(entityPlayerMP)) {
+					toDimension.spawnEntityInWorld(entityPlayerMP);
+				}
 				Log.severe("Can't transfer player to the dimension they are already in! " + entityPlayerMP + ", dimension: " + Log.name(toDimension));
 				return;
 			}
@@ -61,6 +64,9 @@ public abstract class PatchServerConfigurationManager extends ServerConfiguratio
 			}
 			this.transferEntityToWorld(entityPlayerMP, fromDimensionId, fromDimension, toDimension, teleporter);
 			this.func_72375_a(entityPlayerMP, fromDimension);
+			if (!toDimension.playerEntities.contains(entityPlayerMP)) {
+				toDimension.spawnEntityInWorld(entityPlayerMP);
+			}
 			entityPlayerMP.playerNetServerHandler.setPlayerLocation(entityPlayerMP.posX, entityPlayerMP.posY, entityPlayerMP.posZ, entityPlayerMP.rotationYaw, entityPlayerMP.rotationPitch);
 			entityPlayerMP.theItemInWorldManager.setWorld(toDimension);
 			this.updateTimeAndWeatherForPlayer(entityPlayerMP, toDimension);
