@@ -45,11 +45,7 @@ public class EntityTickRegion extends TickRegion {
 				}
 
 				if (!entity.isDead) {
-					if (entity.getClass() == EntitySheep.class) {
-						entity.setDead();
-					} else {
-						world.updateEntity(entity);
-					}
+					world.updateEntity(entity);
 				}
 
 				if (entity.isDead) {
