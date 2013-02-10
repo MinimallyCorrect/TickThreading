@@ -17,8 +17,10 @@ import net.minecraft.block.Block;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.entity.effect.EntityLightningBolt;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.MathHelper;
 import net.minecraft.util.ReportedException;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.IWorldAccess;
@@ -247,7 +249,39 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		}
 
 		if (tickCount % 5 == 0) {
-			this.setActivePlayerChunksAndCheckLight();
+			this.theProfiler.startSection("buildList");
+
+			this.activeChunkSet.clear();
+			this.activeChunkSet.addAll(getPersistentChunks().keySet());
+			for (EntityPlayer entityPlayer : (Iterable<EntityPlayer>) this.playerEntities) {
+				int x = (int) (entityPlayer.posX / 16.0D);
+				int z = (int) (entityPlayer.posZ / 16.0D);
+				byte var5 = 6;
+
+				for (int var6 = -var5; var6 <= var5; ++var6) {
+					for (int var7 = -var5; var7 <= var5; ++var7) {
+						this.activeChunkSet.add(new ChunkCoordIntPair(var6 + x, var7 + z));
+					}
+				}
+			}
+
+			this.theProfiler.endSection();
+
+			if (this.ambientTickCountdown > 0) {
+				--this.ambientTickCountdown;
+			}
+
+			this.theProfiler.startSection("playerCheckLight");
+
+			if (!this.playerEntities.isEmpty()) {
+				EntityPlayer entityPlayer = (EntityPlayer) this.playerEntities.get(this.rand.nextInt(this.playerEntities.size()));
+				int x = ((int) entityPlayer.posX) + this.rand.nextInt(11) - 5;
+				int y = ((int) entityPlayer.posY) + this.rand.nextInt(11) - 5;
+				int z = ((int) entityPlayer.posZ) + this.rand.nextInt(11) - 5;
+				this.updateAllLightTypes(x, y, z);
+			}
+
+			this.theProfiler.endSection();
 		}
 
 		chunkCoordIterator = this.activeChunkSet.iterator();

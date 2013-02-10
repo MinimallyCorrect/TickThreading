@@ -5,6 +5,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableSetMultimap;
+
 import javassist.is.faulty.ThreadLocals;
 import me.nallar.tickthreading.collections.ForcedChunksRedirectMap;
 import me.nallar.tickthreading.minecraft.entitylist.EntityList;
@@ -53,6 +55,11 @@ public abstract class PatchWorld extends World {
 
 	public PatchWorld(ISaveHandler par1ISaveHandler, String par2Str, WorldProvider par3WorldProvider, WorldSettings par4WorldSettings, Profiler par5Profiler) {
 		super(par1ISaveHandler, par2Str, par3WorldProvider, par4WorldSettings, par5Profiler);
+	}
+
+	@Override
+	public ImmutableSetMultimap<ChunkCoordIntPair, ForgeChunkManager.Ticket> getPersistentChunks() {
+		return forcedChunks;
 	}
 
 	@Override
