@@ -79,7 +79,9 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	@Override
 	public void run() {
 		try {
+			System.out.println("calling startServer()");
 			if (this.startServer()) {
+				System.out.println("calling handleServerStarted()");
 				FMLCommonHandler.instance().handleServerStarted();
 				FMLCommonHandler.instance().onWorldLoadTick(worldServers);
 				// This block is derived from Spigot code,
@@ -107,6 +109,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				}
 				FMLCommonHandler.instance().handleServerStopping();
 			} else {
+				System.out.println("startServer() failed.");
 				this.finalTick(null);
 			}
 		} catch (Throwable throwable) {
@@ -137,10 +140,8 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			}
 		} finally {
 			try {
-				if (!FMLCommonHandler.instance().shouldServerBeKilledQuietly()) {
-					this.stopServer();
-					this.serverStopped = true;
-				}
+				this.stopServer();
+				this.serverStopped = true;
 			} catch (Throwable throwable) {
 				FMLLog.log(Level.SEVERE, throwable, "Exception while attempting to stop the server");
 			} finally {
