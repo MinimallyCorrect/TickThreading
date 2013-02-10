@@ -63,8 +63,12 @@ public abstract class PatchServerConfigurationManager extends ServerConfiguratio
 			if (entityPlayerMP.addedToChunk && fromDimension.getChunkProvider().chunkExists(x, z)) {
 				fromDimension.getChunkFromChunkCoords(x, z).removeEntity(entityPlayerMP);
 			}
+			this.transferEntityToWorld(entityPlayerMP, fromDimensionId, fromDimension, toDimension, teleporter);
 			entityPlayerMP.setWorld(toDimension);
-			this.func_72375_a(entityPlayerMP, fromDimension);
+			fromDimension.getPlayerManager().removePlayer(entityPlayerMP);
+			toDimension.getPlayerManager().removePlayer(entityPlayerMP);
+			toDimension.getPlayerManager().addPlayer(entityPlayerMP);
+			toDimension.theChunkProviderServer.loadChunk((int)entityPlayerMP.posX >> 4, (int)entityPlayerMP.posZ >> 4);
 			if (!toDimension.playerEntities.contains(entityPlayerMP)) {
 				toDimension.spawnEntityInWorld(entityPlayerMP);
 			}
