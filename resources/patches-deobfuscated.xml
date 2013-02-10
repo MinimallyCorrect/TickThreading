@@ -432,4 +432,10 @@
 			<synchronize/>
 		</class>
 	</MFFS>
+	<railCraft>
+		<!-- Thanks. I only have to patch railcraft because it kills the server if IC2 or forestry have been modified. That's annoying. -->
+		<class id="railcraft.common.plugins.forge.FishingPlugin">
+			<replaceMethod code="{ }">castTheNet</replaceMethod>
+		</class>
+	</railCraft>
 </mods>

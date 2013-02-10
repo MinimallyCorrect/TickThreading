@@ -8,10 +8,8 @@ import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickManager;
 import me.nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.passive.EntitySheep;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.ChunkProviderServer;
 
 public class EntityTickRegion extends TickRegion {
