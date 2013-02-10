@@ -45,6 +45,7 @@ public abstract class PatchServerConfigurationManager extends ServerConfiguratio
 			WorldServer fromDimension = this.mcServer.worldServerForDimension(fromDimensionId);
 			entityPlayerMP.dimension = toDimensionId;
 			WorldServer toDimension = this.mcServer.worldServerForDimension(toDimensionId);
+			Log.info(entityPlayerMP + " from " + Log.name(fromDimension) + " to " + Log.name(toDimension));
 			if (fromDimension == toDimension) {
 				if (!toDimension.playerEntities.contains(entityPlayerMP)) {
 					toDimension.spawnEntityInWorld(entityPlayerMP);
@@ -62,7 +63,7 @@ public abstract class PatchServerConfigurationManager extends ServerConfiguratio
 			if (entityPlayerMP.addedToChunk && fromDimension.getChunkProvider().chunkExists(x, z)) {
 				fromDimension.getChunkFromChunkCoords(x, z).removeEntity(entityPlayerMP);
 			}
-			this.transferEntityToWorld(entityPlayerMP, fromDimensionId, fromDimension, toDimension, teleporter);
+			entityPlayerMP.setWorld(toDimension);
 			this.func_72375_a(entityPlayerMP, fromDimension);
 			if (!toDimension.playerEntities.contains(entityPlayerMP)) {
 				toDimension.spawnEntityInWorld(entityPlayerMP);
