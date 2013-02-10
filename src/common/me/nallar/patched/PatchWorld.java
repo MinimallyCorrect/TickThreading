@@ -49,7 +49,6 @@ public abstract class PatchWorld extends World {
 		forcedChunks = ForcedChunksRedirectMap.emptyMap;
 		tileEntityRemovalSet = new HashSet<TileEntity>();
 		unloadedEntitySet = new HashSet<Entity>();
-		Thread.dumpStack();
 	}
 
 	public PatchWorld(ISaveHandler par1ISaveHandler, String par2Str, WorldProvider par3WorldProvider, WorldSettings par4WorldSettings, Profiler par5Profiler) {
