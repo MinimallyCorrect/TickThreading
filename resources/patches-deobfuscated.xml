@@ -58,6 +58,7 @@
 			<final field="worldAccesses"/>
 			<final field="provider"/>
 			<final field="theProfiler"/>
+			<public field="ambientTickCountdown"/>
 		</class>
 		<class id="net.minecraft.world.WorldServer">
 			<!-- Fixes an issue where the tickNextTickLists would become out of sync -->
