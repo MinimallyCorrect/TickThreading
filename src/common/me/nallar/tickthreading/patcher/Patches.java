@@ -297,18 +297,30 @@ public class Patches {
 				ctClass.addMethod(added);
 				replaceMethod(added, newMethod);
 				if (added.getName().startsWith("construct")) {
+					try {
+						insertSuper(added);
+					} catch (CannotCompileException ignore) {
+					}
 					CtMethod runConstructors;
 					try {
-						runConstructors = ctClass.getDeclaredMethod("runConstructors");
+						runConstructors = ctClass.getMethod("runConstructors", "()V");
 					} catch (NotFoundException e) {
 						runConstructors = CtNewMethod.make("public void runConstructors() { }", ctClass);
 						ctClass.addMethod(runConstructors);
-						ctClass.addField(new CtField(classRegistry.getClass("boolean"), "isConstructed", ctClass), CtField.Initializer.constant(false));
+						try {
+							ctClass.getField("isConstructed");
+						} catch (NotFoundException ignore) {
+							ctClass.addField(new CtField(classRegistry.getClass("boolean"), "isConstructed", ctClass));
+						}
 						for (CtBehavior ctBehavior : ctClass.getDeclaredConstructors()) {
 							ctBehavior.insertAfter("{ if(!this.isConstructed) { this.isConstructed = true; this.runConstructors(); } }");
 						}
 					}
-					runConstructors.insertAfter(added.getName() + "();");
+					try {
+						ctClass.getSuperclass().getMethod(added.getName(), "()V");
+					} catch (NotFoundException ignore) {
+						runConstructors.insertAfter(added.getName() + "();");
+					}
 				}
 				if (added.getName().startsWith("staticConstruct")) {
 					ctClass.makeClassInitializer().insertAfter("{ " + added.getName() + "(); }");

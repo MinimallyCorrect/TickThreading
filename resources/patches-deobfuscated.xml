@@ -50,14 +50,6 @@
 		<class id="net.minecraft.network.TcpWriterThread">
 			<ignoreExceptions type="java.net.SocketException">run</ignoreExceptions>
 		</class>
-		<class id="net.minecraft.world.WorldServer">
-			<!-- Fixes an issue where the tickNextTickLists would become out of sync -->
-			<synchronize>func_82740_a,scheduleBlockUpdateFromLoad,getPendingBlockUpdates,addBlockEvent,tickUpdates,initialize</synchronize>
-			<addAll fromClass="me.nallar.patched.PatchWorldServer"/>
-			<profile>tickBlocksAndAmbiance</profile>
-			<profile>tick</profile>
-			<insertSuper>initialize</insertSuper>
-		</class>
 		<class id="net.minecraft.world.World">
 			<addAll fromClass="me.nallar.patched.PatchWorld"/>
 			<profile>updateEntities</profile>
@@ -66,6 +58,14 @@
 			<final field="worldAccesses"/>
 			<final field="provider"/>
 			<final field="theProfiler"/>
+		</class>
+		<class id="net.minecraft.world.WorldServer">
+			<!-- Fixes an issue where the tickNextTickLists would become out of sync -->
+			<synchronize>func_82740_a,scheduleBlockUpdateFromLoad,getPendingBlockUpdates,addBlockEvent,tickUpdates,initialize</synchronize>
+			<addAll fromClass="me.nallar.patched.PatchWorldServer"/>
+			<profile>tickBlocksAndAmbiance</profile>
+			<profile>tick</profile>
+			<insertSuper>initialize</insertSuper>
 		</class>
 		<class id="net.minecraft.world.biome.WorldChunkManager">
 			<newField field="staticLock" class="java.lang.Object" static=""/>

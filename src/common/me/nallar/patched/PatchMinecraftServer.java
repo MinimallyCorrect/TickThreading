@@ -360,8 +360,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				}
 				c++;
 				if (TickThreading.instance.exitOnDeadlock) {
-
-					if (c != null && c >= 200) {
+					if (c >= 199) {
 						DeadLockDetector.sendChatSafely("The world " + Log.name(world) + " has become unstable, and the server will now restart.");
 						this.initiateShutdown();
 					}
