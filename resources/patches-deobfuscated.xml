@@ -171,7 +171,8 @@
 			<lock field="playerUpdateLock">createPlayerForUser,sendPacketToAllPlayers,sendPlayerInfoToAllPlayers</lock>
 			<lock field="playerUpdateLock">sendPacketToAllPlayersInDimension,getPlayerListAsString,getAllUsernames,getPlayerForUsername,findPlayers,sendToAllNearExcept</lock>
 			<lock field="playerUpdateLock">saveAllPlayerData,getPlayerList</lock>
-			<lock field="playersUpdateLock">playerLoggedIn,playerLoggedOut,respawnPlayer</lock>
+			<lockMethodCall method="add" field="playersUpdateLock">playerLoggedOut,playerLoggedIn,respawnPlayer</lockMethodCall>
+			<lockMethodCall method="remove" field="playersUpdateLock">playerLoggedOut,playerLoggedIn,respawnPlayer</lockMethodCall>
 			<synchronize field="$1.loadedChunks">respawnPlayer</synchronize>
 			<synchronize field="$2.loadedChunks">initializeConnectionToPlayer</synchronize>
 		</class>
