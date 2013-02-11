@@ -61,7 +61,7 @@ public class TickThreading {
 	public boolean requireOpForProfileCommand = true;
 	public boolean shouldLoadSpawn = false;
 	public int saveInterval = 1800;
-	public int deadLockTime = 30;
+	public int deadLockTime = 45;
 	public boolean aggressiveTicks = true;
 	public boolean enableFastMobSpawning = false;
 	private HashSet<Integer> disabledFastMobSpawningDimensions = new HashSet<Integer>();
