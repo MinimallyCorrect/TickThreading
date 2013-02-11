@@ -323,6 +323,9 @@
 		</class>
 	</redPowerCore>
 	<industrialCraft>
+		<class id="ic2.core.IC2">
+			<synchronize>addSingleTickCallback</synchronize>
+		</class>
 		<class id="ic2.core.EnergyNet">
 			<replaceMethodCall method="warning" code="{}">emitEnergyFrom</replaceMethodCall>
 			<newInitializer field="worldToEnergyNetMap" class="java.util.HashMap"/>
