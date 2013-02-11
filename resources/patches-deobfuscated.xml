@@ -62,7 +62,7 @@
 		</class>
 		<class id="net.minecraft.world.WorldServer">
 			<!-- Fixes an issue where the tickNextTickLists would become out of sync -->
-			<synchronize>func_82740_a,scheduleBlockUpdateFromLoad,getPendingBlockUpdates,addBlockEvent,tickUpdates,initialize</synchronize>
+			<synchronize>addBlockEvent,sendAndApplyBlockEvents</synchronize>
 			<addAll fromClass="me.nallar.patched.PatchWorldServer"/>
 			<profile>tickBlocksAndAmbiance</profile>
 			<profile>tick</profile>
