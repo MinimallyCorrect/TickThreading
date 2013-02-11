@@ -18,6 +18,7 @@ import net.minecraft.block.Block;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.MathHelper;
@@ -44,12 +45,17 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 		if (worldServer.tickCount % clumping != 0) {
 			return 0;
 		}
-		worldServer.theProfiler.startSection("creatureTypes");
+		final Profiler profiler = worldServer.theProfiler;
+		profiler.startSection("creatureTypes");
 		float loadFactor = 1 - (float) (MinecraftServer.getTickTime() / MinecraftServer.getTargetTickTime());
 		if (loadFactor < 0.2f || loadFactor > 1f) {
 			loadFactor = 0.2f;
 		}
 		float entityMultiplier = worldServer.playerEntities.size() * loadFactor; // TODO: Make this configurable
+		if (entityMultiplier == 0) {
+			profiler.endSection();
+			return 0;
+		}
 		float mobMultiplier = entityMultiplier * (worldServer.isDaytime() ? 1 : 2);
 		Map<EnumCreatureType, Integer> requiredSpawns = new EnumMap<EnumCreatureType, Integer>(EnumCreatureType.class);
 		for (EnumCreatureType creatureType : EnumCreatureType.values()) {
@@ -58,13 +64,13 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 				requiredSpawns.put(creatureType, count);
 			}
 		}
-		worldServer.theProfiler.endSection();
+		profiler.endSection();
 
 		if (requiredSpawns.isEmpty()) {
 			return 0;
 		}
 
-		worldServer.theProfiler.startSection("spawnableChunks");
+		profiler.startSection("spawnableChunks");
 		int attemptedSpawnedMobs = 0;
 		Set<Long> closeChunks = new HashSet<Long>();
 		List<Long> spawnableChunks = new ArrayList<Long>();
@@ -99,7 +105,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 				}
 			}
 		}
-		worldServer.theProfiler.endStartSection("spawnMobs");
+		profiler.endStartSection("spawnMobs");
 
 		int size = spawnableChunks.size();
 		if (size < 1) {
@@ -168,7 +174,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 				break;
 			}
 		}
-		worldServer.theProfiler.endSection();
+		profiler.endSection();
 		return attemptedSpawnedMobs;
 	}
 
@@ -179,7 +185,10 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 		if (TickThreading.instance.shouldFastSpawn(par0WorldServer)) {
 			return spawnMobsQuickly(par0WorldServer, par1, par2, par3);
 		}
-		double tpsFactor = MinecraftServer.getTPS() / 20;
+		if (par0WorldServer.playerEntities.isEmpty()) {
+			return 0;
+		}
+		double tpsFactor = Math.max(1, Math.min(0.1d, MinecraftServer.getTPS() / 20d));
 		HashMap<ChunkCoordIntPair, Boolean> eligibleChunksForSpawning = new HashMap<ChunkCoordIntPair, Boolean>();
 		int var4;
 		int var7;
