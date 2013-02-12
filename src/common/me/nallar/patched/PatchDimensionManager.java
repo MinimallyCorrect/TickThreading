@@ -4,6 +4,7 @@ import java.util.Hashtable;
 import java.util.logging.Level;
 
 import cpw.mods.fml.common.FMLLog;
+import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.unsafe.UnsafeUtil;
 import net.minecraft.world.WorldServer;
@@ -25,7 +26,11 @@ public abstract class PatchDimensionManager extends DimensionManager {
 				FMLLog.log(Level.SEVERE, e, "Exception saving chunks when unloading world " + w);
 			} finally {
 				if (w != null) {
-					MinecraftForge.EVENT_BUS.post(new WorldEvent.Unload(w));
+					try {
+						MinecraftForge.EVENT_BUS.post(new WorldEvent.Unload(w));
+					} catch (Throwable t) {
+						Log.severe("A mod failed to handle a world unload", t);
+					}
 					w.flush();
 					setWorld(id, null);
 					if (TickThreading.instance.cleanWorlds) {
