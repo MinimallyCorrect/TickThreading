@@ -113,10 +113,15 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				this.finalTick(null);
 			}
 		} catch (Throwable throwable) {
-			DeadLockDetector.sendChatSafely("The server has crashed due to an unexpected exception during the main tick loop: " + throwable.getClass().getSimpleName());
 			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException ignored) {
+				if (serverRunning && serverIsRunning) {
+					DeadLockDetector.sendChatSafely("The server has crashed due to an unexpected exception during the main tick loop: " + throwable.getClass().getSimpleName());
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException ignored) {
+					}
+				}
+			} catch (Throwable t) {
 			}
 			FMLLog.log(Level.SEVERE, throwable, "Encountered an unexpected exception" + throwable.getClass().getSimpleName());
 			CrashReport crashReport;
