@@ -8,6 +8,7 @@ import java.util.Random;
 
 import com.google.common.collect.ImmutableSetMultimap;
 
+import cpw.mods.fml.common.FMLLog;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.collections.TreeHashSet;
 import me.nallar.tickthreading.minecraft.ThreadManager;
@@ -39,6 +40,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	private Iterator chunkCoordIterator;
 	private ThreadManager threadManager;
 	private ThreadLocal<Random> randoms;
+	private List<NextTickListEntry> runningTickListEntries;
 	@Declare
 	public ThreadLocal<Boolean> worldGenInProgress_;
 
@@ -52,6 +54,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		field_73064_N = null;
 		pendingTickListEntries = new TreeHashSet();
 		worldGenInProgress = new BooleanThreadLocal();
+		runningTickListEntries = new ArrayList<NextTickListEntry>();
 	}
 
 	@Override
@@ -147,10 +150,10 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 
 	@Override
 	public boolean tickUpdates(boolean par1) {
+		boolean result;
 		synchronized (pendingTickListEntries) {
 			int var2 = Math.min(1000, this.pendingTickListEntries.size());
 
-			ImmutableSetMultimap<ChunkCoordIntPair, ForgeChunkManager.Ticket> persistentChunks = getPersistentChunks();
 			for (int var3 = 0; var3 < var2; ++var3) {
 				NextTickListEntry var4 = (NextTickListEntry) this.pendingTickListEntries.first();
 
@@ -159,35 +162,31 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 				}
 
 				this.pendingTickListEntries.remove(var4);
-				boolean isForced = persistentChunks.containsKey(new ChunkCoordIntPair(var4.xCoord >> 4, var4.zCoord >> 4));
-				byte var5 = isForced ? (byte) 0 : 8;
+				runningTickListEntries.add(var4);
+			}
 
-				if (this.checkChunksExist(var4.xCoord - var5, var4.yCoord - var5, var4.zCoord - var5, var4.xCoord + var5, var4.yCoord + var5, var4.zCoord + var5)) {
-					int var6 = this.getBlockId(var4.xCoord, var4.yCoord, var4.zCoord);
+			result = !this.pendingTickListEntries.isEmpty();
+		}
 
-					if (var6 == var4.blockID && var6 > 0) {
-						try {
-							Block.blocksList[var6].updateTick(this, var4.xCoord, var4.yCoord, var4.zCoord, this.rand);
-						} catch (Throwable var13) {
-							CrashReport var8 = CrashReport.makeCrashReport(var13, "Exception while ticking a block");
-							CrashReportCategory var9 = var8.makeCategory("Block being ticked");
-							int var10;
+		ImmutableSetMultimap<ChunkCoordIntPair, ForgeChunkManager.Ticket> persistentChunks = getPersistentChunks();
+		for (NextTickListEntry var4 : runningTickListEntries) {
+			boolean isForced = persistentChunks.containsKey(new ChunkCoordIntPair(var4.xCoord >> 4, var4.zCoord >> 4));
+			byte var5 = isForced ? (byte) 0 : 8;
 
-							try {
-								var10 = this.getBlockMetadata(var4.xCoord, var4.yCoord, var4.zCoord);
-							} catch (Throwable var12) {
-								var10 = -1;
-							}
+			if (this.checkChunksExist(var4.xCoord - var5, var4.yCoord - var5, var4.zCoord - var5, var4.xCoord + var5, var4.yCoord + var5, var4.zCoord + var5)) {
+				int var6 = this.getBlockId(var4.xCoord, var4.yCoord, var4.zCoord);
 
-							CrashReportCategory.func_85068_a(var9, var4.xCoord, var4.yCoord, var4.zCoord, var6, var10);
-							throw new ReportedException(var8);
-						}
+				if (var6 == var4.blockID && var6 > 0) {
+					try {
+						Block.blocksList[var6].updateTick(this, var4.xCoord, var4.yCoord, var4.zCoord, this.rand);
+					} catch (Throwable var13) {
+						Log.severe("Exception while ticking a block", var13);
 					}
 				}
 			}
-
-			return !this.pendingTickListEntries.isEmpty();
 		}
+		runningTickListEntries.clear();
+		return result;
 	}
 
 	@Override

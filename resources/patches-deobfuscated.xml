@@ -228,6 +228,12 @@
 		</class>
 	</forge>
 	<forgeModLoader>
+		<class id="cpw.mods.fml.common.Loader">
+			<addAll fromClass="me.nallar.patched.PatchLoader"/>
+		</class>
+		<class id="cpw.mods.fml.common.Loader$ModIdComparator">
+			<public/>
+		</class>
 		<class id="cpw.mods.fml.common.asm.FMLSanityChecker">
 			<replaceMethodCall code="{ $_ = null; }" method="severe">call</replaceMethodCall>
 		</class>

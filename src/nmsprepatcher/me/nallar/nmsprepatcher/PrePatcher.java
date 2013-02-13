@@ -95,6 +95,8 @@ public class PrePatcher {
 			sourceString = sourceString.replace("PlayerManager myManager;", "public PlayerManager myManager;").replace("public public", "public");
 			sourceString = sourceString.replace(" final ", " ");
 			sourceString = sourceString.replace("\nclass", "\npublic class");
+			sourceString = sourceString.replace("private class", "public class");
+			sourceString = sourceString.replace("protected class", "public class");
 			Matcher privateMatcher = privatePattern.matcher(sourceString);
 			sourceString = privateMatcher.replaceAll("$1protected");
 			try {

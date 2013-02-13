@@ -2,6 +2,7 @@ package me.nallar.tickthreading.patcher;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -360,15 +361,21 @@ public class Patches {
 			name = "public",
 			emptyConstructor = false
 	)
-	public void makePublic(Object o, Map<String, String> attributes) throws NotFoundException {
+	public void public_(Object o, Map<String, String> attributes) throws NotFoundException {
 		String field = attributes.get("field");
-		if (field == null) {
-			CtBehavior ctBehavior = (CtBehavior) o;
-			ctBehavior.setModifiers(Modifier.setPublic(ctBehavior.getModifiers()));
-		} else {
+		if (field != null) {
 			CtClass ctClass = (CtClass) o;
 			CtField ctField = ctClass.getDeclaredField(field);
 			ctField.setModifiers(Modifier.setPublic(ctField.getModifiers()));
+		} else if (o instanceof CtClass) {
+			CtClass ctClass = (CtClass) o;
+			ctClass.setModifiers(Modifier.setPublic(ctClass.getModifiers()));
+			for (CtConstructor ctConstructor : ctClass.getDeclaredConstructors()) {
+				public_(ctConstructor, Collections.<String, String>emptyMap());
+			}
+		} else {
+			CtBehavior ctBehavior = (CtBehavior) o;
+			ctBehavior.setModifiers(Modifier.setPublic(ctBehavior.getModifiers()));
 		}
 	}
 

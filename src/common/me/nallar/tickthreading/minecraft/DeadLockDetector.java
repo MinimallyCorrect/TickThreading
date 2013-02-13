@@ -162,18 +162,20 @@ public class DeadLockDetector {
 		}
 		Log.info("Attempting to save");
 		Log.flush();
-		new Thread() {
-			@Override
-			public void run() {
-				try {
-					Thread.sleep(300000);
-				} catch (InterruptedException ignored) {
+		if (TickThreading.instance.exitOnDeadlock) {
+			new Thread() {
+				@Override
+				public void run() {
+					try {
+						Thread.sleep(300000);
+					} catch (InterruptedException ignored) {
+					}
+					Log.severe("Froze while attempting to stop - halting server.");
+					Log.flush();
+					Runtime.getRuntime().halt(1);
 				}
-				Log.severe("Froze while attempting to stop - halting server.");
-				Log.flush();
-				Runtime.getRuntime().halt(1);
-			}
-		}.start();
+			}.start();
+		}
 		minecraftServer.saveEverything(); // Save first
 		Log.info("Saved, now attempting to stop the server and disconnect players cleanly");
 		try {
