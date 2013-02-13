@@ -8,6 +8,7 @@ import java.util.Set;
 import com.google.common.collect.ImmutableSetMultimap;
 
 import javassist.is.faulty.ThreadLocals;
+import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.collections.ForcedChunksRedirectMap;
 import me.nallar.tickthreading.minecraft.entitylist.EntityList;
 import me.nallar.tickthreading.minecraft.entitylist.LoadedTileEntityList;
@@ -55,6 +56,22 @@ public abstract class PatchWorld extends World {
 
 	public PatchWorld(ISaveHandler par1ISaveHandler, String par2Str, WorldProvider par3WorldProvider, WorldSettings par4WorldSettings, Profiler par5Profiler) {
 		super(par1ISaveHandler, par2Str, par3WorldProvider, par4WorldSettings, par5Profiler);
+	}
+
+	@Override
+	protected void notifyBlockOfNeighborChange(int x, int y, int z, int par4) {
+		if (!this.editingBlocks && !this.isRemote) {
+			int var5 = this.getBlockId(x, y, z);
+			Block var6 = Block.blocksList[var5];
+
+			if (var6 != null) {
+				try {
+					var6.onNeighborBlockChange(this, x, y, z, par4);
+				} catch (Throwable t) {
+					Log.severe("Exception while updating block neighbours", t);
+				}
+			}
+		}
 	}
 
 	@Override
