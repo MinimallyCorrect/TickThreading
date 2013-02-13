@@ -23,13 +23,14 @@ public abstract class PatchEvent extends Event {
 		if (cachedResult != null) {
 			return cachedResult;
 		}
-		while (cls != Event.class) {
-			if (cls.isAnnotationPresent(Cancelable.class)) // Forge bug, not fixed. Buggy behaviour may be required for some mods.
+		Class searchClass = cls;
+		while (searchClass != Event.class) {
+			if (searchClass.isAnnotationPresent(Cancelable.class)) // Forge bug, not fixed. Buggy behaviour may be required for some mods.
 			{
 				annotationMap.put(cls, true);
 				return true;
 			}
-			cls = cls.getSuperclass();
+			searchClass = searchClass.getSuperclass();
 		}
 		annotationMap.put(cls, false);
 		return false;
