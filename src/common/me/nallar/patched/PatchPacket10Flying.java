@@ -33,18 +33,7 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 		NetServerHandler nsh = (NetServerHandler) par1NetHandler;
 		synchronized (nsh) {
 			EntityPlayerMP entityPlayerMP = nsh.playerEntity;
-			if (nsh.teleported > 0 || nsh.tpPosY > yPosition + 0.02) {
-				nsh.lastPZ = this.zPosition;
-				nsh.lastPX = this.xPosition;
-				nsh.averageSpeed = -50d;
-				if (--nsh.teleported <= 1 || (nsh.teleported < 10 && nsh.tpPosY > yPosition + 0.02)) {
-					nsh.updatePositionAfterTP();
-					((WorldServer) entityPlayerMP.worldObj).getPlayerManager().updateMountedMovingPlayer(entityPlayerMP);
-				}
-				synchronized (entityPlayerMP.loadedChunks) {
-					sendChunks(entityPlayerMP);
-				}
-			} else {
+			if (!(nsh.teleported-- > 0 || nsh.tpPosY > yPosition + 0.02) || (yPosition == -999.0D && stance == -999.0D)) {
 				nsh.tpPosX = Double.NaN;
 				nsh.setHasMoved();
 				nsh.tpPosY = -256;
@@ -86,6 +75,16 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 					par1NetHandler.handleFlying(this);
 					sendChunks(entityPlayerMP);
 				}
+			} else {
+				nsh.lastPZ = this.zPosition;
+				nsh.lastPX = this.xPosition;
+				if (nsh.teleported <= 1 || (nsh.teleported < 10 && nsh.tpPosY > yPosition + 0.02)) {
+					nsh.updatePositionAfterTP();
+					((WorldServer) entityPlayerMP.worldObj).getPlayerManager().updateMountedMovingPlayer(entityPlayerMP);
+				}
+				synchronized (entityPlayerMP.loadedChunks) {
+					sendChunks(entityPlayerMP);
+				}
 			}
 		}
 	}
@@ -99,7 +98,7 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 		return 1;
 	}
 
-	private static void sendChunks(EntityPlayerMP entityPlayerMP) {
+	public static void sendChunks(EntityPlayerMP entityPlayerMP) {
 		NetServerHandler netServerHandler = entityPlayerMP.playerNetServerHandler;
 		if (!entityPlayerMP.loadedChunks.isEmpty()) {
 			long st = 0;
@@ -144,7 +143,7 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 				}
 			}
 			if (timings) {
-				Timings.record("net.minecraft.entity.player.EntityPlayerMP/chunks", System.nanoTime() - st);
+				Timings.record("onMovement/chunks", System.nanoTime() - st);
 			}
 		}
 	}
