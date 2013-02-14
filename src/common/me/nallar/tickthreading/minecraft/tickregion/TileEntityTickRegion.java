@@ -39,17 +39,15 @@ public class TileEntityTickRegion extends TickRegion {
 				entityTickProfiler.tick();
 			}
 		}
-		int xPos = 0;
-		int zPos = 0;
 		final Iterator<TileEntity> tileEntitiesIterator = tileEntitySet.iterator();
 		while (tileEntitiesIterator.hasNext()) {
 			if (profilingEnabled) {
 				startTime = System.nanoTime();
 			}
-			TileEntity tileEntity = tileEntitiesIterator.next();
+			final TileEntity tileEntity = tileEntitiesIterator.next();
+			final int xPos = tileEntity.xCoord;
+			final int zPos = tileEntity.zCoord;
 			try {
-				xPos = tileEntity.xCoord;
-				zPos = tileEntity.zCoord;
 				if (lockable) {
 					if (tileEntity.lastTTX != xPos || tileEntity.lastTTY != tileEntity.yCoord || tileEntity.lastTTZ != zPos) {
 						manager.lock(tileEntity);

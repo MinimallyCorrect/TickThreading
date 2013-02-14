@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 
 import cpw.mods.fml.common.FMLLog;
 import me.nallar.tickthreading.Log;
@@ -152,7 +153,7 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 
 				return chunk;
 			} catch (Exception e) {
-				FMLLog.severe("Failed to load chunk", e);
+				FMLLog.log(Level.SEVERE, e, "Failed to load chunk");
 				return null;
 			}
 		}
