@@ -254,10 +254,11 @@ public class ClassRegistry {
 					zout.write(stringEntry.getValue());
 					zout.closeEntry();
 				}
-				if (expectedPatchHashes.containsKey(zipFile)) {
-					zout.putNextEntry(new ZipEntry(hashFileName));
-					String patchHash = String.valueOf(expectedPatchHashes.get(zipFile));
-					zout.write(patchHash.getBytes("UTF-8"));
+				boolean hasPatchHash = expectedPatchHashes.containsKey(zipFile);
+				zout.putNextEntry(new ZipEntry(hashFileName));
+				String patchHash = hasPatchHash ? String.valueOf(expectedPatchHashes.get(zipFile)) : "-1";
+				zout.write(patchHash.getBytes("UTF-8"));
+				if (hasPatchHash) {
 					Log.info("Patched " + replacements.size() + " classes in " + zipFile.getName() + ", patchHash: " + patchHash);
 				} else {
 					Log.info("Removed signing info from " + zipFile.getName());
@@ -328,9 +329,14 @@ public class ClassRegistry {
 				continue;
 			}
 			if (forcePatching || !actualHash.equals(expectedHash)) {
+				File backupFile = new File(backupDirectory, fileIntegerEntry.getKey().getName());
+				if (!backupFile.exists()) {
+					Log.severe("Can't patch - no backup for " + fileIntegerEntry.getKey().getName() + " exists, and a patched copy is already in the mods directory.");
+					throw new Error("Missing backup for patched file");
+				}
 				fileIntegerEntry.getKey().delete();
 				try {
-					Files.copy(new File(backupDirectory, fileIntegerEntry.getKey().getName()), fileIntegerEntry.getKey());
+					Files.copy(backupFile, fileIntegerEntry.getKey());
 				} catch (IOException e) {
 					Log.severe("Failed to restore unpatched backup before patching.");
 				}

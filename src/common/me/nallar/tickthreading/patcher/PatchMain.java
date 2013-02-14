@@ -98,6 +98,8 @@ public class PatchMain {
 			Log.severe("Failed to load jars", e);
 		} catch (Exception e) {
 			Log.severe("Unhandled patching failure", e);
+		} catch (Error e) {
+			Log.severe("An error occurred while patching, can't continue", e);
 		}
 		try {
 			Log.info("Done. Press enter to exit.");
