@@ -8,20 +8,16 @@ import java.util.Random;
 
 import com.google.common.collect.ImmutableSetMultimap;
 
-import cpw.mods.fml.common.FMLLog;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.collections.TreeHashSet;
 import me.nallar.tickthreading.minecraft.ThreadManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.block.Block;
-import net.minecraft.crash.CrashReport;
-import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ReportedException;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.IWorldAccess;
 import net.minecraft.world.NextTickListEntry;

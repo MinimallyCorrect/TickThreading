@@ -61,7 +61,6 @@
 			<public field="ambientTickCountdown"/>
 		</class>
 		<class id="net.minecraft.world.WorldServer">
-			<!-- Fixes an issue where the tickNextTickLists would become out of sync -->
 			<synchronize>addBlockEvent,sendAndApplyBlockEvents</synchronize>
 			<addAll fromClass="me.nallar.patched.PatchWorldServer"/>
 			<profile>tickBlocksAndAmbiance</profile>
@@ -278,10 +277,12 @@
 			<synchronize field="facadeBlocks">blockCreated,getBlockId,getTile,computeConnections</synchronize>
 		</class>
 		<class id="buildcraft.transport.PipeTransportItems">
+			<!-- TODO: Find a more suitable way of making this concurrent without making performRemoval slow -->
 			<addClass class="org.cliffc.high_scale_lib.NonBlockingHashMap"/>
 			<newInitializer field="travelingEntities" class="org.cliffc.high_scale_lib.NonBlockingHashMap"/>
 		</class>
 		<class id="buildcraft.transport.PipeTransportPower">
+			<!-- TODO: Non-static lock, if possible -->
 			<newField field="staticLock" class="java.lang.Object" static=""/>
 			<synchronize field="staticLock">updateEntity</synchronize>
 		</class>
@@ -312,6 +313,7 @@
 			-->
 		</class>
 		<class id="com.eloraam.redpower.core.TubeFlow">
+			<!-- TODO: Non-static lock -->
 			<newField field="staticLock" class="java.lang.Object" static=""/>
 			<synchronize field="staticLock">update,add,onRemove</synchronize>
 			<!-- Possibly buggy but fast fix
@@ -336,6 +338,7 @@
 			<newInitializer field="worldToEnergyNetMap" class="java.util.HashMap"/>
 			<newInitializer field="energySourceToEnergyPathMap" class="java.util.HashMap"/>
 			<newInitializer field="entityLivingToShockEnergyMap" class="java.util.HashMap"/>
+			<!-- TODO: Add correctly implemented double checked locking -->
 			<synchronize field="ic2.core.EnergyNet.class">getForWorld</synchronize>
 			<synchronize>addTileEntity,removeTileEntity,emitEnergyFrom,discover</synchronize>
 		</class>

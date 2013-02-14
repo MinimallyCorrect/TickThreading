@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 
 /**
- * This class is in a different package as javassist replace "me." with "me$" instead of "me/".
+ * This class is in a different package as javassist treats "me." as "me$" instead of "me/".
  * <p/>
  * :(
  */
@@ -22,6 +22,9 @@ public class ThreadLocals {
 	public static final ThreadLocal factorizationFindLightAirParentToVisit = new HashSetThreadLocal();
 
 	private static class ArrayListThreadLocal extends ThreadLocal {
+		ArrayListThreadLocal() {
+		}
+
 		@Override
 		protected Object initialValue() {
 			return new ArrayList();
@@ -29,6 +32,9 @@ public class ThreadLocals {
 	}
 
 	private static class HashMapThreadLocal extends ThreadLocal {
+		HashMapThreadLocal() {
+		}
+
 		@Override
 		protected Object initialValue() {
 			return new HashMap();
@@ -36,6 +42,9 @@ public class ThreadLocals {
 	}
 
 	private static class HashSetThreadLocal extends ThreadLocal {
+		HashSetThreadLocal() {
+		}
+
 		@Override
 		protected Object initialValue() {
 			return new HashSet();
@@ -43,6 +52,9 @@ public class ThreadLocals {
 	}
 
 	private static class LinkedListThreadLocal extends ThreadLocal {
+		LinkedListThreadLocal() {
+		}
+
 		@Override
 		protected Object initialValue() {
 			return new LinkedList();
@@ -50,6 +62,9 @@ public class ThreadLocals {
 	}
 
 	private static class BooleanThreadLocal extends ThreadLocal {
+		BooleanThreadLocal() {
+		}
+
 		@Override
 		protected Object initialValue() {
 			return Boolean.FALSE;
