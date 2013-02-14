@@ -258,7 +258,6 @@
 	</forgeModLoader>
 	<factorization>
 		<class id="factorization.common.TileEntityWrathLamp">
-			<!-- ಠ_ಠ -->
 			<threadLocal field="toVisit" type="java.util.HashSet" threadLocalField="javassist.is.faulty.ThreadLocals.factorizationFindLightAirParentToVisit"/>
 		</class>
 		<class id="factorization.api.Charge">
