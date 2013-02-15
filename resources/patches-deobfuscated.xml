@@ -450,4 +450,9 @@
 			<replaceMethod code="{ }">castTheNet</replaceMethod>
 		</class>
 	</railCraft>
+	<thaumcraft>
+		<class id="thaumcraft.common.AuraManager">
+			<synchronize>registerAuraNode</synchronize>
+		</class>
+	</thaumcraft>
 </mods>

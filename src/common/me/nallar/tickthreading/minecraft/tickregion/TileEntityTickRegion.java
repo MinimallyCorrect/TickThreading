@@ -27,6 +27,8 @@ public class TileEntityTickRegion extends TickRegion {
 		final World world = this.world;
 		final boolean lockable = TickThreading.instance.lockRegionBorders;
 		final boolean profilingEnabled = manager.profilingEnabled || this.profilingEnabled;
+		boolean lock = false;
+		Lock thisLock = null;
 		Lock xPlusLock = null;
 		Lock xMinusLock = null;
 		Lock zPlusLock = null;
@@ -52,21 +54,26 @@ public class TileEntityTickRegion extends TickRegion {
 					if (tileEntity.lastTTX != xPos || tileEntity.lastTTY != tileEntity.yCoord || tileEntity.lastTTZ != zPos) {
 						manager.lock(tileEntity);
 					}
+					thisLock = tileEntity.thisLock;
 					xPlusLock = tileEntity.xPlusLock;
 					zPlusLock = tileEntity.zPlusLock;
 					zMinusLock = tileEntity.zMinusLock;
 					xMinusLock = tileEntity.xMinusLock;
-					if (xPlusLock != null) {
-						xPlusLock.lock();
-					}
-					if (zPlusLock != null) {
-						zPlusLock.lock();
-					}
-					if (zMinusLock != null) {
-						zMinusLock.lock();
-					}
-					if (xMinusLock != null) {
-						xMinusLock.lock();
+					lock = xMinusLock != null || xPlusLock != null || zMinusLock != null || zPlusLock != null;
+					if (lock) {
+						if (xPlusLock != null) {
+							xPlusLock.lock();
+						}
+						if (zPlusLock != null) {
+							zPlusLock.lock();
+						}
+						thisLock.lock();
+						if (zMinusLock != null) {
+							zMinusLock.lock();
+						}
+						if (xMinusLock != null) {
+							xMinusLock.lock();
+						}
 					}
 				}
 				if (manager.getHashCode(xPos, zPos) != hashCode) {
@@ -96,13 +103,14 @@ public class TileEntityTickRegion extends TickRegion {
 						+ "\nticking: " + Log.toString(tileEntity) + " at x,y,z:" + xPos + ',' + tileEntity.yCoord + ',' + zPos
 						+ "\nTick region: " + toString() + ':', throwable);
 			} finally {
-				if (lockable) {
+				if (lockable && lock) {
 					if (xMinusLock != null) {
 						xMinusLock.unlock();
 					}
 					if (zMinusLock != null) {
 						zMinusLock.unlock();
 					}
+					thisLock.unlock();
 					if (zPlusLock != null) {
 						zPlusLock.unlock();
 					}

@@ -17,7 +17,6 @@ import me.nallar.tickthreading.minecraft.tickregion.EntityTickRegion;
 import me.nallar.tickthreading.minecraft.tickregion.TickRegion;
 import me.nallar.tickthreading.minecraft.tickregion.TileEntityTickRegion;
 import me.nallar.tickthreading.util.TableFormatter;
-import me.nallar.tickthreading.util.concurrent.SimpleMutex;
 import me.nallar.unsafe.UnsafeUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -284,110 +283,73 @@ public final class TickManager {
 		int xPos = tileEntity.lastTTX;
 		int yPos = tileEntity.lastTTY;
 		int zPos = tileEntity.lastTTZ;
-		int maxPosition = (regionSize / 2) - 1;
-		int relativeXPos = (xPos % regionSize) / 2;
-		int relativeZPos = (zPos % regionSize) / 2;
-		// Locking orders - lock most +ve first
-		// If this order is not followed, we may deadlock.
-		if (relativeXPos == 0 && tileEntity.xMinusLock != null) { // minus X needs locked
-			synchronized (tileEntity) { // Lock this (+ve) first
-				TileEntity lockTileEntity = world.getTEWithoutLoad(xPos - 1, yPos, zPos);
-				if (lockTileEntity != null) {
-					synchronized (lockTileEntity) {
-						lockTileEntity.xPlusLock = tileEntity.xMinusLock = null;
-					}
-				}
-			}
-		} else if (relativeXPos == maxPosition && tileEntity.xPlusLock != null) { // plus X needs locked
-			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos + 1, yPos, zPos);
+		if (tileEntity.xMinusLock != null) {
+			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos - 1, yPos, zPos);
 			if (lockTileEntity != null) {
-				synchronized (lockTileEntity) { // Lock other (+ve) first
-					synchronized (tileEntity) {
-						lockTileEntity.xMinusLock = tileEntity.xPlusLock = null;
-					}
-				}
+				lockTileEntity.xPlusLock = tileEntity.xMinusLock = null;
 			}
 		}
-		if (relativeZPos == 0 && tileEntity.zMinusLock != null) { // minus Z needs locked
-			synchronized (tileEntity) { // Lock this (+ve) first
-				TileEntity lockTileEntity = world.getTEWithoutLoad(xPos, yPos, zPos - 1);
-				if (lockTileEntity != null) {
-					synchronized (lockTileEntity) {
-						lockTileEntity.zPlusLock = tileEntity.zMinusLock = null;
-					}
-				}
+		if (tileEntity.xPlusLock != null) {
+			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos + 1, yPos, zPos);
+			if (lockTileEntity != null) {
+				lockTileEntity.xMinusLock = tileEntity.xPlusLock = null;
 			}
-		} else if (relativeZPos == maxPosition && tileEntity.zPlusLock != null) { // plus Z needs locked
+		}
+		if (tileEntity.zMinusLock != null) {
+			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos, yPos, zPos - 1);
+			if (lockTileEntity != null) {
+				lockTileEntity.zPlusLock = tileEntity.zMinusLock = null;
+			}
+		}
+		if (tileEntity.zPlusLock != null) {
 			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos, yPos, zPos + 1);
 			if (lockTileEntity != null) {
-				synchronized (lockTileEntity) { // Lock other (+ve) first
-					synchronized (tileEntity) {
-						lockTileEntity.zMinusLock = tileEntity.zPlusLock = null;
-					}
-				}
+				lockTileEntity.zMinusLock = tileEntity.zPlusLock = null;
 			}
 		}
 	}
 
 	public final void lock(TileEntity tileEntity) {
+		unlock(tileEntity);
 		int maxPosition = (regionSize / 2) - 1;
 		int xPos = tileEntity.xCoord;
 		int yPos = tileEntity.yCoord;
 		int zPos = tileEntity.zCoord;
-		if (tileEntity.xPlusLock != null || tileEntity.xMinusLock != null || tileEntity.zPlusLock != null || tileEntity.zMinusLock != null) {
-			unlock(tileEntity);
-		}
 		tileEntity.lastTTX = xPos;
 		tileEntity.lastTTY = yPos;
 		tileEntity.lastTTZ = zPos;
 		int relativeXPos = (xPos % regionSize) / 2;
 		int relativeZPos = (zPos % regionSize) / 2;
-		// Locking orders - lock most +ve first
-		// If this order is not followed, we may deadlock.
-		if (relativeXPos == 0) { // minus X needs locked
-			synchronized (tileEntity) { // Lock this (+ve) first
-				TileEntity lockTileEntity = world.getTEWithoutLoad(xPos - 1, yPos, zPos);
-				if (lockTileEntity != null) {
-					synchronized (lockTileEntity) {
-						if (tileEntity.xMinusLock == null) {
-							lockTileEntity.xPlusLock = tileEntity.xMinusLock = new SimpleMutex();
-						}
-					}
-				}
-			}
-		} else if (relativeXPos == maxPosition) { // plus X needs locked
-			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos + 1, yPos, zPos);
+		boolean onMinusX = relativeXPos == 0;
+		boolean onMinusZ = relativeZPos == 0;
+		boolean onPlusX = relativeXPos == maxPosition;
+		boolean onPlusZ = relativeZPos == maxPosition;
+		if (onMinusX || onMinusZ || onPlusZ) { // minus X needs locked
+			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos - 1, yPos, zPos);
 			if (lockTileEntity != null) {
-				synchronized (lockTileEntity) { // Lock other (+ve) first
-					synchronized (tileEntity) {
-						if (tileEntity.xPlusLock == null) {
-							lockTileEntity.xMinusLock = tileEntity.xPlusLock = new SimpleMutex();
-						}
-					}
-				}
+				tileEntity.xMinusLock = lockTileEntity.thisLock;
+				lockTileEntity.xPlusLock = tileEntity.thisLock;
 			}
 		}
-		if (relativeZPos == 0) { // minus Z needs locked
-			synchronized (tileEntity) { // Lock this (+ve) first
-				TileEntity lockTileEntity = world.getTEWithoutLoad(xPos, yPos, zPos - 1);
-				if (lockTileEntity != null) {
-					synchronized (lockTileEntity) {
-						if (tileEntity.zMinusLock == null) {
-							lockTileEntity.zPlusLock = tileEntity.zMinusLock = new SimpleMutex();
-						}
-					}
-				}
+		if (onPlusX || onMinusZ || onPlusZ) { // plus X needs locked
+			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos + 1, yPos, zPos);
+			if (lockTileEntity != null) {
+				tileEntity.xPlusLock = lockTileEntity.thisLock;
+				lockTileEntity.xMinusLock = tileEntity.thisLock;
 			}
-		} else if (relativeZPos == maxPosition) { // plus Z needs locked
+		}
+		if (onMinusZ || onMinusX || onPlusX) { // minus Z needs locked
+			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos, yPos, zPos - 1);
+			if (lockTileEntity != null) {
+				tileEntity.zMinusLock = lockTileEntity.thisLock;
+				lockTileEntity.zPlusLock = tileEntity.thisLock;
+			}
+		}
+		if (onPlusZ || onMinusX || onPlusX) { // plus Z needs locked
 			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos, yPos, zPos + 1);
 			if (lockTileEntity != null) {
-				synchronized (lockTileEntity) { // Lock other (+ve) first
-					synchronized (tileEntity) {
-						if (tileEntity.zPlusLock == null) {
-							lockTileEntity.zMinusLock = tileEntity.zPlusLock = new SimpleMutex();
-						}
-					}
-				}
+				tileEntity.zPlusLock = lockTileEntity.thisLock;
+				lockTileEntity.zMinusLock = tileEntity.thisLock;
 			}
 		}
 	}
