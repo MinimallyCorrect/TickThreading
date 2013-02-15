@@ -229,7 +229,7 @@ public class TickThreading {
 				Field loadedEntityField = FieldUtil.getFields(World.class, List.class)[loadedEntityFieldIndex];
 				new LoadedEntityList<TileEntity>(event.world, loadedEntityField, manager);
 			}
-			Log.info("Threading initialised for world " + Log.name(event.world));
+			Log.fine("Threading initialised for world " + Log.name(event.world));
 			managers.put(event.world, manager);
 		} catch (Exception e) {
 			Log.severe("Failed to initialise threading for world " + Log.name(event.world), e);
