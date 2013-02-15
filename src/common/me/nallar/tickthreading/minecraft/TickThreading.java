@@ -242,23 +242,22 @@ public class TickThreading {
 	@ForgeSubscribe
 	public void onWorldUnload(WorldEvent.Unload event) {
 		try {
-			TickManager tickManager = managers.get(event.world);
+			TickManager tickManager = managers.remove(event.world);
 			if (tickManager != null) {
 				tickManager.unload();
 			}
-			managers.remove(event.world);
 			if (enableTileEntityTickThreading) {
 				Field loadedTileEntityField = FieldUtil.getFields(World.class, List.class)[loadedTileEntityFieldIndex];
 				Object loadedTileEntityList = loadedTileEntityField.get(event.world);
 				if (!(loadedTileEntityList instanceof EntityList)) {
-					Log.severe("Looks like another mod broke TickThreaded tile entities in world: " + Log.name(event.world));
+					Log.severe("Looks like another mod broke TT's replacement tile entity list in world: " + Log.name(event.world));
 				}
 			}
 			if (enableEntityTickThreading) {
 				Field loadedEntityField = FieldUtil.getFields(World.class, List.class)[loadedEntityFieldIndex];
 				Object loadedEntityList = loadedEntityField.get(event.world);
 				if (!(loadedEntityList instanceof EntityList)) {
-					Log.severe("Looks like another mod broke TickThreaded entities in world: " + Log.name(event.world));
+					Log.severe("Looks like another mod broke TT's replacement entity list in world: " + Log.name(event.world));
 				}
 			}
 		} catch (Exception e) {

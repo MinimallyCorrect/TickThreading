@@ -11,12 +11,12 @@ import java.util.concurrent.locks.ReadWriteLock;
  * Derived from http://tutorials.jenkov.com/java-concurrency/read-write-locks.html#full
  */
 public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
+	private static final boolean prioritiseWriteRequests = false;
 	private final Map<Thread, Integer> readingThreads = new HashMap<Thread, Integer>();
-	private volatile int writeAccesses = 0;
-	private volatile int writeRequests = 0;
-	private volatile int readRequests = 0;
-	protected boolean fair = true;
-	private volatile Thread writingThread = null;
+	private int writeAccesses = 0;
+	private int writeRequests = 0;
+	private int readRequests = 0;
+	private Thread writingThread = null;
 	private final Lock readLock = new SimpleLock() {
 		@Override
 		public void lock() {
@@ -53,7 +53,7 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 	public final synchronized void lockRead() {
 		Thread callingThread = Thread.currentThread();
 		readRequests++;
-		while (writingThread != callingThread && (writingThread != null || (fair && readingThreads.get(callingThread) == null && writeRequests > 0))) {
+		while (writingThread != callingThread && (writingThread != null || (prioritiseWriteRequests && writeRequests > 0 && readingThreads.get(callingThread) == null))) {
 			try {
 				wait();
 			} catch (InterruptedException ignored) {
