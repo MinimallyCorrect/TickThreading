@@ -9,7 +9,7 @@ public abstract class PatchChunkCoordIntPair extends ChunkCoordIntPair {
 
 	@Override
 	public boolean equals(Object o) {
-		return o instanceof ChunkCoordIntPair && ((ChunkCoordIntPair) o).chunkZPos == this.chunkXPos && ((ChunkCoordIntPair) o).chunkZPos == this.chunkZPos;
+		return o instanceof ChunkCoordIntPair && ((ChunkCoordIntPair) o).chunkXPos == this.chunkXPos && ((ChunkCoordIntPair) o).chunkZPos == this.chunkZPos;
 	}
 
 	@Override
