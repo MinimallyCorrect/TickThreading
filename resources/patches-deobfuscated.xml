@@ -263,6 +263,9 @@
 			<newField field="staticLock" class="java.lang.Object" static=""/>
 			<synchronize field="staticLock">update</synchronize>
 		</class>
+		<class id="factorization.common.TileEntityBarrel">
+			<synchronize>a(ILur;)V</synchronize>
+		</class>
 	</factorization>
 	<liteLoader>
 		<class id="com.mumfrey.liteloader.core.HookProfiler">
