@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableSetMultimap;
 
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.collections.TreeHashSet;
+import me.nallar.tickthreading.minecraft.DeadLockDetector;
 import me.nallar.tickthreading.minecraft.ThreadManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
@@ -51,6 +52,12 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		pendingTickListEntries = new TreeHashSet();
 		worldGenInProgress = new BooleanThreadLocal();
 		runningTickListEntries = new ArrayList<NextTickListEntry>();
+	}
+
+	@Override
+	public void flush() {
+		DeadLockDetector.tick("Saving a world before unload", System.nanoTime() + 30000000000L);
+		this.saveHandler.flush();
 	}
 
 	@Override

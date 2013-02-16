@@ -107,7 +107,11 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 					}
 					currentTPS = TARGET_TICK_TIME * TARGET_TPS / tickTime;
 				}
-				FMLCommonHandler.instance().handleServerStopping();
+				try {
+					FMLCommonHandler.instance().handleServerStopping();
+				} catch (Throwable t) {
+					Log.severe("Exception occurred while stopping the server", t);
+				}
 			} else {
 				System.out.println("startServer() failed.");
 				this.finalTick(null);

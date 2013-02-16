@@ -70,8 +70,12 @@ public class DeadLockDetector {
 	}
 
 	public static synchronized long tick(String name) {
+		return tick(name, System.nanoTime());
+	}
+
+	public static synchronized long tick(String name, long time) {
 		lastJob = name;
-		return lastTickTime = System.nanoTime();
+		return lastTickTime = time;
 	}
 
 	public static void sendChatSafely(final String message) {
