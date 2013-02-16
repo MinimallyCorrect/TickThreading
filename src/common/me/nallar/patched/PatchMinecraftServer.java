@@ -351,7 +351,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				if (this.tickCounter % TickThreading.instance.chunkGCInterval == 0) {
 					ChunkGarbageCollector.garbageCollect(world);
 				}
-				if (this.tickCounter % 202 == 0) {
+				if (this.tickCounter % 102 == 0) {
 					exceptionCount.put(id, 0);
 				}
 				this.theProfiler.endSection();
@@ -369,11 +369,10 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 					c = 0;
 				}
 				c++;
-				if (TickThreading.instance.exitOnDeadlock) {
-					if (c >= 199) {
-						DeadLockDetector.sendChatSafely("The world " + Log.name(world) + " has become unstable, and the server will now restart.");
-						this.initiateShutdown();
-					}
+				if (TickThreading.instance.exitOnDeadlock && c >= 99) {
+					DeadLockDetector.sendChatSafely("The world " + Log.name(world) + " has become unstable, and the server will now restart.");
+					Log.severe(Log.name(world) + " has become unstable, stopping.");
+					this.initiateShutdown();
 				}
 				exceptionCount.put(id, c);
 			}
