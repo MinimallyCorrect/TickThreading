@@ -244,9 +244,6 @@
 		<class id="cpw.mods.fml.common.FMLCommonHandler">
 			<addAll fromClass="me.nallar.patched.PatchFMLCommonHandler"/>
 		</class>
-		<class id="cpw.mods.fml.common.SingleIntervalHandler">
-			<addAll fromClass="me.nallar.patched.PatchSingleIntervalHandler"/>
-		</class>
 		<class id="cpw.mods.fml.relauncher.RelaunchClassLoader">
 			<addAll fromClass="me.nallar.patched.PatchRelaunchClassLoader"/>
 		</class>
