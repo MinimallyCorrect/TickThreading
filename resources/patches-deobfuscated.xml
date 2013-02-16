@@ -438,6 +438,9 @@
 		<class id="buildcraft.additionalpipes.pipes.PipePowerTeleport">
 			<synchronize>receiveEnergy,requestEnergy</synchronize>
 		</class>
+		<class id="buildcraft.additionalpipes.pipes.TeleportManager">
+			<synchronize>getConnectedPipes</synchronize>
+		</class>
 	</additionalPipes>
 	<MFFS>
 		<class id="chb.mods.mffs.common.item.ItemCardPowerLink">
