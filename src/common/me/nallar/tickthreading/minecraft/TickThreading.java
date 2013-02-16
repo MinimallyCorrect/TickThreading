@@ -15,6 +15,7 @@ import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 import javassist.is.faulty.Timings;
 import me.nallar.tickthreading.Log;
+import me.nallar.tickthreading.minecraft.commands.DumpCommand;
 import me.nallar.tickthreading.minecraft.commands.ProfileCommand;
 import me.nallar.tickthreading.minecraft.commands.TPSCommand;
 import me.nallar.tickthreading.minecraft.commands.TicksCommand;
@@ -75,6 +76,7 @@ public class TickThreading {
 	public boolean cleanWorlds = true;
 	public boolean lockRegionBorders = true;
 	public boolean allowWorldUnloading = true;
+	public boolean requireOpForDumpCommand = true;
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load
@@ -118,6 +120,8 @@ public class TickThreading {
 		tpsCommandName.comment = "Name of the command to be used for TPS reports.";
 		Property profileCommandName = config.get(Configuration.CATEGORY_GENERAL, "profileCommandName", ProfileCommand.name);
 		profileCommandName.comment = "Name of the command to be used for profiling reports.";
+		Property dumpCommandName = config.get(Configuration.CATEGORY_GENERAL, "dumpCommandName", DumpCommand.name);
+		dumpCommandName.comment = "Name of the command to be used for profiling reports.";
 		Property requirePatchedProperty = config.get(Configuration.CATEGORY_GENERAL, "requirePatched", requirePatched);
 		requirePatchedProperty.comment = "If the server must be patched to run with TickThreading";
 		Property exitOnDeadlockProperty = config.get(Configuration.CATEGORY_GENERAL, "exitOnDeadlock", exitOnDeadlock);
@@ -126,6 +130,8 @@ public class TickThreading {
 		requireOpForTicksCommandProperty.comment = "If a player must be opped to use /ticks";
 		Property requireOpForProfileCommandProperty = config.get(Configuration.CATEGORY_GENERAL, "requireOpsForProfileCommand", requireOpForProfileCommand);
 		requireOpForProfileCommandProperty.comment = "If a player must be opped to use /profile";
+		Property requireOpForDumpCommandProperty = config.get(Configuration.CATEGORY_GENERAL, "requireOpsForDumpCommand", requireOpForDumpCommand);
+		requireOpForDumpCommandProperty.comment = "If a player must be opped to use /dump";
 		Property saveIntervalProperty = config.get(Configuration.CATEGORY_GENERAL, "saveInterval", saveInterval);
 		saveIntervalProperty.comment = "Time between auto-saves, in ticks.";
 		Property deadLockTimeProperty = config.get(Configuration.CATEGORY_GENERAL, "deadLockTime", deadLockTime);
@@ -163,6 +169,7 @@ public class TickThreading {
 		TicksCommand.name = ticksCommandName.value;
 		TPSCommand.name = tpsCommandName.value;
 		ProfileCommand.name = profileCommandName.value;
+		DumpCommand.name = dumpCommandName.value;
 		tickThreads = tickThreadsProperty.getInt(tickThreads);
 		regionSize = regionSizeProperty.getInt(regionSize);
 		saveInterval = saveIntervalProperty.getInt(saveInterval);
@@ -180,6 +187,7 @@ public class TickThreading {
 		enableFastMobSpawning = enableFastMobSpawningProperty.getBoolean(enableFastMobSpawning);
 		requireOpForTicksCommand = requireOpForTicksCommandProperty.getBoolean(requireOpForTicksCommand);
 		requireOpForProfileCommand = requireOpForProfileCommandProperty.getBoolean(requireOpForProfileCommand);
+		requireOpForDumpCommand = requireOpForDumpCommandProperty.getBoolean(requireOpForDumpCommand);
 		aggressiveTicks = aggressiveTicksProperty.getBoolean(aggressiveTicks);
 		shouldLoadSpawn = shouldLoadSpawnProperty.getBoolean(shouldLoadSpawn);
 		waitForEntityTickCompletion = waitForEntityTickProperty.getBoolean(waitForEntityTickCompletion);

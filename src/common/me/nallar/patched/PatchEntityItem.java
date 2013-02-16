@@ -51,7 +51,7 @@ public abstract class PatchEntityItem extends EntityItem {
 		if (this.onGround) {
 			var2 = 0.58800006F;
 			if (this.motionX > 0.001 || this.motionY > 0.001) {
-				int var3 = this.worldObj.getBlockId(MathHelper.floor_double(this.posX), MathHelper.floor_double(this.boundingBox.minY) - 1, MathHelper.floor_double(this.posZ));
+				int var3 = this.worldObj.getBlockIdWithoutLoad(MathHelper.floor_double(this.posX), MathHelper.floor_double(this.boundingBox.minY) - 1, MathHelper.floor_double(this.posZ));
 
 				if (var3 > 0) {
 					var2 = Block.blocksList[var3].slipperiness * 0.98F;

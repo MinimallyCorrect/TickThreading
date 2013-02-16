@@ -37,7 +37,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	private Iterator chunkCoordIterator;
 	private ThreadManager threadManager;
 	private ThreadLocal<Random> randoms;
-	private List<NextTickListEntry> runningTickListEntries;
+	private ArrayList<NextTickListEntry> runningTickListEntries;
 	@Declare
 	public ThreadLocal<Boolean> worldGenInProgress_;
 
@@ -105,67 +105,65 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	}
 
 	@Override
-	public void func_82740_a(int par1, int par2, int par3, int par4, int par5, int par6) {
-		NextTickListEntry var7 = new NextTickListEntry(par1, par2, par3, par4);
+	public void func_82740_a(int x, int y, int z, int blockID, int timeOffset, int par6) {
+		NextTickListEntry var7 = new NextTickListEntry(x, y, z, blockID);
 		boolean isForced = getPersistentChunks().containsKey(new ChunkCoordIntPair(var7.xCoord >> 4, var7.zCoord >> 4));
-		byte var8 = isForced ? (byte) 0 : 8;
+		byte range = isForced ? (byte) 0 : 8;
 
-		if (this.scheduledUpdatesAreImmediate && par4 > 0) {
-			if (Block.blocksList[par4].func_82506_l()) {
-				if (this.checkChunksExist(var7.xCoord - var8, var7.yCoord - var8, var7.zCoord - var8, var7.xCoord + var8, var7.yCoord + var8, var7.zCoord + var8)) {
-					int var9 = this.getBlockId(var7.xCoord, var7.yCoord, var7.zCoord);
+		if (this.scheduledUpdatesAreImmediate && blockID > 0) {
+			if (Block.blocksList[blockID].func_82506_l()) {
+				if (this.checkChunksExist(var7.xCoord - range, var7.yCoord - range, var7.zCoord - range, var7.xCoord + range, var7.yCoord + range, var7.zCoord + range)) {
+					int realBlockID = this.getBlockIdWithoutLoad(var7.xCoord, var7.yCoord, var7.zCoord);
 
-					if (var9 == var7.blockID && var9 > 0) {
-						Block.blocksList[var9].updateTick(this, var7.xCoord, var7.yCoord, var7.zCoord, this.rand);
+					if (realBlockID > 0 && realBlockID == var7.blockID) {
+						Block.blocksList[realBlockID].updateTick(this, var7.xCoord, var7.yCoord, var7.zCoord, this.rand);
 					}
 				}
 
 				return;
 			}
 
-			par5 = 1;
+			timeOffset = 1;
 		}
 
-		if (this.checkChunksExist(par1 - var8, par2 - var8, par3 - var8, par1 + var8, par2 + var8, par3 + var8)) {
-			if (par4 > 0) {
-				var7.setScheduledTime((long) par5 + this.worldInfo.getWorldTotalTime());
+		if (this.checkChunksExist(x - range, y - range, z - range, x + range, y + range, z + range)) {
+			if (blockID > 0) {
+				var7.setScheduledTime((long) timeOffset + this.worldInfo.getWorldTotalTime());
 				var7.func_82753_a(par6);
 			}
 
-			synchronized (pendingTickListEntries) {
-				this.pendingTickListEntries.add(var7);
-			}
+			this.pendingTickListEntries.add(var7);
 		}
 	}
 
 	@Override
-	public void scheduleBlockUpdateFromLoad(int par1, int par2, int par3, int par4, int par5) {
-		NextTickListEntry var6 = new NextTickListEntry(par1, par2, par3, par4);
+	public void scheduleBlockUpdateFromLoad(int x, int y, int z, int blockID, int timeOffset) {
+		NextTickListEntry var6 = new NextTickListEntry(x, y, z, blockID);
 
-		if (par4 > 0) {
-			var6.setScheduledTime((long) par5 + this.worldInfo.getWorldTotalTime());
+		if (blockID > 0) {
+			var6.setScheduledTime((long) timeOffset + this.worldInfo.getWorldTotalTime());
 		}
 
-		synchronized (pendingTickListEntries) {
-			this.pendingTickListEntries.add(var6);
-		}
+		this.pendingTickListEntries.add(var6);
 	}
 
 	@Override
-	public boolean tickUpdates(boolean par1) {
+	public boolean tickUpdates(boolean runAll) {
 		boolean result;
+		final ArrayList<NextTickListEntry> runningTickListEntries = this.runningTickListEntries;
 		synchronized (pendingTickListEntries) {
 			int var2 = Math.min(1000, this.pendingTickListEntries.size());
+			runningTickListEntries.ensureCapacity(var2);
 
 			for (int var3 = 0; var3 < var2; ++var3) {
-				NextTickListEntry var4 = (NextTickListEntry) this.pendingTickListEntries.first();
+				NextTickListEntry nextTickListEntry = (NextTickListEntry) this.pendingTickListEntries.first();
 
-				if (!par1 && var4.scheduledTime > this.worldInfo.getWorldTotalTime()) {
+				if (!runAll && nextTickListEntry.scheduledTime > this.worldInfo.getWorldTotalTime()) {
 					break;
 				}
 
-				this.pendingTickListEntries.remove(var4);
-				runningTickListEntries.add(var4);
+				this.pendingTickListEntries.remove(nextTickListEntry);
+				runningTickListEntries.add(nextTickListEntry);
 			}
 
 			result = !this.pendingTickListEntries.isEmpty();
@@ -174,14 +172,14 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		ImmutableSetMultimap<ChunkCoordIntPair, ForgeChunkManager.Ticket> persistentChunks = getPersistentChunks();
 		for (NextTickListEntry var4 : runningTickListEntries) {
 			boolean isForced = persistentChunks.containsKey(new ChunkCoordIntPair(var4.xCoord >> 4, var4.zCoord >> 4));
-			byte var5 = isForced ? (byte) 0 : 8;
+			byte range = isForced ? (byte) 0 : 8;
 
-			if (this.checkChunksExist(var4.xCoord - var5, var4.yCoord - var5, var4.zCoord - var5, var4.xCoord + var5, var4.yCoord + var5, var4.zCoord + var5)) {
-				int var6 = this.getBlockId(var4.xCoord, var4.yCoord, var4.zCoord);
+			if (this.checkChunksExist(var4.xCoord - range, var4.yCoord - range, var4.zCoord - range, var4.xCoord + range, var4.yCoord + range, var4.zCoord + range)) {
+				int blockID = this.getBlockIdWithoutLoad(var4.xCoord, var4.yCoord, var4.zCoord);
 
-				if (var6 == var4.blockID && var6 > 0) {
+				if (blockID == var4.blockID && blockID > 0) {
 					try {
-						Block.blocksList[var6].updateTick(this, var4.xCoord, var4.yCoord, var4.zCoord, this.rand);
+						Block.blocksList[blockID].updateTick(this, var4.xCoord, var4.yCoord, var4.zCoord, this.rand);
 					} catch (Throwable var13) {
 						Log.severe("Exception while ticking a block", var13);
 					}
@@ -353,7 +351,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 				}
 			}
 
-			int var13;
+			int blockID;
 
 			theProfiler.endStartSection("precipitation");
 			if (provider.canDoRainSnowIce(chunk) && rand.nextInt(16) == 0) {
@@ -375,10 +373,10 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 					BiomeGenBase var12 = this.getBiomeGenForCoords(var9 + xPos, var10 + zPos);
 
 					if (var12.canSpawnLightningBolt()) {
-						var13 = this.getBlockId(var9 + xPos, var11 - 1, var10 + zPos);
+						blockID = this.getBlockIdWithoutLoad(var9 + xPos, var11 - 1, var10 + zPos);
 
-						if (var13 != 0) {
-							Block.blocksList[var13].fillWithRain(this, var9 + xPos, var11 - 1, var10 + zPos);
+						if (blockID > 0) {
+							Block.blocksList[blockID].fillWithRain(this, var9 + xPos, var11 - 1, var10 + zPos);
 						}
 					}
 				}
@@ -394,10 +392,10 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 				if (ebs != null && ebs.getNeedsRandomTick()) {
 					for (int i = 0; i < 3; ++i) {
 						updateLCG = updateLCG * 1664525 + 1013904223;
-						var13 = updateLCG >> 2;
-						int x = var13 & 15;
-						int y = var13 >> 8 & 15;
-						int z = var13 >> 16 & 15;
+						blockID = updateLCG >> 2;
+						int x = blockID & 15;
+						int y = blockID >> 8 & 15;
+						int z = blockID >> 16 & 15;
 						Block var18 = Block.blocksList[ebs.getExtBlockID(x, z, y)];
 
 						if (var18 != null && var18.getTickRandomly()) {

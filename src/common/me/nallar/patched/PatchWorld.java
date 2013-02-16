@@ -58,10 +58,35 @@ public abstract class PatchWorld extends World {
 	}
 
 	@Override
+	public int getBlockId(int x, int y, int z) {
+		if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000 && y > 0 && y < 256) {
+			try {
+				return getChunkFromChunkCoords(x >> 4, z >> 4).getBlockID(x & 15, y, z & 15);
+			} catch (Throwable t) {
+				Log.severe("Exception getting block ID in " + Log.name(this) + " at x,y,z" + x + ',' + y + ',' + z, t);
+			}
+		}
+		return 0;
+	}
+
+	@Declare
+	public int getBlockIdWithoutLoad(int x, int y, int z) {
+		if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000 && y > 0 && y < 256) {
+			try {
+				Chunk chunk = ((ChunkProviderServer)chunkProvider).getChunkIfExists(x >> 4, z >> 4);
+				return chunk == null ? -1 : chunk.getBlockID(x & 15, y, z & 15);
+			} catch (Throwable t) {
+				Log.severe("Exception getting block ID in " + Log.name(this) + " at x,y,z" + x + ',' + y + ',' + z, t);
+			}
+		}
+		return 0;
+	}
+
+	@Override
 	protected void notifyBlockOfNeighborChange(int x, int y, int z, int par4) {
 		if (!this.editingBlocks && !this.isRemote) {
-			int var5 = this.getBlockId(x, y, z);
-			Block var6 = Block.blocksList[var5];
+			int var5 = this.getBlockIdWithoutLoad(x, y, z);
+			Block var6 = var5 < 1 ? null : Block.blocksList[var5];
 
 			if (var6 != null) {
 				try {

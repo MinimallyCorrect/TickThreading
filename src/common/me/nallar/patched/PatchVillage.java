@@ -8,10 +8,7 @@ public abstract class PatchVillage extends Village {
 	//                 G
 	@Override
 	protected boolean isBlockDoor(int par1, int par2, int par3) {
-		if (!this.worldObj.getChunkProvider().chunkExists(par1 / 16, par3 / 16)) {
-			return true;
-		}
-		int var4 = this.worldObj.getBlockId(par1, par2, par3);
-		return var4 > 0 && var4 == Block.doorWood.blockID;
+		int blockID = this.worldObj.getBlockIdWithoutLoad(par1, par2, par3);
+		return blockID == -1 || blockID == Block.doorWood.blockID;
 	}
 }
