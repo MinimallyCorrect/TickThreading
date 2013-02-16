@@ -8,6 +8,11 @@ public abstract class PatchChunkCoordIntPair extends ChunkCoordIntPair {
 	}
 
 	@Override
+	public boolean equals(Object o) {
+		return o instanceof ChunkCoordIntPair && ((ChunkCoordIntPair) o).chunkZPos == this.chunkXPos && ((ChunkCoordIntPair) o).chunkZPos == this.chunkZPos;
+	}
+
+	@Override
 	public int hashCode() {
 		return (chunkXPos * 7907) + chunkXPos;
 	}
