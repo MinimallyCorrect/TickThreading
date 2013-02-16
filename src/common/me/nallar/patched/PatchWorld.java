@@ -49,7 +49,6 @@ public abstract class PatchWorld extends World {
 
 	public void construct() {
 		tickCount = rand.nextInt(5);
-		forcedChunks = ForcedChunksRedirectMap.emptyMap;
 		tileEntityRemovalSet = new HashSet<TileEntity>();
 		unloadedEntitySet = new HashSet<Entity>();
 	}
@@ -76,7 +75,7 @@ public abstract class PatchWorld extends World {
 
 	@Override
 	public ImmutableSetMultimap<ChunkCoordIntPair, ForgeChunkManager.Ticket> getPersistentChunks() {
-		return forcedChunks;
+		return forcedChunks == null ? ForcedChunksRedirectMap.emptyMap : forcedChunks;
 	}
 
 	@Override

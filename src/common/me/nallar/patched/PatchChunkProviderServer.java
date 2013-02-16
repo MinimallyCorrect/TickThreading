@@ -202,7 +202,9 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 		try {
 			synchronized (genLock) {
 				synchronized (lock) {
-					worldObj.worldGenInProgress.set(true);
+					if (worldObj.worldGenInProgress != null) {
+						worldObj.worldGenInProgress.set(true);
+					}
 					var5 = (Chunk) this.loadedChunkHashMap.getValueByKey(var3);
 					if (var5 != null) {
 						return var5;
@@ -239,7 +241,9 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 				}
 			}
 		} finally {
-			worldObj.worldGenInProgress.set(false);
+			if (worldObj.worldGenInProgress != null) {
+				worldObj.worldGenInProgress.set(false);
+			}
 		}
 
 		// TODO: Do initial mob spawning here - doing it while locked is stupid and can cause deadlocks with some bukkit plugins

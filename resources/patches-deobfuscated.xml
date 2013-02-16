@@ -357,8 +357,8 @@
 			<synchronize field="staticLock">tickEnd,onPlayerLogout,onWorldLoad,onWorldUnload,onChunkForce,onChunkUnForce</synchronize>
 		</class>
 		<class id="codechicken.chunkloader.PlayerChunkViewerManager">
-			<synchronize field="$1.b.g">calculateChunkChanges</synchronize>
 			<synchronize/>
+			<synchronize field="$1.b.g">calculateChunkChanges</synchronize>
 		</class>
 		<class id="codechicken.chunkloader.ChunkLoaderManager">
 			<disable>cleanChunks</disable>
