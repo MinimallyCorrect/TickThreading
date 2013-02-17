@@ -16,6 +16,8 @@ public abstract class PatchEntity extends Entity {
 	public Boolean isForced_;
 	@Declare
 	public me.nallar.tickthreading.minecraft.tickregion.EntityTickRegion tickRegion_;
+	@Declare
+	public int collidingEntityTickSkipCounter_;
 	private int lavaCheckTicks;
 	private boolean inLava;
 
@@ -25,13 +27,13 @@ public abstract class PatchEntity extends Entity {
 
 	@Override
 	public boolean handleLavaMovement() {
-		return (lavaCheckTicks++ % 10 == 0) ? inLava = this.worldObj.isMaterialInBB(this.boundingBox.expand(-0.10000000149011612D, -0.4000000059604645D, -0.10000000149011612D), Material.lava) : inLava;
+		return (lavaCheckTicks++ % 15 == 0) ? inLava = this.worldObj.isMaterialInBB(this.boundingBox.expand(-0.10000000149011612D, -0.4000000059604645D, -0.10000000149011612D), Material.lava) : inLava;
 	}
 
 	@Override
-	public void moveEntity(double par1, double par3, double par5) {
+	public void moveEntity(double vX, double vY, double vZ) {
 		if (this.noClip) {
-			this.boundingBox.offset(par1, par3, par5);
+			this.boundingBox.offset(vX, vY, vZ);
 			this.posX = (this.boundingBox.minX + this.boundingBox.maxX) / 2.0D;
 			this.posY = this.boundingBox.minY + (double) this.yOffset - (double) this.ySize;
 			this.posZ = (this.boundingBox.minZ + this.boundingBox.maxZ) / 2.0D;
@@ -44,104 +46,109 @@ public abstract class PatchEntity extends Entity {
 
 			if (this.isInWeb) {
 				this.isInWeb = false;
-				par1 *= 0.25D;
-				par3 *= 0.05000000074505806D;
-				par5 *= 0.25D;
+				vX *= 0.25D;
+				vY *= 0.05000000074505806D;
+				vZ *= 0.25D;
 				this.motionX = 0.0D;
 				this.motionY = 0.0D;
 				this.motionZ = 0.0D;
 			}
 
-			double var13 = par1;
-			double var15 = par3;
-			double var17 = par5;
+			double vX1 = vX;
+			double vY1 = vY;
+			double vZ1 = vZ;
 			AxisAlignedBB var19 = this.boundingBox.copy();
-			boolean var20 = this.onGround && this.isSneaking() && (Object) this instanceof EntityPlayer;
+			boolean sneakingPlayer = this.onGround && this.isSneaking() && (Object) this instanceof EntityPlayer;
 
-			if (var20) {
+			if (sneakingPlayer) {
 				double var21;
 
-				for (var21 = 0.05D; par1 != 0.0D && !this.worldObj.hasCollidingBoundingBoxes(this, this.boundingBox.getOffsetBoundingBox(par1, -1.0D, 0.0D)); var13 = par1) {
-					if (par1 < var21 && par1 >= -var21) {
-						par1 = 0.0D;
-					} else if (par1 > 0.0D) {
-						par1 -= var21;
+				for (var21 = 0.05D; vX != 0.0D && !this.worldObj.hasCollidingBoundingBoxes(this, this.boundingBox.getOffsetBoundingBox(vX, -1.0D, 0.0D)); vX1 = vX) {
+					if (vX < var21 && vX >= -var21) {
+						vX = 0.0D;
+					} else if (vX > 0.0D) {
+						vX -= var21;
 					} else {
-						par1 += var21;
+						vX += var21;
 					}
 				}
 
-				for (; par5 != 0.0D && !this.worldObj.hasCollidingBoundingBoxes(this, this.boundingBox.getOffsetBoundingBox(0.0D, -1.0D, par5)); var17 = par5) {
-					if (par5 < var21 && par5 >= -var21) {
-						par5 = 0.0D;
-					} else if (par5 > 0.0D) {
-						par5 -= var21;
+				for (; vZ != 0.0D && !this.worldObj.hasCollidingBoundingBoxes(this, this.boundingBox.getOffsetBoundingBox(0.0D, -1.0D, vZ)); vZ1 = vZ) {
+					if (vZ < var21 && vZ >= -var21) {
+						vZ = 0.0D;
+					} else if (vZ > 0.0D) {
+						vZ -= var21;
 					} else {
-						par5 += var21;
+						vZ += var21;
 					}
 				}
 
-				while (par1 != 0.0D && par5 != 0.0D && !this.worldObj.hasCollidingBoundingBoxes(this, this.boundingBox.getOffsetBoundingBox(par1, -1.0D, par5))) {
-					if (par1 < var21 && par1 >= -var21) {
-						par1 = 0.0D;
-					} else if (par1 > 0.0D) {
-						par1 -= var21;
+				while (vX != 0.0D && vZ != 0.0D && !this.worldObj.hasCollidingBoundingBoxes(this, this.boundingBox.getOffsetBoundingBox(vX, -1.0D, vZ))) {
+					if (vX < var21 && vX >= -var21) {
+						vX = 0.0D;
+					} else if (vX > 0.0D) {
+						vX -= var21;
 					} else {
-						par1 += var21;
+						vX += var21;
 					}
 
-					if (par5 < var21 && par5 >= -var21) {
-						par5 = 0.0D;
-					} else if (par5 > 0.0D) {
-						par5 -= var21;
+					if (vZ < var21 && vZ >= -var21) {
+						vZ = 0.0D;
+					} else if (vZ > 0.0D) {
+						vZ -= var21;
 					} else {
-						par5 += var21;
+						vZ += var21;
 					}
 
-					var13 = par1;
-					var17 = par5;
+					vX1 = vX;
+					vZ1 = vZ;
 				}
 			}
 
-			List var35 = this.worldObj.getCollidingBoundingBoxes(this, this.boundingBox.addCoord(par1, par3, par5));
-
-			for (int var22 = 0; var22 < var35.size(); ++var22) {
-				par3 = ((AxisAlignedBB) var35.get(var22)).calculateYOffset(this.boundingBox, par3);
+			List<AxisAlignedBB> collidingBoundingBoxes = this.worldObj.getCollidingBoundingBoxes(this, this.boundingBox.addCoord(vX, vY, vZ), 12);
+			int collidingBoundingBoxesSize = collidingBoundingBoxes.size();
+			collidingEntityTickSkipCounter = collidingBoundingBoxesSize / 11;
+			if (collidingEntityTickSkipCounter != 0 && tickRegion != null) {
+				collidingEntityTickSkipCounter = tickRegion.size() / 50;
 			}
 
-			this.boundingBox.offset(0.0D, par3, 0.0D);
-
-			if (!this.field_70135_K && var15 != par3) {
-				par5 = 0.0D;
-				par3 = 0.0D;
-				par1 = 0.0D;
+			for (int i = 0; i < collidingBoundingBoxesSize; ++i) {
+				vY = collidingBoundingBoxes.get(i).calculateYOffset(this.boundingBox, vY);
 			}
 
-			boolean var34 = this.onGround || var15 != par3 && var15 < 0.0D;
-			int var23;
+			this.boundingBox.offset(0.0D, vY, 0.0D);
 
-			for (var23 = 0; var23 < var35.size(); ++var23) {
-				par1 = ((AxisAlignedBB) var35.get(var23)).calculateXOffset(this.boundingBox, par1);
+			if (!this.field_70135_K && vY1 != vY) {
+				vZ = 0.0D;
+				vY = 0.0D;
+				vX = 0.0D;
 			}
 
-			this.boundingBox.offset(par1, 0.0D, 0.0D);
+			boolean var34 = this.onGround || vY1 != vY && vY1 < 0.0D;
+			int i;
 
-			if (!this.field_70135_K && var13 != par1) {
-				par5 = 0.0D;
-				par3 = 0.0D;
-				par1 = 0.0D;
+			for (i = 0; i < collidingBoundingBoxesSize; ++i) {
+				vX = collidingBoundingBoxes.get(i).calculateXOffset(this.boundingBox, vX);
 			}
 
-			for (var23 = 0; var23 < var35.size(); ++var23) {
-				par5 = ((AxisAlignedBB) var35.get(var23)).calculateZOffset(this.boundingBox, par5);
+			this.boundingBox.offset(vX, 0.0D, 0.0D);
+
+			if (!this.field_70135_K && vX1 != vX) {
+				vZ = 0.0D;
+				vY = 0.0D;
+				vX = 0.0D;
 			}
 
-			this.boundingBox.offset(0.0D, 0.0D, par5);
+			for (i = 0; i < collidingBoundingBoxesSize; ++i) {
+				vZ = collidingBoundingBoxes.get(i).calculateZOffset(this.boundingBox, vZ);
+			}
 
-			if (!this.field_70135_K && var17 != par5) {
-				par5 = 0.0D;
-				par3 = 0.0D;
-				par1 = 0.0D;
+			this.boundingBox.offset(0.0D, 0.0D, vZ);
+
+			if (!this.field_70135_K && vZ1 != vZ) {
+				vZ = 0.0D;
+				vY = 0.0D;
+				vX = 0.0D;
 			}
 
 			double var25;
@@ -149,71 +156,72 @@ public abstract class PatchEntity extends Entity {
 			int var30;
 			double var36;
 
-			if (this.stepHeight > 0.0F && var34 && (var20 || this.ySize < 0.05F) && (var13 != par1 || var17 != par5)) {
-				var36 = par1;
-				var25 = par3;
-				var27 = par5;
-				par1 = var13;
-				par3 = (double) this.stepHeight;
-				par5 = var17;
+			if (this.stepHeight > 0.0F && var34 && (sneakingPlayer || this.ySize < 0.05F) && (vX1 != vX || vZ1 != vZ)) {
+				var36 = vX;
+				var25 = vY;
+				var27 = vZ;
+				vX = vX1;
+				vY = (double) this.stepHeight;
+				vZ = vZ1;
 				AxisAlignedBB var29 = this.boundingBox.copy();
 				this.boundingBox.setBB(var19);
-				var35 = this.worldObj.getCollidingBoundingBoxes(this, this.boundingBox.addCoord(var13, par3, var17));
+				collidingBoundingBoxes = this.worldObj.getCollidingBoundingBoxes(this, this.boundingBox.addCoord(vX1, vY, vZ1), 10);
+				collidingBoundingBoxesSize = collidingBoundingBoxes.size();
 
-				for (var30 = 0; var30 < var35.size(); ++var30) {
-					par3 = ((AxisAlignedBB) var35.get(var30)).calculateYOffset(this.boundingBox, par3);
+				for (var30 = 0; var30 < collidingBoundingBoxesSize; ++var30) {
+					vY = collidingBoundingBoxes.get(var30).calculateYOffset(this.boundingBox, vY);
 				}
 
-				this.boundingBox.offset(0.0D, par3, 0.0D);
+				this.boundingBox.offset(0.0D, vY, 0.0D);
 
-				if (!this.field_70135_K && var15 != par3) {
-					par5 = 0.0D;
-					par3 = 0.0D;
-					par1 = 0.0D;
+				if (!this.field_70135_K && vY1 != vY) {
+					vZ = 0.0D;
+					vY = 0.0D;
+					vX = 0.0D;
 				}
 
-				for (var30 = 0; var30 < var35.size(); ++var30) {
-					par1 = ((AxisAlignedBB) var35.get(var30)).calculateXOffset(this.boundingBox, par1);
+				for (var30 = 0; var30 < collidingBoundingBoxesSize; ++var30) {
+					vX = collidingBoundingBoxes.get(var30).calculateXOffset(this.boundingBox, vX);
 				}
 
-				this.boundingBox.offset(par1, 0.0D, 0.0D);
+				this.boundingBox.offset(vX, 0.0D, 0.0D);
 
-				if (!this.field_70135_K && var13 != par1) {
-					par5 = 0.0D;
-					par3 = 0.0D;
-					par1 = 0.0D;
+				if (!this.field_70135_K && vX1 != vX) {
+					vZ = 0.0D;
+					vY = 0.0D;
+					vX = 0.0D;
 				}
 
-				for (var30 = 0; var30 < var35.size(); ++var30) {
-					par5 = ((AxisAlignedBB) var35.get(var30)).calculateZOffset(this.boundingBox, par5);
+				for (var30 = 0; var30 < collidingBoundingBoxesSize; ++var30) {
+					vZ = collidingBoundingBoxes.get(var30).calculateZOffset(this.boundingBox, vZ);
 				}
 
-				this.boundingBox.offset(0.0D, 0.0D, par5);
+				this.boundingBox.offset(0.0D, 0.0D, vZ);
 
-				if (!this.field_70135_K && var17 != par5) {
-					par5 = 0.0D;
-					par3 = 0.0D;
-					par1 = 0.0D;
+				if (!this.field_70135_K && vZ1 != vZ) {
+					vZ = 0.0D;
+					vY = 0.0D;
+					vX = 0.0D;
 				}
 
-				if (!this.field_70135_K && var15 != par3) {
-					par5 = 0.0D;
-					par3 = 0.0D;
-					par1 = 0.0D;
+				if (!this.field_70135_K && vY1 != vY) {
+					vZ = 0.0D;
+					vY = 0.0D;
+					vX = 0.0D;
 				} else {
-					par3 = (double) (-this.stepHeight);
+					vY = (double) (-this.stepHeight);
 
-					for (var30 = 0; var30 < var35.size(); ++var30) {
-						par3 = ((AxisAlignedBB) var35.get(var30)).calculateYOffset(this.boundingBox, par3);
+					for (var30 = 0; var30 < collidingBoundingBoxesSize; ++var30) {
+						vY = collidingBoundingBoxes.get(var30).calculateYOffset(this.boundingBox, vY);
 					}
 
-					this.boundingBox.offset(0.0D, par3, 0.0D);
+					this.boundingBox.offset(0.0D, vY, 0.0D);
 				}
 
-				if (var36 * var36 + var27 * var27 >= par1 * par1 + par5 * par5) {
-					par1 = var36;
-					par3 = var25;
-					par5 = var27;
+				if (var36 * var36 + var27 * var27 >= vX * vX + vZ * vZ) {
+					vX = var36;
+					vY = var25;
+					vZ = var27;
 					this.boundingBox.setBB(var29);
 				}
 				/* Fixes a vanilla bug where the player view would dip when stepping between certain blocks
@@ -235,21 +243,21 @@ public abstract class PatchEntity extends Entity {
 			this.posX = (this.boundingBox.minX + this.boundingBox.maxX) / 2.0D;
 			this.posY = this.boundingBox.minY + (double) this.yOffset - (double) this.ySize;
 			this.posZ = (this.boundingBox.minZ + this.boundingBox.maxZ) / 2.0D;
-			this.isCollidedHorizontally = var13 != par1 || var17 != par5;
-			this.isCollidedVertically = var15 != par3;
-			this.onGround = var15 != par3 && var15 < 0.0D;
+			this.isCollidedHorizontally = vX1 != vX || vZ1 != vZ;
+			this.isCollidedVertically = vY1 != vY;
+			this.onGround = vY1 != vY && vY1 < 0.0D;
 			this.isCollided = this.isCollidedHorizontally || this.isCollidedVertically;
-			this.updateFallState(par3, this.onGround);
+			this.updateFallState(vY, this.onGround);
 
-			if (var13 != par1) {
+			if (vX1 != vX) {
 				this.motionX = 0.0D;
 			}
 
-			if (var15 != par3) {
+			if (vY1 != vY) {
 				this.motionY = 0.0D;
 			}
 
-			if (var17 != par5) {
+			if (vZ1 != vZ) {
 				this.motionZ = 0.0D;
 			}
 
@@ -257,7 +265,7 @@ public abstract class PatchEntity extends Entity {
 			var25 = this.posY - var9;
 			var27 = this.posZ - var11;
 
-			if (this.canTriggerWalking() && !var20 && this.ridingEntity == null) {
+			if (this.canTriggerWalking() && !sneakingPlayer && this.ridingEntity == null) {
 				int var37 = MathHelper.floor_double(this.posX);
 				var30 = MathHelper.floor_double(this.posY - 0.20000000298023224D - (double) this.yOffset);
 				int var31 = MathHelper.floor_double(this.posZ);

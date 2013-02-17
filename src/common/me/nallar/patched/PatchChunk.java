@@ -1,11 +1,17 @@
 package me.nallar.patched;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import cpw.mods.fml.common.FMLLog;
+import me.nallar.tickthreading.patcher.Declare;
+import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MathHelper;
+import net.minecraft.world.ChunkPosition;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.MinecraftForge;
@@ -15,6 +21,78 @@ import net.minecraftforge.event.world.ChunkEvent;
 public abstract class PatchChunk extends Chunk {
 	public PatchChunk(World par1World, int par2, int par3) {
 		super(par1World, par2, par3);
+	}
+
+	private List<TileEntity> toInvalidate;
+
+	public void construct() {
+		toInvalidate = new ArrayList<TileEntity>();
+	}
+
+	@Declare
+	public void getEntitiesWithinAABBForEntity(Entity excludedEntity, AxisAlignedBB collisionArea, List collidingAABBs, int limit) {
+		int var4 = MathHelper.floor_double((collisionArea.minY - World.MAX_ENTITY_RADIUS) / 16.0D);
+		int var5 = MathHelper.floor_double((collisionArea.maxY + World.MAX_ENTITY_RADIUS) / 16.0D);
+
+		if (var4 < 0) {
+			var4 = 0;
+		}
+
+		if (var5 >= this.entityLists.length) {
+			var5 = this.entityLists.length - 1;
+		}
+
+		for (int var6 = var4; var6 <= var5; ++var6) {
+			List var7 = this.entityLists[var6];
+
+			for (int var8 = 0; var8 < var7.size(); ++var8) {
+				Entity var9 = (Entity) var7.get(var8);
+
+				if (var9 != excludedEntity && var9.boundingBox.intersectsWith(collisionArea)) {
+					collidingAABBs.add(var9);
+					if (--limit == 0) {
+						return;
+					}
+					Entity[] var10 = var9.getParts();
+
+					if (var10 != null) {
+						for (int var11 = 0; var11 < var10.length; ++var11) {
+							var9 = var10[var11];
+
+							if (var9 != excludedEntity && var9.boundingBox.intersectsWith(collisionArea)) {
+								collidingAABBs.add(var9);
+								if (--limit == 0) {
+									return;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	@Override
+	public void addTileEntity(TileEntity tileEntity) {
+		int x = tileEntity.xCoord - this.xPosition * 16;
+		int y = tileEntity.yCoord;
+		int z = tileEntity.zCoord - this.zPosition * 16;
+
+		if (this.isChunkLoaded) {
+			this.setChunkBlockTileEntity(x, y, z, tileEntity);
+			this.worldObj.addTileEntity(tileEntity);
+		} else {
+			ChunkPosition chunkPosition = new ChunkPosition(x, y, z);
+			tileEntity.setWorldObj(this.worldObj);
+
+			Block block = Block.blocksList[getBlockID(x, y, z)];
+			if (block != null && block.hasTileEntity(getBlockMetadata(x, y, z))) {
+				TileEntity old = (TileEntity) chunkTileEntityMap.put(chunkPosition, tileEntity);
+				if (old != null) {
+					toInvalidate.add(old);
+				}
+			}
+		}
 	}
 
 	@Override
@@ -35,6 +113,12 @@ public abstract class PatchChunk extends Chunk {
 	@Override
 	public void onChunkLoad() {
 		this.isChunkLoaded = true;
+
+		for (TileEntity tileEntity : toInvalidate) {
+			tileEntity.invalidate();
+		}
+		toInvalidate.clear();
+
 		worldObj.addTileEntity(this.chunkTileEntityMap.values());
 
 		for (int var1 = 0; var1 < this.entityLists.length; ++var1) {

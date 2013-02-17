@@ -1,5 +1,6 @@
 package me.nallar.patched;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -73,7 +74,7 @@ public abstract class PatchWorld extends World {
 	public int getBlockIdWithoutLoad(int x, int y, int z) {
 		if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000 && y > 0 && y < 256) {
 			try {
-				Chunk chunk = ((ChunkProviderServer)chunkProvider).getChunkIfExists(x >> 4, z >> 4);
+				Chunk chunk = ((ChunkProviderServer) chunkProvider).getChunkIfExists(x >> 4, z >> 4);
 				return chunk == null ? -1 : chunk.getBlockID(x & 15, y, z & 15);
 			} catch (Throwable t) {
 				Log.severe("Exception getting block ID in " + Log.name(this) + " at x,y,z" + x + ',' + y + ',' + z, t);
@@ -266,7 +267,7 @@ public abstract class PatchWorld extends World {
 		}
 
 		double var14 = 0.25D;
-		List var16 = this.getEntitiesWithinAABBExcludingEntity(par1Entity, par2AxisAlignedBB.expand(var14, var14, var14));
+		List var16 = this.getEntitiesWithinAABBExcludingEntity(par1Entity, par2AxisAlignedBB.expand(var14, var14, var14), 100);
 
 		for (int var15 = 0; var15 < var16.size(); ++var15) {
 			AxisAlignedBB var13 = ((Entity) var16.get(var15)).getBoundingBox();
@@ -285,8 +286,8 @@ public abstract class PatchWorld extends World {
 		return false;
 	}
 
-	@Override
-	public List getCollidingBoundingBoxes(Entity par1Entity, AxisAlignedBB par2AxisAlignedBB) {
+	@Declare
+	public List getCollidingBoundingBoxes(Entity par1Entity, AxisAlignedBB par2AxisAlignedBB, int limit) {
 		List collidingBoundingBoxes = (List) ThreadLocals.collidingBoundingBoxes.get();
 		collidingBoundingBoxes.clear();
 		int var3 = MathHelper.floor_double(par2AxisAlignedBB.minX);
@@ -328,7 +329,7 @@ public abstract class PatchWorld extends World {
 		}
 
 		double var14 = 0.25D;
-		List var16 = this.getEntitiesWithinAABBExcludingEntity(par1Entity, par2AxisAlignedBB.expand(var14, var14, var14));
+		List var16 = this.getEntitiesWithinAABBExcludingEntity(par1Entity, par2AxisAlignedBB.expand(var14, var14, var14), limit);
 
 		for (int var15 = 0; var15 < var16.size(); ++var15) {
 			AxisAlignedBB var13 = ((Entity) var16.get(var15)).getBoundingBox();
@@ -345,6 +346,41 @@ public abstract class PatchWorld extends World {
 		}
 
 		return collidingBoundingBoxes;
+	}
+
+	@Override
+	public List getCollidingBoundingBoxes(Entity par1Entity, AxisAlignedBB par2AxisAlignedBB) {
+		return getCollidingBoundingBoxes(par1Entity, par2AxisAlignedBB, 2000);
+	}
+
+	public void addTileEntity(Collection tileEntities) {
+		List dest = scanningTileEntities ? addedTileEntityList : loadedTileEntityList;
+		for (TileEntity tileEntity : (Iterable<TileEntity>) tileEntities) {
+			tileEntity.validate();
+			if (tileEntity.canUpdate()) {
+				dest.add(tileEntity);
+			}
+		}
+	}
+
+	@Declare
+	public List getEntitiesWithinAABBExcludingEntity(Entity par1Entity, AxisAlignedBB par2AxisAlignedBB, int limit) {
+		List entitiesWithinAABBExcludingEntity = (List) ThreadLocals.entitiesWithinAABBExcludingEntity.get();
+		entitiesWithinAABBExcludingEntity.clear();
+		int var3 = MathHelper.floor_double((par2AxisAlignedBB.minX - MAX_ENTITY_RADIUS) / 16.0D);
+		int var4 = MathHelper.floor_double((par2AxisAlignedBB.maxX + MAX_ENTITY_RADIUS) / 16.0D);
+		int var5 = MathHelper.floor_double((par2AxisAlignedBB.minZ - MAX_ENTITY_RADIUS) / 16.0D);
+		int var6 = MathHelper.floor_double((par2AxisAlignedBB.maxZ + MAX_ENTITY_RADIUS) / 16.0D);
+
+		for (int var7 = var3; var7 <= var4; ++var7) {
+			for (int var8 = var5; var8 <= var6; ++var8) {
+				if (this.chunkExists(var7, var8)) {
+					this.getChunkFromChunkCoords(var7, var8).getEntitiesWithinAABBForEntity(par1Entity, par2AxisAlignedBB, entitiesWithinAABBExcludingEntity, limit);
+				}
+			}
+		}
+
+		return entitiesWithinAABBExcludingEntity;
 	}
 
 	@Override
