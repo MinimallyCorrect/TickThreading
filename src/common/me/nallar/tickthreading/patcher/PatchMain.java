@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 
 import javassist.NotFoundException;
@@ -83,7 +84,8 @@ public class PatchMain {
 			return;
 		}
 		try {
-			Iterable<File> filesToLoad = (Iterable<File>) CollectionsUtil.toObjects(CollectionsUtil.split(args[0]), File.class);
+			List<File> filesToLoad = CollectionsUtil.toObjects(CollectionsUtil.split(args[0]), File.class);
+			patchManager.classRegistry.serverFile = filesToLoad.get(0);
 			patchManager.classRegistry.forcePatching = forcePatching;
 			patchManager.loadBackups(filesToLoad);
 			patchManager.classRegistry.loadFiles(filesToLoad);

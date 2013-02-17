@@ -25,7 +25,7 @@ public enum CollectionsUtil {
 		return new ArrayList<String>(Arrays.asList(input.split(delimiter)));
 	}
 
-	public static List<?> toObjects(Iterable<String> stringIterable, Class<?> type) {
+	public static <T> List<T> toObjects(Iterable<String> stringIterable, Class<T> type) {
 		Constructor<?> constructor;
 		try {
 			constructor = type.getConstructor(String.class);
@@ -41,7 +41,7 @@ public enum CollectionsUtil {
 				Log.severe("Failed to convert string list to " + type + " with string " + s, e);
 			}
 		}
-		return objects;
+		return (List<T>) objects;
 	}
 
 	public static String join(Iterable iterable) {

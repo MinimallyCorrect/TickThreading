@@ -3,9 +3,11 @@ package me.nallar.patched;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
 
 import cpw.mods.fml.common.FMLLog;
 import me.nallar.tickthreading.patcher.Declare;
+import me.nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
@@ -19,6 +21,9 @@ import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.world.ChunkEvent;
 
 public abstract class PatchChunk extends Chunk {
+	public Lock entityListWriteLock;
+	public Lock entityListReadLock;
+
 	public PatchChunk(World par1World, int par2, int par3) {
 		super(par1World, par2, par3);
 	}
@@ -27,48 +32,56 @@ public abstract class PatchChunk extends Chunk {
 
 	public void construct() {
 		toInvalidate = new ArrayList<TileEntity>();
+		TwoWayReentrantReadWriteLock twoWayReentrantReadWriteLock = new TwoWayReentrantReadWriteLock();
+		entityListWriteLock = twoWayReentrantReadWriteLock.writeLock();
+		entityListReadLock = twoWayReentrantReadWriteLock.readLock();
 	}
 
 	@Declare
 	public void getEntitiesWithinAABBForEntity(Entity excludedEntity, AxisAlignedBB collisionArea, List collidingAABBs, int limit) {
-		int var4 = MathHelper.floor_double((collisionArea.minY - World.MAX_ENTITY_RADIUS) / 16.0D);
-		int var5 = MathHelper.floor_double((collisionArea.maxY + World.MAX_ENTITY_RADIUS) / 16.0D);
+		entityListReadLock.lock();
+		try {
+			int var4 = MathHelper.floor_double((collisionArea.minY - World.MAX_ENTITY_RADIUS) / 16.0D);
+			int var5 = MathHelper.floor_double((collisionArea.maxY + World.MAX_ENTITY_RADIUS) / 16.0D);
 
-		if (var4 < 0) {
-			var4 = 0;
-		}
+			if (var4 < 0) {
+				var4 = 0;
+			}
 
-		if (var5 >= this.entityLists.length) {
-			var5 = this.entityLists.length - 1;
-		}
+			if (var5 >= this.entityLists.length) {
+				var5 = this.entityLists.length - 1;
+			}
 
-		for (int var6 = var4; var6 <= var5; ++var6) {
-			List var7 = this.entityLists[var6];
+			for (int var6 = var4; var6 <= var5; ++var6) {
+				List var7 = this.entityLists[var6];
 
-			for (int var8 = 0; var8 < var7.size(); ++var8) {
-				Entity var9 = (Entity) var7.get(var8);
+				for (int var8 = 0; var8 < var7.size(); ++var8) {
+					Entity var9 = (Entity) var7.get(var8);
 
-				if (var9 != excludedEntity && var9.boundingBox.intersectsWith(collisionArea)) {
-					collidingAABBs.add(var9);
-					if (--limit == 0) {
-						return;
-					}
-					Entity[] var10 = var9.getParts();
+					if (var9 != excludedEntity && var9.boundingBox.intersectsWith(collisionArea)) {
+						collidingAABBs.add(var9);
+						if (--limit == 0) {
+							return;
+						}
+						Entity[] var10 = var9.getParts();
 
-					if (var10 != null) {
-						for (int var11 = 0; var11 < var10.length; ++var11) {
-							var9 = var10[var11];
+						if (var10 != null) {
+							for (int var11 = 0; var11 < var10.length; ++var11) {
+								var9 = var10[var11];
 
-							if (var9 != excludedEntity && var9.boundingBox.intersectsWith(collisionArea)) {
-								collidingAABBs.add(var9);
-								if (--limit == 0) {
-									return;
+								if (var9 != excludedEntity && var9.boundingBox.intersectsWith(collisionArea)) {
+									collidingAABBs.add(var9);
+									if (--limit == 0) {
+										return;
+									}
 								}
 							}
 						}
 					}
 				}
 			}
+		} finally {
+			entityListReadLock.unlock();
 		}
 	}
 

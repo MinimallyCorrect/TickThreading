@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.relauncher.Side;
+import me.nallar.insecurity.InsecurityManager;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.ChunkGarbageCollector;
 import me.nallar.tickthreading.minecraft.DeadLockDetector;
@@ -62,6 +63,15 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		super(par1File);
 	}
 
+	@Override
+	public void initiateShutdown() {
+		SecurityManager securityManager = System.getSecurityManager();
+		if (securityManager != null) {
+			securityManager.checkExit(1);
+		}
+		this.serverRunning = false;
+	}
+
 	@Declare
 	public static void setTargetTPS(int targetTPS) {
 		assert targetTPS > 0 : "Target TPS must be greater than 0";
@@ -79,6 +89,12 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	@Override
 	public void run() {
 		try {
+			try {
+				InsecurityManager.init();
+			} catch (Throwable t) {
+				System.out.println("Failed to set up Security Manager");
+				t.printStackTrace();
+			}
 			System.out.println("calling startServer()");
 			if (this.startServer()) {
 				System.out.println("calling handleServerStarted()");

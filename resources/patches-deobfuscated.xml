@@ -91,9 +91,6 @@
 			<final field="zPosition"/>
 			<final field="entityLists"/>
 			<final field="worldObj"/>
-			<newField field="entityListReadWriteLock" class="me.nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock"/>
-			<newField field="entityListWriteLock" class="java.util.concurrent.locks.Lock" code="this.entityListReadWriteLock.writeLock();"/>
-			<newField field="entityListReadLock" class="java.util.concurrent.locks.Lock" code="this.entityListReadWriteLock.readLock();"/>
 			<lock field="entityListWriteLock">onChunkLoad,onChunkUnload,removeEntityAtIndex,addEntity</lock>
 			<lock field="entityListReadLock">getEntitiesWithinAABBForEntity,getEntitiesOfTypeWithinAAAB</lock>
 		</class>
@@ -354,7 +351,6 @@
 			<synchronize field="staticLock">tickEnd,onPlayerLogout,onWorldLoad,onWorldUnload,onChunkForce,onChunkUnForce</synchronize>
 		</class>
 		<class id="codechicken.chunkloader.PlayerChunkViewerManager">
-			<synchronize/>
 			<synchronize field="$1.b.g">calculateChunkChanges</synchronize>
 		</class>
 		<class id="codechicken.chunkloader.ChunkLoaderManager">
@@ -448,12 +444,6 @@
 			<synchronize/>
 		</class>
 	</MFFS>
-	<railCraft>
-		<!-- Thanks. I only have to patch railcraft because it kills the server if IC2 or forestry have been modified. That's annoying. -->
-		<class id="railcraft.common.plugins.forge.FishingPlugin">
-			<replaceMethod code="{ }">castTheNet</replaceMethod>
-		</class>
-	</railCraft>
 	<thaumcraft>
 		<class id="thaumcraft.common.AuraManager">
 			<synchronize>registerAuraNode</synchronize>

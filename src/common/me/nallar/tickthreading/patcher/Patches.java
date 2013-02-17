@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +21,8 @@ import javassist.CtNewMethod;
 import javassist.CtPrimitiveType;
 import javassist.Modifier;
 import javassist.NotFoundException;
+import javassist.bytecode.AnnotationsAttribute;
+import javassist.bytecode.AttributeInfo;
 import javassist.bytecode.BadBytecode;
 import javassist.bytecode.ClassFile;
 import javassist.expr.Cast;
@@ -614,6 +617,15 @@ public class Patches {
 			} catch (NotFoundException ignored) {
 			}
 			ctMethod.setName(ctMethod.getName() + "_sync" + i);
+			List<AttributeInfo> attributes = ctMethod.getMethodInfo().getAttributes();
+			Iterator<AttributeInfo> attributeInfoIterator = attributes.iterator();
+			while (attributeInfoIterator.hasNext()) {
+				AttributeInfo attributeInfo = attributeInfoIterator.next();
+				if (attributeInfo instanceof AnnotationsAttribute) {
+					attributeInfoIterator.remove();
+					replacement.getMethodInfo().addAttribute(attributeInfo);
+				}
+			}
 			replacement.setBody("synchronized(" + field + ") { return " + ctMethod.getName() + "($$); }");
 			ctClass.addMethod(replacement);
 		}

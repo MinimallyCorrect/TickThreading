@@ -34,15 +34,16 @@ public class ProfileCommand extends Command {
 		Integer x = null;
 		Integer z = null;
 		try {
-			if (!arguments.isEmpty()) {
-				entity_ = "e".equals(arguments.get(0));
-				if ("c".equals(arguments.get(0))) {
-					entity_ = true;
-					location_ = true;
-					if (arguments.size() > 2) {
-						x = Integer.valueOf(arguments.remove(1));
-						z = Integer.valueOf(arguments.remove(1));
-					}
+			if (arguments.isEmpty()) {
+				throw new Exception();
+			}
+			entity_ = "e".equals(arguments.get(0));
+			if ("c".equals(arguments.get(0))) {
+				entity_ = true;
+				location_ = true;
+				if (arguments.size() > 2) {
+					x = Integer.valueOf(arguments.remove(1));
+					z = Integer.valueOf(arguments.remove(1));
 				}
 			}
 			if (arguments.size() > 1) {
