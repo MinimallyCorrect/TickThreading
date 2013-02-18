@@ -56,6 +56,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 			ucp = (URLClassPath) field.get(this);
 			minecraftdir = locationOf(net.minecraft.util.Tuple.class).getParentFile();
 			patchedModsFolder = new File(minecraftdir, "patchedMods");
+			boolean foundTT = false;
 			for (File file : new File(minecraftdir, "mods").listFiles()) {
 				if (file.getName().toLowerCase().contains("tickthreading") && file.getName().endsWith(".jar")) {
 					URL toAdd = file.toURI().toURL();
@@ -63,7 +64,11 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 						sources.add(toAdd);
 						ucp.addURL(toAdd);
 					}
+					foundTT = true;
 				}
+			}
+			if (!foundTT) {
+				System.err.println("Failed to find TT jar in mods folder - make sure it has 'tickthreading' in its name!");
 			}
 		} catch (Throwable t) {
 			t.printStackTrace();
