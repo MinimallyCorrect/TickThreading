@@ -448,5 +448,8 @@
 		<class id="thaumcraft.common.AuraManager">
 			<synchronize>registerAuraNode</synchronize>
 		</class>
+		<class id="thaumcraft.common.blocks.TileSensor">
+			<synchronize field="$1">getNoteBlockEvents</synchronize>
+		</class>
 	</thaumcraft>
 </mods>
