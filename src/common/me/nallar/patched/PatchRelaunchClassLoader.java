@@ -78,11 +78,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 	@Override
 	public void addURL(URL url) {
 		if (sources.contains(url)) {
-			sources.retainAll(Arrays.asList(ucp.getURLs()));
-			if (sources.contains(url)) {
-				FMLLog.warning("Attempted to add " + url.toString().replace("%", "%%") + " to classpath twice");
-				return;
-			}
+			FMLLog.warning("Added " + url.toString().replace("%", "%%") + " to classpath twice");
 		}
 		ucp.addURL(url);
 		sources.add(url);

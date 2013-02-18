@@ -116,7 +116,6 @@ public class ClassRegistry {
 				ByteArrayOutputStream output = new ByteArrayOutputStream();
 				ByteStreams.copy(zip.getInputStream(zipEntry), output);
 				int hash = Integer.valueOf(new String(output.toByteArray(), "UTF-8"));
-				Log.info(String.valueOf(zipFile) + ',' + file + ',' + hash);
 				locationToPatchHash.put(zipFile, hash);
 			}
 		}

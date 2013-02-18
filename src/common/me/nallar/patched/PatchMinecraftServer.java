@@ -88,13 +88,12 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 	@Override
 	public void run() {
-		System.out.println("This server is patched with @MOD_NAME@ v@MOD_VERSION@ for MC@MC_VERSION@");
+		FMLLog.info("This server is patched with @MOD_NAME@ v@MOD_VERSION@ for MC@MC_VERSION@");
 		try {
 			try {
 				InsecurityManager.init();
 			} catch (Throwable t) {
-				System.out.println("Failed to set up Security Manager");
-				t.printStackTrace();
+				FMLLog.log(Level.SEVERE, t, "Failed to set up Security Manager");
 			}
 			if (this.startServer()) {
 				FMLLog.fine("calling handleServerStarted()");
@@ -130,7 +129,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 					Log.severe("Exception occurred while stopping the server", t);
 				}
 			} else {
-				System.out.println("startServer() failed.");
+				FMLLog.severe("startServer() failed.");
 				this.finalTick(null);
 			}
 		} catch (Throwable throwable) {
