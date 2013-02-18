@@ -1,9 +1,11 @@
 package me.nallar.insecurity;
 
 import java.security.Permission;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 
 import cpw.mods.fml.common.FMLLog;
+import me.nallar.tickthreading.Log;
 
 public class InsecurityManager extends java.lang.SecurityManager {
 	static {
@@ -24,6 +26,12 @@ public class InsecurityManager extends java.lang.SecurityManager {
 	@Override
 	public void checkExit(int status) {
 		super.checkExit(status);
-		FMLLog.log(Level.FINE, new Throwable(), "Server killed.");
+		FMLLog.log(Level.WARNING, new Throwable(), "Server stopped.");
+		for (Handler handler : FMLLog.getLogger().getHandlers()) {
+			handler.flush();
+		}
+		for (Handler handler : Log.LOGGER.getHandlers()) {
+			handler.flush();
+		}
 	}
 }

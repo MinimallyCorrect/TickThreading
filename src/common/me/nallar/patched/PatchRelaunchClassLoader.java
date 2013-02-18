@@ -80,7 +80,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 		if (sources.contains(url)) {
 			sources.retainAll(Arrays.asList(ucp.getURLs()));
 			if (sources.contains(url)) {
-				FMLLog.warning("Attempted to add " + url + " to classpath twice");
+				FMLLog.warning("Attempted to add " + url.toString().replace("%", "%%") + " to classpath twice");
 				return;
 			}
 		}
