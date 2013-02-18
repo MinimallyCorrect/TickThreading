@@ -50,6 +50,7 @@ public class ClassRegistry {
 	public final ClassPool classes = new ClassPool(false);
 	public boolean disableJavassistLoading = false;
 	public boolean forcePatching = false;
+	public boolean writeAllClasses = false;
 
 	{
 		MethodInfo.doPreverify = true;
@@ -196,10 +197,6 @@ public class ClassRegistry {
 		getAdditionalClasses(file).put(className.replace('.', '/') + ".class", byteCode);
 	}
 
-	public File getLocation(String className) {
-		return classNameToLocation.get(className);
-	}
-
 	public void finishModifications() {
 		for (ClassPath classPath : classPathSet) {
 			classes.removeClassPath(classPath);
@@ -232,7 +229,7 @@ public class ClassRegistry {
 				// Skip
 			} else if (replacementFiles.containsKey(entryName)) {
 				replacements.add(entryName);
-			} else {
+			} else if(!onlyClasses || writeAllClasses) {
 				zout.putNextEntry(new ZipEntry(entryName));
 				ByteStreams.copy(zin, zout);
 			}

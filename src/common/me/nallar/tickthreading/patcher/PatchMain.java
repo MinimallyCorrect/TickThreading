@@ -73,6 +73,7 @@ public class PatchMain {
 	}
 
 	private static void patcher(String[] args) {
+		List<String> argsList = Arrays.asList(args);
 		Log.setFileName("patcher", Level.FINEST, Log.LOGGER);
 		// TODO: Auto force-patch if Patches.class changes
 		boolean forcePatching = true;//  args.length >= 2 && "force".equalsIgnoreCase(args[1]);
@@ -85,6 +86,7 @@ public class PatchMain {
 		}
 		try {
 			List<File> filesToLoad = CollectionsUtil.toObjects(CollectionsUtil.split(args[0]), File.class);
+			patchManager.classRegistry.writeAllClasses = argsList.contains("all");
 			patchManager.classRegistry.serverFile = filesToLoad.get(0);
 			patchManager.classRegistry.forcePatching = forcePatching;
 			patchManager.loadBackups(filesToLoad);
