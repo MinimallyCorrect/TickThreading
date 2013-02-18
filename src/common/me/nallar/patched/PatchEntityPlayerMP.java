@@ -1,6 +1,7 @@
 package me.nallar.patched;
 
 import java.util.Iterator;
+import java.util.List;
 
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemInWorldManager;
@@ -19,17 +20,18 @@ public abstract class PatchEntityPlayerMP extends EntityPlayerMP {
 		--this.initialInvulnerability;
 		this.openContainer.detectAndSendChanges();
 
-		while (!this.destroyedItemsNetCache.isEmpty()) {
-			int var1 = Math.min(this.destroyedItemsNetCache.size(), 127);
-			int[] var2 = new int[var1];
-			Iterator var3 = this.destroyedItemsNetCache.iterator();
+		List<Integer> destroyedItemsNetCache = this.destroyedItemsNetCache;
+		while (!destroyedItemsNetCache.isEmpty()) {
+			int items = Math.min(destroyedItemsNetCache.size(), 127);
+			int[] removedItems = new int[items];
+			Iterator<Integer> iterator = destroyedItemsNetCache.iterator();
 
-			for (int var4 = 0; var3.hasNext() && var4 < var1; ) {
-				var2[var4++] = (Integer) var3.next();
-				var3.remove();
+			for (int var4 = 0; iterator.hasNext() && var4 < items; var4++) {
+				removedItems[var4] = iterator.next();
+				iterator.remove();
 			}
 
-			this.playerNetServerHandler.sendPacketToPlayer(new Packet29DestroyEntity(var2));
+			this.playerNetServerHandler.sendPacketToPlayer(new Packet29DestroyEntity(removedItems));
 		}
 	}
 }

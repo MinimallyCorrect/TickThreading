@@ -37,6 +37,7 @@ public abstract class PatchChunk extends Chunk {
 		entityListReadLock = twoWayReentrantReadWriteLock.readLock();
 	}
 
+	@Override
 	@Declare
 	public void getEntitiesWithinAABBForEntity(Entity excludedEntity, AxisAlignedBB collisionArea, List collidingAABBs, int limit) {
 		entityListReadLock.lock();

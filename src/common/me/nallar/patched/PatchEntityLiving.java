@@ -1,6 +1,5 @@
 package me.nallar.patched;
 
-import java.util.Iterator;
 import java.util.List;
 
 import net.minecraft.block.Block;
@@ -251,15 +250,13 @@ public abstract class PatchEntityLiving extends EntityLiving {
 		theProfiler.startSection("looting");
 
 		if (!worldObj.isRemote && this.canPickUpLoot && !this.dead && worldObj.getGameRules().getGameRuleBooleanValue("mobGriefing")) {
-			List var2 = worldObj.getEntitiesWithinAABB(EntityItem.class, this.boundingBox.expand(1.0D, 0.0D, 1.0D));
-			Iterator var12 = var2.iterator();
+			List<EntityItem> entityItemList = worldObj.getEntitiesWithinAABB(EntityItem.class, this.boundingBox.expand(1.0D, 0.0D, 1.0D));
 
-			while (var12.hasNext()) {
-				EntityItem var4 = (EntityItem) var12.next();
+			for (EntityItem entityItem : entityItemList) {
 
-				if (!var4.isDead && var4.getEntityItem() != null) {
-					ItemStack var13 = var4.getEntityItem();
-					int var6 = func_82159_b(var13);
+				if (!entityItem.isDead && entityItem.getEntityItem() != null) {
+					ItemStack itemStack = entityItem.getEntityItem();
+					int var6 = func_82159_b(itemStack);
 
 					if (var6 > -1) {
 						boolean var14 = true;
@@ -267,28 +264,28 @@ public abstract class PatchEntityLiving extends EntityLiving {
 
 						if (var8 != null) {
 							if (var6 == 0) {
-								if (var13.getItem() instanceof ItemSword && !(var8.getItem() instanceof ItemSword)) {
+								if (itemStack.getItem() instanceof ItemSword && !(var8.getItem() instanceof ItemSword)) {
 									var14 = true;
-								} else if (var13.getItem() instanceof ItemSword && var8.getItem() instanceof ItemSword) {
-									ItemSword var9 = (ItemSword) var13.getItem();
+								} else if (itemStack.getItem() instanceof ItemSword && var8.getItem() instanceof ItemSword) {
+									ItemSword var9 = (ItemSword) itemStack.getItem();
 									ItemSword var10 = (ItemSword) var8.getItem();
 
 									if (var9.func_82803_g() == var10.func_82803_g()) {
-										var14 = var13.getItemDamage() > var8.getItemDamage() || var13.hasTagCompound() && !var8.hasTagCompound();
+										var14 = itemStack.getItemDamage() > var8.getItemDamage() || itemStack.hasTagCompound() && !var8.hasTagCompound();
 									} else {
 										var14 = var9.func_82803_g() > var10.func_82803_g();
 									}
 								} else {
 									var14 = false;
 								}
-							} else if (var13.getItem() instanceof ItemArmor && !(var8.getItem() instanceof ItemArmor)) {
+							} else if (itemStack.getItem() instanceof ItemArmor && !(var8.getItem() instanceof ItemArmor)) {
 								var14 = true;
-							} else if (var13.getItem() instanceof ItemArmor && var8.getItem() instanceof ItemArmor) {
-								ItemArmor var15 = (ItemArmor) var13.getItem();
+							} else if (itemStack.getItem() instanceof ItemArmor && var8.getItem() instanceof ItemArmor) {
+								ItemArmor var15 = (ItemArmor) itemStack.getItem();
 								ItemArmor var16 = (ItemArmor) var8.getItem();
 
 								if (var15.damageReduceAmount == var16.damageReduceAmount) {
-									var14 = var13.getItemDamage() > var8.getItemDamage() || var13.hasTagCompound() && !var8.hasTagCompound();
+									var14 = itemStack.getItemDamage() > var8.getItemDamage() || itemStack.hasTagCompound() && !var8.hasTagCompound();
 								} else {
 									var14 = var15.damageReduceAmount > var16.damageReduceAmount;
 								}
@@ -302,11 +299,11 @@ public abstract class PatchEntityLiving extends EntityLiving {
 								this.entityDropItem(var8, 0.0F);
 							}
 
-							this.setCurrentItemOrArmor(var6, var13);
+							this.setCurrentItemOrArmor(var6, itemStack);
 							this.equipmentDropChances[var6] = 2.0F;
 							this.persistenceRequired = true;
-							this.onItemPickup(var4, 1);
-							var4.setDead();
+							this.onItemPickup(entityItem, 1);
+							entityItem.setDead();
 						}
 					}
 				}

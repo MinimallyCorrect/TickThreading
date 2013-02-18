@@ -88,6 +88,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 	@Override
 	public void run() {
+		System.out.println("This server is patched with @MOD_NAME@ v@MOD_VERSION@ for MC@MC_VERSION@");
 		try {
 			try {
 				InsecurityManager.init();
@@ -95,9 +96,8 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				System.out.println("Failed to set up Security Manager");
 				t.printStackTrace();
 			}
-			System.out.println("calling startServer()");
 			if (this.startServer()) {
-				System.out.println("calling handleServerStarted()");
+				FMLLog.fine("calling handleServerStarted()");
 				FMLCommonHandler.instance().handleServerStarted();
 				FMLCommonHandler.instance().onWorldLoadTick(worldServers);
 				// This block is derived from Spigot code,
@@ -107,7 +107,8 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 					tickNetworkInMainThread = false;
 					new FakeServerThread(new NetworkTickRunnable(this), "Network Tick", false).start();
 				}
-				for (long lastTick = 0L; this.serverRunning; ) {
+				long lastTick = 0L;
+				while (this.serverRunning) {
 					long curTime = System.nanoTime();
 					long wait = TARGET_TICK_TIME - (curTime - lastTick);
 					if (wait > 0 && (currentTPS > TARGET_TPS || !TickThreading.instance.aggressiveTicks)) {
@@ -141,7 +142,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 					} catch (InterruptedException ignored) {
 					}
 				}
-			} catch (Throwable t) {
+			} catch (Throwable ignored) {
 			}
 			FMLLog.log(Level.SEVERE, throwable, "Encountered an unexpected exception" + throwable.getClass().getSimpleName());
 			CrashReport crashReport;
@@ -400,7 +401,8 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	@Declare
 	public void doNetworkTicks() {
 		long lastTime = 1;
-		for (long lastTick = 0L; serverRunning; ) {
+		long lastTick = 0L;
+		while (serverRunning) {
 			long curTime = System.nanoTime();
 			long time = curTime - lastTick;
 			long wait = NETWORK_TICK_TIME - time;

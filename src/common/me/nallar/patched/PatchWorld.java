@@ -70,6 +70,7 @@ public abstract class PatchWorld extends World {
 		return 0;
 	}
 
+	@Override
 	@Declare
 	public int getBlockIdWithoutLoad(int x, int y, int z) {
 		if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000 && y > 0 && y < 256) {
@@ -114,6 +115,7 @@ public abstract class PatchWorld extends World {
 		}
 	}
 
+	@Override
 	@Declare
 	public TileEntity getTEWithoutLoad(int x, int y, int z) {
 		if (y >= 256) {
@@ -286,6 +288,7 @@ public abstract class PatchWorld extends World {
 		return false;
 	}
 
+	@Override
 	@Declare
 	public List getCollidingBoundingBoxes(Entity par1Entity, AxisAlignedBB par2AxisAlignedBB, int limit) {
 		List collidingBoundingBoxes = (List) ThreadLocals.collidingBoundingBoxes.get();
@@ -353,6 +356,7 @@ public abstract class PatchWorld extends World {
 		return getCollidingBoundingBoxes(par1Entity, par2AxisAlignedBB, 2000);
 	}
 
+	@Override
 	public void addTileEntity(Collection tileEntities) {
 		List dest = scanningTileEntities ? addedTileEntityList : loadedTileEntityList;
 		for (TileEntity tileEntity : (Iterable<TileEntity>) tileEntities) {
@@ -363,6 +367,7 @@ public abstract class PatchWorld extends World {
 		}
 	}
 
+	@Override
 	@Declare
 	public List getEntitiesWithinAABBExcludingEntity(Entity par1Entity, AxisAlignedBB par2AxisAlignedBB, int limit) {
 		List entitiesWithinAABBExcludingEntity = (List) ThreadLocals.entitiesWithinAABBExcludingEntity.get();

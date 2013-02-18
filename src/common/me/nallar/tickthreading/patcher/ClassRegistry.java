@@ -229,7 +229,7 @@ public class ClassRegistry {
 				// Skip
 			} else if (replacementFiles.containsKey(entryName)) {
 				replacements.add(entryName);
-			} else if(!onlyClasses || writeAllClasses) {
+			} else if (!onlyClasses || writeAllClasses) {
 				zout.putNextEntry(new ZipEntry(entryName));
 				ByteStreams.copy(zin, zout);
 			}

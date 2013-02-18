@@ -216,6 +216,7 @@ public class TickThreading {
 			serverCommandManager.registerCommand(new TicksCommand());
 			serverCommandManager.registerCommand(new TPSCommand());
 			serverCommandManager.registerCommand(new ProfileCommand());
+			serverCommandManager.registerCommand(new DumpCommand());
 			MinecraftServer.setTargetTPS(targetTPS);
 		} else {
 			Log.severe("TickThreading is disabled, because your server has not been patched" +
