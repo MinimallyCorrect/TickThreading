@@ -7,7 +7,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Map;
@@ -192,24 +191,23 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 	protected byte[] runTransformers(String name, byte[] basicClass) {
 		if (basicClass == null) {
 			if (DEBUG_CLASSLOADING) {
-				FMLLog.warning("Could not find the class " + name + ". This is not necessarily an issue.");
+				FMLLog.log(DEBUG_CLASSLOADING ? Level.WARNING : Level.FINE, "Could not find the class " + name + ". This is not necessarily an issue.");
 			}
-		} else {
-			for (IClassTransformer transformer : transformers) {
-				try {
-					byte[] oldClass = basicClass;
-					basicClass = transformer.transform(name, basicClass);
-					if (basicClass == null) {
-						basicClass = oldClass;
-						FMLLog.severe(transformer.getClass() + " returned a null class during transformation, ignoring.");
-					}
-				} catch (Throwable throwable) {
-					if (throwable.getMessage().contains("for invalid side")) {
-						invalidClasses.add(name);
-						throw (RuntimeException) throwable;
-					} else {
-						FMLLog.log(DEBUG_CLASSLOADING ? Level.WARNING : Level.FINE, throwable, "Failed to transform " + name);
-					}
+		}
+		for (IClassTransformer transformer : transformers) {
+			try {
+				byte[] oldClass = basicClass;
+				basicClass = transformer.transform(name, basicClass);
+				if (basicClass == null) {
+					basicClass = oldClass;
+					FMLLog.severe(transformer.getClass() + " returned a null class during transformation, ignoring.");
+				}
+			} catch (Throwable throwable) {
+				if (throwable.getMessage().contains("for invalid side")) {
+					invalidClasses.add(name);
+					throw (RuntimeException) throwable;
+				} else if (basicClass != null || DEBUG_CLASSLOADING) {
+					FMLLog.log((DEBUG_CLASSLOADING && basicClass != null) ? Level.WARNING : Level.FINE, throwable, "Failed to transform " + name);
 				}
 			}
 		}
