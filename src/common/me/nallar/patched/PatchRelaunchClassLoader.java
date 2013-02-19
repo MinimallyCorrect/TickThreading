@@ -198,7 +198,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 			try {
 				byte[] oldClass = basicClass;
 				basicClass = transformer.transform(name, basicClass);
-				if (basicClass == null) {
+				if (basicClass == null && oldClass != null) {
 					basicClass = oldClass;
 					FMLLog.severe(transformer.getClass() + " returned a null class during transformation, ignoring.");
 				}
