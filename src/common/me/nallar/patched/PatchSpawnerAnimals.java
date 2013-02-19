@@ -32,8 +32,8 @@ import net.minecraftforge.event.Event;
 import net.minecraftforge.event.ForgeEventFactory;
 
 public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
-	private static long hash(int x, int y) {
-		return (((long) x) << 32) | (y & 0xffffffffL);
+	private static long hash(int x, int z) {
+		return (((long) x) << 32) | (z & 0xffffffffL);
 	}
 
 	private static final int closeRange = 1;

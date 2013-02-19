@@ -12,6 +12,10 @@ public abstract class PatchChunkCoordIntPair extends ChunkCoordIntPair {
 		return o instanceof ChunkCoordIntPair && ((ChunkCoordIntPair) o).chunkXPos == this.chunkXPos && ((ChunkCoordIntPair) o).chunkZPos == this.chunkZPos;
 	}
 
+	public static long chunkXZ2Int(int x, int z) {
+		return (((long) z) << 32) | (x & 0xffffffffL);
+	}
+
 	@Override
 	public int hashCode() {
 		return (chunkXPos * 7907) + chunkXPos;
