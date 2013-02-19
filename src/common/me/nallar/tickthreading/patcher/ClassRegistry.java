@@ -32,10 +32,12 @@ import me.nallar.tickthreading.util.CollectionsUtil;
 import me.nallar.tickthreading.util.EnumerableWrapper;
 import me.nallar.tickthreading.util.LocationUtil;
 import me.nallar.unsafe.UnsafeAccess;
+import me.nallar.unsafe.UnsafeUtil;
 import net.minecraft.server.MinecraftServer;
 
 public class ClassRegistry {
 	private static final String hashFileName = "TickThreading.hash";
+	private static final String patchedModsFolderName = "patchedMods";
 	private final Map<String, File> classNameToLocation = new HashMap<String, File>();
 	private final Map<File, Integer> locationToPatchHash = new HashMap<File, Integer>();
 	private final Map<File, Integer> expectedPatchHashes = new HashMap<File, Integer>();
@@ -97,7 +99,7 @@ public class ClassRegistry {
 			return;
 		}
 		if (patchedModsFolder == null) {
-			patchedModsFolder = new File(zipFile.getParentFile().getParentFile(), "patchedMods");
+			patchedModsFolder = new File(zipFile.getParentFile().getParentFile(), patchedModsFolderName);
 		}
 		File file = new File(patchedModsFolder, zipFile.getName());
 		if (!file.exists()) {
@@ -305,7 +307,7 @@ public class ClassRegistry {
 			if (renameFile != null) {
 				tempFile.renameTo(renameFile);
 			}
-			UnsafeAccess.$.throwException(e);
+			UnsafeUtil.throwIgnoreChecked(e);
 		} finally {
 			delete(tempDirectory);
 		}

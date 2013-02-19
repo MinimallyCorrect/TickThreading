@@ -212,4 +212,8 @@ public class UnsafeUtil {
 			c = c.getSuperclass();
 		}
 	}
+
+	public static void throwIgnoreChecked(Throwable t) {
+		$.throwException(t);
+	}
 }

@@ -12,6 +12,7 @@ import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
 import me.nallar.unsafe.UnsafeAccess;
+import me.nallar.unsafe.UnsafeUtil;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.IProgressUpdate;
 import net.minecraft.world.ChunkCoordIntPair;
@@ -216,9 +217,9 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 						} else {
 							try {
 								var5 = this.currentChunkProvider.provideChunk(x, z);
-							} catch (Throwable var9) {
+							} catch (Throwable t) {
 								Log.severe("Failed to generate a chunk in " + Log.name(worldObj) + " at chunk coords " + x + ',' + z);
-								UnsafeAccess.$.throwException(var9);
+								UnsafeUtil.throwIgnoreChecked(t);
 							}
 						}
 					} else {
