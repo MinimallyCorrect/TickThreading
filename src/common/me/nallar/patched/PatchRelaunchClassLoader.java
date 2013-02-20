@@ -63,6 +63,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 						sources.add(toAdd);
 						ucp.addURL(toAdd);
 					}
+					System.out.println("Adding TT jar  " + file + " to classpath");
 					foundTT = true;
 				}
 			}
@@ -105,21 +106,24 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 				ZipFile zipFile = new ZipFile(patchedModFile);
 				try {
 					Enumeration<ZipEntry> zipEntryEnumeration = (Enumeration<ZipEntry>) zipFile.entries();
+					int patchedClasses = 0;
 					while (zipEntryEnumeration.hasMoreElements()) {
 						ZipEntry zipEntry = zipEntryEnumeration.nextElement();
 						String name = zipEntry.getName();
 						if (!name.toLowerCase().endsWith(".class") || replacedClasses.containsKey(name)) {
 							continue;
 						}
+						patchedClasses++;
 						byte[] contents = readFully(zipFile.getInputStream(zipEntry));
 						replacedClasses.put(name, contents);
 					}
+					System.out.println("Loaded " + patchedClasses + " patched classes for " + patchedModFile.getName());
 				} finally {
 					zipFile.close();
 				}
 			}
 		} catch (Exception e) {
-			System.out.println("Failed to load patched classes for " + patchedModFile.getName());
+			System.err.println("Failed to load patched classes for " + patchedModFile.getName());
 			e.printStackTrace();
 		}
 	}
