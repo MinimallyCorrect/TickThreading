@@ -16,16 +16,14 @@ public abstract class PatchDimensionManager extends DimensionManager {
 	public static void unloadWorlds(Hashtable<Integer, long[]> worldTickTimes) {
 		for (int id : unloadQueue) {
 			WorldServer w = worlds.get(id);
-			try {
-				if (w != null) {
+			if (w == null) {
+				FMLLog.warning("Unexpected world unload - world %d is already unloaded", id);
+			} else {
+				try {
 					w.saveAllChunks(true, null);
-				} else {
-					FMLLog.warning("Unexpected world unload - world %d is already unloaded", id);
-				}
-			} catch (Exception e) {
-				FMLLog.log(Level.SEVERE, e, "Exception saving chunks when unloading world " + w);
-			} finally {
-				if (w != null) {
+				} catch (Exception e) {
+					FMLLog.log(Level.SEVERE, e, "Exception saving chunks when unloading world " + w);
+				} finally {
 					try {
 						MinecraftForge.EVENT_BUS.post(new WorldEvent.Unload(w));
 					} catch (Throwable t) {
@@ -38,7 +36,7 @@ public abstract class PatchDimensionManager extends DimensionManager {
 					}
 				}
 			}
+			unloadQueue.clear();
 		}
-		unloadQueue.clear();
 	}
 }

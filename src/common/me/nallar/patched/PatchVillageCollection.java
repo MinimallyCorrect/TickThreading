@@ -11,23 +11,23 @@ public abstract class PatchVillageCollection extends VillageCollection {
 
 	@Override
 	protected void addUnassignedWoodenDoorsAroundToNewDoorsList(ChunkCoordinates par1ChunkCoordinates) {
-		byte var2 = 16;
-		byte var3 = 4;
-		byte var4 = 16;
+		byte xRange = 16;
+		byte yRange = 4;
+		byte zRange = 16;
 
-		if (!worldObj.checkChunksExist(par1ChunkCoordinates.posX - var2,
-				par1ChunkCoordinates.posY - var3,
-				par1ChunkCoordinates.posZ - var4,
-				par1ChunkCoordinates.posX + var2,
-				par1ChunkCoordinates.posY + var3,
-				par1ChunkCoordinates.posZ + var4)) {
+		if (!worldObj.checkChunksExist(par1ChunkCoordinates.posX - xRange,
+				par1ChunkCoordinates.posY - yRange,
+				par1ChunkCoordinates.posZ - zRange,
+				par1ChunkCoordinates.posX + xRange,
+				par1ChunkCoordinates.posY + yRange,
+				par1ChunkCoordinates.posZ + zRange)) {
 			villagerPositionsList.add(par1ChunkCoordinates);
 			return;
 		}
 
-		for (int var5 = par1ChunkCoordinates.posX - var2; var5 < par1ChunkCoordinates.posX + var2; ++var5) {
-			for (int var6 = par1ChunkCoordinates.posY - var3; var6 < par1ChunkCoordinates.posY + var3; ++var6) {
-				for (int var7 = par1ChunkCoordinates.posZ - var4; var7 < par1ChunkCoordinates.posZ + var4; ++var7) {
+		for (int var5 = par1ChunkCoordinates.posX - xRange; var5 < par1ChunkCoordinates.posX + xRange; ++var5) {
+			for (int var6 = par1ChunkCoordinates.posY - yRange; var6 < par1ChunkCoordinates.posY + yRange; ++var6) {
+				for (int var7 = par1ChunkCoordinates.posZ - zRange; var7 < par1ChunkCoordinates.posZ + zRange; ++var7) {
 					if (this.isWoodenDoorAt(var5, var6, var7)) {
 						VillageDoorInfo var8 = this.getVillageDoorAt(var5, var6, var7);
 

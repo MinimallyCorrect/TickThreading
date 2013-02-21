@@ -128,15 +128,15 @@ public abstract class PatchWorld extends World {
 
 	@Override
 	public void updateEntityWithOptionalForce(Entity par1Entity, boolean par2) {
-		int var3 = MathHelper.floor_double(par1Entity.posX);
-		int var4 = MathHelper.floor_double(par1Entity.posZ);
+		int x = MathHelper.floor_double(par1Entity.posX);
+		int z = MathHelper.floor_double(par1Entity.posZ);
 
 		Boolean isForced = par1Entity.isForced;
 		if (isForced == null || forcedUpdateCount++ % 7 == 0) {
-			par1Entity.isForced = isForced = getPersistentChunks().containsKey(new ChunkCoordIntPair(var3 >> 4, var4 >> 4));
+			par1Entity.isForced = isForced = getPersistentChunks().containsKey(new ChunkCoordIntPair(x >> 4, z >> 4));
 		}
-		byte var5 = isForced ? (byte) 0 : 32;
-		boolean canUpdate = !par2 || this.checkChunksExist(var3 - var5, 0, var4 - var5, var3 + var5, 0, var4 + var5);
+		byte range = isForced ? (byte) 0 : 32;
+		boolean canUpdate = !par2 || this.checkChunksExist(x - range, 0, z - range, x + range, 0, z + range);
 		if (canUpdate) {
 			par1Entity.lastTickPosX = par1Entity.posX;
 			par1Entity.lastTickPosY = par1Entity.posY;
@@ -227,31 +227,31 @@ public abstract class PatchWorld extends World {
 	public boolean hasCollidingBoundingBoxes(Entity par1Entity, AxisAlignedBB par2AxisAlignedBB) {
 		List collidingBoundingBoxes = (List) ThreadLocals.collidingBoundingBoxes.get();
 		collidingBoundingBoxes.clear();
-		int var3 = MathHelper.floor_double(par2AxisAlignedBB.minX);
-		int var4 = MathHelper.floor_double(par2AxisAlignedBB.maxX + 1.0D);
-		int var5 = MathHelper.floor_double(par2AxisAlignedBB.minY);
-		int var6 = MathHelper.floor_double(par2AxisAlignedBB.maxY + 1.0D);
-		int var7 = MathHelper.floor_double(par2AxisAlignedBB.minZ);
-		int var8 = MathHelper.floor_double(par2AxisAlignedBB.maxZ + 1.0D);
+		int minX = MathHelper.floor_double(par2AxisAlignedBB.minX);
+		int maxX = MathHelper.floor_double(par2AxisAlignedBB.maxX + 1.0D);
+		int minY = MathHelper.floor_double(par2AxisAlignedBB.minY);
+		int maxY = MathHelper.floor_double(par2AxisAlignedBB.maxY + 1.0D);
+		int minZ = MathHelper.floor_double(par2AxisAlignedBB.minZ);
+		int maxZ = MathHelper.floor_double(par2AxisAlignedBB.maxZ + 1.0D);
 
-		int ystart = ((var5 - 1) < 0) ? 0 : (var5 - 1);
-		for (int chunkx = (var3 >> 4); chunkx <= ((var4 - 1) >> 4); chunkx++) {
+		int ystart = ((minY - 1) < 0) ? 0 : (minY - 1);
+		for (int chunkx = (minX >> 4); chunkx <= ((maxX - 1) >> 4); chunkx++) {
 			int cx = chunkx << 4;
-			for (int chunkz = (var7 >> 4); chunkz <= ((var8 - 1) >> 4); chunkz++) {
+			for (int chunkz = (minZ >> 4); chunkz <= ((maxZ - 1) >> 4); chunkz++) {
 				if (!this.chunkExists(chunkx, chunkz)) {
 					continue;
 				}
 				int cz = chunkz << 4;
 				Chunk chunk = this.getChunkFromChunkCoords(chunkx, chunkz);
 				// Compute ranges within chunk
-				int xstart = (var3 < cx) ? cx : var3;
-				int xend = (var4 < (cx + 16)) ? var4 : (cx + 16);
-				int zstart = (var7 < cz) ? cz : var7;
-				int zend = (var8 < (cz + 16)) ? var8 : (cz + 16);
+				int xstart = (minX < cx) ? cx : minX;
+				int xend = (maxX < (cx + 16)) ? maxX : (cx + 16);
+				int zstart = (minZ < cz) ? cz : minZ;
+				int zend = (maxZ < (cz + 16)) ? maxZ : (cz + 16);
 				// Loop through blocks within chunk
 				for (int x = xstart; x < xend; x++) {
 					for (int z = zstart; z < zend; z++) {
-						for (int y = ystart; y < var6; y++) {
+						for (int y = ystart; y < maxY; y++) {
 							int blkid = chunk.getBlockID(x - cx, y, z - cz);
 							if (blkid > 0) {
 								Block block = Block.blocksList[blkid];
@@ -372,15 +372,15 @@ public abstract class PatchWorld extends World {
 	public List getEntitiesWithinAABBExcludingEntity(Entity par1Entity, AxisAlignedBB par2AxisAlignedBB, int limit) {
 		List entitiesWithinAABBExcludingEntity = (List) ThreadLocals.entitiesWithinAABBExcludingEntity.get();
 		entitiesWithinAABBExcludingEntity.clear();
-		int var3 = MathHelper.floor_double((par2AxisAlignedBB.minX - MAX_ENTITY_RADIUS) / 16.0D);
-		int var4 = MathHelper.floor_double((par2AxisAlignedBB.maxX + MAX_ENTITY_RADIUS) / 16.0D);
-		int var5 = MathHelper.floor_double((par2AxisAlignedBB.minZ - MAX_ENTITY_RADIUS) / 16.0D);
-		int var6 = MathHelper.floor_double((par2AxisAlignedBB.maxZ + MAX_ENTITY_RADIUS) / 16.0D);
+		int minX = MathHelper.floor_double((par2AxisAlignedBB.minX - MAX_ENTITY_RADIUS) / 16.0D);
+		int maxX = MathHelper.floor_double((par2AxisAlignedBB.maxX + MAX_ENTITY_RADIUS) / 16.0D);
+		int minZ = MathHelper.floor_double((par2AxisAlignedBB.minZ - MAX_ENTITY_RADIUS) / 16.0D);
+		int maxZ = MathHelper.floor_double((par2AxisAlignedBB.maxZ + MAX_ENTITY_RADIUS) / 16.0D);
 
-		for (int var7 = var3; var7 <= var4; ++var7) {
-			for (int var8 = var5; var8 <= var6; ++var8) {
-				if (this.chunkExists(var7, var8)) {
-					this.getChunkFromChunkCoords(var7, var8).getEntitiesWithinAABBForEntity(par1Entity, par2AxisAlignedBB, entitiesWithinAABBExcludingEntity, limit);
+		for (int x = minX; x <= maxX; ++x) {
+			for (int z = minZ; z <= maxZ; ++z) {
+				if (this.chunkExists(x, z)) {
+					this.getChunkFromChunkCoords(x, z).getEntitiesWithinAABBForEntity(par1Entity, par2AxisAlignedBB, entitiesWithinAABBExcludingEntity, limit);
 				}
 			}
 		}
