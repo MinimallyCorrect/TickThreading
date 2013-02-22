@@ -116,11 +116,9 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 				int z = var9.chunkZPos;
 				var7.remove();
 
-				var6.add(entityPlayerMP.worldObj.getChunkFromChunkCoords(x, z));
-				//BugFix: 16 makes it load an extra chunk, which isn't associated with a player, which makes it not unload unless a player walks near it.
-				//ToDo: Find a way to efficiently clean abandoned chunks.
-				//var8.addAll(((WorldServer) entityPlayerMP.worldObj).getAllTileEntityInBox(var9.chunkXPos * 16, 0, var9.chunkZPos * 16, var9.chunkXPos * 16 + 16, 256, var9.chunkZPos * 16 + 16));
-				var8.addAll(((WorldServer) entityPlayerMP.worldObj).getAllTileEntityInBox(x * 16, 0, z * 16, x * 16 + 15, 256, z * 16 + 15));
+				Chunk chunk = entityPlayerMP.worldObj.getChunkFromChunkCoords(x, z);
+				var6.add(chunk);
+				var8.addAll(chunk.chunkTileEntityMap.values());
 			}
 
 			if (!var6.isEmpty()) {
