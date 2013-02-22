@@ -19,6 +19,7 @@ import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityTracker;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
@@ -56,6 +57,34 @@ public abstract class PatchWorld extends World {
 
 	public PatchWorld(ISaveHandler par1ISaveHandler, String par2Str, WorldProvider par3WorldProvider, WorldSettings par4WorldSettings, Profiler par5Profiler) {
 		super(par1ISaveHandler, par2Str, par3WorldProvider, par4WorldSettings, par5Profiler);
+	}
+
+	@Override
+	public void removeEntity(Entity entity) {
+		if (entity == null) {
+			return;
+		}
+
+		try {
+			if (entity.riddenByEntity != null) {
+				entity.riddenByEntity.mountEntity((Entity) null);
+			}
+
+			if (entity.ridingEntity != null) {
+				entity.mountEntity((Entity) null);
+			}
+
+			entity.setDead();
+
+			// The next instanceof, somehow, seems to throw NPEs. I don't even. :(
+			// http://pastebin.com/zqDPsUjz
+			if (entity instanceof EntityPlayer) {
+				this.playerEntities.remove(entity);
+				this.updateAllPlayersSleepingFlag();
+			}
+		} catch (Exception e) {
+			Log.severe("Exception removing a player entity", e);
+		}
 	}
 
 	@Override
