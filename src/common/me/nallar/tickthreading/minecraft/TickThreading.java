@@ -8,11 +8,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.network.NetworkMod;
+import cpw.mods.fml.relauncher.RelaunchClassLoader;
 import javassist.is.faulty.Timings;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.commands.DumpCommand;
@@ -218,6 +220,8 @@ public class TickThreading {
 			serverCommandManager.registerCommand(new ProfileCommand());
 			serverCommandManager.registerCommand(new DumpCommand());
 			MinecraftServer.setTargetTPS(targetTPS);
+			FMLLog.info("Loaded " + RelaunchClassLoader.patchedClasses + " patched classes" +
+					"\nUsed " + RelaunchClassLoader.usedPatchedClasses + '.');
 		} else {
 			Log.severe("TickThreading is disabled, because your server has not been patched" +
 					" or the patches are out of date" +

@@ -19,9 +19,14 @@ import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.relauncher.IClassTransformer;
 import cpw.mods.fml.relauncher.RelaunchClassLoader;
 import me.nallar.tickthreading.Log;
+import me.nallar.tickthreading.patcher.Declare;
 import sun.misc.URLClassPath;
 
 public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
+	@Declare
+	public static int patchedClasses_;
+	@Declare
+	public static int usedPatchedClasses_;
 	private static volatile Map<String, byte[]> replacedClasses;
 	private File minecraftdir;
 	private File patchedModsFolder;
@@ -117,6 +122,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 						byte[] contents = readFully(zipFile.getInputStream(zipEntry));
 						replacedClasses.put(name, contents);
 					}
+					RelaunchClassLoader.patchedClasses += patchedClasses;
 					System.out.println("Loaded " + patchedClasses + " patched classes for " + patchedModFile.getName());
 				} finally {
 					zipFile.close();
@@ -143,7 +149,14 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 					}
 				}
 			}
-			return replacedClasses == null ? null : replacedClasses.get(file);
+			if (replacedClasses == null) {
+				return null;
+			}
+			byte[] data = replacedClasses.get(file);
+			if (data != null) {
+				usedPatchedClasses++;
+			}
+			return data;
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}

@@ -10,6 +10,7 @@ import java.util.logging.Level;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.FMLLog;
+import cpw.mods.fml.relauncher.RelaunchClassLoader;
 import cpw.mods.fml.relauncher.Side;
 import me.nallar.insecurity.InsecurityManager;
 import me.nallar.tickthreading.Log;
@@ -89,6 +90,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	@Override
 	public void run() {
 		FMLLog.info("This server is patched with @MOD_NAME@ v@MOD_VERSION@ for MC@MC_VERSION@");
+		FMLLog.info("Loaded " + RelaunchClassLoader.patchedClasses + " patched classes.");
 		try {
 			try {
 				InsecurityManager.init();
