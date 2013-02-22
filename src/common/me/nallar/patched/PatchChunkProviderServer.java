@@ -11,7 +11,6 @@ import cpw.mods.fml.common.FMLLog;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
-import me.nallar.unsafe.UnsafeAccess;
 import me.nallar.unsafe.UnsafeUtil;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.IProgressUpdate;

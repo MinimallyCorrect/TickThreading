@@ -2,9 +2,9 @@ package me.nallar.patched;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
+import java.util.logging.Level;
 
 import cpw.mods.fml.common.FMLLog;
 import me.nallar.tickthreading.patcher.Declare;
@@ -150,7 +150,7 @@ public abstract class PatchChunk extends Chunk {
 		int var3 = MathHelper.floor_double(par1Entity.posZ / 16.0D);
 
 		if (var2 != this.xPosition || var3 != this.zPosition) {
-			FMLLog.warning("Entity %s added to the wrong chunk - expected x%d z%d, got x%d z%d", par1Entity.toString(), this.xPosition, this.zPosition, var2, var3);
+			FMLLog.log(Level.WARNING, new Throwable(), "Entity %s added to the wrong chunk - expected x%d z%d, got x%d z%d", par1Entity.toString(), this.xPosition, this.zPosition, var2, var3);
 			return;
 		}
 

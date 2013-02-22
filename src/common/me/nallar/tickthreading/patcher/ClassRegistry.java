@@ -31,7 +31,6 @@ import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.util.CollectionsUtil;
 import me.nallar.tickthreading.util.EnumerableWrapper;
 import me.nallar.tickthreading.util.LocationUtil;
-import me.nallar.unsafe.UnsafeAccess;
 import me.nallar.unsafe.UnsafeUtil;
 import net.minecraft.server.MinecraftServer;
 
