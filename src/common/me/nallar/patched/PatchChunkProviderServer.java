@@ -43,16 +43,16 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 	}
 
 	@Override
-	public void unloadChunksIfNotNearSpawn(int par1, int par2) {
-		long hash = ChunkCoordIntPair.chunkXZ2Int(par1, par2);
+	public void unloadChunksIfNotNearSpawn(int x, int z) {
+		long hash = ChunkCoordIntPair.chunkXZ2Int(x, z);
 		if (loadedChunkHashMap.getValueByKey(hash) == null) {
 		} else if (TickThreading.instance.shouldLoadSpawn && this.worldObj.provider.canRespawnHere() && DimensionManager.shouldLoadSpawn(worldObj.provider.dimensionId)) {
 			ChunkCoordinates var3 = this.worldObj.getSpawnPoint();
-			int var4 = par1 * 16 + 8 - var3.posX;
-			int var5 = par2 * 16 + 8 - var3.posZ;
-			short var6 = 128;
+			int bX = x * 16 + 8 - var3.posX;
+			int bY = z * 16 + 8 - var3.posZ;
+			short range = 128;
 
-			if (var4 < -var6 || var4 > var6 || var5 < -var6 || var5 > var6) {
+			if (bX < -range || bX > range || bY < -range || bY > range) {
 				synchronized (chunksToUnload) {
 					this.chunksToUnload.add(hash);
 				}

@@ -95,7 +95,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			try {
 				InsecurityManager.init();
 			} catch (Throwable t) {
-				FMLLog.log(Level.SEVERE, t, "Failed to set up Security Manager");
+				FMLLog.log(Level.SEVERE, t, "Failed to set up Security Manager. This is probably not a huge issue - but it could indicate classloading issues.");
 			}
 			if (this.startServer()) {
 				FMLLog.fine("calling handleServerStarted()");

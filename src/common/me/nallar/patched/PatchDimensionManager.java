@@ -14,29 +14,31 @@ import net.minecraftforge.event.world.WorldEvent;
 
 public abstract class PatchDimensionManager extends DimensionManager {
 	public static void unloadWorlds(Hashtable<Integer, long[]> worldTickTimes) {
-		for (int id : unloadQueue) {
-			WorldServer w = worlds.get(id);
-			if (w == null) {
-				FMLLog.warning("Unexpected world unload - world %d is already unloaded", id);
-			} else {
-				try {
-					w.saveAllChunks(true, null);
-				} catch (Exception e) {
-					FMLLog.log(Level.SEVERE, e, "Exception saving chunks when unloading world " + w);
-				} finally {
+		synchronized (unloadQueue) {
+			for (int id : unloadQueue) {
+				WorldServer w = worlds.get(id);
+				if (w == null) {
+					FMLLog.warning("Unexpected world unload - world %d is already unloaded", id);
+				} else {
 					try {
-						MinecraftForge.EVENT_BUS.post(new WorldEvent.Unload(w));
-					} catch (Throwable t) {
-						Log.severe("A mod failed to handle a world unload", t);
-					}
-					w.flush();
-					setWorld(id, null);
-					if (TickThreading.instance.cleanWorlds) {
-						UnsafeUtil.clean(w);
+						w.saveAllChunks(true, null);
+					} catch (Exception e) {
+						FMLLog.log(Level.SEVERE, e, "Exception saving chunks when unloading world " + w);
+					} finally {
+						try {
+							MinecraftForge.EVENT_BUS.post(new WorldEvent.Unload(w));
+						} catch (Throwable t) {
+							Log.severe("A mod failed to handle a world unload", t);
+						}
+						w.flush();
+						setWorld(id, null);
+						if (TickThreading.instance.cleanWorlds) {
+							UnsafeUtil.clean(w);
+						}
 					}
 				}
+				unloadQueue.clear();
 			}
-			unloadQueue.clear();
 		}
 	}
 }

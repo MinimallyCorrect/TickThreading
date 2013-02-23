@@ -218,6 +218,7 @@
 		</class>
 		<class id="net.minecraftforge.common.DimensionManager">
 			<addAll fromClass="me.nallar.patched.PatchDimensionManager"/>
+			<synchronize field="unloadQueue">unloadWorld</synchronize>
 		</class>
 		<class id="net.minecraftforge.common.ForgeChunkManager">
 			<addAll fromClass="me.nallar.patched.PatchForgeChunkManager"/>
