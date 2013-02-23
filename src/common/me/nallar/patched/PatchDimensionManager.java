@@ -37,8 +37,8 @@ public abstract class PatchDimensionManager extends DimensionManager {
 						}
 					}
 				}
-				unloadQueue.clear();
 			}
+			unloadQueue.clear();
 		}
 	}
 }
