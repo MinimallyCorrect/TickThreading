@@ -225,6 +225,9 @@
 		</class>
 	</forge>
 	<forgeModLoader>
+		<class id="cpw.mods.fml.common.event.FMLInterModComms$IMCMessage">
+			<addAll fromClass="me.nallar.patched.PatchIMCMessage"/>
+		</class>
 		<class id="cpw.mods.fml.common.Loader">
 			<addAll fromClass="me.nallar.patched.PatchLoader"/>
 		</class>

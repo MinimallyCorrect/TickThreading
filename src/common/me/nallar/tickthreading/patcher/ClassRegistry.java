@@ -253,7 +253,7 @@ public class ClassRegistry {
 		String patchHash = hasPatchHash ? String.valueOf(expectedPatchHashes.get(zipFile)) : "-1";
 		zout.write(patchHash.getBytes("UTF-8"));
 		if (hasPatchHash) {
-			Log.info("Patched " + replacements.size() + " classes in " + zipFile.getName() + ", patchHash: " + patchHash);
+			Log.info("Patched " + replacements.size() + " classes in " + zipFile + ", patchHash: " + patchHash);
 		}
 		if (!additionalClasses.isEmpty()) {
 			Log.info("Added " + additionalClasses.size() + " classes required by patches.");
@@ -294,7 +294,6 @@ public class ClassRegistry {
 					renameFile = null;
 				} else {
 					zin = new ZipInputStream(new FileInputStream(zipFile));
-					Log.info(patchedModsFolder.toString());
 					patchedModsFolder.mkdir();
 					zout = new ZipOutputStream(new FileOutputStream(new File(patchedModsFolder, zipFile.getName())));
 					patchedClasses += writeChanges(zipFile, zin, zout, true);
