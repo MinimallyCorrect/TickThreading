@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -31,6 +32,22 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 	private File minecraftdir;
 	private File patchedModsFolder;
 	private URLClassPath ucp;
+	private static Method checkClassLoaded;
+
+	private static void log(Level level, Throwable t, String message) {
+		try {
+			if (checkClassLoaded == null || checkClassLoaded.invoke(ClassLoader.getSystemClassLoader(), "cpw.mods.fml.common.FMLLog") == null) {
+				System.out.println("[" + level + ']' + message);
+				if (t != null) {
+					t.printStackTrace();
+				}
+			} else {
+				FMLLog.log(level, t, message);
+			}
+		} catch (Throwable t_) {
+			t_.printStackTrace();
+		}
+	}
 
 	public PatchRelaunchClassLoader(URL[] sources) {
 		super(sources);
@@ -47,6 +64,14 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 		} catch (Exception e) {
 			Log.severe("", e);
 			return new File(path);
+		}
+	}
+
+	public void staticConstruct() {
+		try {
+			checkClassLoaded = ClassLoader.class.getDeclaredMethod("findLoadedClass", new Class[]{String.class});
+			checkClassLoaded.setAccessible(true);
+		} catch (NoSuchMethodException e) {
 		}
 	}
 
@@ -68,15 +93,15 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 						sources.add(toAdd);
 						ucp.addURL(toAdd);
 					}
-					System.out.println("Adding TT jar  " + file + " to classpath");
+					log(Level.INFO, null, "Adding TT jar  " + file + " to classpath");
 					foundTT = true;
 				}
 			}
 			if (!foundTT) {
-				System.err.println("Failed to find TT jar in mods folder - make sure it has 'tickthreading' in its name!");
+				log(Level.SEVERE, null, "Failed to find TT jar in mods folder - make sure it has 'tickthreading' in its name!");
 			}
 		} catch (Throwable t) {
-			t.printStackTrace();
+			log(Level.SEVERE, t, "Failed to initialise RelaunchClassLoader");
 		}
 	}
 
@@ -84,7 +109,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 	public void addURL(URL url) {
 		boolean duplicate = sources.contains(url);
 		if (duplicate) {
-			FMLLog.warning("Added " + url.toString().replace("%", "%%") + " to classpath twice");
+			log(Level.WARNING, null, "Added " + url.toString().replace("%", "%%") + " to classpath twice");
 		}
 		ucp.addURL(url);
 		sources.add(url);
@@ -126,14 +151,13 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 						replacedClasses.put(name, contents);
 					}
 					RelaunchClassLoader.patchedClasses += patchedClasses;
-					System.out.println("Loaded " + patchedClasses + " patched classes for " + patchedModFile.getName());
+					log(Level.INFO, null, "Loaded " + patchedClasses + " patched classes for " + patchedModFile.getName());
 				} finally {
 					zipFile.close();
 				}
 			}
 		} catch (Exception e) {
-			System.err.println("Failed to load patched classes for " + patchedModFile.getName());
-			e.printStackTrace();
+			log(Level.SEVERE, e, "Failed to load patched classes for " + patchedModFile.getName());
 		}
 	}
 
@@ -161,7 +185,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 			}
 			return data;
 		} catch (Throwable t) {
-			t.printStackTrace();
+			log(Level.SEVERE, t, "Exception getting patched class for " + file);
 		}
 		return null;
 	}
