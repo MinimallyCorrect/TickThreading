@@ -96,6 +96,7 @@ public class PatchMain {
 				patchManager.patchEnvironment = "mcpc";
 			} catch (NotFoundException ignored) {
 			}
+			Log.info("Patching with " + VersionUtil.versionString());
 			Log.info("Patching in environment: " + patchManager.patchEnvironment);
 			patchManager.runPatches();
 		} catch (IOException e) {
