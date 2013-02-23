@@ -359,7 +359,8 @@ public class ClassRegistry {
 					continue;
 				}
 				if (!backupFile.exists()) {
-					Log.severe("Can't patch - no backup for " + fileIntegerEntry.getKey().getName() + " exists, and a patched copy is already in the mods directory.");
+					Log.severe("Can't patch - no backup for " + fileIntegerEntry.getKey().getName() + " exists, and a patched copy is already in the mods directory." +
+							"\nYou will need to replace this file with a new unpatched copy.");
 					throw new Error("Missing backup for patched file");
 				}
 				fileIntegerEntry.getKey().delete();
