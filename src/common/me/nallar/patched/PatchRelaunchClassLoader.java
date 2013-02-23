@@ -82,16 +82,19 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 
 	@Override
 	public void addURL(URL url) {
-		if (sources.contains(url)) {
+		boolean duplicate = sources.contains(url);
+		if (duplicate) {
 			FMLLog.warning("Added " + url.toString().replace("%", "%%") + " to classpath twice");
 		}
 		ucp.addURL(url);
 		sources.add(url);
-		if (replacedClasses == null) {
-			getReplacementClassBytes("");
-		}
-		synchronized (RelaunchClassLoader.class) {
-			loadPatchedClasses(url, replacedClasses);
+		if (!duplicate) {
+			if (replacedClasses == null) {
+				getReplacementClassBytes("");
+			}
+			synchronized (RelaunchClassLoader.class) {
+				loadPatchedClasses(url, replacedClasses);
+			}
 		}
 	}
 
