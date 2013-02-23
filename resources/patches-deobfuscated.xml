@@ -9,11 +9,6 @@
 			<newInitializer field="pathPoints" class="net.minecraft.pathfinding.PathPoint" arraySize="128"/>
 		</class>
 		<class id="net.minecraft.server.MinecraftServer">
-			<addClass class="net.minecraft.network.packet.IPacketHandler"/>
-			<addClass class="me.nallar.tickthreading.Log"/>
-			<addClass class="me.nallar.tickthreading.Log$1"/>
-			<addClass class="me.nallar.tickthreading.Log$2"/>
-			<addClass class="me.nallar.tickthreading.LogFormatter"/>
 			<addAll fromClass="me.nallar.patched.PatchMinecraftServer"/>
 			<public field="mcServer"/>
 		</class>
@@ -279,7 +274,6 @@
 		</class>
 		<class id="buildcraft.transport.PipeTransportItems">
 			<!-- TODO: Find a more suitable way of making this concurrent without making performRemoval slow -->
-			<addClass class="org.cliffc.high_scale_lib.NonBlockingHashMap"/>
 			<newInitializer field="travelingEntities" class="org.cliffc.high_scale_lib.NonBlockingHashMap"/>
 		</class>
 		<class id="buildcraft.transport.PipeTransportPower">

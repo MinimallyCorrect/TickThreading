@@ -408,9 +408,6 @@ public class Patches {
 			}
 			runConstructors.insertAfter(initialise);
 		}
-		if (clazz != null) {
-			classRegistry.add(ctClass, clazz);
-		}
 	}
 
 	@Patch (
@@ -433,9 +430,6 @@ public class Patches {
 		ctClass.addField(newField);
 		for (CtConstructor ctConstructor : ctClass.getConstructors()) {
 			ctConstructor.insertAfter(initialise);
-		}
-		if (clazz != null) {
-			classRegistry.add(ctClass, clazz);
 		}
 	}
 
@@ -462,7 +456,6 @@ public class Patches {
 		}
 		CtField.Initializer initializer = CtField.Initializer.byExpr(initialise);
 		ctClass.addField(ctField, initializer);
-		classRegistry.add(ctClass, clazz);
 	}
 
 	@Patch (
@@ -643,13 +636,6 @@ public class Patches {
 		}
 		Log.info("Ignoring " + exceptionType + " in " + ctMethod + ", returning with " + returnCode);
 		ctMethod.addCatch("{ " + returnCode + '}', classRegistry.getClass(exceptionType));
-	}
-
-	@Patch (
-			requiredAttributes = "class"
-	)
-	public void addClass(CtClass ctClass, Map<String, String> attributes) throws IOException, CannotCompileException, NotFoundException {
-		classRegistry.add(ctClass, attributes.get("class"));
 	}
 
 	@Patch

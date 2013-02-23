@@ -1,16 +1,20 @@
 package me.nallar.patched;
 
 import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.zip.ZipEntry;
@@ -32,20 +36,21 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 	private File minecraftdir;
 	private File patchedModsFolder;
 	private URLClassPath ucp;
-	private static Method checkClassLoaded;
+	private static PrintStream err;
+	private Set<String> patchedURLs;
 
-	private static void log(Level level, Throwable t, String message) {
+	private void log(Level level, Throwable t, String message) {
 		try {
-			if (checkClassLoaded == null || checkClassLoaded.invoke(ClassLoader.getSystemClassLoader(), "cpw.mods.fml.common.FMLLog") == null) {
-				System.out.println("[" + level + ']' + message);
+			if (findLoadedClass("cpw.mods.fml.common.FMLLog") == null) {
+				err.println("[" + level + "] " + message);
 				if (t != null) {
-					t.printStackTrace();
+					t.printStackTrace(err);
 				}
 			} else {
 				FMLLog.log(level, t, message);
 			}
 		} catch (Throwable t_) {
-			t_.printStackTrace();
+			t_.printStackTrace(err);
 		}
 	}
 
@@ -67,16 +72,13 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 		}
 	}
 
-	public void staticConstruct() {
-		try {
-			checkClassLoaded = ClassLoader.class.getDeclaredMethod("findLoadedClass", new Class[]{String.class});
-			checkClassLoaded.setAccessible(true);
-		} catch (NoSuchMethodException e) {
-		}
+	public static void staticConstruct() {
+		err = new PrintStream(new FileOutputStream(FileDescriptor.err));
 	}
 
 	public void construct() {
 		try {
+			patchedURLs = new HashSet<String>();
 			Field field = URLClassLoader.class.getDeclaredField("ucp");
 			field.setAccessible(true);
 			Field modifiersField = Field.class.getDeclaredField("modifiers");
@@ -93,7 +95,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 						sources.add(toAdd);
 						ucp.addURL(toAdd);
 					}
-					log(Level.INFO, null, "Adding TT jar  " + file + " to classpath");
+					log(Level.INFO, null, "Added tickthreading jar " + file + " to classpath");
 					foundTT = true;
 				}
 			}
@@ -107,19 +109,17 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 
 	@Override
 	public void addURL(URL url) {
-		boolean duplicate = sources.contains(url);
-		if (duplicate) {
-			log(Level.WARNING, null, "Added " + url.toString().replace("%", "%%") + " to classpath twice");
+		if (sources.contains(url)) {
+			log(Level.WARNING, null, "Attempted to add " + url.toString().replace("%", "%%") + " to classpath twice");
+			return;
 		}
 		ucp.addURL(url);
 		sources.add(url);
-		if (!duplicate) {
-			if (replacedClasses == null) {
-				getReplacementClassBytes("");
-			}
-			synchronized (RelaunchClassLoader.class) {
-				loadPatchedClasses(url, replacedClasses);
-			}
+		if (replacedClasses == null) {
+			getReplacementClassBytes("");
+		}
+		synchronized (RelaunchClassLoader.class) {
+			loadPatchedClasses(url, replacedClasses);
 		}
 	}
 
@@ -131,6 +131,9 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 		File patchedModFile;
 		try {
 			patchedModFile = new File(patchedModsFolder, url.substring(url.lastIndexOf('/') + 1, url.length()));
+			if (!patchedURLs.add(patchedModFile.getAbsolutePath().toString())) {
+				return;
+			}
 		} catch (Exception e) {
 			return;
 		}
@@ -171,6 +174,11 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 						replacedClasses = new ConcurrentHashMap<String, byte[]>();
 						for (URL url_ : sources) {
 							loadPatchedClasses(url_, replacedClasses);
+						}
+						if (patchedModsFolder.isDirectory()) {
+							for (File file_ : patchedModsFolder.listFiles()) {
+								loadPatchedClasses(file_.toURI().toURL(), replacedClasses);
+							}
 						}
 						PatchRelaunchClassLoader.replacedClasses = replacedClasses;
 					}

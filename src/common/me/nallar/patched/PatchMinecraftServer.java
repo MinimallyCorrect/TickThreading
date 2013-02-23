@@ -90,12 +90,12 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	@Override
 	public void run() {
 		FMLLog.info("This server is patched with @MOD_NAME@ v@MOD_VERSION@ for MC@MC_VERSION@");
-		FMLLog.info("Loaded " + RelaunchClassLoader.patchedClasses + " patched classes.");
+		FMLLog.info("Loaded " + RelaunchClassLoader.patchedClasses + " patched classes, cl: " + this.getClass().getClassLoader());
 		try {
 			try {
 				InsecurityManager.init();
 			} catch (Throwable t) {
-				FMLLog.log(Level.SEVERE, t, "Failed to set up Security Manager. This is probably not a huge issue - but it could indicate classloading issues.");
+				FMLLog.log(Level.SEVERE, t, "Failed to set up Security Manager. This is probably not a huge problem - but it could indicate classloading issues.");
 			}
 			if (this.startServer()) {
 				FMLLog.fine("calling handleServerStarted()");

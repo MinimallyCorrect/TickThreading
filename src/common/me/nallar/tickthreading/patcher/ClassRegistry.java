@@ -20,10 +20,8 @@ import java.util.zip.ZipOutputStream;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 
-import javassist.CannotCompileException;
 import javassist.ClassPath;
 import javassist.ClassPool;
-import javassist.CtBehavior;
 import javassist.CtClass;
 import javassist.NotFoundException;
 import javassist.bytecode.MethodInfo;
@@ -40,7 +38,6 @@ public class ClassRegistry {
 	private final Map<String, File> classNameToLocation = new HashMap<String, File>();
 	private final Map<File, Integer> locationToPatchHash = new HashMap<File, Integer>();
 	private final Map<File, Integer> expectedPatchHashes = new HashMap<File, Integer>();
-	private final Map<File, Map<String, byte[]>> additionalClasses = new HashMap<File, Map<String, byte[]>>();
 	private final Set<File> loadedFiles = new HashSet<File>();
 	private final Set<File> updatedFiles = new HashSet<File>();
 	private final Map<String, Set<File>> duplicateClassNamesToLocations = new HashMap<String, Set<File>>();
@@ -61,7 +58,6 @@ public class ClassRegistry {
 	public void clearClassInfo() {
 		finishModifications();
 		classNameToLocation.clear();
-		additionalClasses.clear();
 		updatedFiles.clear();
 		duplicateClassNamesToLocations.clear();
 		replacementFiles.clear();
@@ -166,37 +162,6 @@ public class ClassRegistry {
 		replacementFiles.put(className.replace('.', '/') + ".class", replacement);
 	}
 
-	Map<String, byte[]> getAdditionalClasses(File file) {
-		Map<String, byte[]> additionalClasses = this.additionalClasses.get(file);
-		if (additionalClasses == null) {
-			additionalClasses = new HashMap<String, byte[]>();
-			this.additionalClasses.put(file, additionalClasses);
-		}
-		return additionalClasses;
-	}
-
-	public void add(Object requires, String additionalClassName) throws NotFoundException, IOException, CannotCompileException {
-		if (additionalClassName.startsWith("java.")) {
-			return;
-		}
-		String requiringClassName = null;
-		if (requires instanceof CtBehavior) {
-			requiringClassName = ((CtBehavior) requires).getDeclaringClass().getName();
-		} else if (requires instanceof CtClass) {
-			requiringClassName = ((CtClass) requires).getName();
-		}
-		if (requiringClassName == null) {
-			Log.severe("Can't add " + additionalClassName + " as a class required by unknown type: " + requires.getClass().getCanonicalName());
-			return;
-		}
-		File location = classNameToLocation.get(requiringClassName);
-		add(location, additionalClassName, getClass(additionalClassName).toBytecode());
-	}
-
-	void add(File file, String className, byte[] byteCode) {
-		getAdditionalClasses(file).put(className.replace('.', '/') + ".class", byteCode);
-	}
-
 	public void finishModifications() {
 		for (ClassPath classPath : classPathSet) {
 			classes.removeClassPath(classPath);
@@ -205,7 +170,11 @@ public class ClassRegistry {
 	}
 
 	private static File makeTempFile(File tempLocation, File file) {
-		return new File(tempLocation, file.getName() + ".tmp");
+		File tempFile = new File(tempLocation, file.getName() + ".tmp");
+		if (tempFile.exists() && !tempFile.delete()) {
+			throw new Error("Failed to delete old temp file " + tempFile);
+		}
+		return tempFile;
 	}
 
 	private static void delete(File f) {
@@ -220,11 +189,10 @@ public class ClassRegistry {
 	private int writeChanges(File zipFile, ZipInputStream zin, ZipOutputStream zout, boolean onlyClasses) throws Exception {
 		int patchedClasses = 0;
 		Set<String> replacements = new HashSet<String>();
-		Map<String, byte[]> additionalClasses = getAdditionalClasses(zipFile);
 		ZipEntry zipEntry;
 		while ((zipEntry = zin.getNextEntry()) != null) {
 			String entryName = zipEntry.getName();
-			if (entryName.equals(hashFileName) || additionalClasses.containsKey(entryName) || (entryName.startsWith("META-INF/") && !(!entryName.isEmpty() && entryName.charAt(entryName.length() - 1) == '/') && !entryName.toUpperCase().endsWith("MANIFEST.MF")) && (entryName.length() - entryName.replace("/", "").length() == 1)) {
+			if (entryName.equals(hashFileName) || (entryName.startsWith("META-INF/") && !(!entryName.isEmpty() && entryName.charAt(entryName.length() - 1) == '/') && !entryName.toUpperCase().endsWith("MANIFEST.MF")) && (entryName.length() - entryName.replace("/", "").length() == 1)) {
 				// Skip
 			} else if (onlyClasses && !entryName.toLowerCase().endsWith(".class")) {
 				// Skip
@@ -242,21 +210,12 @@ public class ClassRegistry {
 			zout.write(replacementFiles.get(name));
 			zout.closeEntry();
 		}
-		for (Map.Entry<String, byte[]> stringEntry : additionalClasses.entrySet()) {
-			zout.putNextEntry(new ZipEntry(stringEntry.getKey()));
-			zout.write(stringEntry.getValue());
-			zout.closeEntry();
-			patchedClasses++;
-		}
 		boolean hasPatchHash = expectedPatchHashes.containsKey(zipFile);
 		zout.putNextEntry(new ZipEntry(hashFileName));
 		String patchHash = hasPatchHash ? String.valueOf(expectedPatchHashes.get(zipFile)) : "-1";
 		zout.write(patchHash.getBytes("UTF-8"));
 		if (hasPatchHash) {
 			Log.info("Patched " + replacements.size() + " classes in " + zipFile + ", patchHash: " + patchHash);
-		}
-		if (!additionalClasses.isEmpty()) {
-			Log.info("Added " + additionalClasses.size() + " classes required by patches.");
 		}
 		zin.close();
 		zout.close();
@@ -272,6 +231,7 @@ public class ClassRegistry {
 		ZipOutputStream zout = null;
 		backupDirectory.mkdir();
 		updatedFiles.remove(LocationUtil.locationOf(PatchMain.class));
+		patchedModsFolder.mkdir();
 		int patchedClasses = 0;
 		try {
 			for (File zipFile : updatedFiles) {
@@ -280,7 +240,6 @@ public class ClassRegistry {
 					backupFile.delete();
 					Files.copy(zipFile, backupFile);
 					tempFile = makeTempFile(tempDirectory, zipFile);
-					tempFile.delete();
 					if (zipFile.renameTo(tempFile)) {
 						renameFile = zipFile;
 						tempFile.deleteOnExit();
@@ -294,7 +253,6 @@ public class ClassRegistry {
 					renameFile = null;
 				} else {
 					zin = new ZipInputStream(new FileInputStream(zipFile));
-					patchedModsFolder.mkdir();
 					zout = new ZipOutputStream(new FileOutputStream(new File(patchedModsFolder, zipFile.getName())));
 					patchedClasses += writeChanges(zipFile, zin, zout, true);
 				}
