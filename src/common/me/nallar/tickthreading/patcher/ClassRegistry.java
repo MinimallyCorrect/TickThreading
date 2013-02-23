@@ -217,7 +217,8 @@ public class ClassRegistry {
 		f.delete();
 	}
 
-	private void writeChanges(File zipFile, ZipInputStream zin, ZipOutputStream zout, boolean onlyClasses) throws Exception {
+	private int writeChanges(File zipFile, ZipInputStream zin, ZipOutputStream zout, boolean onlyClasses) throws Exception {
+		int patchedClasses = 0;
 		Set<String> replacements = new HashSet<String>();
 		Map<String, byte[]> additionalClasses = getAdditionalClasses(zipFile);
 		ZipEntry zipEntry;
@@ -229,9 +230,11 @@ public class ClassRegistry {
 				// Skip
 			} else if (replacementFiles.containsKey(entryName)) {
 				replacements.add(entryName);
+				patchedClasses++;
 			} else if (!onlyClasses || writeAllClasses) {
 				zout.putNextEntry(new ZipEntry(entryName));
 				ByteStreams.copy(zin, zout);
+				patchedClasses++;
 			}
 		}
 		for (String name : replacements) {
@@ -243,6 +246,7 @@ public class ClassRegistry {
 			zout.putNextEntry(new ZipEntry(stringEntry.getKey()));
 			zout.write(stringEntry.getValue());
 			zout.closeEntry();
+			patchedClasses++;
 		}
 		boolean hasPatchHash = expectedPatchHashes.containsKey(zipFile);
 		zout.putNextEntry(new ZipEntry(hashFileName));
@@ -256,6 +260,7 @@ public class ClassRegistry {
 		}
 		zin.close();
 		zout.close();
+		return patchedClasses;
 	}
 
 	public void save(File backupDirectory) throws IOException {
@@ -267,6 +272,7 @@ public class ClassRegistry {
 		ZipOutputStream zout = null;
 		backupDirectory.mkdir();
 		updatedFiles.remove(LocationUtil.locationOf(PatchMain.class));
+		int patchedClasses = 0;
 		try {
 			for (File zipFile : updatedFiles) {
 				if (zipFile == serverFile || !"mods".equals(zipFile.getParentFile().getName())) {
@@ -291,7 +297,7 @@ public class ClassRegistry {
 					Log.info(patchedModsFolder.toString());
 					patchedModsFolder.mkdir();
 					zout = new ZipOutputStream(new FileOutputStream(new File(patchedModsFolder, zipFile.getName())));
-					writeChanges(zipFile, zin, zout, true);
+					patchedClasses += writeChanges(zipFile, zin, zout, true);
 				}
 				zin = null;
 				zout = null;
@@ -310,6 +316,7 @@ public class ClassRegistry {
 		} finally {
 			delete(tempDirectory);
 		}
+		Log.info("Patched " + patchedClasses + " mod classes.");
 	}
 
 	public CtClass getClass(String className) throws NotFoundException {
