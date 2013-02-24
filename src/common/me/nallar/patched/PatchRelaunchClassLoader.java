@@ -30,6 +30,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import cpw.mods.fml.common.FMLLog;
+import cpw.mods.fml.relauncher.FMLRelaunchLog;
 import cpw.mods.fml.relauncher.IClassTransformer;
 import cpw.mods.fml.relauncher.RelaunchClassLoader;
 import me.nallar.tickthreading.Log;
@@ -52,14 +53,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 
 	private void log(Level level, Throwable t, String message) {
 		try {
-			if (findLoadedClass("cpw.mods.fml.common.FMLLog") == null) {
-				err.println("[" + level + "] " + message);
-				if (t != null) {
-					t.printStackTrace(err);
-				}
-			} else {
-				FMLLog.log(level, t, message);
-			}
+			FMLRelaunchLog.log(level, t, message);
 		} catch (Throwable t_) {
 			t_.printStackTrace(err);
 		}
@@ -99,6 +93,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 			modifiersField.setInt(field, (field.getModifiers() & ~Modifier.FINAL) & ~Modifier.PRIVATE);
 			ucp = (URLClassPath) field.get(this);
 			minecraftdir = locationOf(net.minecraft.util.Tuple.class).getParentFile();
+			FMLRelaunchLog.info("This server is patched with @MOD_NAME@ v@MOD_VERSION@ for MC@MC_VERSION@");
 			log(Level.INFO, null, "Searching for patched mods in minecraft dir " + minecraftdir);
 			patchedModsFolder = new File(minecraftdir, "patchedMods");
 			if (!patchedModsFolder.exists()) {

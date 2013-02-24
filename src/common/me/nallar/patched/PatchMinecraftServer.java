@@ -95,7 +95,6 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	@Override
 	public void run() {
 		toSaveConfigurationSet = new HashSet<Configuration>();
-		FMLLog.info("This server is patched with @MOD_NAME@ v@MOD_VERSION@ for MC@MC_VERSION@");
 		FMLLog.info("Loaded " + RelaunchClassLoader.patchedClasses + " patched classes, cl: " + this.getClass().getClassLoader());
 		try {
 			try {
