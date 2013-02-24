@@ -92,12 +92,12 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 			modifiersField.setAccessible(true);
 			modifiersField.setInt(field, (field.getModifiers() & ~Modifier.FINAL) & ~Modifier.PRIVATE);
 			ucp = (URLClassPath) field.get(this);
-			minecraftdir = locationOf(net.minecraft.util.Tuple.class).getParentFile();
+			minecraftdir = new File(".").getAbsoluteFile();
 			FMLRelaunchLog.info("This server is patched with @MOD_NAME@ v@MOD_VERSION@ for MC@MC_VERSION@");
 			log(Level.INFO, null, "Searching for patched mods in minecraft dir " + minecraftdir);
 			patchedModsFolder = new File(minecraftdir, "patchedMods");
 			if (!patchedModsFolder.exists()) {
-				minecraftdir = new File(".").getAbsoluteFile();
+				minecraftdir = locationOf(net.minecraft.util.Tuple.class).getParentFile();
 				log(Level.INFO, null, "Searching for patched mods in minecraft dir " + minecraftdir);
 				patchedModsFolder = new File(minecraftdir, "patchedMods");
 			}
