@@ -76,6 +76,9 @@
 			<synchronize field="chunkLoadLock">unloadAllChunks,saveChunks,unload100OldestChunks</synchronize>
 			<synchronize field="genLock">populate</synchronize>
 		</class>
+		<class id="net.minecraft.world.chunk.storage.RegionFile" env="forge">
+			<replace class="me.nallar.patched.PatchRegionFile"/>
+		</class>
 		<class id="net.minecraft.world.chunk.storage.AnvilChunkLoader" env="forge">
 			<addAll fromClass="me.nallar.patched.PatchAnvilChunkLoader"/>
 		</class>
