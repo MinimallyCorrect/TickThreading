@@ -93,7 +93,6 @@ public class PrePatcher {
 			// TODO: Fix package -> public properly later.
 			sourceString = sourceString.replace("    boolean isOutputEncrypted;", "    public boolean isOutputEncrypted;");
 			sourceString = sourceString.replace("    File file;", "public File file;");
-			sourceString = sourceString.replace("protected void save(", "public void save(");
 			sourceString = sourceString.replace("PlayerManager myManager;", "public PlayerManager myManager;").replace("public public", "public");
 			sourceString = sourceString.replace("\nfinal ", " ");
 			sourceString = sourceString.replace(" final ", " ");
@@ -102,6 +101,7 @@ public class PrePatcher {
 			sourceString = sourceString.replace("protected class", "public class");
 			Matcher privateMatcher = privatePattern.matcher(sourceString);
 			sourceString = privateMatcher.replaceAll("$1protected");
+			sourceString = sourceString.replace("protected void save(", "public void save(");
 			try {
 				writeFile(sourceFile, sourceString);
 			} catch (IOException e) {
