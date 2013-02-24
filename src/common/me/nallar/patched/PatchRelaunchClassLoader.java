@@ -1,5 +1,6 @@
 package me.nallar.patched;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileOutputStream;
@@ -38,6 +39,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 	private URLClassPath ucp;
 	private static PrintStream err;
 	private Set<String> patchedURLs;
+	private ThreadLocal<byte[]> buffer;
 
 	private void log(Level level, Throwable t, String message) {
 		try {
@@ -73,11 +75,13 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 	}
 
 	public static void staticConstruct() {
+		EMPTY_BYTE_ARRAY = new byte[0];
 		err = new PrintStream(new FileOutputStream(FileDescriptor.err));
 	}
 
 	public void construct() {
 		try {
+			buffer = new ThreadLocal<byte[]>();
 			patchedURLs = new HashSet<String>();
 			Field field = URLClassLoader.class.getDeclaredField("ucp");
 			field.setAccessible(true);
@@ -265,5 +269,31 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 			}
 		}
 		return basicClass;
+	}
+
+	private static byte[] EMPTY_BYTE_ARRAY;
+
+	@Override
+	protected byte[] readFully(InputStream stream) {
+		try {
+			ByteArrayOutputStream bos = new ByteArrayOutputStream(stream.available());
+
+			int readBytes;
+			byte[] data = buffer.get();
+
+			if (data == null) {
+				data = new byte[1048576];
+				buffer.set(data);
+			}
+
+			while ((readBytes = stream.read(data, 0, data.length)) != -1) {
+				bos.write(data, 0, readBytes);
+			}
+
+			return bos.toByteArray();
+		} catch (Throwable t) {
+			FMLLog.log(Level.WARNING, t, "Problem loading class");
+			return EMPTY_BYTE_ARRAY;
+		}
 	}
 }
