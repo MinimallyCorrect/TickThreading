@@ -37,6 +37,8 @@ public class LogFormatter extends Formatter {
 				formattedMessage.append("Stack trace unavailable. Add -XX:-OmitStackTraceInFastThrow to your java parameters to see all stack traces.");
 			} else {
 				StringWriter stackTraceWriter = new StringWriter();
+				// No need to close this - StringWriter.close() does nothing, and PrintWriter.close() just calls it.
+				//noinspection IOResourceOpenedButNotSafelyClosed
 				throwable.printStackTrace(new PrintWriter(stackTraceWriter));
 				formattedMessage.append(stackTraceWriter.toString());
 			}
