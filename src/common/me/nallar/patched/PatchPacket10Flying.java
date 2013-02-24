@@ -2,6 +2,7 @@ package me.nallar.patched;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 
 import javassist.is.faulty.Redirects;
 import javassist.is.faulty.Timings;
@@ -81,6 +82,12 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 				if (nsh.teleported <= 1 || (nsh.teleported < 10 && nsh.tpPosY > yPosition + 0.02)) {
 					nsh.updatePositionAfterTP();
 					((WorldServer) entityPlayerMP.worldObj).getPlayerManager().updateMountedMovingPlayer(entityPlayerMP);
+					if (nsh.teleported == 1) {
+						LinkedList<EntityPlayerMP> playersToCheckWorld = MinecraftServer.playersToCheckWorld;
+						synchronized (playersToCheckWorld) {
+							playersToCheckWorld.add(entityPlayerMP);
+						}
+					}
 				}
 				synchronized (entityPlayerMP.loadedChunks) {
 					sendChunks(entityPlayerMP);

@@ -5,6 +5,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -23,6 +25,8 @@ import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
 import me.nallar.tickthreading.util.FakeServerThread;
 import net.minecraft.crash.CrashReport;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet4UpdateTime;
 import net.minecraft.server.MinecraftServer;
@@ -30,6 +34,7 @@ import net.minecraft.server.gui.IUpdatePlayerListBox;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.ReportedException;
+import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.Configuration;
 import net.minecraftforge.common.DimensionManager;
@@ -50,6 +55,8 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	private Map<Integer, Integer> exceptionCount;
 	private boolean tickNetworkInMainThread;
 	@Declare
+	public static java.util.LinkedList playersToCheckWorld_;
+	@Declare
 	public boolean currentlySaving_;
 	@Declare
 	public static java.util.Set<net.minecraftforge.common.Configuration> toSaveConfigurationSet_;
@@ -61,6 +68,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	}
 
 	public static void staticConstruct() {
+		playersToCheckWorld = new LinkedList();
 		setTargetTPS(20);
 		setNetworkTPS(40);
 	}
@@ -245,7 +253,24 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 		this.theProfiler.endStartSection("forgePostServerTick");
 		FMLCommonHandler.instance().onPostServerTick();
-
+		LinkedList<EntityPlayerMP> playersToCheckWorld = MinecraftServer.playersToCheckWorld;
+		if (!playersToCheckWorld.isEmpty()) {
+			synchronized (playersToCheckWorld) {
+				for (EntityPlayerMP entityPlayerMP : playersToCheckWorld) {
+					World world = entityPlayerMP.worldObj;
+					List<Entity> entityList = world.loadedEntityList;
+					synchronized (entityList) {
+						if (!entityList.contains(entityPlayerMP)) {
+							entityList.add(entityPlayerMP);
+						}
+					}
+					if (!world.playerEntities.contains(entityPlayerMP)) {
+						world.playerEntities.add(entityPlayerMP);
+					}
+				}
+				playersToCheckWorld.clear();
+			}
+		}
 		this.theProfiler.endSection();
 		this.theProfiler.endSection();
 		tickTime = tickTime * 0.98f + ((this.tickTimeArray[this.tickCounter % 100] = System.nanoTime() - var1) * 0.02f);
