@@ -34,7 +34,7 @@ public class PrePatcher {
 			}
 			Matcher extendsMatcher = extendsPattern.matcher(contents);
 			if (!extendsMatcher.find()) {
-				log.info(file + " does not extend an NMS class.");
+				log.info(file + " does not extend anything - no prepatching necessary");
 				continue;
 			}
 			String shortClassName = extendsMatcher.group(1);
@@ -93,6 +93,7 @@ public class PrePatcher {
 			// TODO: Fix package -> public properly later.
 			sourceString = sourceString.replace("    boolean isOutputEncrypted;", "    public boolean isOutputEncrypted;");
 			sourceString = sourceString.replace("PlayerManager myManager;", "public PlayerManager myManager;").replace("public public", "public");
+			sourceString = sourceString.replace("\nfinal ", " ");
 			sourceString = sourceString.replace(" final ", " ");
 			sourceString = sourceString.replace("\nclass", "\npublic class");
 			sourceString = sourceString.replace("private class", "public class");
