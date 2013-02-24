@@ -24,9 +24,10 @@ public abstract class PatchLoader extends Loader {
 	protected void identifyDuplicates(List<ModContainer> mods) {
 		Map<String, List<ModContainer>> modsMap = new HashMap<String, List<ModContainer>>();
 		for (ModContainer mc : mods) {
-			List<ModContainer> modsList = modsMap.get(mc.getSource() + mc.getModId());
+			String source = mc.getSource().getAbsolutePath() + mc.getModId();
+			List<ModContainer> modsList = modsMap.get(source);
 			if (modsList == null) {
-				modsMap.put(mc.getSource() + mc.getModId(), modsList = new ArrayList<ModContainer>());
+				modsMap.put(source, modsList = new ArrayList<ModContainer>());
 			}
 			modsList.add(mc);
 		}
