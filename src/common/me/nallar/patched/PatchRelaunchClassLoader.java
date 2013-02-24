@@ -9,14 +9,22 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLConnection;
+import java.nio.ByteBuffer;
+import java.security.CodeSigner;
+import java.security.CodeSource;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -26,6 +34,7 @@ import cpw.mods.fml.relauncher.IClassTransformer;
 import cpw.mods.fml.relauncher.RelaunchClassLoader;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.patcher.Declare;
+import sun.misc.Resource;
 import sun.misc.URLClassPath;
 
 public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
@@ -154,7 +163,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 							continue;
 						}
 						patchedClasses++;
-						byte[] contents = readFully(zipFile.getInputStream(zipEntry));
+						byte[] contents = readFullyUnsafe(zipFile.getInputStream(zipEntry));
 						replacedClasses.put(name, contents);
 					}
 					RelaunchClassLoader.patchedClasses += patchedClasses;
@@ -203,36 +212,91 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 	}
 
 	@Override
-	public byte[] getClassBytes(String name) throws IOException {
-		byte[] data;
+	public Class<?> findClass(String name) throws ClassNotFoundException {
+		if (invalidClasses.contains(name)) {
+			throw new ClassNotFoundException(name);
+		}
+		Class<?> cachedClass = cachedClasses.get(name);
+		if (cachedClass != null) {
+			return cachedClass;
+		}
+		for (String st : classLoaderExceptions) {
+			if (name.startsWith(st)) {
+				return parent.loadClass(name);
+			}
+		}
 
+		boolean transform = true;
+		for (String st : transformerExceptions) {
+			if (name.startsWith(st)) {
+				transform = false;
+				break;
+			}
+		}
+
+		byte[] basicClass = null;
+
+		String path = name.replace('.', '/') + ".class";
 		if (name.indexOf('.') == -1) {
 			for (String res : RESERVED) {
 				if (name.toUpperCase(Locale.ENGLISH).startsWith(res)) {
-					data = getClassBytes('_' + name);
-					if (data != null) {
-						return data;
-					}
+					path = '_' + path;
+					break;
 				}
 			}
 		}
 
+		CodeSource codeSource = null;
 		InputStream classStream = null;
 		try {
-			URL classResource = findResource(name.replace('.', '/') + ".class");
-			if (classResource == null) {
-				if (DEBUG_CLASSLOADING) {
-					FMLLog.finest("Failed to find class resource %s", name.replace('.', '/') + ".class");
+			byte[] patchedData = getReplacementClassBytes(path);
+			boolean loaded = false;
+			if (patchedData == null) {
+				try {
+					Resource classResource = ucp.getResource(path, true);
+					if (classResource != null) {
+						if (DEBUG_CLASSLOADING) {
+							FMLLog.finest("Loading class %s from resource %s", name, classResource.getCodeSourceURL().toString());
+						}
+						if (patchedData == null) {
+							ByteBuffer byteBuffer = classResource.getByteBuffer();
+							if (byteBuffer == null) {
+								basicClass = classResource.getBytes();
+							} else {
+								basicClass = new byte[byteBuffer.remaining()];
+								byteBuffer.get(basicClass);
+							}
+						}
+						CodeSigner[] codeSigners = classResource.getCodeSigners();
+						if (codeSigners != null && codeSigners.length != 0) {
+							codeSource = new CodeSource(classResource.getCodeSourceURL(), codeSigners);
+						}
+						loaded = true;
+					}
+				} catch (Throwable t) {
+					if (!(t instanceof NoClassDefFoundError)) {
+						log(Level.WARNING, t, "Failed to use fast I/O to read class " + name + " from " + path);
+					}
 				}
-				return null;
 			}
-			classStream = classResource.openStream();
-			if (DEBUG_CLASSLOADING) {
-				FMLLog.finest("Loading class %s from resource %s", name, classResource.toString());
+			if (!loaded) {
+				URL classURL = findResource(path);
+				if (classURL == null) {
+					if (DEBUG_CLASSLOADING) {
+						FMLLog.finest("Failed to find class resource %s", path);
+					}
+					return null;
+				}
+				if (DEBUG_CLASSLOADING) {
+					FMLLog.finest("Loading class %s from resource %s", name, classURL.toString());
+				}
+				classStream = classURL.openStream();
+				basicClass = readFully(classStream);
 			}
-			data = readFully(classStream);
-			byte[] data2 = getReplacementClassBytes(name.replace('.', '/') + ".class");
-			return data2 == null ? data : data2;
+			basicClass = patchedData == null ? basicClass : patchedData;
+		} catch (Throwable t) {
+			log(Level.SEVERE, t, "Exception loading class " + name);
+			return null;
 		} finally {
 			if (classStream != null) {
 				try {
@@ -241,6 +305,60 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 				}
 			}
 		}
+
+		try {
+			if (codeSource == null) {
+				CodeSigner[] signers = null;
+				int lastDot = name.lastIndexOf('.');
+				String pkgname = lastDot == -1 ? "" : name.substring(0, lastDot);
+				String fName = name.replace('.', '/') + ".class";
+				URLConnection urlConnection = findCodeSourceConnectionFor(fName);
+				if (urlConnection instanceof JarURLConnection && lastDot > -1) {
+					JarURLConnection jarUrlConn = (JarURLConnection) urlConnection;
+					JarFile jf = jarUrlConn.getJarFile();
+					if (jf != null && jf.getManifest() != null) {
+						Manifest mf = jf.getManifest();
+						JarEntry ent = jf.getJarEntry(fName);
+						Package pkg = getPackage(pkgname);
+						signers = ent.getCodeSigners();
+						if (pkg == null) {
+							definePackage(pkgname, mf, jarUrlConn.getJarFileURL());
+						} else {
+							if (pkg.isSealed() && !pkg.isSealed(jarUrlConn.getJarFileURL())) {
+								FMLLog.severe("The jar file %s is trying to seal already secured path %s", jf.getName(), pkgname);
+							} else if (isSealed(pkgname, mf)) {
+								FMLLog.severe("The jar file %s has a security seal for path %s, but that path is defined and not secure", jf.getName(), pkgname);
+							}
+						}
+					}
+				} else if (lastDot > -1) {
+					Package pkg = getPackage(pkgname);
+					if (pkg == null) {
+						definePackage(pkgname, null, null, null, null, null, null, null);
+					} else if (pkg.isSealed()) {
+						FMLLog.severe("The URL %s is defining elements for sealed path %s", urlConnection.getURL(), pkgname);
+					}
+				}
+				if (urlConnection != null) {
+					codeSource = new CodeSource(urlConnection.getURL(), signers);
+				}
+			}
+			byte[] transformedClass = transform ? runTransformers(name, basicClass) : basicClass;
+			Class<?> cl = defineClass(name, transformedClass, 0, transformedClass.length, codeSource);
+			cachedClasses.put(name, cl);
+			return cl;
+		} catch (Throwable e) {
+			invalidClasses.add(name);
+			if (DEBUG_CLASSLOADING) {
+				FMLLog.log(Level.FINEST, e, "Exception encountered attempting classloading of %s", name);
+			}
+			throw new ClassNotFoundException(name, e);
+		}
+	}
+
+	@Override
+	public byte[] getClassBytes(String name) throws IOException {
+		return null;
 	}
 
 	@Override
@@ -273,21 +391,20 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 
 	private static byte[] EMPTY_BYTE_ARRAY;
 
-	@Override
-	protected byte[] readFully(InputStream stream) {
+	protected byte[] readFullyUnsafe(InputStream stream) {
 		try {
 			ByteArrayOutputStream bos = new ByteArrayOutputStream(stream.available());
 
 			int readBytes;
-			byte[] data = buffer.get();
+			byte[] buffer = this.buffer.get();
 
-			if (data == null) {
-				data = new byte[1048576];
-				buffer.set(data);
+			if (buffer == null) {
+				buffer = new byte[1048576];
+				this.buffer.set(buffer);
 			}
 
-			while ((readBytes = stream.read(data, 0, data.length)) != -1) {
-				bos.write(data, 0, readBytes);
+			while ((readBytes = stream.read(buffer, 0, buffer.length)) != -1) {
+				bos.write(buffer, 0, readBytes);
 			}
 
 			return bos.toByteArray();

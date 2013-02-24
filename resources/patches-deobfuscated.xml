@@ -208,6 +208,12 @@
 		</class>
 	</minecraftCommon>
 	<forge>
+		<class id="net.minecraftforge.common.Configuration">
+			<addAll fromClass="me.nallar.patched.PatchConfiguration"/>
+		</class>
+		<class id="net.minecraftforge.common.ConfigCategory">
+			<addAll fromClass="me.nallar.patched.PatchConfigCategory"/>
+		</class>
 		<class id="net.minecraftforge.event.Event">
 			<addAll fromClass="me.nallar.patched.PatchEvent"/>
 		</class>

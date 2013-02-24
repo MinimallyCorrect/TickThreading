@@ -4,7 +4,9 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
@@ -29,6 +31,7 @@ import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.ReportedException;
 import net.minecraft.world.WorldServer;
+import net.minecraftforge.common.Configuration;
 import net.minecraftforge.common.DimensionManager;
 
 public abstract class PatchMinecraftServer extends MinecraftServer {
@@ -48,6 +51,8 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	private boolean tickNetworkInMainThread;
 	@Declare
 	public boolean currentlySaving_;
+	@Declare
+	public static java.util.Set<net.minecraftforge.common.Configuration> toSaveConfigurationSet_;
 
 	public void construct() {
 		currentlySaving = false;
@@ -89,6 +94,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 	@Override
 	public void run() {
+		toSaveConfigurationSet = new HashSet<Configuration>();
 		FMLLog.info("This server is patched with @MOD_NAME@ v@MOD_VERSION@ for MC@MC_VERSION@");
 		FMLLog.info("Loaded " + RelaunchClassLoader.patchedClasses + " patched classes, cl: " + this.getClass().getClassLoader());
 		try {
@@ -101,6 +107,11 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				FMLLog.fine("calling handleServerStarted()");
 				FMLCommonHandler.instance().handleServerStarted();
 				FMLCommonHandler.instance().onWorldLoadTick(worldServers);
+				Set<Configuration> toSaveConfigurationSet = MinecraftServer.toSaveConfigurationSet;
+				MinecraftServer.toSaveConfigurationSet = null;
+				for (Configuration configuration : toSaveConfigurationSet) {
+					configuration.save();
+				}
 				// This block is derived from Spigot code,
 				// LGPL
 				this.serverIsRunning = true;

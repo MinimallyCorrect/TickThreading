@@ -92,6 +92,8 @@ public class PrePatcher {
 			sourceString = source.toString();
 			// TODO: Fix package -> public properly later.
 			sourceString = sourceString.replace("    boolean isOutputEncrypted;", "    public boolean isOutputEncrypted;");
+			sourceString = sourceString.replace("    File file;", "public File file;");
+			sourceString = sourceString.replace("protected void save(", "public void save(");
 			sourceString = sourceString.replace("PlayerManager myManager;", "public PlayerManager myManager;").replace("public public", "public");
 			sourceString = sourceString.replace("\nfinal ", " ");
 			sourceString = sourceString.replace(" final ", " ");

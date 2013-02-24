@@ -10,6 +10,7 @@ import java.util.logging.LogRecord;
 public class LogFormatter extends Formatter {
 	static final String LINE_SEPARATOR = System.getProperty("line.separator");
 	private final SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd HH:mm:ss");
+	private int writtenSize = 0;
 
 	@Override
 	public String format(LogRecord record) {
@@ -34,7 +35,7 @@ public class LogFormatter extends Formatter {
 		Throwable throwable = record.getThrown();
 		if (throwable != null) {
 			if (throwable.getStackTrace().length == 0) {
-				formattedMessage.append("Stack trace unavailable. Add -XX:-OmitStackTraceInFastThrow to your java parameters to see all stack traces.");
+				formattedMessage.append("Stack trace unavailable. Add -XX:-OmitStackTraceInFastThrow to your java parameters to see all stack traces.").append(LINE_SEPARATOR);
 			} else {
 				StringWriter stackTraceWriter = new StringWriter();
 				// No need to close this - StringWriter.close() does nothing, and PrintWriter.close() just calls it.
@@ -42,6 +43,11 @@ public class LogFormatter extends Formatter {
 				throwable.printStackTrace(new PrintWriter(stackTraceWriter));
 				formattedMessage.append(stackTraceWriter.toString());
 			}
+		}
+
+		if ((writtenSize += formattedMessage.length()) > (1024 * 1024 * 50)) { // 50MB
+			Log.disableDiskWriting("No more log messages will be recorded to disk, exceeded 50MB log size.");
+			writtenSize = Integer.MIN_VALUE;
 		}
 
 		return formattedMessage.toString();

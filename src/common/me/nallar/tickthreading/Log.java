@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -52,6 +53,31 @@ public class Log {
 			});
 		}
 		LOGGER.setLevel(Level.ALL);
+	}
+
+	public static void disableDiskWriting(String finalMessage) {
+		Handler handler = Log.handler;
+		if (handler == null) {
+			return;
+		}
+		Log.handler = null;
+		LogRecord finalRecord = new LogRecord(Level.SEVERE, finalMessage);
+		try {
+			Logger fmlLog = FMLLog.getLogger();
+			for (Handler handler1 : fmlLog.getHandlers()) {
+				if (handler1 instanceof FileHandler) {
+					fmlLog.removeHandler(handler1);
+					handler1.publish(finalRecord);
+					handler1.flush();
+				}
+			}
+		} catch (NoClassDefFoundError error) {
+
+		}
+		handler.publish(finalRecord);
+		handler.flush();
+		LOGGER.removeHandler(handler);
+		Log.severe(finalMessage);
 	}
 
 	public static void setFileName(String name, final Level minimumLevel, Logger... loggers) {
