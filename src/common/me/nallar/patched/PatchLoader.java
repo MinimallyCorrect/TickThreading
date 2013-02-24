@@ -1,6 +1,7 @@
 package me.nallar.patched;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,7 +25,12 @@ public abstract class PatchLoader extends Loader {
 	protected void identifyDuplicates(List<ModContainer> mods) {
 		Map<String, List<ModContainer>> modsMap = new HashMap<String, List<ModContainer>>();
 		for (ModContainer mc : mods) {
-			String source = mc.getSource().getAbsolutePath() + mc.getModId();
+			String source;
+			try {
+				source = mc.getSource().getCanonicalPath() + mc.getModId();
+			} catch (IOException e) {
+				source = mc.getSource().getAbsolutePath().replace(File.separator + '.' + File.separator, File.separator) + mc.getModId();
+			}
 			List<ModContainer> modsList = modsMap.get(source);
 			if (modsList == null) {
 				modsMap.put(source, modsList = new ArrayList<ModContainer>());
