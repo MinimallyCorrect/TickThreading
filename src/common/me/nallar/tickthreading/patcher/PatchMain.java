@@ -79,6 +79,7 @@ public class PatchMain {
 		boolean forcePatching = true;//  args.length >= 2 && "force".equalsIgnoreCase(args[1]);
 		PatchManager patchManager;
 		try {
+			//noinspection IOResourceOpenedButNotSafelyClosed
 			patchManager = new PatchManager(PatchMain.class.getResourceAsStream("/patches.xml"), Patches.class);
 		} catch (Exception e) {
 			Log.severe("Failed to initialize Patch Manager", e);

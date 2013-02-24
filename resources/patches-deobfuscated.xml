@@ -220,6 +220,9 @@
 		</class>
 	</forge>
 	<forgeModLoader>
+		<class id="cpw.mods.fml.relauncher.FMLLogFormatter">
+			<replace class="me.nallar.tickthreading.LogFormatter"/>
+		</class>
 		<class id="cpw.mods.fml.common.event.FMLInterModComms$IMCMessage">
 			<addAll fromClass="me.nallar.patched.PatchIMCMessage"/>
 		</class>

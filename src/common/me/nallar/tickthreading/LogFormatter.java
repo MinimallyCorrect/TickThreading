@@ -1,6 +1,5 @@
 package me.nallar.tickthreading;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
@@ -9,48 +8,37 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 public class LogFormatter extends Formatter {
-	private static final String lineSeparator = System.getProperty("line.separator");
+	static final String LINE_SEPARATOR = System.getProperty("line.separator");
 	private final SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd HH:mm:ss");
 
 	@Override
 	public String format(LogRecord record) {
 		StringBuilder formattedMessage = new StringBuilder();
-		formattedMessage.append(this.dateFormat.format(record.getMillis()));
+		formattedMessage.append(dateFormat.format(record.getMillis()));
 		Level level = record.getLevel();
 
-		if (level == Level.FINEST) {
-			formattedMessage.append(" [FINEST] ");
-		} else if (level == Level.FINER) {
-			formattedMessage.append(" [FINER] ");
-		} else if (level == Level.FINE) {
-			formattedMessage.append(" [FINE] ");
-		} else if (level == Level.INFO) {
-			formattedMessage.append(" [INFO] ");
-		} else if (level == Level.WARNING) {
-			formattedMessage.append(" [WARNING] ");
-		} else if (level == Level.SEVERE) {
-			formattedMessage.append(" [SEVERE] ");
-		} else {
-			formattedMessage.append(" [").append(level.getLocalizedName()).append("] ");
+		String name = level.getLocalizedName();
+		if (name == null) {
+			name = level.getName();
 		}
 
-		if (record.getLoggerName() != null) {
-			formattedMessage.append('[').append(record.getLoggerName()).append("] ");
-		}
+		formattedMessage.append(" [").append(name == null ? "" : name).append("] ");
 
-		formattedMessage.append(record.getMessage().replace("\r\n", "\n").replace("\n", lineSeparator).trim()).append(lineSeparator);
+		String loggerName = record.getLoggerName();
+		formattedMessage
+				.append('[').append(loggerName == null ? "" : loggerName).append("] ")
+				.append(record.getMessage()).append(LINE_SEPARATOR);
 
-		@SuppressWarnings ("ThrowableResultOfMethodCallIgnored")
 		// No need to throw this, we're in a log formatter!
-				Throwable throwable = record.getThrown();
+		@SuppressWarnings ("ThrowableResultOfMethodCallIgnored")
+		Throwable throwable = record.getThrown();
 		if (throwable != null) {
-			StringWriter throwableDump = new StringWriter();
-			throwable.printStackTrace(new PrintWriter(throwableDump));
-			formattedMessage.append(throwableDump.toString());
-			try {
-				throwableDump.close();
-			} catch (IOException e) {
-				// Not logged, might cause infinitely recursive logging failure
+			if (throwable.getStackTrace().length == 0) {
+				formattedMessage.append("Stack trace unavailable. Add -XX:-OmitStackTraceInFastThrow to your java parameters to see all stack traces.");
+			} else {
+				StringWriter stackTraceWriter = new StringWriter();
+				throwable.printStackTrace(new PrintWriter(stackTraceWriter));
+				formattedMessage.append(stackTraceWriter.toString());
 			}
 		}
 
