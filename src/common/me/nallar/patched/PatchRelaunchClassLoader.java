@@ -99,7 +99,13 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 			modifiersField.setInt(field, (field.getModifiers() & ~Modifier.FINAL) & ~Modifier.PRIVATE);
 			ucp = (URLClassPath) field.get(this);
 			minecraftdir = locationOf(net.minecraft.util.Tuple.class).getParentFile();
+			log(Level.INFO, null, "Searching for patched mods in minecraft dir " + minecraftdir);
 			patchedModsFolder = new File(minecraftdir, "patchedMods");
+			if (!patchedModsFolder.exists()) {
+				minecraftdir = new File(".").getAbsoluteFile();
+				log(Level.INFO, null, "Searching for patched mods in minecraft dir " + minecraftdir);
+				patchedModsFolder = new File(minecraftdir, "patchedMods");
+			}
 			boolean foundTT = false;
 			for (File file : new File(minecraftdir, "mods").listFiles()) {
 				if (file.getName().toLowerCase().contains("tickthreading") && file.getName().endsWith(".jar")) {
