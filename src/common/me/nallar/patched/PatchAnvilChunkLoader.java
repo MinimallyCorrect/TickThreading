@@ -1,6 +1,7 @@
 package me.nallar.patched;
 
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
@@ -13,6 +14,8 @@ import com.google.common.cache.CacheBuilder;
 import cpw.mods.fml.common.FMLLog;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickThreading;
+import me.nallar.tickthreading.minecraft.storage.RegionFileCache;
+import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
@@ -26,17 +29,18 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.AnvilChunkLoader;
 import net.minecraft.world.chunk.storage.AnvilChunkLoaderPending;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
-import net.minecraft.world.chunk.storage.RegionFileCache;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.ChunkDataEvent;
 
 public abstract class PatchAnvilChunkLoader extends AnvilChunkLoader {
 	private Cache<Long, NBTTagCompound> chunkCache;
+	public RegionFileCache regionFileCache;
 
 	public void construct() {
 		if (TickThreading.instance.chunkCacheSize > 0) {
 			chunkCache = CacheBuilder.newBuilder().maximumSize(TickThreading.instance.chunkCacheSize).build();
 		}
+		regionFileCache = new RegionFileCache(chunkSaveLocation);
 	}
 
 	public PatchAnvilChunkLoader(File par1File) {
@@ -72,9 +76,9 @@ public abstract class PatchAnvilChunkLoader extends AnvilChunkLoader {
 	}
 
 	@Override
-	public Chunk loadChunk(World par1World, int par2, int par3) throws IOException {
+	public Chunk loadChunk(World par1World, int x, int z) throws IOException {
 		NBTTagCompound var4 = null;
-		ChunkCoordIntPair var5 = new ChunkCoordIntPair(par2, par3);
+		ChunkCoordIntPair var5 = new ChunkCoordIntPair(x, z);
 
 		synchronized (this.syncLockObject) {
 			if (this.pendingAnvilChunksCoordinates.contains(var5)) {
@@ -88,11 +92,11 @@ public abstract class PatchAnvilChunkLoader extends AnvilChunkLoader {
 		}
 
 		if (var4 == null) {
-			long cacheHash = hash(par2, par3);
+			long cacheHash = hash(x, z);
 			var4 = chunkCache == null ? null : chunkCache.getIfPresent(cacheHash);
 
 			if (var4 == null) {
-				DataInputStream var10 = RegionFileCache.getChunkInputStream(this.chunkSaveLocation, par2, par3);
+				DataInputStream var10 = regionFileCache.getChunkInputStream(x, z);
 
 				if (var10 == null) {
 					return null;
@@ -104,7 +108,14 @@ public abstract class PatchAnvilChunkLoader extends AnvilChunkLoader {
 			}
 		}
 
-		return this.checkedReadChunkFromNBT(par1World, par2, par3, var4);
+		return this.checkedReadChunkFromNBT(par1World, x, z, var4);
+	}
+
+	@Override
+	protected void writeChunkNBTTags(AnvilChunkLoaderPending pendingChunk) throws IOException {
+		DataOutputStream var2 = regionFileCache.getChunkOutputStream(pendingChunk.chunkCoordinate.chunkXPos, pendingChunk.chunkCoordinate.chunkZPos);
+		CompressedStreamTools.write(pendingChunk.nbtTags, var2);
+		var2.close();
 	}
 
 	@Override
@@ -255,6 +266,11 @@ public abstract class PatchAnvilChunkLoader extends AnvilChunkLoader {
 
 			par3NBTTagCompound.setTag("TileTicks", var12);
 		}
+	}
+
+	@Declare
+	public void close() {
+		regionFileCache.close();
 	}
 
 	private static long hash(int x, int y) {
