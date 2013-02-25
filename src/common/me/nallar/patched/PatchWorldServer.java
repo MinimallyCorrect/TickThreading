@@ -28,7 +28,9 @@ import net.minecraft.world.WorldServer;
 import net.minecraft.world.WorldSettings;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.storage.AnvilChunkLoader;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
+import net.minecraft.world.chunk.storage.IChunkLoader;
 import net.minecraft.world.gen.ChunkProviderServer;
 import net.minecraft.world.storage.ISaveHandler;
 import net.minecraftforge.common.ForgeChunkManager;
@@ -58,6 +60,10 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	public void flush() {
 		DeadLockDetector.tick("Saving a world before unload", System.nanoTime() + 30000000000L);
 		this.saveHandler.flush();
+		IChunkLoader chunkLoader = theChunkProviderServer.currentChunkLoader;
+		if (chunkLoader instanceof AnvilChunkLoader) {
+			((AnvilChunkLoader) chunkLoader).close();
+		}
 	}
 
 	@Override

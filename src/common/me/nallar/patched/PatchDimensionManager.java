@@ -8,8 +8,6 @@ import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.unsafe.UnsafeUtil;
 import net.minecraft.world.WorldServer;
-import net.minecraft.world.chunk.storage.AnvilChunkLoader;
-import net.minecraft.world.chunk.storage.IChunkLoader;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.WorldEvent;
@@ -34,10 +32,6 @@ public abstract class PatchDimensionManager extends DimensionManager {
 						}
 						w.flush();
 						setWorld(id, null);
-						IChunkLoader chunkLoader = w.theChunkProviderServer.currentChunkLoader;
-						if (chunkLoader instanceof AnvilChunkLoader) {
-							((AnvilChunkLoader) chunkLoader).close();
-						}
 						if (TickThreading.instance.cleanWorlds) {
 							UnsafeUtil.clean(w);
 						}
