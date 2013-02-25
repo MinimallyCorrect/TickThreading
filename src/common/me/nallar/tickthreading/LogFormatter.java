@@ -46,8 +46,8 @@ public class LogFormatter extends Formatter {
 		}
 
 		if ((writtenSize += formattedMessage.length()) > (1024 * 1024 * 50)) { // 50MB
-			Log.disableDiskWriting("No more log messages will be recorded to disk, exceeded 50MB log size.");
 			writtenSize = Integer.MIN_VALUE;
+			Log.disableDiskWriting("No more log messages will be recorded to disk, exceeded 50MB log size.");
 		}
 
 		return formattedMessage.toString();

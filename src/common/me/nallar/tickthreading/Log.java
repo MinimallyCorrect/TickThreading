@@ -55,7 +55,7 @@ public class Log {
 		LOGGER.setLevel(Level.ALL);
 	}
 
-	public static void disableDiskWriting(String finalMessage) {
+	public static synchronized void disableDiskWriting(String finalMessage) {
 		Handler handler = Log.handler;
 		if (handler == null) {
 			return;
@@ -71,7 +71,7 @@ public class Log {
 					handler1.flush();
 				}
 			}
-		} catch (NoClassDefFoundError error) {
+		} catch (NoClassDefFoundError ignored) {
 
 		}
 		handler.publish(finalRecord);
