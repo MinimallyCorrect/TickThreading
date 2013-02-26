@@ -1,4 +1,4 @@
-package me.nallar.tickthreading.util.StringFillers;
+package me.nallar.tickthreading.util.stringfillers;
 
 import java.util.HashMap;
 import java.util.HashSet;

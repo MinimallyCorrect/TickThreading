@@ -1,4 +1,4 @@
-package me.nallar.tickthreading.util.StringFillers;
+package me.nallar.tickthreading.util.stringfillers;
 
 public abstract class StringFiller {
 	public static final StringFiller CHAT = new ChatStringFiller();

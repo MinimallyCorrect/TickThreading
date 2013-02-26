@@ -3,7 +3,7 @@ package me.nallar.tickthreading.util;
 import java.util.ArrayList;
 import java.util.List;
 
-import me.nallar.tickthreading.util.StringFillers.StringFiller;
+import me.nallar.tickthreading.util.stringfillers.StringFiller;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 

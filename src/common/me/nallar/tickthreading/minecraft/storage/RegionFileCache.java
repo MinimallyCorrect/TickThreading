@@ -46,7 +46,7 @@ public class RegionFileCache {
 			File regionFileFile = new File(regionDir, location);
 			regionFile = RegionFileFixer.newRegionFile(regionFileFile);
 			if (regionFileMap.put(hash, regionFile) != null) {
-				throw new IllegalStateException("Region file recreated concurrently. This should never happen.");
+				throw new Error("Region file recreated concurrently. This should never happen.");
 			}
 			return regionFile;
 		}
