@@ -102,6 +102,12 @@ public final class ThreadManager {
 		}
 	}
 
+	public void runAll(Runnable runnable) {
+		for (int i = 0; i < size(); i++) {
+			run(runnable);
+		}
+	}
+
 	public void run(Runnable runnable) {
 		if (taskQueue.add(runnable)) {
 			waiting.incrementAndGet();

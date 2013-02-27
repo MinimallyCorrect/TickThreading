@@ -5,6 +5,8 @@ import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
+import java.util.TreeSet;
 
 import com.google.common.collect.ImmutableSetMultimap;
 
@@ -24,6 +26,7 @@ import net.minecraft.world.IWorldAccess;
 import net.minecraft.world.NextTickListEntry;
 import net.minecraft.world.SpawnerAnimals;
 import net.minecraft.world.Teleporter;
+import net.minecraft.world.WorldProvider;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.WorldSettings;
 import net.minecraft.world.biome.BiomeGenBase;
@@ -33,6 +36,7 @@ import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import net.minecraft.world.chunk.storage.IChunkLoader;
 import net.minecraft.world.gen.ChunkProviderServer;
 import net.minecraft.world.storage.ISaveHandler;
+import net.minecraft.world.storage.WorldInfo;
 import net.minecraftforge.common.ForgeChunkManager;
 
 public abstract class PatchWorldServer extends WorldServer implements Runnable {
@@ -72,34 +76,34 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 			this.entityIdMap = new net.minecraft.util.IntHashMap();
 		}
 
-		if (this.pendingTickListEntries == null) {
-			this.pendingTickListEntries = new TreeHashSet();
+		if (pendingTickListEntries == null) {
+			pendingTickListEntries = new TreeHashSet();
 		}
 
 		this.createSpawnPosition(par1WorldSettings);
 	}
 
 	@Override
-	public List getPendingBlockUpdates(Chunk par1Chunk, boolean par2) {
-		ArrayList var3 = null;
-		ChunkCoordIntPair var4 = par1Chunk.getChunkCoordIntPair();
-		int var5 = var4.chunkXPos << 4;
-		int var6 = var5 + 16;
-		int var7 = var4.chunkZPos << 4;
-		int var8 = var7 + 16;
+	public List getPendingBlockUpdates(Chunk chunk, boolean remove) {
+		ArrayList<NextTickListEntry> var3 = null;
+		int minCX = chunk.xPosition << 4;
+		int maxCX = minCX + 16;
+		int minCZ = chunk.zPosition << 4;
+		int maxCZ = minCZ + 16;
+		TreeSet<NextTickListEntry> pendingTickListEntries = this.pendingTickListEntries;
 		synchronized (pendingTickListEntries) {
-			Iterator var9 = this.pendingTickListEntries.iterator();
+			Iterator<NextTickListEntry> nextTickListEntryIterator = pendingTickListEntries.iterator();
 
-			while (var9.hasNext()) {
-				NextTickListEntry var10 = (NextTickListEntry) var9.next();
+			while (nextTickListEntryIterator.hasNext()) {
+				NextTickListEntry var10 = nextTickListEntryIterator.next();
 
-				if (var10.xCoord >= var5 && var10.xCoord < var6 && var10.zCoord >= var7 && var10.zCoord < var8) {
-					if (par2) {
-						var9.remove();
+				if (var10.xCoord >= minCX && var10.xCoord < maxCX && var10.zCoord >= minCZ && var10.zCoord < maxCZ) {
+					if (remove) {
+						nextTickListEntryIterator.remove();
 					}
 
 					if (var3 == null) {
-						var3 = new ArrayList();
+						var3 = new ArrayList<NextTickListEntry>();
 					}
 
 					var3.add(var10);
@@ -112,17 +116,17 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 
 	@Override
 	public void func_82740_a(int x, int y, int z, int blockID, int timeOffset, int par6) {
-		NextTickListEntry var7 = new NextTickListEntry(x, y, z, blockID);
-		boolean isForced = getPersistentChunks().containsKey(new ChunkCoordIntPair(var7.xCoord >> 4, var7.zCoord >> 4));
+		NextTickListEntry nextTickListEntry = new NextTickListEntry(x, y, z, blockID);
+		boolean isForced = getPersistentChunks().containsKey(new ChunkCoordIntPair(nextTickListEntry.xCoord >> 4, nextTickListEntry.zCoord >> 4));
 		byte range = isForced ? (byte) 0 : 8;
 
 		if (this.scheduledUpdatesAreImmediate && blockID > 0) {
 			if (Block.blocksList[blockID].func_82506_l()) {
-				if (this.checkChunksExist(var7.xCoord - range, var7.yCoord - range, var7.zCoord - range, var7.xCoord + range, var7.yCoord + range, var7.zCoord + range)) {
-					int realBlockID = this.getBlockIdWithoutLoad(var7.xCoord, var7.yCoord, var7.zCoord);
+				if (this.checkChunksExist(nextTickListEntry.xCoord - range, nextTickListEntry.yCoord - range, nextTickListEntry.zCoord - range, nextTickListEntry.xCoord + range, nextTickListEntry.yCoord + range, nextTickListEntry.zCoord + range)) {
+					int realBlockID = this.getBlockIdWithoutLoad(nextTickListEntry.xCoord, nextTickListEntry.yCoord, nextTickListEntry.zCoord);
 
-					if (realBlockID > 0 && realBlockID == var7.blockID) {
-						Block.blocksList[realBlockID].updateTick(this, var7.xCoord, var7.yCoord, var7.zCoord, this.rand);
+					if (realBlockID > 0 && realBlockID == nextTickListEntry.blockID) {
+						Block.blocksList[realBlockID].updateTick(this, nextTickListEntry.xCoord, nextTickListEntry.yCoord, nextTickListEntry.zCoord, this.rand);
 					}
 				}
 
@@ -134,45 +138,48 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 
 		if (this.checkChunksExist(x - range, y - range, z - range, x + range, y + range, z + range)) {
 			if (blockID > 0) {
-				var7.setScheduledTime((long) timeOffset + this.worldInfo.getWorldTotalTime());
-				var7.func_82753_a(par6);
+				nextTickListEntry.setScheduledTime((long) timeOffset + worldInfo.getWorldTotalTime());
+				nextTickListEntry.func_82753_a(par6);
 			}
 
-			this.pendingTickListEntries.add(var7);
+			pendingTickListEntries.add(nextTickListEntry);
 		}
 	}
 
 	@Override
 	public void scheduleBlockUpdateFromLoad(int x, int y, int z, int blockID, int timeOffset) {
-		NextTickListEntry var6 = new NextTickListEntry(x, y, z, blockID);
+		NextTickListEntry nextTickListEntry = new NextTickListEntry(x, y, z, blockID);
 
 		if (blockID > 0) {
-			var6.setScheduledTime((long) timeOffset + this.worldInfo.getWorldTotalTime());
+			nextTickListEntry.setScheduledTime((long) timeOffset + worldInfo.getWorldTotalTime());
 		}
 
-		this.pendingTickListEntries.add(var6);
+		pendingTickListEntries.add(nextTickListEntry);
 	}
 
 	@Override
 	public boolean tickUpdates(boolean runAll) {
 		boolean result;
 		final ArrayList<NextTickListEntry> runningTickListEntries = this.runningTickListEntries;
+		final TreeSet pendingTickListEntries = this.pendingTickListEntries;
+		final Random rand = this.rand;
+		final WorldInfo worldInfo = this.worldInfo;
 		synchronized (pendingTickListEntries) {
-			int var2 = Math.min(1000, this.pendingTickListEntries.size());
+			int var2 = Math.min(1000, pendingTickListEntries.size());
 			runningTickListEntries.ensureCapacity(var2);
 
 			for (int var3 = 0; var3 < var2; ++var3) {
-				NextTickListEntry nextTickListEntry = (NextTickListEntry) this.pendingTickListEntries.first();
+				NextTickListEntry nextTickListEntry = (NextTickListEntry) pendingTickListEntries.first();
 
-				if (!runAll && nextTickListEntry.scheduledTime > this.worldInfo.getWorldTotalTime()) {
+				if (!runAll && nextTickListEntry.scheduledTime > worldInfo.getWorldTotalTime()) {
 					break;
 				}
 
-				this.pendingTickListEntries.remove(nextTickListEntry);
+				pendingTickListEntries.remove(nextTickListEntry);
 				runningTickListEntries.add(nextTickListEntry);
 			}
 
-			result = !this.pendingTickListEntries.isEmpty();
+			result = !pendingTickListEntries.isEmpty();
 		}
 
 		ImmutableSetMultimap<ChunkCoordIntPair, ForgeChunkManager.Ticket> persistentChunks = getPersistentChunks();
@@ -185,7 +192,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 
 				if (blockID == var4.blockID && blockID > 0) {
 					try {
-						Block.blocksList[blockID].updateTick(this, var4.xCoord, var4.yCoord, var4.zCoord, this.rand);
+						Block.blocksList[blockID].updateTick(this, var4.xCoord, var4.yCoord, var4.zCoord, rand);
 					} catch (Throwable var13) {
 						Log.severe("Exception while ticking a block", var13);
 					}
@@ -198,6 +205,8 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 
 	@Override
 	public void tick() {
+		final Profiler profiler = this.theProfiler;
+		final WorldInfo worldInfo = this.worldInfo;
 		int tickCount = this.tickCount++;
 		this.updateWeather();
 		if (this.difficultySetting < 3 && this.getWorldInfo().isHardcoreModeEnabled()) {
@@ -209,39 +218,39 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		}
 
 		if (this.areAllPlayersAsleep()) {
-			long var2 = this.worldInfo.getWorldTime();
-			this.worldInfo.setWorldTime(var2 + 24000L - (var2 % 24000L));
+			long var2 = worldInfo.getWorldTime();
+			worldInfo.setWorldTime(var2 + 24000L - (var2 % 24000L));
 			this.wakeAllPlayers();
 		}
 
-		this.theProfiler.startSection("mobSpawner");
+		profiler.startSection("mobSpawner");
 
 		if (this.getGameRules().getGameRuleBooleanValue("doMobSpawning")) {
-			SpawnerAnimals.findChunksForSpawning(this, this.spawnHostileMobs, this.spawnPeacefulMobs, this.worldInfo.getWorldTotalTime() % 400L == 0L);
+			SpawnerAnimals.findChunksForSpawning(this, this.spawnHostileMobs, this.spawnPeacefulMobs, worldInfo.getWorldTotalTime() % 400L == 0L);
 		}
 
-		this.theProfiler.endStartSection("chunkSource");
+		profiler.endStartSection("chunkSource");
 		this.chunkProvider.unload100OldestChunks();
 		this.skylightSubtracted = this.calculateSkylightSubtracted(1.0F);
 
 		this.sendAndApplyBlockEvents();
-		this.worldInfo.incrementTotalWorldTime(this.worldInfo.getWorldTotalTime() + 1L);
-		this.worldInfo.setWorldTime(this.worldInfo.getWorldTime() + 1L);
-		this.theProfiler.endStartSection("tickPending");
+		worldInfo.incrementTotalWorldTime(worldInfo.getWorldTotalTime() + 1L);
+		worldInfo.setWorldTime(worldInfo.getWorldTime() + 1L);
+		profiler.endStartSection("tickPending");
 		this.tickUpdates(false);
-		this.theProfiler.endStartSection("tickTiles");
+		profiler.endStartSection("tickTiles");
 		this.tickBlocksAndAmbiance();
-		this.theProfiler.endStartSection("chunkMap");
+		profiler.endStartSection("chunkMap");
 		this.thePlayerManager.updatePlayerInstances();
-		this.theProfiler.endStartSection("village");
+		profiler.endStartSection("village");
 		this.villageCollectionObj.tick();
 		this.villageSiegeObj.tick();
-		this.theProfiler.endStartSection("portalForcer");
+		profiler.endStartSection("portalForcer");
 		this.field_85177_Q.func_85189_a(this.getTotalWorldTime());
 		for (Teleporter tele : customTeleporters) {
 			tele.func_85189_a(getTotalWorldTime());
 		}
-		this.theProfiler.endSection();
+		profiler.endSection();
 		this.sendAndApplyBlockEvents();
 	}
 
@@ -253,48 +262,50 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 			threadManager.waitForCompletion();
 		}
 
+		Set<ChunkCoordIntPair> activeChunkSet = this.activeChunkSet;
 		if (tickCount % 5 == 0) {
-			this.theProfiler.startSection("buildList");
+			Profiler profiler = this.theProfiler;
+			profiler.startSection("buildList");
 
-			this.activeChunkSet.clear();
-			this.activeChunkSet.addAll(getPersistentChunks().keySet());
-			for (EntityPlayer entityPlayer : (Iterable<EntityPlayer>) this.playerEntities) {
+			activeChunkSet.clear();
+			activeChunkSet.addAll(getPersistentChunks().keySet());
+			List<EntityPlayer> playerEntities = this.playerEntities;
+			for (EntityPlayer entityPlayer : playerEntities) {
 				int x = (int) (entityPlayer.posX / 16.0D);
 				int z = (int) (entityPlayer.posZ / 16.0D);
 				byte var5 = 6;
 
 				for (int var6 = -var5; var6 <= var5; ++var6) {
 					for (int var7 = -var5; var7 <= var5; ++var7) {
-						this.activeChunkSet.add(new ChunkCoordIntPair(var6 + x, var7 + z));
+						activeChunkSet.add(new ChunkCoordIntPair(var6 + x, var7 + z));
 					}
 				}
 			}
 
-			this.theProfiler.endSection();
+			profiler.endSection();
 
 			if (this.ambientTickCountdown > 0) {
 				--this.ambientTickCountdown;
 			}
 
-			this.theProfiler.startSection("playerCheckLight");
+			profiler.startSection("playerCheckLight");
 
-			if (!this.playerEntities.isEmpty()) {
-				EntityPlayer entityPlayer = (EntityPlayer) this.playerEntities.get(this.rand.nextInt(this.playerEntities.size()));
-				int x = ((int) entityPlayer.posX) + this.rand.nextInt(11) - 5;
-				int y = ((int) entityPlayer.posY) + this.rand.nextInt(11) - 5;
-				int z = ((int) entityPlayer.posZ) + this.rand.nextInt(11) - 5;
+			Random rand = this.rand;
+			if (!playerEntities.isEmpty()) {
+				EntityPlayer entityPlayer = playerEntities.get(rand.nextInt(playerEntities.size()));
+				int x = ((int) entityPlayer.posX) + rand.nextInt(11) - 5;
+				int y = ((int) entityPlayer.posY) + rand.nextInt(11) - 5;
+				int z = ((int) entityPlayer.posZ) + rand.nextInt(11) - 5;
 				this.updateAllLightTypes(x, y, z);
 			}
 
-			this.theProfiler.endSection();
+			profiler.endSection();
 		}
 
-		chunkCoordIterator = this.activeChunkSet.iterator();
+		chunkCoordIterator = activeChunkSet.iterator();
 
 		if (concurrentTicks) {
-			for (int i = 0; i < threadManager.size(); i++) {
-				threadManager.run(this);
-			}
+			threadManager.runAll(this);
 		} else {
 			run();
 		}
@@ -308,8 +319,10 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		final ChunkProviderServer chunkProviderServer = this.theChunkProviderServer;
 		final boolean isRaining = this.isRaining();
 		final boolean isThundering = this.isThundering();
+		final Profiler profiler = this.theProfiler;
+		final WorldProvider provider = this.provider;
 		int updateLCG = this.updateLCG;
-		// We use a random per thread - randoms are threadsafe, however synchronization is involved.
+		// We use a random per thread - randoms are threadsafe, however it can result in some contention. See Random.nextInt - compareAndSet.
 		// This reduces contention -> slightly increased performance, woo! :P
 		while (true) {
 			ChunkCoordIntPair var4;
@@ -337,14 +350,14 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 				continue;
 			}
 			this.moodSoundAndLightCheck(xPos, zPos, chunk);
-			theProfiler.endStartSection("chunkTick"); // endStart as moodSoundAndLightCheck starts a section.
+			profiler.endStartSection("chunkTick"); // endStart as moodSoundAndLightCheck starts a section.
 			chunk.updateSkylight();
 			int var8;
 			int var9;
 			int var10;
 			int var11;
 
-			theProfiler.startSection("lightning");
+			profiler.startSection("lightning");
 			if (isRaining && isThundering && provider.canDoLightning(chunk) && rand.nextInt(100000) == 0) {
 				updateLCG = updateLCG * 1664525 + 1013904223;
 				var8 = updateLCG >> 2;
@@ -359,7 +372,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 
 			int blockID;
 
-			theProfiler.endStartSection("precipitation");
+			profiler.endStartSection("precipitation");
 			if (provider.canDoRainSnowIce(chunk) && rand.nextInt(16) == 0) {
 				updateLCG = updateLCG * 1664525 + 1013904223;
 				var8 = updateLCG >> 2;
@@ -388,7 +401,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 				}
 			}
 
-			theProfiler.endStartSection("blockTick");
+			profiler.endStartSection("blockTick");
 			ExtendedBlockStorage[] var19 = chunk.getBlockStorageArray();
 			var9 = var19.length;
 
@@ -414,8 +427,8 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 					}
 				}
 			}
-			theProfiler.endSection();
-			theProfiler.endStartSection("iterate");
+			profiler.endSection();
+			profiler.endStartSection("iterate");
 		}
 		this.updateLCG += updateLCG * 1664525;
 	}
