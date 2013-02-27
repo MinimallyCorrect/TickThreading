@@ -87,6 +87,9 @@ public class PatchMain {
 		}
 		try {
 			List<File> filesToLoad = CollectionsUtil.toObjects(CollectionsUtil.split(args[0]), File.class);
+			for (int i = 0; i < filesToLoad.size(); i++) {
+				filesToLoad.set(i, filesToLoad.get(i).getAbsoluteFile());
+			}
 			patchManager.classRegistry.writeAllClasses = argsList.contains("all");
 			patchManager.classRegistry.serverFile = filesToLoad.get(0);
 			patchManager.classRegistry.forcePatching = forcePatching;
