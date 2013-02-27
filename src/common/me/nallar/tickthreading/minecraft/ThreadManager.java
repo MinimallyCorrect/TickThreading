@@ -25,6 +25,7 @@ public final class ThreadManager {
 	private final Runnable killTask = new KillRunnable();
 	public long endTime = 0;
 	private final Runnable workerTask = new Runnable() {
+		@SuppressWarnings ("FieldRepeatedlyAccessedInMethod")
 		@Override
 		public void run() {
 			while (true) {

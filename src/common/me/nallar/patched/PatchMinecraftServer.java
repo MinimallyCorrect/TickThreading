@@ -29,6 +29,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet4UpdateTime;
+import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.gui.IUpdatePlayerListBox;
 import net.minecraft.util.AxisAlignedBB;
@@ -206,17 +207,17 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 		if (this.startProfiling) {
 			this.startProfiling = false;
-			this.theProfiler.profilingEnabled = true;
-			this.theProfiler.clearProfiling();
+			theProfiler.profilingEnabled = true;
+			theProfiler.clearProfiling();
 		}
 
-		this.theProfiler.startSection("root");
+		theProfiler.startSection("root");
 
-		this.theProfiler.startSection("forgePreServerTick");
+		theProfiler.startSection("forgePreServerTick");
 		FMLCommonHandler.instance().rescheduleTicks(Side.SERVER);
 		AxisAlignedBB.getAABBPool().cleanPool();
 		FMLCommonHandler.instance().onPreServerTick();
-		this.theProfiler.endSection();
+		theProfiler.endSection();
 
 		this.updateTimeLightAndEntities();
 
@@ -225,14 +226,14 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				throw new IllegalStateException("Already saving!");
 			}
 			currentlySaving = true;
-			this.theProfiler.startSection("save");
+			theProfiler.startSection("save");
 			this.serverConfigManager.saveAllPlayerData();
 			this.saveAllWorlds(true);
-			this.theProfiler.endSection();
+			theProfiler.endSection();
 			currentlySaving = false;
 		}
 
-		this.theProfiler.startSection("tallying");
+		theProfiler.startSection("tallying");
 		this.sentPacketCountArray[this.tickCounter % 100] = Packet.sentID - this.lastSentPacketID;
 		this.lastSentPacketID = Packet.sentID;
 		this.sentPacketSizeArray[this.tickCounter % 100] = Packet.sentSize - this.lastSentPacketSize;
@@ -241,7 +242,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		this.lastReceivedID = Packet.receivedID;
 		this.receivedPacketSizeArray[this.tickCounter % 100] = Packet.receivedSize - this.lastReceivedSize;
 		this.lastReceivedSize = Packet.receivedSize;
-		this.theProfiler.endStartSection("snooper");
+		theProfiler.endStartSection("snooper");
 
 		if (!this.usageSnooper.isSnooperRunning() && this.tickCounter > 100) {
 			this.usageSnooper.startSnooper();
@@ -251,7 +252,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			this.usageSnooper.addMemoryStatsToSnooper();
 		}
 
-		this.theProfiler.endStartSection("forgePostServerTick");
+		theProfiler.endStartSection("forgePostServerTick");
 		FMLCommonHandler.instance().onPostServerTick();
 		LinkedList<EntityPlayerMP> playersToCheckWorld = MinecraftServer.playersToCheckWorld;
 		if (!playersToCheckWorld.isEmpty()) {
@@ -271,17 +272,18 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				playersToCheckWorld.clear();
 			}
 		}
-		this.theProfiler.endSection();
-		this.theProfiler.endSection();
+		theProfiler.endSection();
+		theProfiler.endSection();
 		tickTime = tickTime * 0.98f + ((this.tickTimeArray[this.tickCounter % 100] = System.nanoTime() - var1) * 0.02f);
 	}
 
 	@Override
 	public void updateTimeLightAndEntities() {
-		this.theProfiler.startSection("levels");
+		theProfiler.startSection("levels");
 		int var1;
 
-		dimensionIdsToTick = DimensionManager.getIDs();
+		Integer[] dimensionIdsToTick = this.dimensionIdsToTick = DimensionManager.getIDs();
+		Profiler profiler = this.theProfiler;
 
 		if (threadManager == null) {
 			threadManager = new ThreadManager(8, "World Tick");
@@ -291,10 +293,13 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 		currentWorld.set(0);
 
-		boolean concurrentTicking = tickCounter >= 100 && !theProfiler.profilingEnabled && TickThreading.instance.enableWorldTickThreading;
+		boolean concurrentTicking = tickCounter >= 100 && !profiler.profilingEnabled && TickThreading.instance.enableWorldTickThreading;
 
 		if (concurrentTicking) {
-			int count = Math.min(threadManager.size(), dimensionIdsToTick.length);
+			int count = threadManager.size();
+			if (count < dimensionIdsToTick.length) {
+				count = dimensionIdsToTick.length;
+			}
 			for (int i = 0; i < count; i++) {
 				threadManager.run(tickRunnable);
 			}
@@ -304,10 +309,10 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 		TickThreading.instance.waitForEntityTicks();
 
-		this.theProfiler.endStartSection("players");
+		profiler.endStartSection("players");
 		this.serverConfigManager.sendPlayerInfoToAllPlayers();
 
-		this.theProfiler.endStartSection("tickables");
+		profiler.endStartSection("tickables");
 		for (var1 = 0; var1 < this.tickables.size(); ++var1) {
 			((IUpdatePlayerListBox) this.tickables.get(var1)).update();
 		}
@@ -317,14 +322,14 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		}
 
 		if (tickNetworkInMainThread) {
-			this.theProfiler.endStartSection("connection");
+			profiler.endStartSection("connection");
 			this.getNetworkThread().networkTick();
 		}
 
-		this.theProfiler.endStartSection("dim_unloading");
+		profiler.endStartSection("dim_unloading");
 		DimensionManager.unloadWorlds(worldTickTimes);
 
-		this.theProfiler.endSection();
+		profiler.endSection();
 	}
 
 	@Declare
@@ -370,6 +375,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	@Override
 	@Declare
 	public void doWorldTick() {
+		final Profiler profiler = this.theProfiler;
 		int i;
 		while ((i = currentWorld.getAndIncrement()) < dimensionIdsToTick.length) {
 			int id = dimensionIdsToTick[i];
@@ -377,37 +383,37 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 			WorldServer world = DimensionManager.getWorld(id);
 			try {
-				this.theProfiler.startSection(world.getWorldInfo().getWorldName());
-				this.theProfiler.startSection("pools");
+				profiler.startSection(world.getWorldInfo().getWorldName());
+				profiler.startSection("pools");
 				world.getWorldVec3Pool().clear();
-				this.theProfiler.endSection();
+				profiler.endSection();
 
 				if (this.tickCounter % 60 == 0) {
-					this.theProfiler.startSection("timeSync");
+					profiler.startSection("timeSync");
 					this.serverConfigManager.sendPacketToAllPlayersInDimension(new Packet4UpdateTime(world.getTotalWorldTime(), world.getWorldTime()), world.provider.dimensionId);
-					this.theProfiler.endSection();
+					profiler.endSection();
 				}
 
-				this.theProfiler.startSection("forgeTick");
+				profiler.startSection("forgeTick");
 				FMLCommonHandler.instance().onPreWorldTick(world);
 
-				this.theProfiler.endStartSection("worldTick");
+				profiler.endStartSection("worldTick");
 				world.tick();
-				this.theProfiler.endStartSection("entityTick");
+				profiler.endStartSection("entityTick");
 				world.updateEntities();
-				this.theProfiler.endStartSection("postForgeTick");
+				profiler.endStartSection("postForgeTick");
 				FMLCommonHandler.instance().onPostWorldTick(world);
-				this.theProfiler.endSection();
-				this.theProfiler.startSection("tracker");
+				profiler.endSection();
+				profiler.startSection("tracker");
 				world.getEntityTracker().updateTrackedEntities();
-				this.theProfiler.endSection();
+				profiler.endSection();
 				if (this.tickCounter % TickThreading.instance.chunkGCInterval == 0) {
 					ChunkGarbageCollector.garbageCollect(world);
 				}
 				if (this.tickCounter % 102 == 0) {
 					exceptionCount.put(id, 0);
 				}
-				this.theProfiler.endSection();
+				profiler.endSection();
 
 				if (worldTickTimes != null) {
 					long[] tickTimes = worldTickTimes.get(id);
