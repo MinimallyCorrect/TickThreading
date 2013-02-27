@@ -108,7 +108,7 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 			}
 		}
 
-		if (unloadTicks++ > 200 && this.worldObj.provider.dimensionId != 0 && TickThreading.instance.allowWorldUnloading && loadedChunks.isEmpty() && ForgeChunkManager.getPersistentChunksFor(worldObj).isEmpty() && (!TickThreading.instance.shouldLoadSpawn || !DimensionManager.shouldLoadSpawn(worldObj.provider.dimensionId))) {
+		if (unloadTicks++ > 1200 && this.worldObj.provider.dimensionId != 0 && TickThreading.instance.allowWorldUnloading && loadedChunks.isEmpty() && ForgeChunkManager.getPersistentChunksFor(worldObj).isEmpty() && (!TickThreading.instance.shouldLoadSpawn || !DimensionManager.shouldLoadSpawn(worldObj.provider.dimensionId))) {
 			DimensionManager.unloadWorld(worldObj.provider.dimensionId);
 		}
 
