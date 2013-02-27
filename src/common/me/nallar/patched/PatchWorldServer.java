@@ -210,7 +210,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 
 		if (this.areAllPlayersAsleep()) {
 			long var2 = this.worldInfo.getWorldTime();
-			this.worldInfo.setWorldTime(var2 + var2 % 24000L);
+			this.worldInfo.setWorldTime(var2 + 24000L - (var2 % 24000L));
 			this.wakeAllPlayers();
 		}
 
