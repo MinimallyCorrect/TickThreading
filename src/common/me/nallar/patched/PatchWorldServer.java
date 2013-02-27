@@ -68,6 +68,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		if (chunkLoader instanceof AnvilChunkLoader) {
 			((AnvilChunkLoader) chunkLoader).close();
 		}
+		threadManager.stop();
 	}
 
 	@Override
