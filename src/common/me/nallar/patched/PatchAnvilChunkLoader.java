@@ -268,6 +268,7 @@ public abstract class PatchAnvilChunkLoader extends AnvilChunkLoader {
 		}
 	}
 
+	@Override
 	@Declare
 	public void close() {
 		regionFileCache.close();

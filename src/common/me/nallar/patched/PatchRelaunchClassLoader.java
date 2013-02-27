@@ -51,7 +51,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 	private Set<String> patchedURLs;
 	private ThreadLocal<byte[]> buffer;
 
-	private void log(Level level, Throwable t, String message) {
+	private static void log(Level level, Throwable t, String message) {
 		try {
 			FMLRelaunchLog.log(level, t, message);
 		} catch (Throwable t_) {
@@ -145,7 +145,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 		File patchedModFile;
 		try {
 			patchedModFile = new File(patchedModsFolder, url.substring(url.lastIndexOf('/') + 1, url.length()));
-			if (!patchedURLs.add(patchedModFile.getAbsolutePath().toString())) {
+			if (!patchedURLs.add(patchedModFile.getAbsolutePath())) {
 				return;
 			}
 		} catch (Exception e) {

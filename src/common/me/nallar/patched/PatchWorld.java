@@ -67,11 +67,11 @@ public abstract class PatchWorld extends World {
 
 		try {
 			if (entity.riddenByEntity != null) {
-				entity.riddenByEntity.mountEntity((Entity) null);
+				entity.riddenByEntity.mountEntity(null);
 			}
 
 			if (entity.ridingEntity != null) {
-				entity.mountEntity((Entity) null);
+				entity.mountEntity(null);
 			}
 
 			entity.setDead();

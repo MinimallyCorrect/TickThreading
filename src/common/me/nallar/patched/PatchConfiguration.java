@@ -7,7 +7,9 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 
+import cpw.mods.fml.common.FMLLog;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.Configuration;
 
@@ -57,7 +59,7 @@ public abstract class PatchConfiguration extends Configuration {
 				fos.close();
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			FMLLog.log(Level.WARNING, e, "Error saving configuration file " + file);
 		}
 	}
 }

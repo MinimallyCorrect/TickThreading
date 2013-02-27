@@ -14,6 +14,7 @@ public enum MappingUtil {
 		try {
 			ObjectInputStream s = new ObjectInputStream(MappingUtil.class.getResourceAsStream("/mappings.obj"));
 			try {
+				//noinspection unchecked
 				return (Map<String, String>) s.readObject();
 			} finally {
 				s.close();
