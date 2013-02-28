@@ -3,11 +3,15 @@ package me.nallar.tickthreading.minecraft.commands;
 import java.lang.reflect.Field;
 import java.util.List;
 
+import javassist.Modifier;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.util.TableFormatter;
+import net.minecraft.block.Block;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
@@ -47,18 +51,25 @@ public class DumpCommand extends Command {
 		if (world == null) {
 			sendChat(commandSender, "Usage: /dump x y z [world=currentworld]");
 		}
-		sendChat(commandSender, dump(new TableFormatter(commandSender), world, x, y, z).toString());
+		sendChat(commandSender, dump(new TableFormatter(commandSender), world, x, y, z, commandSender instanceof Entity ? 35 : 70).toString());
 	}
 
-	public static TableFormatter dump(TableFormatter tf, World world, int x, int y, int z) {
+	public static TableFormatter dump(TableFormatter tf, World world, int x, int y, int z, int maxLen) {
 		StringBuilder sb = tf.sb;
 		int blockId = world.getBlockIdWithoutLoad(x, y, z);
 		if (blockId < 1) {
-			sb.append("No loaded block at ").append(Log.name(world)).append("x,y,z").append(x).append(',').append(y).append(',').append(z);
+			sb.append("No block at ").append(Log.name(world)).append(" x,y,z").append(x).append(',').append(y).append(',').append(z).append('\n');
+		} else {
+			int metaData = world.getBlockMetadata(x, y, z);
+			Block type = Block.blocksList[blockId];
+			Item item = type == null ? null : Item.itemsList[blockId];
+			ItemStack itemType = item == null ? null : new ItemStack(blockId, 1, metaData);
+			String name = itemType == null ? (type == null ? "unknown" : type.translateBlockName()) : item.getItemNameIS(itemType);
+			sb.append(blockId).append(':').append(name).append(':').append(metaData).append('\n');
 		}
 		TileEntity toDump = world.getTEWithoutLoad(x, y, z);
 		if (toDump == null) {
-			sb.append("No tile entity at ").append(Log.name(world)).append("x,y,z").append(x).append(',').append(y).append(',').append(z);
+			sb.append("No tile entity at ").append(Log.name(world)).append(" x,y,z").append(x).append(',').append(y).append(',').append(z).append('\n');
 			return tf;
 		}
 		tf
@@ -67,11 +78,14 @@ public class DumpCommand extends Command {
 		Class<?> clazz = toDump.getClass();
 		do {
 			for (Field field : clazz.getDeclaredFields()) {
+				if ((field.getModifiers() & Modifier.STATIC) == Modifier.STATIC) {
+					continue;
+				}
 				field.setAccessible(true);
 				tf.row(field.getName());
 				try {
 					String value = String.valueOf(field.get(toDump));
-					tf.row(value.substring(0, Math.min(value.length(), 32)));
+					tf.row(value.substring(0, Math.min(value.length(), maxLen)));
 				} catch (IllegalAccessException e) {
 					tf.row(e.getMessage());
 				}
