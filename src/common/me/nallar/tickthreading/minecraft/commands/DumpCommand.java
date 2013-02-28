@@ -70,7 +70,7 @@ public class DumpCommand extends Command {
 				field.setAccessible(true);
 				tf.row(field.getName());
 				try {
-					String value = field.get(toDump).toString();
+					String value = String.valueOf(field.get(toDump));
 					tf.row(value.substring(0, Math.min(value.length(), 32)));
 				} catch (IllegalAccessException e) {
 					tf.row(e.getMessage());
