@@ -13,6 +13,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 
@@ -65,6 +66,12 @@ public class DumpCommand extends Command {
 			Item item = type == null ? null : Item.itemsList[blockId];
 			ItemStack itemType = item == null ? null : new ItemStack(blockId, 1, metaData);
 			String name = itemType == null ? (type == null ? "unknown" : type.translateBlockName()) : item.getItemNameIS(itemType);
+			String preTranslateName = "item." + name;
+			String localizedName = StatCollector.translateToLocal(preTranslateName);
+			//noinspection StringEquality
+			if (localizedName != null && localizedName != preTranslateName) {
+				name = localizedName;
+			}
 			sb.append(blockId).append(':').append(name).append(':').append(metaData).append('\n');
 		}
 		TileEntity toDump = world.getTEWithoutLoad(x, y, z);
