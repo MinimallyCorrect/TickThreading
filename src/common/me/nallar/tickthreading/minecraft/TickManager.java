@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -26,6 +28,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.ChunkProviderServer;
+import org.omg.CORBA.IntHolder;
 
 public final class TickManager {
 	public final int regionSize;
@@ -149,37 +152,48 @@ public final class TickManager {
 		}
 	}
 
-	public void add(TileEntity tileEntity) {
-		TileEntityTickRegion tileEntityTickRegion = getOrCreateRegion(tileEntity);
-		tileEntityTickRegion.add(tileEntity);
-		tileEntity.tickRegion = tileEntityTickRegion;
-		synchronized (tileEntityLock) {
-			if (!tileEntityList.contains(tileEntity)) {
-				tileEntityList.add(tileEntity);
-			}
-		}
+	public boolean add(TileEntity tileEntity) {
+		return add(tileEntity, true);
 	}
 
-	public void add(Entity entity) {
-		EntityTickRegion entityTickRegion = getOrCreateRegion(entity);
-		entityTickRegion.add(entity);
-		entity.tickRegion = entityTickRegion;
-		boolean added;
-		synchronized (entityLock) {
-			if (added = !entityList.contains(entity)) {
-				entityList.add(entity);
-			}
-		}
-		if (added) {
-			synchronized (entityClassToCountMap) {
-				Class entityClass = entity.getClass();
-				Integer count = entityClassToCountMap.get(entityClass);
-				if (count == null) {
-					count = 0;
+	public boolean add(TileEntity tileEntity, boolean newEntity) {
+		TileEntityTickRegion tileEntityTickRegion = getOrCreateRegion(tileEntity);
+		if (tileEntityTickRegion.add(tileEntity)) {
+			tileEntity.tickRegion = tileEntityTickRegion;
+			if (newEntity) {
+				synchronized (tileEntityLock) {
+					tileEntityList.add(tileEntity);
 				}
-				entityClassToCountMap.put(entityClass, count + 1);
 			}
+			return true;
 		}
+		return false;
+	}
+
+	public boolean add(Entity entity) {
+		return add(entity, true);
+	}
+
+	public boolean add(Entity entity, boolean newEntity) {
+		EntityTickRegion entityTickRegion = getOrCreateRegion(entity);
+		if (entityTickRegion.add(entity)) {
+			entity.tickRegion = entityTickRegion;
+			if (newEntity) {
+				synchronized (entityLock) {
+					entityList.add(entity);
+				}
+				synchronized (entityClassToCountMap) {
+					Class entityClass = entity.getClass();
+					Integer count = entityClassToCountMap.get(entityClass);
+					if (count == null) {
+						count = 0;
+					}
+					entityClassToCountMap.put(entityClass, count + 1);
+				}
+			}
+			return true;
+		}
+		return false;
 	}
 
 	public void batchRemoveEntities(Collection<Entity> entities) {
@@ -404,6 +418,48 @@ public final class TickManager {
 		entityList.clear();
 		entityClassToCountMap.clear();
 		UnsafeUtil.clean(this);
+	}
+
+	public void fixDiscrepancies(TableFormatter tableFormatter) {
+		final IntHolder intHolder = new IntHolder();
+
+		{
+			Set<Entity> contained = new HashSet<Entity>();
+			Set<Entity> toRemove = new HashSet<Entity>();
+			synchronized (entityList) {
+				for (Entity e : entityList) {
+					if (add(e, false)) {
+						intHolder.value++;
+					}
+					if (!contained.add(e)) {
+						toRemove.add(e);
+						intHolder.value++;
+					}
+				}
+				entityList.removeAll(toRemove);
+			}
+		}
+
+		{
+			Set<TileEntity> contained = new HashSet<TileEntity>();
+			Set<TileEntity> toRemove = new HashSet<TileEntity>();
+			synchronized (tileEntityList) {
+				for (TileEntity te : tileEntityList) {
+					if (add(te, false)) {
+						intHolder.value++;
+					}
+					if (!contained.add(te)) {
+						toRemove.add(te);
+						intHolder.value++;
+					}
+				}
+				tileEntityList.removeAll(toRemove);
+			}
+		}
+
+		if (intHolder.value != 0) {
+			tableFormatter.sb.append("Fixed ").append(intHolder.value).append(" discrepancies in tile/entity lists.");
+		}
 	}
 
 	public void writeStats(TableFormatter tf) {

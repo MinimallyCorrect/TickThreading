@@ -2,6 +2,7 @@ package me.nallar.tickthreading.minecraft.commands;
 
 import java.util.List;
 
+import me.nallar.tickthreading.minecraft.TickManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.util.TableFormatter;
 import net.minecraft.command.ICommandSender;
@@ -44,7 +45,11 @@ public class TicksCommand extends Command {
 			return;
 		}
 		if (entities) {
-			sendChat(commandSender, String.valueOf(TickThreading.instance.getManager(world).writeEntityStats(new TableFormatter(commandSender))));
+			TableFormatter tf = new TableFormatter(commandSender);
+			TickManager tickManager = TickThreading.instance.getManager(world);
+			tickManager.writeEntityStats(tf);
+			tickManager.fixDiscrepancies(tf);
+			sendChat(commandSender, String.valueOf(tf));
 		} else {
 			sendChat(commandSender, String.valueOf(TickThreading.instance.getManager(world).writeDetailedStats(new TableFormatter(commandSender))));
 		}

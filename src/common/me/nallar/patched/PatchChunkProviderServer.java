@@ -162,30 +162,37 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 	@Override
 	public Chunk loadChunk(int x, int z) {
 		// TODO: replace most of CPS chunk-loading and related logic with Spigot-compatible variants
-		long var3 = ChunkCoordIntPair.chunkXZ2Int(x, z);
+		long key = ChunkCoordIntPair.chunkXZ2Int(x, z);
 		synchronized (chunksToUnload) {
-			this.chunksToUnload.remove(Long.valueOf(var3));
+			this.chunksToUnload.remove(Long.valueOf(key));
 		}
-		Chunk var5 = (Chunk) this.loadedChunkHashMap.getValueByKey(var3);
+		Chunk chunk = (Chunk) this.loadedChunkHashMap.getValueByKey(key);
 
-		if (var5 != null) {
-			return var5;
+		if (chunk != null) {
+			return chunk;
 		}
 
 		final Object lock = getLock(x, z);
+		boolean inLoadingMap = false;
 
 		// Lock on the lock for this chunk - prevent multiple instances of the same chunk
+		ThreadLocal<Boolean> worldGenInProgress = worldObj.worldGenInProgress;
 		synchronized (lock) {
-			var5 = (Chunk) this.loadedChunkHashMap.getValueByKey(var3);
-			if (var5 != null) {
-				return var5;
+			chunk = (Chunk) this.loadedChunkHashMap.getValueByKey(key);
+			if (chunk != null) {
+				return chunk;
 			}
-			var5 = (Chunk) loadingChunkHashMap.getValueByKey(var3);
-			if (var5 == null) {
-				var5 = this.safeLoadChunk(x, z);
-				if (var5 != null) {
-					this.loadingChunkHashMap.add(var3, var5);
+			chunk = (Chunk) loadingChunkHashMap.getValueByKey(key);
+			if (chunk == null) {
+				chunk = this.safeLoadChunk(x, z);
+				if (chunk != null) {
+					this.loadingChunkHashMap.add(key, chunk);
+					inLoadingMap = true;
 				}
+			} else if (worldGenInProgress != null && worldGenInProgress.get() == Boolean.TRUE) {
+				return chunk;
+			} else {
+				inLoadingMap = true;
 			}
 		}
 		// Unlock this chunk - avoids a deadlock
@@ -202,20 +209,20 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 		try {
 			synchronized (genLock) {
 				synchronized (lock) {
-					if (worldObj.worldGenInProgress != null) {
-						worldObj.worldGenInProgress.set(true);
+					if (worldGenInProgress != null) {
+						worldGenInProgress.set(Boolean.TRUE);
 					}
-					var5 = (Chunk) this.loadedChunkHashMap.getValueByKey(var3);
-					if (var5 != null) {
-						return var5;
+					chunk = (Chunk) this.loadedChunkHashMap.getValueByKey(key);
+					if (chunk != null) {
+						return chunk;
 					}
-					var5 = (Chunk) this.loadingChunkHashMap.getValueByKey(var3);
-					if (var5 == null) {
+					chunk = (Chunk) this.loadingChunkHashMap.getValueByKey(key);
+					if (chunk == null) {
 						if (this.currentChunkProvider == null) {
-							var5 = this.defaultEmptyChunk;
+							chunk = this.defaultEmptyChunk;
 						} else {
 							try {
-								var5 = this.currentChunkProvider.provideChunk(x, z);
+								chunk = this.currentChunkProvider.provideChunk(x, z);
 							} catch (Throwable t) {
 								Log.severe("Failed to generate a chunk in " + Log.name(worldObj) + " at chunk coords " + x + ',' + z);
 								UnsafeUtil.throwIgnoreChecked(t);
@@ -227,31 +234,36 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 						}
 					}
 
-					if (var5 == null) {
-						throw new IllegalStateException("Null chunk was provided!");
+					if (chunk == null) {
+						throw new IllegalStateException("Null chunk was provided for " + x + ',' + z);
 					}
 
-					this.loadingChunkHashMap.remove(var3);
-					this.loadedChunkHashMap.add(var3, var5);
+					if (!inLoadingMap) {
+						this.loadingChunkHashMap.add(key, chunk);
+					}
+
+					chunk.populateChunk(this, this, x, z);
+
+					this.loadingChunkHashMap.remove(key);
+					this.loadedChunkHashMap.add(key, chunk);
+
 					synchronized (loadedChunks) {
-						this.loadedChunks.add(var5);
+						this.loadedChunks.add(chunk);
 					}
-
-					var5.populateChunk(this, this, x, z);
 				}
 			}
 		} finally {
-			if (worldObj.worldGenInProgress != null) {
-				worldObj.worldGenInProgress.set(false);
+			if (worldGenInProgress != null) {
+				worldGenInProgress.set(Boolean.FALSE);
 			}
 		}
 
 		// TODO: Do initial mob spawning here - doing it while locked is stupid and can cause deadlocks with some bukkit plugins
 
-		var5.onChunkLoad();
+		chunk.onChunkLoad();
 		chunkLoadLocks.remove(hash(x, z));
 
-		return var5;
+		return chunk;
 	}
 
 	@Override
@@ -268,30 +280,29 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 	}
 
 	@Override
-	public boolean saveChunks(boolean par1, IProgressUpdate par2IProgressUpdate) {
-		int var3 = 0;
+	public boolean saveChunks(boolean force, IProgressUpdate par2IProgressUpdate) {
+		int savedChunks = 0;
 
 		synchronized (loadedChunks) {
 			for (Object loadedChunk : this.loadedChunks) {
 				Chunk var5 = (Chunk) loadedChunk;
 
-				if (par1) {
+				if (force) {
 					this.safeSaveExtraChunkData(var5);
 				}
 
-				if (var5.needsSaving(par1)) {
+				if (var5.needsSaving(force)) {
 					this.safeSaveChunk(var5);
 					var5.isModified = false;
-					++var3;
 
-					if (var3 == 24 && !par1) {
+					if (++savedChunks == 24 && !force) {
 						return false;
 					}
 				}
 			}
 		}
 
-		if (par1) {
+		if (force) {
 			if (this.currentChunkLoader == null) {
 				return true;
 			}

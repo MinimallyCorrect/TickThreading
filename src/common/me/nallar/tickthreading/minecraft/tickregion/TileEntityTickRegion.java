@@ -78,7 +78,7 @@ public class TileEntityTickRegion extends TickRegion {
 				}
 				if (manager.getHashCode(xPos, zPos) != hashCode) {
 					tileEntitiesIterator.remove();
-					manager.add(tileEntity);
+					manager.add(tileEntity, false);
 					if (hashCode != 0) {
 						Log.severe("Inconsistent state, a tile entity is in the wrong TickRegion"
 								+ "\n entity: " + Log.toString(tileEntity) + " at x,y,z:" + xPos + ',' + tileEntity.yCoord + ',' + zPos
@@ -130,12 +130,12 @@ public class TileEntityTickRegion extends TickRegion {
 		return "T";
 	}
 
-	public void add(TileEntity tileEntity) {
+	public boolean add(TileEntity tileEntity) {
 		synchronized (tickStateLock) {
 			if (ticking) {
-				toAdd.add(tileEntity);
+				return toAdd.add(tileEntity) && !tileEntitySet.contains(tileEntity);
 			} else {
-				tileEntitySet.add(tileEntity);
+				return tileEntitySet.add(tileEntity);
 			}
 		}
 	}
@@ -143,7 +143,7 @@ public class TileEntityTickRegion extends TickRegion {
 	public boolean remove(TileEntity tileEntity) {
 		synchronized (tickStateLock) {
 			if (ticking) {
-				return toRemove.add(tileEntity);
+				return toRemove.add(tileEntity) && tileEntitySet.contains(tileEntity);
 			} else {
 				return tileEntitySet.remove(tileEntity);
 			}

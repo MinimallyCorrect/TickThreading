@@ -64,7 +64,7 @@ public class EntityTickRegion extends TickRegion {
 					world.releaseEntitySkin(entity);
 				} else if (manager.getHashCode(entity) != hashCode) {
 					entitiesIterator.remove();
-					manager.add(entity);
+					manager.add(entity, false);
 					//Log.severe("Inconsistent state: " + entity + " is in the wrong TickRegion.");
 					// Note to self for when I decide this is wrong later:
 					// Entities are supposed to move, of course this will happen!
@@ -83,12 +83,12 @@ public class EntityTickRegion extends TickRegion {
 		return "E";
 	}
 
-	public void add(Entity entity) {
+	public boolean add(Entity entity) {
 		synchronized (tickStateLock) {
 			if (ticking) {
-				toAdd.add(entity);
+				return toAdd.add(entity) && !entitySet.contains(entity);
 			} else {
-				entitySet.add(entity);
+				return entitySet.add(entity);
 			}
 		}
 	}
