@@ -319,6 +319,10 @@
 			<threadLocal field="searching" type="boolean" setExpression="java.lang.Boolean.valueOf($1)" threadLocalField="javassist.is.faulty.ThreadLocals.redPowerIsSearching"/>
 			-->
 		</class>
+		<class id="com.eloraam.redpower.core.TileExtended">
+			<replaceMethod code="this.sendTile();">updateBlock</replaceMethod>
+			<replaceMethod code="this.sendTileWithNotify();">updateBlockChange</replaceMethod>
+		</class>
 		<class id="com.eloraam.redpower.core.TubeFlow">
 			<!-- TODO: Non-static lock -->
 			<newField field="staticLock" class="java.lang.Object" static=""/>

@@ -2,7 +2,9 @@ package me.nallar.patched;
 
 import me.nallar.tickthreading.patcher.Declare;
 import me.nallar.tickthreading.util.concurrent.SimpleMutex;
+import net.minecraft.server.management.PlayerInstance;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.WorldServer;
 
 public abstract class PatchTileEntity extends TileEntity {
 	// Two locks - x, z. No need for plus/minus, never both needed unless region size of 1 = not allowed + stupid
@@ -27,5 +29,26 @@ public abstract class PatchTileEntity extends TileEntity {
 
 	public void construct() {
 		thisLock = new SimpleMutex();
+	}
+
+	@Override
+	@Declare
+	public void sendTileWithNotify() {
+		if (!worldObj.isRemote && !worldObj.editingBlocks) {
+			worldObj.notifyBlocksOfNeighborChange(xCoord, yCoord, zCoord, getBlockType().blockID);
+		}
+		PlayerInstance p = ((WorldServer) worldObj).getPlayerManager().getOrCreateChunkWatcher(xCoord >> 4, zCoord >> 4, false);
+		if (p != null) {
+			p.updateTile(this);
+		}
+	}
+
+	@Override
+	@Declare
+	public void sendTile() {
+		PlayerInstance p = ((WorldServer) worldObj).getPlayerManager().getOrCreateChunkWatcher(xCoord >> 4, zCoord >> 4, false);
+		if (p != null) {
+			p.updateTile(this);
+		}
 	}
 }
