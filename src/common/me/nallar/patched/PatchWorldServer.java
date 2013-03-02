@@ -2,6 +2,7 @@ package me.nallar.patched;
 
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -46,6 +47,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	private ArrayList<NextTickListEntry> runningTickListEntries;
 	@Declare
 	public ThreadLocal<Boolean> worldGenInProgress_;
+	private HashSet<ChunkCoordIntPair> chunkTickSet;
 
 	public PatchWorldServer(MinecraftServer par1MinecraftServer, ISaveHandler par2ISaveHandler, String par3Str, int par4, WorldSettings par5WorldSettings, Profiler par6Profiler) {
 		super(par1MinecraftServer, par2ISaveHandler, par3Str, par4, par5WorldSettings, par6Profiler);
@@ -62,6 +64,12 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		pendingTickListEntries = new TreeHashSet();
 		worldGenInProgress = new BooleanThreadLocal();
 		runningTickListEntries = new ArrayList<NextTickListEntry>();
+		try {
+			chunkTickSet = (HashSet<ChunkCoordIntPair>) activeChunkSet;
+		} catch (NoSuchFieldError ignored) {
+			//Spigot support
+			chunkTickSet = new HashSet<ChunkCoordIntPair>();
+		}
 	}
 
 	@Override
@@ -267,7 +275,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 			threadManager.waitForCompletion();
 		}
 
-		Set<ChunkCoordIntPair> activeChunkSet = this.activeChunkSet;
+		HashSet<ChunkCoordIntPair> activeChunkSet = chunkTickSet;
 		if (tickCount % 5 == 0) {
 			Profiler profiler = this.theProfiler;
 			profiler.startSection("buildList");
