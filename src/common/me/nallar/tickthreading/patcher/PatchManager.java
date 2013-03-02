@@ -53,10 +53,17 @@ public class PatchManager {
 	public File backupDirectory;
 	public String patchEnvironment = "forge";
 
-	public PatchManager(InputStream configStream, Class<Patches> patchClass) throws IOException, SAXException {
+	public PatchManager() {
+	}
+
+	public PatchManager(InputStream configStream, Class<? extends Patches> patchClass) throws IOException, SAXException {
+		this(configStream, patchClass, new File(LocationUtil.directoryOf(patchClass).getAbsoluteFile().getParentFile(), "TickThreadingBackups"));
+	}
+
+	public PatchManager(InputStream configStream, Class<? extends Patches> patchClass, File backupDirectory) throws IOException, SAXException {
 		loadPatches(patchClass);
-		configDocument = loadConfig(configStream);
-		backupDirectory = new File(LocationUtil.directoryOf(patchClass).getAbsoluteFile().getParentFile(), "TickThreadingBackups");
+		loadConfig(configStream);
+		this.backupDirectory = backupDirectory;
 	}
 
 	public void loadBackups(Iterable<File> filesToLoad) {
@@ -72,7 +79,7 @@ public class PatchManager {
 		}
 	}
 
-	void loadPatches(Class<Patches> patchClass) {
+	public void loadPatches(Class<? extends Patches> patchClass) {
 		try {
 			patchTypes = patchClass.getDeclaredConstructors()[0].newInstance(classRegistry);
 		} catch (Exception e) {
@@ -88,7 +95,14 @@ public class PatchManager {
 		}
 	}
 
-	private static Document loadConfig(InputStream configInputStream) throws IOException, SAXException {
+	public void loadConfig(InputStream configInputStream) throws IOException, SAXException {
+		configDocument = getConfigDocument(configInputStream);
+	}
+
+	private static Document getConfigDocument(InputStream configInputStream) throws IOException, SAXException {
+		if (configInputStream == null) {
+			throw new NullPointerException("configInputStream");
+		}
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 		try {
 			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
@@ -97,10 +111,7 @@ public class PatchManager {
 			//This exception is thrown, and no shorthand way of getting a DocumentBuilder without it.
 			//Should not be thrown, as we do not do anything to the DocumentBuilderFactory.
 			Log.severe("Java was bad, this shouldn't happen. DocBuilder instantiation via default docBuilderFactory failed", e);
-		} finally {
-			if (configInputStream != null) {
-				configInputStream.close();
-			}
+			configInputStream.close();
 		}
 		return null;
 	}
