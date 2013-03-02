@@ -237,6 +237,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 
 		byte[] basicClass = null;
 
+		@SuppressWarnings ("NonConstantStringShouldBeStringBuffer")
 		String path = name.replace('.', '/') + ".class";
 		if (name.indexOf('.') == -1) {
 			for (String res : RESERVED) {
@@ -312,7 +313,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 			int lastDot = name.lastIndexOf('.');
 			String pkgname = lastDot == -1 ? "" : name.substring(0, lastDot);
 			Package pkg = getPackage(pkgname);
-			if (codeSource == null || (pkg == null && lastDot > -1)) {
+			if (codeSource == null || pkg == null) {
 				URLConnection urlConnection = findCodeSourceConnectionFor(path);
 				if (lastDot > -1) {
 					Manifest mf = null;
@@ -341,9 +342,9 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 							FMLRelaunchLog.severe("The URL %s is defining elements for sealed path %s", urlConnection.getURL(), pkgname);
 						}
 					}
-					if (pkg == null) {
-						log(Level.SEVERE, null, "No package defined for " + pkgname + " getting " + path);
-					}
+				}
+				if (pkg == null) {
+					log(Level.SEVERE, null, "No package defined for " + pkgname + " getting " + path);
 				}
 				if (codeSource == null && urlConnection != null) {
 					codeSource = new CodeSource(urlConnection.getURL(), signers);
@@ -351,6 +352,9 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 			}
 			byte[] transformedClass = transform ? runTransformers(name, basicClass) : basicClass;
 			Class<?> cl = defineClass(name, transformedClass, 0, transformedClass.length, codeSource);
+			if (cl.getPackage() != pkg) {
+				log(Level.SEVERE, null, "Package mismatch: got " + cl.getPackage() + ", expected " + pkg);
+			}
 			cachedClasses.put(name, cl);
 			return cl;
 		} catch (Throwable e) {
