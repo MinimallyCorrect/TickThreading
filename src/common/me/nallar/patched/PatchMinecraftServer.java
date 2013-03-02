@@ -24,6 +24,7 @@ import me.nallar.tickthreading.minecraft.ThreadManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
 import me.nallar.tickthreading.util.FakeServerThread;
+import me.nallar.tickthreading.util.PatchUtil;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -108,6 +109,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		try {
 			try {
 				InsecurityManager.init();
+				PatchUtil.writePatchRunners();
 			} catch (Throwable t) {
 				FMLLog.log(Level.SEVERE, t, "Failed to set up Security Manager. This is probably not a huge problem - but it could indicate classloading issues.");
 			}

@@ -230,7 +230,7 @@ public class ClassRegistry {
 		ZipInputStream zin = null;
 		ZipOutputStream zout = null;
 		backupDirectory.mkdir();
-		updatedFiles.remove(LocationUtil.locationOf(PatchMain.class));
+		updatedFiles.remove(LocationUtil.locationOf(PatchMain.class).getAbsoluteFile());
 		patchedModsFolder.mkdir();
 		int patchedClasses = 0;
 		try {

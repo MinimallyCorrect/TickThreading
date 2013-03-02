@@ -56,7 +56,7 @@ public class PatchManager {
 	public PatchManager(InputStream configStream, Class<Patches> patchClass) throws IOException, SAXException {
 		loadPatches(patchClass);
 		configDocument = loadConfig(configStream);
-		backupDirectory = new File(LocationUtil.directoryOf(patchClass).getParentFile(), "TickThreadingBackups");
+		backupDirectory = new File(LocationUtil.directoryOf(patchClass).getAbsoluteFile().getParentFile(), "TickThreadingBackups");
 	}
 
 	public void loadBackups(Iterable<File> filesToLoad) {

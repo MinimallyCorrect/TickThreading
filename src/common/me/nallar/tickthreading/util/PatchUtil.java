@@ -13,15 +13,20 @@ import me.nallar.tickthreading.minecraft.TickThreading;
 
 public enum PatchUtil {
 	;
+	private static boolean written = false;
 
-	public static void writePatchRunners() throws IOException {
+	public static synchronized void writePatchRunners() throws IOException {
+		if (written) {
+			return;
+		}
+		written = true;
 		String java = System.getProperties().getProperty("java.home") + File.separator + "bin" + File.separator + "java";
-		String CP = LocationUtil.locationOf(TickThreading.class).getAbsolutePath();
+		String CP = LocationUtil.locationOf(TickThreading.class).toString();
 		String MS = CollectionsUtil.join(LocationUtil.getJarLocations());
 
 		ZipFile zipFile = new ZipFile(new File(CP));
 		try {
-			CP += File.pathSeparator + new File(LocationUtil.getServerDirectory(), "lib/guava-12.0.1.jar").getAbsolutePath();
+			CP += File.pathSeparator + new File(LocationUtil.getServerDirectory(), "lib/guava-12.0.1.jar");
 			for (ZipEntry zipEntry : new EnumerableWrapper<ZipEntry>((Enumeration<ZipEntry>) zipFile.entries())) {
 				if (zipEntry.getName().startsWith("patchrun/") && !(!zipEntry.getName().isEmpty() && zipEntry.getName().charAt(zipEntry.getName().length() - 1) == '/')) {
 					String data = new Scanner(zipFile.getInputStream(zipEntry), "UTF-8").useDelimiter("\\A").next();
