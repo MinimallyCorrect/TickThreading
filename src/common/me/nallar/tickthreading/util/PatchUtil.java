@@ -2,6 +2,7 @@ package me.nallar.tickthreading.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Scanner;
 import java.util.zip.ZipEntry;
@@ -9,7 +10,11 @@ import java.util.zip.ZipFile;
 
 import com.google.common.io.Files;
 
+import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickThreading;
+import me.nallar.tickthreading.patcher.PatchMain;
+import me.nallar.tickthreading.patcher.PatchManager;
+import me.nallar.tickthreading.patcher.Patches;
 
 public enum PatchUtil {
 	;
@@ -37,5 +42,24 @@ public enum PatchUtil {
 		} finally {
 			zipFile.close();
 		}
+	}
+
+	public static boolean shouldPatch(Iterable<File> files) {
+		try {
+			PatchManager patchManager = new PatchManager(PatchMain.class.getResourceAsStream("/patches.xml"), Patches.class);
+			ArrayList<File> fileList = new ArrayList<File>();
+			for (File file : files) {
+				fileList.add(file.getAbsoluteFile());
+			}
+			patchManager.classRegistry.loadFiles(fileList);
+			patchManager.classRegistry.closeClassPath();
+			patchManager.classRegistry.loadPatchHashes(patchManager);
+			boolean result = patchManager.classRegistry.shouldPatch();
+			patchManager.classRegistry.clearClassInfo();
+			return result;
+		} catch (Exception e) {
+			Log.severe("Failed to determine whether patches should run", e);
+		}
+		return false;
 	}
 }

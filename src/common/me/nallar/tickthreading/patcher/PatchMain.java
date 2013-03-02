@@ -13,6 +13,7 @@ import javassist.NotFoundException;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.mappings.MCPMappings;
 import me.nallar.tickthreading.util.CollectionsUtil;
+import me.nallar.tickthreading.util.LocationUtil;
 import me.nallar.tickthreading.util.VersionUtil;
 import org.xml.sax.SAXException;
 
@@ -90,19 +91,30 @@ public class PatchMain {
 			for (int i = 0; i < filesToLoad.size(); i++) {
 				filesToLoad.set(i, filesToLoad.get(i).getAbsoluteFile());
 			}
-			patchManager.classRegistry.writeAllClasses = argsList.contains("all");
-			patchManager.classRegistry.serverFile = filesToLoad.get(0);
-			patchManager.classRegistry.forcePatching = forcePatching;
+			ClassRegistry classRegistry = patchManager.classRegistry;
+			classRegistry.writeAllClasses = argsList.contains("all");
+			classRegistry.serverFile = filesToLoad.get(0);
+			classRegistry.forcePatching = forcePatching;
 			patchManager.loadBackups(filesToLoad);
-			patchManager.classRegistry.loadFiles(filesToLoad);
+			classRegistry.loadFiles(filesToLoad);
 			try {
-				patchManager.classRegistry.getClass("org.bukkit.craftbukkit.libs.jline.Terminal");
+				classRegistry.getClass("org.bukkit.craftbukkit.libs.jline.Terminal");
 				patchManager.patchEnvironment = "mcpc";
 			} catch (NotFoundException ignored) {
 			}
 			Log.info("Patching with " + VersionUtil.versionString());
 			Log.info("Patching in environment: " + patchManager.patchEnvironment);
 			patchManager.runPatches();
+			try {
+				classRegistry.updatedFiles.remove(LocationUtil.locationOf(PatchMain.class).getAbsoluteFile());
+				classRegistry.save(patchManager.backupDirectory);
+			} catch (IOException e) {
+				Log.severe("Failed to save patched classes", e);
+				if (e.getMessage().contains("Couldn't rename ")) {
+					Log.severe("Make sure none of the mods/server jar are currently open in any running programs" +
+							"If you are using linux, check what has open files with the lsof command.");
+				}
+			}
 		} catch (IOException e) {
 			Log.severe("Failed to load jars", e);
 		} catch (Exception e) {

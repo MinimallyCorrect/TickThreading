@@ -50,7 +50,7 @@ public class PatchManager {
 	// Patch name -> patch method descriptor
 	private final Map<String, PatchMethodDescriptor> patches = new HashMap<String, PatchMethodDescriptor>();
 	public final ClassRegistry classRegistry = new ClassRegistry();
-	private final File backupDirectory;
+	public File backupDirectory;
 	public String patchEnvironment = "forge";
 
 	public PatchManager(InputStream configStream, Class<Patches> patchClass) throws IOException, SAXException {
@@ -171,21 +171,6 @@ public class PatchManager {
 		return hashes;
 	}
 
-	public static boolean shouldPatch(Iterable<File> files) {
-		try {
-			PatchManager patchManager = new PatchManager(PatchMain.class.getResourceAsStream("/patches.xml"), Patches.class);
-			patchManager.classRegistry.loadFiles(files);
-			patchManager.classRegistry.finishModifications();
-			patchManager.classRegistry.loadPatchHashes(patchManager);
-			boolean result = patchManager.classRegistry.shouldPatch();
-			patchManager.classRegistry.clearClassInfo();
-			return result;
-		} catch (Exception e) {
-			Log.severe("Failed to determine whether patches should run", e);
-		}
-		return false;
-	}
-
 	public void runPatches() {
 		List<Element> modElements = DomUtil.elementList(configDocument.getDocumentElement().getChildNodes());
 		Map<String, CtClass> patchedClasses = new HashMap<String, CtClass>();
@@ -238,15 +223,6 @@ public class PatchManager {
 				classRegistry.update(className, ctClass.toBytecode());
 			} catch (Exception e) {
 				Log.severe("Javassist failed to save " + className, e);
-			}
-		}
-		try {
-			classRegistry.save(backupDirectory);
-		} catch (IOException e) {
-			Log.severe("Failed to save patched classes", e);
-			if (e.getMessage().contains("Couldn't rename ")) {
-				Log.severe("Make sure none of the mods/server jar are currently open in any running programs" +
-						"If you are using linux, check what has open files with the lsof command.");
 			}
 		}
 	}

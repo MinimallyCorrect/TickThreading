@@ -24,7 +24,6 @@ import me.nallar.tickthreading.minecraft.commands.TicksCommand;
 import me.nallar.tickthreading.minecraft.entitylist.EntityList;
 import me.nallar.tickthreading.minecraft.entitylist.LoadedEntityList;
 import me.nallar.tickthreading.minecraft.entitylist.LoadedTileEntityList;
-import me.nallar.tickthreading.patcher.PatchManager;
 import me.nallar.tickthreading.util.FieldUtil;
 import me.nallar.tickthreading.util.LocationUtil;
 import me.nallar.tickthreading.util.PatchUtil;
@@ -82,7 +81,7 @@ public class TickThreading {
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load
-		enabled = !(requirePatched && PatchManager.shouldPatch(LocationUtil.getJarLocations()));
+		enabled = !(requirePatched && PatchUtil.shouldPatch(LocationUtil.getJarLocations()));
 		try {
 			PatchUtil.writePatchRunners();
 		} catch (IOException e) {

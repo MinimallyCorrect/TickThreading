@@ -28,18 +28,18 @@ import javassist.bytecode.MethodInfo;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.util.CollectionsUtil;
 import me.nallar.tickthreading.util.EnumerableWrapper;
-import me.nallar.tickthreading.util.LocationUtil;
 import me.nallar.unsafe.UnsafeUtil;
 import net.minecraft.server.MinecraftServer;
 
 public class ClassRegistry {
-	private static final String hashFileName = "TickThreading.hash";
-	private static final String patchedModsFolderName = "patchedMods";
+	public String hashFileName = "patcher.hash";
+	public String patchedModsFolderName = "patchedMods";
+	public String modsFolderName = "mods";
 	private final Map<String, File> classNameToLocation = new HashMap<String, File>();
 	private final Map<File, Integer> locationToPatchHash = new HashMap<File, Integer>();
 	private final Map<File, Integer> expectedPatchHashes = new HashMap<File, Integer>();
 	private final Set<File> loadedFiles = new HashSet<File>();
-	private final Set<File> updatedFiles = new HashSet<File>();
+	public final Set<File> updatedFiles = new HashSet<File>();
 	private final Map<String, Set<File>> duplicateClassNamesToLocations = new HashMap<String, Set<File>>();
 	private final Set<ClassPath> classPathSet = new HashSet<ClassPath>();
 	private final Map<String, byte[]> replacementFiles = new HashMap<String, byte[]>();
@@ -56,12 +56,19 @@ public class ClassRegistry {
 	}
 
 	public void clearClassInfo() {
-		finishModifications();
+		closeClassPath();
 		classNameToLocation.clear();
 		updatedFiles.clear();
 		duplicateClassNamesToLocations.clear();
 		replacementFiles.clear();
 		loadedFiles.clear();
+	}
+
+	public void closeClassPath() {
+		for (ClassPath classPath : classPathSet) {
+			classes.removeClassPath(classPath);
+		}
+		classPathSet.clear();
 	}
 
 	public void loadFiles(Iterable<File> filesToLoad) throws IOException {
@@ -83,77 +90,6 @@ public class ClassRegistry {
 		}
 	}
 
-	void appendClassPath(String path) throws NotFoundException {
-		if (!disableJavassistLoading) {
-			classPathSet.add(classes.appendClassPath(path));
-		}
-	}
-
-	void loadHashes(File zipFile) throws IOException {
-		if (!"mods".equalsIgnoreCase(zipFile.getParentFile().getName())) {
-			return;
-		}
-		if (patchedModsFolder == null) {
-			patchedModsFolder = new File(zipFile.getParentFile().getParentFile(), patchedModsFolderName);
-		}
-		File file = new File(patchedModsFolder, zipFile.getName());
-		if (!file.exists()) {
-			return;
-		}
-		try {
-			MinecraftServer.getServer();
-		} catch (Throwable t) {
-			file.delete();
-			return;
-		}
-		ZipFile zip = new ZipFile(file);
-		for (ZipEntry zipEntry : new EnumerableWrapper<ZipEntry>((Enumeration<ZipEntry>) zip.entries())) {
-			String name = zipEntry.getName();
-			if (name.equals(hashFileName)) {
-				ByteArrayOutputStream output = new ByteArrayOutputStream();
-				ByteStreams.copy(zip.getInputStream(zipEntry), output);
-				int hash = Integer.valueOf(new String(output.toByteArray(), "UTF-8"));
-				locationToPatchHash.put(zipFile, hash);
-			}
-		}
-		zip.close();
-	}
-
-	void loadZip(ZipFile zip) throws IOException {
-		File file = new File(zip.getName());
-		if (!loadedFiles.add(file)) {
-			return;
-		}
-		try {
-			appendClassPath(file.getAbsolutePath());
-		} catch (Exception e) {
-			Log.severe("Javassist could not load " + file, e);
-		}
-		for (ZipEntry zipEntry : new EnumerableWrapper<ZipEntry>((Enumeration<ZipEntry>) zip.entries())) {
-			String name = zipEntry.getName();
-			if (name.endsWith(".class")) {
-				String className = name.replace('/', '.').substring(0, name.lastIndexOf('.'));
-				if (classNameToLocation.containsKey(className)) {
-					Set<File> locations = duplicateClassNamesToLocations.get(className);
-					if (locations == null) {
-						locations = new HashSet<File>();
-						locations.add(classNameToLocation.get(className));
-						duplicateClassNamesToLocations.put(className, locations);
-					}
-					locations.add(file);
-				} else {
-					classNameToLocation.put(className, file);
-				}
-			} else if (name.equals(hashFileName)) {
-				ByteArrayOutputStream output = new ByteArrayOutputStream();
-				ByteStreams.copy(zip.getInputStream(zipEntry), output);
-				int hash = Integer.valueOf(new String(output.toByteArray(), "UTF-8"));
-				locationToPatchHash.put(file, hash);
-			}
-		}
-		zip.close();
-	}
-
 	public void update(String className, byte[] replacement) {
 		if (duplicateClassNamesToLocations.containsKey(className)) {
 			Log.warning(className + " is in multiple jars: " + CollectionsUtil.join(duplicateClassNamesToLocations.get(className), ", "));
@@ -162,82 +98,23 @@ public class ClassRegistry {
 		replacementFiles.put(className.replace('.', '/') + ".class", replacement);
 	}
 
-	public void finishModifications() {
-		for (ClassPath classPath : classPathSet) {
-			classes.removeClassPath(classPath);
-		}
-		classPathSet.clear();
-	}
-
-	private static File makeTempFile(File tempLocation, File file) {
-		File tempFile = new File(tempLocation, file.getName() + ".tmp");
-		if (tempFile.exists() && !tempFile.delete()) {
-			throw new Error("Failed to delete old temp file " + tempFile);
-		}
-		return tempFile;
-	}
-
-	private static void delete(File f) {
-		if (f.isDirectory()) {
-			for (File c : f.listFiles()) {
-				delete(c);
-			}
-		}
-		f.delete();
-	}
-
-	private int writeChanges(File zipFile, ZipInputStream zin, ZipOutputStream zout, boolean onlyClasses) throws Exception {
-		int patchedClasses = 0;
-		Set<String> replacements = new HashSet<String>();
-		ZipEntry zipEntry;
-		while ((zipEntry = zin.getNextEntry()) != null) {
-			String entryName = zipEntry.getName();
-			if (entryName.equals(hashFileName) || (entryName.startsWith("META-INF/") && !(!entryName.isEmpty() && entryName.charAt(entryName.length() - 1) == '/') && !entryName.toUpperCase().endsWith("MANIFEST.MF")) && (entryName.length() - entryName.replace("/", "").length() == 1)) {
-				// Skip
-			} else if (onlyClasses && !entryName.toLowerCase().endsWith(".class")) {
-				// Skip
-			} else if (replacementFiles.containsKey(entryName)) {
-				replacements.add(entryName);
-				patchedClasses++;
-			} else if (!onlyClasses || writeAllClasses) {
-				zout.putNextEntry(new ZipEntry(entryName));
-				ByteStreams.copy(zin, zout);
-				patchedClasses++;
-			}
-		}
-		for (String name : replacements) {
-			zout.putNextEntry(new ZipEntry(name));
-			zout.write(replacementFiles.get(name));
-			zout.closeEntry();
-		}
-		boolean hasPatchHash = expectedPatchHashes.containsKey(zipFile);
-		zout.putNextEntry(new ZipEntry(hashFileName));
-		String patchHash = hasPatchHash ? String.valueOf(expectedPatchHashes.get(zipFile)) : "-1";
-		zout.write(patchHash.getBytes("UTF-8"));
-		if (hasPatchHash) {
-			Log.info("Patched " + replacements.size() + " classes in " + zipFile + ", patchHash: " + patchHash);
-		}
-		zin.close();
-		zout.close();
-		return patchedClasses;
-	}
-
 	public void save(File backupDirectory) throws IOException {
-		finishModifications();
+		closeClassPath();
 		File tempFile = null, renameFile = null;
 		File tempDirectory = new File(backupDirectory.getParentFile(), "TTTemp");
 		tempDirectory.mkdir();
 		ZipInputStream zin = null;
 		ZipOutputStream zout = null;
 		backupDirectory.mkdir();
-		updatedFiles.remove(LocationUtil.locationOf(PatchMain.class).getAbsoluteFile());
 		patchedModsFolder.mkdir();
 		int patchedClasses = 0;
 		try {
 			for (File zipFile : updatedFiles) {
-				if (zipFile == serverFile || !"mods".equals(zipFile.getParentFile().getName())) {
+				if (zipFile == serverFile || !modsFolderName.equals(zipFile.getParentFile().getName())) {
 					File backupFile = new File(backupDirectory, zipFile.getName());
-					backupFile.delete();
+					if (backupFile.exists() && !backupFile.delete()) {
+						Log.warning("Failed to remove old backup");
+					}
 					Files.copy(zipFile, backupFile);
 					tempFile = makeTempFile(tempDirectory, zipFile);
 					if (zipFile.renameTo(tempFile)) {
@@ -297,7 +174,7 @@ public class ClassRegistry {
 		return shouldPatch(classNameToLocation.get(className));
 	}
 
-	boolean shouldPatch(File file) {
+	public boolean shouldPatch(File file) {
 		return forcePatching || file == null || !(expectedPatchHashes.get(file).equals(locationToPatchHash.get(file)));
 	}
 
@@ -335,5 +212,129 @@ public class ClassRegistry {
 				}
 			}
 		}
+	}
+
+	public void appendClassPath(String path) throws NotFoundException {
+		if (!disableJavassistLoading) {
+			classPathSet.add(classes.appendClassPath(path));
+		}
+	}
+
+	public void loadHashes(File zipFile) throws IOException {
+		if (!modsFolderName.equalsIgnoreCase(zipFile.getParentFile().getName())) {
+			return;
+		}
+		if (patchedModsFolder == null) {
+			patchedModsFolder = new File(zipFile.getParentFile().getParentFile(), patchedModsFolderName);
+		}
+		File file = new File(patchedModsFolder, zipFile.getName());
+		if (!file.exists()) {
+			return;
+		}
+		try {
+			MinecraftServer.getServer();
+		} catch (Throwable t) {
+			file.delete();
+			return;
+		}
+		ZipFile zip = new ZipFile(file);
+		for (ZipEntry zipEntry : new EnumerableWrapper<ZipEntry>((Enumeration<ZipEntry>) zip.entries())) {
+			String name = zipEntry.getName();
+			if (name.equals(hashFileName)) {
+				ByteArrayOutputStream output = new ByteArrayOutputStream();
+				ByteStreams.copy(zip.getInputStream(zipEntry), output);
+				int hash = Integer.valueOf(new String(output.toByteArray(), "UTF-8"));
+				locationToPatchHash.put(zipFile, hash);
+			}
+		}
+		zip.close();
+	}
+
+	public void loadZip(ZipFile zip) throws IOException {
+		File file = new File(zip.getName());
+		if (!loadedFiles.add(file)) {
+			return;
+		}
+		try {
+			appendClassPath(file.getAbsolutePath());
+		} catch (Exception e) {
+			Log.severe("Javassist could not load " + file, e);
+		}
+		for (ZipEntry zipEntry : new EnumerableWrapper<ZipEntry>((Enumeration<ZipEntry>) zip.entries())) {
+			String name = zipEntry.getName();
+			if (name.endsWith(".class")) {
+				String className = name.replace('/', '.').substring(0, name.lastIndexOf('.'));
+				if (classNameToLocation.containsKey(className)) {
+					Set<File> locations = duplicateClassNamesToLocations.get(className);
+					if (locations == null) {
+						locations = new HashSet<File>();
+						locations.add(classNameToLocation.get(className));
+						duplicateClassNamesToLocations.put(className, locations);
+					}
+					locations.add(file);
+				} else {
+					classNameToLocation.put(className, file);
+				}
+			} else if (name.equals(hashFileName)) {
+				ByteArrayOutputStream output = new ByteArrayOutputStream();
+				ByteStreams.copy(zip.getInputStream(zipEntry), output);
+				int hash = Integer.valueOf(new String(output.toByteArray(), "UTF-8"));
+				locationToPatchHash.put(file, hash);
+			}
+		}
+		zip.close();
+	}
+
+	private static File makeTempFile(File tempLocation, File file) {
+		File tempFile = new File(tempLocation, file.getName() + ".tmp");
+		if (tempFile.exists() && !tempFile.delete()) {
+			throw new Error("Failed to delete old temp file " + tempFile);
+		}
+		return tempFile;
+	}
+
+	private static void delete(File f) {
+		if (f.isDirectory()) {
+			for (File c : f.listFiles()) {
+				delete(c);
+			}
+		}
+		f.delete();
+	}
+
+	private int writeChanges(File zipFile, ZipInputStream zin, ZipOutputStream zout, boolean onlyClasses) throws Exception {
+		int patchedClasses = 0;
+		Set<String> replacements = new HashSet<String>();
+		ZipEntry zipEntry;
+		while ((zipEntry = zin.getNextEntry()) != null) {
+			String entryName = zipEntry.getName();
+			if (entryName.equals(hashFileName) || (entryName.startsWith("META-INF/") && !(!entryName.isEmpty() && entryName.charAt(entryName.length() - 1) == '/') && !entryName.toUpperCase().endsWith("MANIFEST.MF")) && (entryName.length() - entryName.replace("/", "").length() == 1)) {
+				// Skip
+			} else if (onlyClasses && !entryName.toLowerCase().endsWith(".class")) {
+				// Skip
+			} else if (replacementFiles.containsKey(entryName)) {
+				replacements.add(entryName);
+				patchedClasses++;
+			} else if (!onlyClasses || writeAllClasses) {
+				zout.putNextEntry(new ZipEntry(entryName));
+				ByteStreams.copy(zin, zout);
+				patchedClasses++;
+			}
+		}
+		for (String name : replacements) {
+			zout.putNextEntry(new ZipEntry(name));
+			zout.write(replacementFiles.get(name));
+			zout.closeEntry();
+		}
+		boolean hasPatchHash = expectedPatchHashes.containsKey(zipFile);
+		zout.putNextEntry(new ZipEntry(hashFileName));
+		String patchHash = hasPatchHash ? String.valueOf(expectedPatchHashes.get(zipFile)) : "-1";
+		zout.write(patchHash.getBytes("UTF-8"));
+		if (hasPatchHash) {
+			Log.info("Patched " + replacements.size() + " classes in " + zipFile + ", patchHash: " + patchHash);
+		}
+		zin.close();
+		zout.close();
+		return patchedClasses;
 	}
 }
