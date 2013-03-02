@@ -54,7 +54,11 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	public void construct() {
 		randoms = new ThreadLocalRandom();
 		threadManager = new ThreadManager(TickThreading.instance.getThreadCount(), "Chunk Updates for " + Log.name(this));
-		field_73064_N = null;
+		try {
+			field_73064_N = null;
+		} catch (NoSuchFieldError ignored) {
+			//MCPC+ compatibility - they also remove this.
+		}
 		pendingTickListEntries = new TreeHashSet();
 		worldGenInProgress = new BooleanThreadLocal();
 		runningTickListEntries = new ArrayList<NextTickListEntry>();
