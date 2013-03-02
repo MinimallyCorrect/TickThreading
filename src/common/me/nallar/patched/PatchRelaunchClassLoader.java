@@ -311,36 +311,43 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 			CodeSigner[] signers = null;
 			int lastDot = name.lastIndexOf('.');
 			String pkgname = lastDot == -1 ? "" : name.substring(0, lastDot);
-			String fName = name.replace('.', '/') + ".class";
-			URLConnection urlConnection = findCodeSourceConnectionFor(fName);
-			if (urlConnection instanceof JarURLConnection && lastDot > -1) {
-				JarURLConnection jarUrlConn = (JarURLConnection) urlConnection;
-				JarFile jf = jarUrlConn.getJarFile();
-				if (jf != null && jf.getManifest() != null) {
-					Manifest mf = jf.getManifest();
-					JarEntry ent = jf.getJarEntry(fName);
-					Package pkg = getPackage(pkgname);
-					signers = ent.getCodeSigners();
-					if (pkg == null) {
-						definePackage(pkgname, mf, jarUrlConn.getJarFileURL());
-					} else {
-						if (pkg.isSealed() && !pkg.isSealed(jarUrlConn.getJarFileURL())) {
-							FMLLog.severe("The jar file %s is trying to seal already secured path %s", jf.getName(), pkgname);
-						} else if (isSealed(pkgname, mf)) {
-							FMLLog.severe("The jar file %s has a security seal for path %s, but that path is defined and not secure", jf.getName(), pkgname);
+			Package pkg = getPackage(pkgname);
+			if (codeSource == null || (pkg == null && lastDot > -1)) {
+				URLConnection urlConnection = findCodeSourceConnectionFor(path);
+				if (lastDot > -1) {
+					Manifest mf = null;
+					if (urlConnection instanceof JarURLConnection) {
+						JarURLConnection jarUrlConn = (JarURLConnection) urlConnection;
+						JarFile jf = jarUrlConn.getJarFile();
+						if (jf != null && jf.getManifest() != null) {
+							mf = jf.getManifest();
+							JarEntry ent = jf.getJarEntry(path);
+							signers = ent.getCodeSigners();
+							if (pkg == null) {
+								pkg = definePackage(pkgname, mf, jarUrlConn.getJarFileURL());
+							} else {
+								if (pkg.isSealed() && !pkg.isSealed(jarUrlConn.getJarFileURL())) {
+									FMLRelaunchLog.severe("The jar file %s is trying to seal already secured path %s", jf.getName(), pkgname);
+								} else if (isSealed(pkgname, mf)) {
+									FMLRelaunchLog.severe("The jar file %s has a security seal for path %s, but that path is defined and not secure", jf.getName(), pkgname);
+								}
+							}
 						}
 					}
+					if (mf == null) {
+						if (pkg == null) {
+							pkg = definePackage(pkgname, null, null, null, null, null, null, null);
+						} else if (pkg.isSealed()) {
+							FMLRelaunchLog.severe("The URL %s is defining elements for sealed path %s", urlConnection.getURL(), pkgname);
+						}
+					}
+					if (pkg == null) {
+						log(Level.SEVERE, null, "No package defined for " + pkgname + " getting " + path);
+					}
 				}
-			} else if (lastDot > -1) {
-				Package pkg = getPackage(pkgname);
-				if (pkg == null) {
-					definePackage(pkgname, null, null, null, null, null, null, null);
-				} else if (pkg.isSealed()) {
-					FMLLog.severe("The URL %s is defining elements for sealed path %s", urlConnection.getURL(), pkgname);
+				if (codeSource == null && urlConnection != null) {
+					codeSource = new CodeSource(urlConnection.getURL(), signers);
 				}
-			}
-			if (codeSource == null && urlConnection != null) {
-				codeSource = new CodeSource(urlConnection.getURL(), signers);
 			}
 			byte[] transformedClass = transform ? runTransformers(name, basicClass) : basicClass;
 			Class<?> cl = defineClass(name, transformedClass, 0, transformedClass.length, codeSource);
