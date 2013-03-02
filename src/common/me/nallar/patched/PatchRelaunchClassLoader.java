@@ -343,7 +343,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 						}
 					}
 				}
-				if (pkg == null) {
+				if (pkg == null && lastDot > -1) {
 					log(Level.SEVERE, null, "No package defined for " + pkgname + " getting " + path);
 				}
 				if (codeSource == null && urlConnection != null) {
