@@ -11,7 +11,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.security.CodeSigner;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Locale;

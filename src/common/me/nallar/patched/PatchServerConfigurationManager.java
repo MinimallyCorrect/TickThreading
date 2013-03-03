@@ -3,7 +3,6 @@ package me.nallar.patched;
 import cpw.mods.fml.common.registry.GameRegistry;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.patcher.Declare;
-import me.nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.packet.Packet41EntityEffect;
 import net.minecraft.network.packet.Packet9Respawn;
@@ -18,12 +17,6 @@ public abstract class PatchServerConfigurationManager extends ServerConfiguratio
 	public java.util.concurrent.locks.Lock playerUpdateLock_;
 	@Declare
 	public java.util.concurrent.locks.Lock playersUpdateLock_;
-
-	public void construct() {
-		TwoWayReentrantReadWriteLock reentrantReadWriteLock = new TwoWayReentrantReadWriteLock();
-		playersUpdateLock = reentrantReadWriteLock.writeLock();
-		playerUpdateLock = reentrantReadWriteLock.readLock();
-	}
 
 	@Override
 	public void transferPlayerToDimension(EntityPlayerMP entityPlayerMP, int toDimensionId, Teleporter teleporter) {

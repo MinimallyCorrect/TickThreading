@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -425,12 +426,16 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				}
 				profiler.endSection();
 
-				if (worldTickTimes != null) {
-					long[] tickTimes = worldTickTimes.get(id);
-					if (tickTimes != null) {
-						tickTimes[this.tickCounter % 100] = System.nanoTime() - var2;
-					}
+				if (worldTickTimes == null) {
+					//noinspection UseOfObsoleteCollectionType
+					worldTickTimes = new Hashtable<Integer, long[]>();
 				}
+				long[] tickTimes = worldTickTimes.get(id);
+				if (tickTimes == null) {
+					tickTimes = new long[100];
+					worldTickTimes.put(id, tickTimes);
+				}
+				tickTimes[this.tickCounter % 100] = System.nanoTime() - var2;
 			} catch (Throwable t) {
 				Log.severe("Exception ticking world " + Log.name(world), t);
 				Integer c = exceptionCount.get(id);
