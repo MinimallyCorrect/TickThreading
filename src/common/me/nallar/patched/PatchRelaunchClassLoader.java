@@ -22,7 +22,6 @@ import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.relauncher.FMLRelaunchLog;
 import cpw.mods.fml.relauncher.IClassTransformer;
 import cpw.mods.fml.relauncher.RelaunchClassLoader;
@@ -32,7 +31,6 @@ import me.nallar.unsafe.UnsafeUtil;
 import sun.misc.URLClassPath;
 
 public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
-	private static CodeSigner[] CODE_SIGNERS;
 	@Declare
 	public static int patchedClasses_;
 	@Declare
@@ -74,7 +72,6 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 	@SuppressWarnings ("ZeroLengthArrayAllocation")
 	public static void staticConstruct() {
 		EMPTY_BYTE_ARRAY = new byte[0];
-		CODE_SIGNERS = new CodeSigner[0];
 		err = new PrintStream(new FileOutputStream(FileDescriptor.err));
 	}
 
@@ -228,13 +225,13 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 			URL classResource = findResource(name.replace('.', '/') + ".class");
 			if (classResource == null) {
 				if (DEBUG_CLASSLOADING) {
-					FMLLog.finest("Failed to find class resource %s", name.replace('.', '/') + ".class");
+					FMLRelaunchLog.finest("Failed to find class resource %s", name.replace('.', '/') + ".class");
 				}
 				return null;
 			}
 			classStream = classResource.openStream();
 			if (DEBUG_CLASSLOADING) {
-				FMLLog.finest("Loading class %s from resource %s", name, classResource.toString());
+				FMLRelaunchLog.finest("Loading class %s from resource %s", name, classResource.toString());
 			}
 			data = readFully(classStream);
 			byte[] data2 = getReplacementClassBytes(name.replace('.', '/') + ".class");
