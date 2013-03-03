@@ -504,14 +504,30 @@
 		</class>
 	</thaumcraft>
 	<universalElectricity>
+		<class id="universalelectricity.core.electricity.Electricity">
+			<newField field="readWriteLock" class="me.nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock"/>
+			<newField field="writeLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>
+			<newField field="readLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.readLock();"/>
+			<insertAfter code="{
+				if (electricityNetworks.getClass() == java.util.ArrayList.class) {
+					electricityNetworks = new me.nallar.tickthreading.collections.LockArrayList(electricityNetworks);
+					((me.nallar.tickthreading.collections.LockArrayList)electricityNetworks).lock = writeLock;
+				}
+				}"/>
+			<lock field="readLock">unregister,cleanUpNetworks,resetConductors</lock>
+		</class>
 		<class id="universalelectricity.core.electricity.ElectricityNetwork">
 			<replaceFieldInitialisers field="consumers" newInitialiser="new me.nallar.tickthreading.collections.CHashMap($$);"/>
 			<replaceFieldInitialisers field="producers" newInitialiser="new me.nallar.tickthreading.collections.CHashMap($$);"/>
 			<newField field="readWriteLock" class="me.nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock"/>
 			<newField field="writeLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>
 			<newField field="readLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.readLock();"/>
-			<insertAfter code="{ conductors = new me.nallar.tickthreading.collections.LockArrayList(conductors);
-			((me.nallar.tickthreading.collections.LockArrayList)conductors).lock = writeLock; }"/>
+			<insertAfter code="{
+			if (conductors.getClass() == java.util.ArrayList.class) {
+				conductors = new me.nallar.tickthreading.collections.LockArrayList(conductors);
+				((me.nallar.tickthreading.collections.LockArrayList)conductors).lock = writeLock;
+			}
+			}"/>
 			<lock field="readLock">setNetwork,addConductor,cleanConductors,resetConductors,onOverCharge,getTotalResistance,refreshConductors</lock>
 		</class>
 	</universalElectricity>

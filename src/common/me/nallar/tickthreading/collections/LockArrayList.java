@@ -20,6 +20,16 @@ public class LockArrayList<T> extends ArrayList<T> {
 	}
 
 	@Override
+	public T remove(int index) {
+		lock.lock();
+		try {
+			return super.remove(index);
+		} finally {
+			lock.unlock();
+		}
+	}
+
+	@Override
 	public boolean remove(Object o) {
 		lock.lock();
 		try {
