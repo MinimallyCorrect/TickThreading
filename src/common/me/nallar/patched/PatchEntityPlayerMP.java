@@ -16,6 +16,7 @@ public abstract class PatchEntityPlayerMP extends EntityPlayerMP {
 
 	@Override
 	public void onUpdate() {
+		xpCooldown = 0;
 		this.theItemInWorldManager.updateBlockRemoving();
 		--this.initialInvulnerability;
 		this.openContainer.detectAndSendChanges();

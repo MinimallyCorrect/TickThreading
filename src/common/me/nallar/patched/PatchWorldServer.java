@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 import java.util.TreeSet;
 
 import com.google.common.collect.ImmutableSetMultimap;
@@ -72,15 +71,23 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		}
 	}
 
+	@Declare
+	public void ttStop() {
+		IChunkLoader chunkLoader = theChunkProviderServer.currentChunkLoader;
+		if (chunkLoader instanceof AnvilChunkLoader) {
+			try {
+				((AnvilChunkLoader) chunkLoader).close();
+			} catch (NoSuchMethodError ignored) {
+				//MCPC+ compatibility
+			}
+		}
+		threadManager.stop();
+	}
+
 	@Override
 	public void flush() {
 		DeadLockDetector.tick("Saving a world before unload", System.nanoTime() + 30000000000L);
 		this.saveHandler.flush();
-		IChunkLoader chunkLoader = theChunkProviderServer.currentChunkLoader;
-		if (chunkLoader instanceof AnvilChunkLoader) {
-			((AnvilChunkLoader) chunkLoader).close();
-		}
-		threadManager.stop();
 	}
 
 	@Override

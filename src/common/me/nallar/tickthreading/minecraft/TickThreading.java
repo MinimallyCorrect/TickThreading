@@ -33,6 +33,7 @@ import net.minecraft.network.packet.PacketCount;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.Configuration;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.Property;
@@ -271,6 +272,10 @@ public class TickThreading {
 				if (!(loadedEntityList instanceof EntityList)) {
 					Log.severe("Looks like another mod broke TT's replacement entity list in world: " + Log.name(event.world));
 				}
+			}
+			if (event.world instanceof WorldServer) {
+				WorldServer worldServer = (WorldServer) event.world;
+				worldServer.ttStop();
 			}
 		} catch (Exception e) {
 			Log.severe("Probable memory leak, failed to unload threading for world " + Log.name(event.world), e);

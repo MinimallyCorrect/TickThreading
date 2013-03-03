@@ -67,11 +67,12 @@
 			<synchronize field="staticLock">getModdedBiomeGenerators</synchronize>
 		</class>
 		<class id="net.minecraft.world.gen.ChunkProviderServer">
-			<!-- MCPC compatibility - get MCPC to make LongHashSet implement Set<Long>, give it that type. -->
 			<public field="loadedChunks"/>
 			<final field="worldObj"/>
 			<final field="loadedChunkHashMap"/>
 			<final field="loadedChunks"/>
+		</class>
+		<class id="net.minecraft.world.gen.ChunkProviderServer" env="forge">
 			<addAll fromClass="me.nallar.patched.PatchChunkProviderServer"/>
 			<synchronize field="chunkLoadLock">unloadAllChunks,saveChunks,unload100OldestChunks</synchronize>
 			<synchronize field="genLock">populate</synchronize>

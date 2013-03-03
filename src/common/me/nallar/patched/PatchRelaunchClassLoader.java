@@ -29,7 +29,6 @@ import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.relauncher.FMLRelaunchLog;
 import cpw.mods.fml.relauncher.IClassTransformer;
 import cpw.mods.fml.relauncher.RelaunchClassLoader;
@@ -258,7 +257,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 					Resource classResource = ucp.getResource(path, true);
 					if (classResource != null) {
 						if (DEBUG_CLASSLOADING) {
-							FMLLog.finest("Loading class %s from resource %s", name, classResource.getCodeSourceURL().toString());
+							FMLRelaunchLog.finest("Loading class %s from resource %s", name, classResource.getCodeSourceURL().toString());
 						}
 						if (patchedData == null) {
 							ByteBuffer byteBuffer = classResource.getByteBuffer();
@@ -285,12 +284,12 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 				URL classURL = findResource(path);
 				if (classURL == null) {
 					if (DEBUG_CLASSLOADING) {
-						FMLLog.finest("Failed to find class resource %s", path);
+						FMLRelaunchLog.finest("Failed to find class resource %s", path);
 					}
 					return null;
 				}
 				if (DEBUG_CLASSLOADING) {
-					FMLLog.finest("Loading class %s from resource %s", name, classURL.toString());
+					FMLRelaunchLog.finest("Loading class %s from resource %s", name, classURL.toString());
 				}
 				classStream = classURL.openStream();
 				basicClass = readFully(classStream);
@@ -355,12 +354,13 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 			if (cl.getPackage() != pkg) {
 				log(Level.SEVERE, null, "Package mismatch: got " + cl.getPackage() + ", expected " + pkg);
 			}
+			resolveClass(cl);
 			cachedClasses.put(name, cl);
 			return cl;
 		} catch (Throwable e) {
 			invalidClasses.add(name);
 			if (DEBUG_CLASSLOADING) {
-				FMLLog.log(Level.FINEST, e, "Exception encountered attempting classloading of %s", name);
+				FMLRelaunchLog.log(Level.FINEST, e, "Exception encountered attempting classloading of %s", name);
 			}
 			throw new ClassNotFoundException(name, e);
 		}
@@ -375,7 +375,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 	protected byte[] runTransformers(String name, byte[] basicClass) {
 		if (basicClass == null) {
 			if (DEBUG_CLASSLOADING) {
-				FMLLog.log(DEBUG_CLASSLOADING ? Level.WARNING : Level.FINE, "Could not find the class " + name + ". This is not necessarily an issue.");
+				FMLRelaunchLog.log(DEBUG_CLASSLOADING ? Level.WARNING : Level.FINE, "Could not find the class " + name + ". This is not necessarily an issue.");
 			}
 		}
 		for (IClassTransformer transformer : transformers) {
@@ -384,7 +384,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 				basicClass = transformer.transform(name, basicClass);
 				if (basicClass == null && oldClass != null) {
 					basicClass = oldClass;
-					FMLLog.severe(transformer.getClass() + " returned a null class during transformation, ignoring.");
+					FMLRelaunchLog.severe(transformer.getClass() + " returned a null class during transformation, ignoring.");
 				}
 			} catch (Throwable throwable) {
 				String message = throwable.getMessage();
@@ -392,7 +392,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 					invalidClasses.add(name);
 					throw (RuntimeException) throwable;
 				} else if (basicClass != null || DEBUG_CLASSLOADING) {
-					FMLLog.log((DEBUG_CLASSLOADING && basicClass != null) ? Level.WARNING : Level.FINE, throwable, "Failed to transform " + name);
+					FMLRelaunchLog.log((DEBUG_CLASSLOADING && basicClass != null) ? Level.WARNING : Level.FINE, throwable, "Failed to transform " + name);
 				}
 			}
 		}
@@ -419,7 +419,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 
 			return bos.toByteArray();
 		} catch (Throwable t) {
-			FMLLog.log(Level.WARNING, t, "Problem loading class");
+			FMLRelaunchLog.log(Level.WARNING, t, "Problem loading class");
 			return EMPTY_BYTE_ARRAY;
 		}
 	}
