@@ -45,6 +45,7 @@ public class Patches {
 		this.classRegistry = classRegistry;
 	}
 
+	@SuppressWarnings ("EmptyMethod")
 	@Patch
 	public void markDirty(CtClass ctClass) {
 		// A NOOP patch to make sure META-INF is removed

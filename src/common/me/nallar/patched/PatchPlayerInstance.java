@@ -16,10 +16,6 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 		super(par1PlayerManager, par2, par3);
 	}
 
-	public static void staticConstruct() {
-
-	}
-
 	public void construct() {
 		tilesToUpdate = new ArrayList<TileEntity>();
 	}

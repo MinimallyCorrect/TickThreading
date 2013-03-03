@@ -77,6 +77,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 	}
 
 	public static void staticConstruct() {
+		//noinspection ZeroLengthArrayAllocation
 		EMPTY_BYTE_ARRAY = new byte[0];
 		err = new PrintStream(new FileOutputStream(FileDescriptor.err));
 	}

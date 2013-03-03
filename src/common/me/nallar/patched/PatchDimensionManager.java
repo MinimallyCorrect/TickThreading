@@ -16,6 +16,7 @@ public abstract class PatchDimensionManager extends DimensionManager {
 	public static void unloadWorlds(
 			@SuppressWarnings ("UseOfObsoleteCollectionType")
 			Hashtable<Integer, long[]> worldTickTimes) {
+		//noinspection SynchronizationOnStaticField
 		synchronized (unloadQueue) {
 			for (int id : unloadQueue) {
 				WorldServer w = worlds.get(id);

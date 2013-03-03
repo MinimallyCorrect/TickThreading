@@ -58,6 +58,7 @@ public abstract class PatchEntity extends Entity {
 			double vY1 = vY;
 			double vZ1 = vZ;
 			AxisAlignedBB var19 = this.boundingBox.copy();
+			@SuppressWarnings ("RedundantCast")
 			boolean sneakingPlayer = this.onGround && this.isSneaking() && (Object) this instanceof EntityPlayer;
 
 			if (sneakingPlayer) {

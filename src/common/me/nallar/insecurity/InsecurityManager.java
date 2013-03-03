@@ -12,6 +12,7 @@ public class InsecurityManager extends java.lang.SecurityManager {
 		System.setSecurityManager(new InsecurityManager());
 	}
 
+	@SuppressWarnings ("EmptyMethod")
 	public static void init() {
 	}
 

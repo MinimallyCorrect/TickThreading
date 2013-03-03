@@ -237,6 +237,7 @@ public abstract class PatchWorld extends World {
 	@Override
 	public void addLoadedEntities(List par1List) {
 		EntityTracker entityTracker = null;
+		//noinspection RedundantCast,RedundantCast
 		if (((Object) this instanceof WorldServer)) {
 			entityTracker = ((WorldServer) (Object) this).getEntityTracker();
 		}

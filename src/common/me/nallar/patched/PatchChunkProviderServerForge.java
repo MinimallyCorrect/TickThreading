@@ -63,6 +63,7 @@ public abstract class PatchChunkProviderServerForge extends ChunkProviderServer 
 	@Override
 	public void unloadChunksIfNotNearSpawn(int x, int z) {
 		long hash = ChunkCoordIntPair.chunkXZ2Int(x, z);
+		//noinspection StatementWithEmptyBody
 		if (loadedChunkHashMap.getValueByKey(hash) == null) {
 		} else if (TickThreading.instance.shouldLoadSpawn && this.worldObj.provider.canRespawnHere() && DimensionManager.shouldLoadSpawn(worldObj.provider.dimensionId)) {
 			ChunkCoordinates var3 = this.worldObj.getSpawnPoint();

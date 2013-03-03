@@ -302,6 +302,7 @@ public class ClassRegistry {
 		f.delete();
 	}
 
+	@SuppressWarnings ("StatementWithEmptyBody")
 	private int writeChanges(File zipFile, ZipInputStream zin, ZipOutputStream zout, boolean onlyClasses) throws Exception {
 		int patchedClasses = 0;
 		Set<String> replacements = new HashSet<String>();

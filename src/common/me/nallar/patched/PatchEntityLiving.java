@@ -22,6 +22,7 @@ public abstract class PatchEntityLiving extends EntityLiving {
 	public void moveEntityWithHeading(float par1, float par2) {
 		double var9;
 
+		@SuppressWarnings ("RedundantCast")
 		boolean isPlayer = (Object) this instanceof EntityPlayer;
 		boolean canFly = isPlayer && ((EntityPlayer) (Object) this).capabilities.isFlying;
 
