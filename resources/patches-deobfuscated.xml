@@ -14,6 +14,16 @@
 		</class>
 		<class id="net.minecraft.server.MinecraftServer" env="mcpc">
 			<replaceMethod code="org.bukkit.craftbukkit.v1_4_R1.util.WatchdogThread.tick();">spigotTick</replaceMethod>
+			<replaceMethod code="{
+					this.server.getScheduler().mainThreadHeartbeat(this.w);
+
+					while (!processQueue.isEmpty()) {
+							((Runnable) processQueue.remove()).run();
+					}
+
+					org.bukkit.craftbukkit.v1_4_R1.chunkio.ChunkIOExecutor.tick();
+        }">spigotTLETick
+			</replaceMethod>
 		</class>
 		<class id="net.minecraft.server.MinecraftServer" env="forge">
 			<addAll fromClass="me.nallar.patched.PatchMinecraftServerForge"/>
@@ -25,7 +35,8 @@
 			<addAll fromClass="me.nallar.patched.PatchNetServerHandler"/>
 			<replaceMethodCall method="warning"
 												 code="{ javassist.is.faulty.Redirects.notifyAdmins($1); }"
-							>handleFlying</replaceMethodCall>
+							>handleFlying
+			</replaceMethodCall>
 		</class>
 		<class id="net.minecraft.network.packet.Packet10Flying">
 			<addAll fromClass="me.nallar.patched.PatchPacket10Flying"/>

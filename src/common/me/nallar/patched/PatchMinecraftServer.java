@@ -290,6 +290,8 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		profiler.startSection("levels");
 		int var1;
 
+		spigotTLETick();
+
 		Integer[] dimensionIdsToTick = this.dimensionIdsToTick = DimensionManager.getIDs();
 
 		if (threadManager == null) {
@@ -337,6 +339,10 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		DimensionManager.unloadWorlds(worldTickTimes);
 
 		profiler.endSection();
+	}
+
+	private void spigotTLETick() {
+		// Replaced in patcher
 	}
 
 	public void spigotTick() {

@@ -5,7 +5,7 @@ import java.util.List;
 
 public abstract class Mappings {
 	@SuppressWarnings ("unchecked")
-	public List map(List things) {
+	public List<?> map(List<?> things) {
 		List mappedThings = new ArrayList();
 		for (Object thing : things) {
 			if (thing instanceof MethodDescription) {

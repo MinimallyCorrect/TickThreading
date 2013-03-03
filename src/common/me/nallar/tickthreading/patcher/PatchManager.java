@@ -125,10 +125,12 @@ public class PatchManager {
 			classElement.setAttribute("id", obfuscatedClass.name);
 			NodeList patchElements = classElement.getChildNodes();
 			for (Element patchElement : DomUtil.elementList(patchElements)) {
-				List<MethodDescription> methodDescriptionList = MethodDescription.fromListString(deobfuscatedClass.name, patchElement.getTextContent());
-				if (!patchElement.getTextContent().isEmpty()) {
+				String textContent = patchElement.getTextContent().trim();
+				List<MethodDescription> methodDescriptionList = MethodDescription.fromListString(deobfuscatedClass.name, textContent);
+				if (!textContent.isEmpty()) {
 					patchElement.setAttribute("deobf", methodDescriptionList.get(0).getShortName());
-					patchElement.setTextContent(MethodDescription.toListString(mappings.map(methodDescriptionList)));
+					//noinspection unchecked
+					patchElement.setTextContent(MethodDescription.toListString((List<MethodDescription>) mappings.map(methodDescriptionList)));
 				}
 				String field = patchElement.getAttribute("field"), prefix = "";
 				if (!field.isEmpty()) {
