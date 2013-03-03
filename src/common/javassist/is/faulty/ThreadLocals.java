@@ -20,6 +20,7 @@ public class ThreadLocals {
 	public static final ThreadLocal redPowerIsSearching = new BooleanThreadLocal();
 	public static final ThreadLocal eligibleChunksForSpawning = new HashMapThreadLocal();
 	public static final ThreadLocal factorizationFindLightAirParentToVisit = new HashSetThreadLocal();
+	public static final ThreadLocal mapChunkTempByteArray = new MapChunkTempByteArrayThreadLocal();
 
 	private static class ArrayListThreadLocal extends ThreadLocal {
 		ArrayListThreadLocal() {
@@ -68,6 +69,13 @@ public class ThreadLocals {
 		@Override
 		protected Object initialValue() {
 			return Boolean.FALSE;
+		}
+	}
+
+	public static class MapChunkTempByteArrayThreadLocal extends ThreadLocal<byte[]> {
+		@Override
+		public byte[] initialValue() {
+			return new byte[196864];
 		}
 	}
 }

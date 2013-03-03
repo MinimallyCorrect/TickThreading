@@ -1,8 +1,5 @@
 package me.nallar.patched;
 
-import java.util.List;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.server.management.PlayerInstance;
@@ -15,12 +12,6 @@ public abstract class PatchPlayerManagerForge extends PlayerManager {
 	@Declare
 	public java.util.concurrent.locks.Lock playersUpdateLock_;
 
-	public void construct() {
-		ReentrantReadWriteLock reentrantReadWriteLock = new ReentrantReadWriteLock();
-		playersUpdateLock = reentrantReadWriteLock.writeLock();
-		playerUpdateLock = reentrantReadWriteLock.readLock();
-	}
-
 	public PatchPlayerManagerForge(WorldServer par1WorldServer, int par2) {
 		super(par1WorldServer, par2);
 	}
@@ -32,12 +23,6 @@ public abstract class PatchPlayerManagerForge extends PlayerManager {
 	}
 
 	@Override
-	@Declare
-	public List getChunkWatcherWithPlayers() {
-		return this.chunkWatcherWithPlayers;
-	}
-
-	@Override
 	public void updatePlayerInstances() {
 		playersUpdateLock.lock();
 		try {
@@ -45,7 +30,6 @@ public abstract class PatchPlayerManagerForge extends PlayerManager {
 				if (chunkWatcherWithPlayer instanceof PlayerInstance) {
 					try {
 						((PlayerInstance) chunkWatcherWithPlayer).sendChunkUpdate();
-						((PlayerInstance) chunkWatcherWithPlayer).sendTiles();
 					} catch (Exception e) {
 						Log.severe("Failed to send " + chunkWatcherWithPlayer, e);
 						((PlayerInstance) chunkWatcherWithPlayer).clearTileCount();

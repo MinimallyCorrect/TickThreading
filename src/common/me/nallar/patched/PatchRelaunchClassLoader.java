@@ -249,6 +249,8 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 
 		CodeSource codeSource = null;
 		InputStream classStream = null;
+		Manifest mf = null;
+		CodeSigner[] signers = null;
 		try {
 			byte[] patchedData = getReplacementClassBytes(path);
 			boolean loaded = false;
@@ -268,9 +270,10 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 								byteBuffer.get(basicClass);
 							}
 						}
-						CodeSigner[] codeSigners = classResource.getCodeSigners();
-						if (codeSigners != null && codeSigners.length != 0) {
-							codeSource = new CodeSource(classResource.getCodeSourceURL(), codeSigners);
+						mf = classResource.getManifest();
+						signers = classResource.getCodeSigners();
+						if (signers != null && signers.length != 0) {
+							codeSource = new CodeSource(classResource.getCodeSourceURL(), signers);
 						}
 						loaded = true;
 					}
@@ -308,14 +311,25 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 		}
 
 		try {
-			CodeSigner[] signers = null;
 			int lastDot = name.lastIndexOf('.');
 			String pkgname = lastDot == -1 ? "" : name.substring(0, lastDot);
 			Package pkg = getPackage(pkgname);
+			URLConnection urlConnection = null;
 			if (codeSource == null || pkg == null) {
-				URLConnection urlConnection = findCodeSourceConnectionFor(path);
-				if (lastDot > -1) {
-					Manifest mf = null;
+				if (mf != null && codeSource != null) {
+					if (pkg == null) {
+						if (lastDot > -1) {
+							pkg = definePackage(pkgname, mf, codeSource.getLocation());
+						}
+					} else {
+						if (pkg.isSealed() && !pkg.isSealed(codeSource.getLocation())) {
+							FMLRelaunchLog.severe("The jar file %s is trying to seal already secured path %s", codeSource.getLocation(), pkgname);
+						} else if (isSealed(pkgname, mf)) {
+							FMLRelaunchLog.severe("The jar file %s has a security seal for path %s, but that path is defined and not secure", codeSource.getLocation(), pkgname);
+						}
+					}
+				} else {
+					urlConnection = findCodeSourceConnectionFor(path);
 					if (urlConnection instanceof JarURLConnection) {
 						JarURLConnection jarUrlConn = (JarURLConnection) urlConnection;
 						JarFile jf = jarUrlConn.getJarFile();
@@ -324,7 +338,9 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 							JarEntry ent = jf.getJarEntry(path);
 							signers = ent.getCodeSigners();
 							if (pkg == null) {
-								pkg = definePackage(pkgname, mf, jarUrlConn.getJarFileURL());
+								if (lastDot > -1) {
+									pkg = definePackage(pkgname, mf, jarUrlConn.getJarFileURL());
+								}
 							} else {
 								if (pkg.isSealed() && !pkg.isSealed(jarUrlConn.getJarFileURL())) {
 									FMLRelaunchLog.severe("The jar file %s is trying to seal already secured path %s", jf.getName(), pkgname);
@@ -336,7 +352,9 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 					}
 					if (mf == null) {
 						if (pkg == null) {
-							pkg = definePackage(pkgname, null, null, null, null, null, null, null);
+							if (lastDot > -1) {
+								pkg = definePackage(pkgname, null, null, null, null, null, null, null);
+							}
 						} else if (pkg.isSealed()) {
 							FMLRelaunchLog.severe("The URL %s is defining elements for sealed path %s", urlConnection.getURL(), pkgname);
 						}
@@ -345,9 +363,9 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 				if (pkg == null && lastDot > -1) {
 					log(Level.SEVERE, null, "No package defined for " + pkgname + " getting " + path);
 				}
-				if (codeSource == null && urlConnection != null) {
-					codeSource = new CodeSource(urlConnection.getURL(), signers);
-				}
+			}
+			if (codeSource == null && urlConnection != null) {
+				codeSource = new CodeSource(urlConnection.getURL(), signers);
 			}
 			byte[] transformedClass = transform ? runTransformers(name, basicClass) : basicClass;
 			Class<?> cl = defineClass(name, transformedClass, 0, transformedClass.length, codeSource);

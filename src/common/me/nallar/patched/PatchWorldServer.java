@@ -1,11 +1,13 @@
 package me.nallar.patched;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.TreeSet;
 
 import com.google.common.collect.ImmutableSetMultimap;
@@ -71,6 +73,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		}
 	}
 
+	@Override
 	@Declare
 	public void ttStop() {
 		IChunkLoader chunkLoader = theChunkProviderServer.currentChunkLoader;
@@ -342,6 +345,12 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		final Profiler profiler = this.theProfiler;
 		final WorldProvider provider = this.provider;
 		int updateLCG = this.updateLCG;
+		Set<Long> chunksToUnloadSet;
+		try {
+			chunksToUnloadSet = chunkProviderServer.getChunksToUnloadSet();
+		} catch (NoSuchMethodError ignored) {
+			chunksToUnloadSet = Collections.emptySet();
+		}
 		// We use a random per thread - randoms are threadsafe, however it can result in some contention. See Random.nextInt - compareAndSet.
 		// This reduces contention -> slightly increased performance, woo! :P
 		while (true) {
@@ -359,7 +368,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 
 			int cX = var4.chunkXPos;
 			int cZ = var4.chunkZPos;
-			if ((tpsFactor < 1 && rand.nextFloat() > tpsFactor) || chunkProviderServer.getChunksToUnloadSet().contains(ChunkCoordIntPair.chunkXZ2Int(cX, cZ))) {
+			if ((tpsFactor < 1 && rand.nextFloat() > tpsFactor) || chunksToUnloadSet.contains(ChunkCoordIntPair.chunkXZ2Int(cX, cZ))) {
 				continue;
 			}
 

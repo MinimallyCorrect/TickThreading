@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,6 +28,7 @@ public class PrePatcher {
 		if (!patchDirectory.isDirectory()) {
 			throw new IllegalArgumentException("Not a directory! " + patchDirectory + ", " + sourceDirectory);
 		}
+		Map<File, String> patchClasses = new HashMap<File, String>();
 		for (File file : patchDirectory.listFiles()) {
 			String contents = readFile(file);
 			if (contents == null) {
@@ -34,7 +37,6 @@ public class PrePatcher {
 			}
 			Matcher extendsMatcher = extendsPattern.matcher(contents);
 			if (!extendsMatcher.find()) {
-				log.info(file + " does not extend anything - no prepatching necessary");
 				continue;
 			}
 			String shortClassName = extendsMatcher.group(1);
@@ -53,11 +55,17 @@ public class PrePatcher {
 				log.severe("Can't find " + sourceFile + ", not patching.");
 				continue;
 			}
+			String current = patchClasses.get(sourceFile);
+			patchClasses.put(sourceFile, (current == null ? "" : current) + contents);
+		}
+
+		for (Map.Entry<File, String> classPatchEntry : patchClasses.entrySet()) {
+			String contents = classPatchEntry.getValue();
+			File sourceFile = classPatchEntry.getKey();
 			String sourceString = readFile(sourceFile).trim();
 			int previousIndex = sourceString.indexOf("\n//PREPATCH\n");
 			int cutIndex = previousIndex == -1 ? sourceString.lastIndexOf('}') : previousIndex;
 			StringBuilder source = new StringBuilder(sourceString.substring(0, cutIndex)).append("\n//PREPATCH\n");
-			log.info("Prepatching declarations for " + className);
 			Matcher matcher = declareMethodPattern.matcher(contents);
 			while (matcher.find()) {
 				String type = matcher.group(2);
@@ -77,7 +85,6 @@ public class PrePatcher {
 					ret = "0.0";
 				}
 				String decl = matcher.group(1) + "return " + ret + ";}";
-				log.info("adding " + type + " -> " + decl);
 				if (source.indexOf(decl) == -1) {
 					source.append(decl).append('\n');
 				}
@@ -85,7 +92,6 @@ public class PrePatcher {
 			Matcher variableMatcher = declareVariablePattern.matcher(contents);
 			while (variableMatcher.find()) {
 				String var = variableMatcher.group(1);
-				log.info("adding " + var);
 				source.append(var).append(";\n");
 			}
 			source.append("\n}");

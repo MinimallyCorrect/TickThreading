@@ -1,6 +1,11 @@
 package me.nallar.patched;
 
+import java.lang.reflect.Field;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.Queue;
 
 import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.server.management.PlayerInstance;
@@ -10,10 +15,27 @@ import net.minecraft.world.WorldServer;
 public abstract class PatchPlayerManager extends PlayerManager {
 	public Object chunkWatcherLock;
 	private net.minecraft.util.LongHashMap loadingPlayerInstances;
+	protected List chunkWatcherWithPlayersF;
 
 	public void construct() {
 		chunkWatcherLock = new Object();
 		loadingPlayerInstances = new net.minecraft.util.LongHashMap();
+		try {
+			chunkWatcherWithPlayersF = chunkWatcherWithPlayers;
+		} catch (NoSuchFieldError ignored) {
+			for (Field f : this.getClass().getDeclaredFields()) {
+				if (f.getType().equals(Queue.class)) {
+					final Queue q;
+					try {
+						q = (Queue) f.get(this);
+					} catch (IllegalAccessException e) {
+						throw new RuntimeException(e);
+					}
+					chunkWatcherWithPlayersF = new QueueList(q);
+					break;
+				}
+			}
+		}
 	}
 
 	public PatchPlayerManager(WorldServer par1WorldServer, int par2) {
@@ -29,7 +51,7 @@ public abstract class PatchPlayerManager extends PlayerManager {
 	@Override
 	@Declare
 	public List getChunkWatcherWithPlayers() {
-		return this.chunkWatcherWithPlayers;
+		return this.chunkWatcherWithPlayersF;
 	}
 
 	@Override
@@ -59,5 +81,126 @@ public abstract class PatchPlayerManager extends PlayerManager {
 		}
 
 		return var6;
+	}
+
+	public static class QueueList implements List {
+		final Queue q;
+
+		public QueueList(Queue q) {
+			this.q = q;
+		}
+
+		@Override
+		public int size() {
+			return q.size();
+		}
+
+		@Override
+		public boolean isEmpty() {
+			return q.isEmpty();
+		}
+
+		@Override
+		public boolean contains(Object o) {
+			return false;
+		}
+
+		@Override
+		public Iterator iterator() {
+			return null;
+		}
+
+		@Override
+		public Object[] toArray() {
+			return q.toArray();
+		}
+
+		@Override
+		public boolean add(Object o) {
+			return q.add(o);
+		}
+
+		@Override
+		public boolean remove(Object o) {
+			return q.remove(o);
+		}
+
+		@Override
+		public boolean containsAll(Collection c) {
+			return false;
+		}
+
+		@Override
+		public boolean addAll(Collection c) {
+			return false;
+		}
+
+		@Override
+		public boolean addAll(int index, Collection c) {
+			return false;
+		}
+
+		@Override
+		public boolean removeAll(Collection c) {
+			return false;
+		}
+
+		@Override
+		public boolean retainAll(Collection c) {
+			return false;
+		}
+
+		@Override
+		public void clear() {
+		}
+
+		@Override
+		public Object get(int index) {
+			return null;
+		}
+
+		@Override
+		public Object set(int index, Object element) {
+			return null;
+		}
+
+		@Override
+		public void add(int index, Object element) {
+		}
+
+		@Override
+		public Object remove(int index) {
+			return null;
+		}
+
+		@Override
+		public int indexOf(Object o) {
+			return 0;
+		}
+
+		@Override
+		public int lastIndexOf(Object o) {
+			return 0;
+		}
+
+		@Override
+		public ListIterator listIterator() {
+			return null;
+		}
+
+		@Override
+		public ListIterator listIterator(int index) {
+			return null;
+		}
+
+		@Override
+		public List subList(int fromIndex, int toIndex) {
+			return null;
+		}
+
+		@Override
+		public Object[] toArray(Object[] a) {
+			return q.toArray(a);
+		}
 	}
 }

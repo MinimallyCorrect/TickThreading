@@ -30,6 +30,7 @@
 		<class id="net.minecraft.network.packet.Packet51MapChunk">
 			<volatile field="chunkData"/>
 			<addAll fromClass="me.nallar.patched.PatchPacket51MapChunk"/>
+			<threadLocal field="temp" type="byte[]" threadLocalField="javassist.is.faulty.ThreadLocals.mapChunkTempByteArray">getMapChunkData</threadLocal>
 		</class>
 		<class id="net.minecraft.network.packet.Packet56MapChunks">
 			<volatile field="chunkDataBuffer"/>
@@ -72,12 +73,15 @@
 			<final field="loadedChunkHashMap"/>
 			<final field="loadedChunks"/>
 		</class>
-		<class id="net.minecraft.world.gen.ChunkProviderServer" env="forge">
+		<class id="net.minecraft.world.gen.ChunkProviderServer">
 			<addAll fromClass="me.nallar.patched.PatchChunkProviderServer"/>
+		</class>
+		<class id="net.minecraft.world.gen.ChunkProviderServer" env="forge">
+			<addAll fromClass="me.nallar.patched.PatchChunkProviderServerForge"/>
 			<synchronize field="chunkLoadLock">unloadAllChunks,saveChunks,unload100OldestChunks</synchronize>
 			<synchronize field="genLock">populate</synchronize>
 		</class>
-		<class id="net.minecraft.world.chunk.storage.RegionFileCache">
+		<class id="net.minecraft.world.chunk.storage.RegionFileCache" env="forge">
 			<replaceMethod code="throw new UnsupportedOperationException();">createOrLoadRegionFile</replaceMethod>
 		</class>
 		<class id="net.minecraft.world.chunk.storage.AnvilChunkLoader" env="forge">
@@ -118,7 +122,7 @@
 			<!-- Concurrent access during iteration = boom -->
 			<newInitializer field="destroyedItemsNetCache" class="me.nallar.tickthreading.collections.ConcurrentLinkedQueueList"/>
 		</class>
-		<class id="net.minecraft.entity.Entity" env="forge">
+		<class id="net.minecraft.entity.Entity">
 			<addAll fromClass="me.nallar.patched.PatchEntity"/>
 		</class>
 		<class id="net.minecraft.entity.Entity">
@@ -172,22 +176,29 @@
 			<synchronize field="$2.loadedChunks">initializeConnectionToPlayer</synchronize>
 		</class>
 		<class id="net.minecraft.server.management.PlayerManager">
+			<newField field="readWriteLock" class="java.util.concurrent.locks.ReentrantReadWriteLock"/>
+			<newField field="playersUpdateLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>
+			<newField field="playerUpdateLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.readLock();"/>
 			<addAll fromClass="me.nallar.patched.PatchPlayerManager"/>
-		</class>
-		<class id="net.minecraft.server.management.PlayerManager" env="mcpc">
-			<synchronize>addPlayer,removePlayer,updateMountedMovingPlayer,updatePlayerInstances</synchronize>
 		</class>
 		<class id="net.minecraft.server.management.PlayerManager" env="forge">
 			<addAll fromClass="me.nallar.patched.PatchPlayerManagerForge"/>
+		</class>
+		<class id="net.minecraft.server.management.PlayerManager" env="mcpc">
+			<lock field="playersUpdateLock">updatePlayerInstances</lock>
+		</class>
+		<class id="net.minecraft.server.management.PlayerManager">
 			<synchronize field="$1.loadedChunks">addPlayer,removePlayer,filterChunkLoadQueue</synchronize>
 			<synchronize field="$1.loadedChunks">updateMountedMovingPlayer</synchronize>
 			<synchronize>addPlayer,removePlayer</synchronize>
-		</class>
-		<class id="net.minecraft.server.management.PlayerManager">
 			<profile>updatePlayerInstances</profile>
 		</class>
-		<class id="net.minecraft.server.management.PlayerInstance" env="forge">
+		<class id="net.minecraft.server.management.PlayerInstance">
 			<addAll fromClass="me.nallar.patched.PatchPlayerInstance"/>
+			<insertBefore code="this.sendTiles();">sendChunkUpdate</insertBefore>
+		</class>
+		<class id="net.minecraft.server.management.PlayerInstance" env="forge">
+			<addAll fromClass="me.nallar.patched.PatchPlayerInstanceForge"/>
 			<lock field="myManager.playerUpdateLock">flagChunkForUpdate,sendChunkUpdate</lock>
 			<replaceMethodCall index="1" code="{ $_ = null; }"/>
 			<synchronize field="$1.loadedChunks">addPlayerToChunkWatchingList,sendThisChunkToPlayer</synchronize>
