@@ -523,12 +523,11 @@
 			<newField field="writeLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>
 			<newField field="readLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.readLock();"/>
 			<insertAfter code="{
-			if (conductors.getClass() == java.util.ArrayList.class) {
 				conductors = new me.nallar.tickthreading.collections.LockArrayList(conductors);
 				((me.nallar.tickthreading.collections.LockArrayList)conductors).lock = writeLock;
-			}
 			}"/>
-			<lock field="readLock">setNetwork,addConductor,cleanConductors,resetConductors,onOverCharge,getTotalResistance,refreshConductors</lock>
+			<lock field="readLock">setNetwork,resetConductors,onOverCharge,getTotalResistance,refreshConductors</lock>
+			<lock field="writeLock">addConductor,cleanConductors</lock>
 		</class>
 	</universalElectricity>
 </mods>
