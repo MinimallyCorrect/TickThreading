@@ -123,8 +123,6 @@
 		<class id="net.minecraft.entity.player.EntityPlayerMP">
 			<synchronize field="loadedChunks">onUpdate</synchronize>
 			<addAll fromClass="me.nallar.patched.PatchEntityPlayerMP"/>
-		</class>
-		<class id="net.minecraft.entity.player.EntityPlayerMP" env="forge">
 			<!-- Concurrent access during iteration = boom -->
 			<newInitializer field="destroyedItemsNetCache" class="me.nallar.tickthreading.collections.ConcurrentLinkedQueueList"/>
 		</class>
