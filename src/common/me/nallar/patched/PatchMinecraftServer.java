@@ -200,7 +200,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 	@Override
 	public String getServerModName() {
-		return "mcpc,craftbukkit,forge,fml,tickthreading";
+		return "tickthreading,mcpc,spigot,craftbukkit,forge,fml";
 	}
 
 	@Override
@@ -228,11 +228,14 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				throw new IllegalStateException("Already saving!");
 			}
 			currentlySaving = true;
-			theProfiler.startSection("save");
-			this.serverConfigManager.saveAllPlayerData();
-			this.saveAllWorlds(true);
-			theProfiler.endSection();
-			currentlySaving = false;
+			try {
+				theProfiler.startSection("save");
+				this.serverConfigManager.saveAllPlayerData();
+				this.saveAllWorlds(true);
+				theProfiler.endSection();
+			} finally {
+				currentlySaving = false;
+			}
 		}
 
 		theProfiler.startSection("tallying");
@@ -476,18 +479,21 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	public void saveEverything() {
 		if (this.isServerRunning() && !currentlySaving) {
 			currentlySaving = true;
-			this.serverConfigManager.saveAllPlayerData();
-			this.saveAllWorlds(false);
-			if (worlds == null) {
-				for (WorldServer world : this.worldServers) {
-					world.flush();
+			try {
+				this.serverConfigManager.saveAllPlayerData();
+				this.saveAllWorlds(false);
+				if (worlds == null) {
+					for (WorldServer world : this.worldServers) {
+						world.flush();
+					}
+				} else {
+					for (WorldServer world : worlds) {
+						world.flush();
+					}
 				}
-			} else {
-				for (WorldServer world : worlds) {
-					world.flush();
-				}
+			} finally {
+				currentlySaving = false;
 			}
-			currentlySaving = false;
 		} else {
 			Log.severe("Server is already saving or crashed while saving - not attempting to save.");
 		}

@@ -146,7 +146,7 @@ public class ClassRegistry {
 			if (renameFile != null) {
 				tempFile.renameTo(renameFile);
 			}
-			UnsafeUtil.throwIgnoreChecked(e);
+			throw UnsafeUtil.throwIgnoreChecked(e);
 		} finally {
 			delete(tempDirectory);
 		}

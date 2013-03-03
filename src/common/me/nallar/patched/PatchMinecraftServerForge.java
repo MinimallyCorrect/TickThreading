@@ -13,6 +13,11 @@ public abstract class PatchMinecraftServerForge extends MinecraftServer {
 	}
 
 	@Override
+	public String getServerModName() {
+		return "tickthreading,forge,fml";
+	}
+
+	@Override
 	protected void initialWorldChunkLoad() {
 		if (!TickThreading.instance.shouldLoadSpawn) {
 			return;

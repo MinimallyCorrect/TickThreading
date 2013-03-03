@@ -19,9 +19,8 @@ public class RegionFileFixer {
 			return fixNegativeOffset(regionFileFile);
 		} catch (Throwable t) {
 			FMLLog.log(Level.SEVERE, t, "Error opening region file: " + regionFileFile);
-			UnsafeUtil.throwIgnoreChecked(t);
+			throw UnsafeUtil.throwIgnoreChecked(t);
 		}
-		throw new InternalError("This line should never be reached.");
 	}
 
 	private static RegionFile fixNegativeOffset(File regionFileFile) {
@@ -74,7 +73,7 @@ public class RegionFileFixer {
 			}
 		} catch (Throwable t) {
 			FMLLog.log(Level.SEVERE, t, "Failed to fix negative offset index in " + regionFileFile);
-			UnsafeUtil.throwIgnoreChecked(t);
+			throw UnsafeUtil.throwIgnoreChecked(t);
 		}
 		return new RegionFile(regionFileFile);
 	}

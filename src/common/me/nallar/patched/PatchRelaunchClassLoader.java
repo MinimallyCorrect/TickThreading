@@ -9,35 +9,30 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.net.URLConnection;
-import java.nio.ByteBuffer;
 import java.security.CodeSigner;
-import java.security.CodeSource;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.relauncher.FMLRelaunchLog;
 import cpw.mods.fml.relauncher.IClassTransformer;
 import cpw.mods.fml.relauncher.RelaunchClassLoader;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.patcher.Declare;
-import sun.misc.Resource;
+import me.nallar.unsafe.UnsafeUtil;
 import sun.misc.URLClassPath;
 
 public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
+	private static CodeSigner[] CODE_SIGNERS;
 	@Declare
 	public static int patchedClasses_;
 	@Declare
@@ -76,9 +71,10 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 		}
 	}
 
+	@SuppressWarnings ("ZeroLengthArrayAllocation")
 	public static void staticConstruct() {
-		//noinspection ZeroLengthArrayAllocation
 		EMPTY_BYTE_ARRAY = new byte[0];
+		CODE_SIGNERS = new CodeSigner[0];
 		err = new PrintStream(new FileOutputStream(FileDescriptor.err));
 	}
 
@@ -164,7 +160,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 							continue;
 						}
 						patchedClasses++;
-						byte[] contents = readFullyUnsafe(zipFile.getInputStream(zipEntry));
+						byte[] contents = readFully(zipFile.getInputStream(zipEntry));
 						replacedClasses.put(name, contents);
 					}
 					RelaunchClassLoader.patchedClasses += patchedClasses;
@@ -213,95 +209,36 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 	}
 
 	@Override
-	public Class<?> findClass(String name) throws ClassNotFoundException {
-		if (invalidClasses.contains(name)) {
-			throw new ClassNotFoundException(name);
-		}
-		Class<?> cachedClass = cachedClasses.get(name);
-		if (cachedClass != null) {
-			return cachedClass;
-		}
-		for (String st : classLoaderExceptions) {
-			if (name.startsWith(st)) {
-				return parent.loadClass(name);
-			}
-		}
+	public byte[] getClassBytes(String name) throws IOException {
+		byte[] data;
 
-		boolean transform = true;
-		for (String st : transformerExceptions) {
-			if (name.startsWith(st)) {
-				transform = false;
-				break;
-			}
-		}
-
-		byte[] basicClass = null;
-
-		@SuppressWarnings ("NonConstantStringShouldBeStringBuffer")
-		String path = name.replace('.', '/') + ".class";
 		if (name.indexOf('.') == -1) {
 			for (String res : RESERVED) {
 				if (name.toUpperCase(Locale.ENGLISH).startsWith(res)) {
-					path = '_' + path;
-					break;
+					data = getClassBytes('_' + name);
+					if (data != null) {
+						return data;
+					}
 				}
 			}
 		}
 
-		CodeSource codeSource = null;
 		InputStream classStream = null;
-		Manifest mf = null;
-		CodeSigner[] signers = null;
 		try {
-			byte[] patchedData = getReplacementClassBytes(path);
-			boolean loaded = false;
-			if (patchedData == null) {
-				try {
-					Resource classResource = ucp.getResource(path, true);
-					if (classResource != null) {
-						if (DEBUG_CLASSLOADING) {
-							FMLRelaunchLog.finest("Loading class %s from resource %s", name, classResource.getCodeSourceURL().toString());
-						}
-						if (patchedData == null) {
-							ByteBuffer byteBuffer = classResource.getByteBuffer();
-							if (byteBuffer == null) {
-								basicClass = classResource.getBytes();
-							} else {
-								basicClass = new byte[byteBuffer.remaining()];
-								byteBuffer.get(basicClass);
-							}
-						}
-						mf = classResource.getManifest();
-						signers = classResource.getCodeSigners();
-						if (signers != null && signers.length != 0) {
-							codeSource = new CodeSource(classResource.getCodeSourceURL(), signers);
-						}
-						loaded = true;
-					}
-				} catch (Throwable t) {
-					if (!(t instanceof NoClassDefFoundError)) {
-						log(Level.WARNING, t, "Failed to use fast I/O to read class " + name + " from " + path);
-					}
-				}
-			}
-			if (!loaded) {
-				URL classURL = findResource(path);
-				if (classURL == null) {
-					if (DEBUG_CLASSLOADING) {
-						FMLRelaunchLog.finest("Failed to find class resource %s", path);
-					}
-					return null;
-				}
+			URL classResource = findResource(name.replace('.', '/') + ".class");
+			if (classResource == null) {
 				if (DEBUG_CLASSLOADING) {
-					FMLRelaunchLog.finest("Loading class %s from resource %s", name, classURL.toString());
+					FMLLog.finest("Failed to find class resource %s", name.replace('.', '/') + ".class");
 				}
-				classStream = classURL.openStream();
-				basicClass = readFully(classStream);
+				return null;
 			}
-			basicClass = patchedData == null ? basicClass : patchedData;
-		} catch (Throwable t) {
-			log(Level.SEVERE, t, "Exception loading class " + name);
-			return null;
+			classStream = classResource.openStream();
+			if (DEBUG_CLASSLOADING) {
+				FMLLog.finest("Loading class %s from resource %s", name, classResource.toString());
+			}
+			data = readFully(classStream);
+			byte[] data2 = getReplacementClassBytes(name.replace('.', '/') + ".class");
+			return data2 == null ? data : data2;
 		} finally {
 			if (classStream != null) {
 				try {
@@ -310,84 +247,6 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 				}
 			}
 		}
-
-		try {
-			int lastDot = name.lastIndexOf('.');
-			String pkgname = lastDot == -1 ? "" : name.substring(0, lastDot);
-			Package pkg = getPackage(pkgname);
-			URLConnection urlConnection = null;
-			if (codeSource == null || pkg == null) {
-				if (mf != null && codeSource != null) {
-					if (pkg == null) {
-						if (lastDot > -1) {
-							pkg = definePackage(pkgname, mf, codeSource.getLocation());
-						}
-					} else {
-						if (pkg.isSealed() && !pkg.isSealed(codeSource.getLocation())) {
-							FMLRelaunchLog.severe("The jar file %s is trying to seal already secured path %s", codeSource.getLocation(), pkgname);
-						} else if (isSealed(pkgname, mf)) {
-							FMLRelaunchLog.severe("The jar file %s has a security seal for path %s, but that path is defined and not secure", codeSource.getLocation(), pkgname);
-						}
-					}
-				} else {
-					urlConnection = findCodeSourceConnectionFor(path);
-					if (urlConnection instanceof JarURLConnection) {
-						JarURLConnection jarUrlConn = (JarURLConnection) urlConnection;
-						JarFile jf = jarUrlConn.getJarFile();
-						if (jf != null && jf.getManifest() != null) {
-							mf = jf.getManifest();
-							JarEntry ent = jf.getJarEntry(path);
-							signers = ent.getCodeSigners();
-							if (pkg == null) {
-								if (lastDot > -1) {
-									pkg = definePackage(pkgname, mf, jarUrlConn.getJarFileURL());
-								}
-							} else {
-								if (pkg.isSealed() && !pkg.isSealed(jarUrlConn.getJarFileURL())) {
-									FMLRelaunchLog.severe("The jar file %s is trying to seal already secured path %s", jf.getName(), pkgname);
-								} else if (isSealed(pkgname, mf)) {
-									FMLRelaunchLog.severe("The jar file %s has a security seal for path %s, but that path is defined and not secure", jf.getName(), pkgname);
-								}
-							}
-						}
-					}
-					if (mf == null) {
-						if (pkg == null) {
-							if (lastDot > -1) {
-								pkg = definePackage(pkgname, null, null, null, null, null, null, null);
-							}
-						} else if (pkg.isSealed()) {
-							FMLRelaunchLog.severe("The URL %s is defining elements for sealed path %s", urlConnection.getURL(), pkgname);
-						}
-					}
-				}
-				if (pkg == null && lastDot > -1) {
-					log(Level.SEVERE, null, "No package defined for " + pkgname + " getting " + path);
-				}
-			}
-			if (codeSource == null && urlConnection != null) {
-				codeSource = new CodeSource(urlConnection.getURL(), signers);
-			}
-			byte[] transformedClass = transform ? runTransformers(name, basicClass) : basicClass;
-			Class<?> cl = defineClass(name, transformedClass, 0, transformedClass.length, codeSource);
-			if (cl.getPackage() != pkg) {
-				log(Level.SEVERE, null, "Package mismatch: got " + cl.getPackage() + ", expected " + pkg);
-			}
-			resolveClass(cl);
-			cachedClasses.put(name, cl);
-			return cl;
-		} catch (Throwable e) {
-			invalidClasses.add(name);
-			if (DEBUG_CLASSLOADING) {
-				FMLRelaunchLog.log(Level.FINEST, e, "Exception encountered attempting classloading of %s", name);
-			}
-			throw new ClassNotFoundException(name, e);
-		}
-	}
-
-	@Override
-	public byte[] getClassBytes(String name) throws IOException {
-		return null;
 	}
 
 	@Override
@@ -409,7 +268,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 				String message = throwable.getMessage();
 				if ((message == null ? "" : message).contains("for invalid side")) {
 					invalidClasses.add(name);
-					throw (RuntimeException) throwable;
+					throw UnsafeUtil.throwIgnoreChecked(throwable);
 				} else if (basicClass != null || DEBUG_CLASSLOADING) {
 					FMLRelaunchLog.log((DEBUG_CLASSLOADING && basicClass != null) ? Level.WARNING : Level.FINE, throwable, "Failed to transform " + name);
 				}
@@ -420,7 +279,8 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 
 	private static byte[] EMPTY_BYTE_ARRAY;
 
-	protected byte[] readFullyUnsafe(InputStream stream) {
+	@Override
+	protected byte[] readFully(InputStream stream) {
 		try {
 			ByteArrayOutputStream bos = new ByteArrayOutputStream(stream.available());
 

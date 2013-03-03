@@ -231,7 +231,7 @@ public abstract class PatchChunkProviderServerForge extends ChunkProviderServer 
 								chunk = this.currentChunkProvider.provideChunk(x, z);
 							} catch (Throwable t) {
 								Log.severe("Failed to generate a chunk in " + Log.name(worldObj) + " at chunk coords " + x + ',' + z);
-								UnsafeUtil.throwIgnoreChecked(t);
+								throw UnsafeUtil.throwIgnoreChecked(t);
 							}
 						}
 					} else {
