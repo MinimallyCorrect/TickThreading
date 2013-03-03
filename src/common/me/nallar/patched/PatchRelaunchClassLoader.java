@@ -294,7 +294,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 
 			return bos.toByteArray();
 		} catch (Throwable t) {
-			FMLRelaunchLog.log(Level.WARNING, t, "Problem loading class");
+			FMLRelaunchLog.log(Level.SEVERE, t, "Problem loading class");
 			return EMPTY_BYTE_ARRAY;
 		}
 	}

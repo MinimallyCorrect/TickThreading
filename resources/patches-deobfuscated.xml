@@ -287,6 +287,7 @@
 		</class>
 		<class id="cpw.mods.fml.relauncher.RelaunchClassLoader">
 			<addAll fromClass="me.nallar.patched.PatchRelaunchClassLoader"/>
+			<synchronize>findClass</synchronize>
 		</class>
 		<class id="cpw.mods.fml.common.network.ModListResponsePacket">
 			<replaceMethodCall index="2" code="{ $_ = null; }" method="info">execute</replaceMethodCall>
