@@ -446,6 +446,7 @@ public class Patches {
 		}
 		try {
 			CtField ctField = ctClass.getDeclaredField(field);
+			ctField.setModifiers(Modifier.setPublic(ctField.getModifiers()));
 			Log.warning(field + " already exists as " + ctField);
 			return;
 		} catch (NotFoundException ignored) {
@@ -453,8 +454,9 @@ public class Patches {
 		CtClass newType = classRegistry.getClass(clazz);
 		CtField ctField = new CtField(newType, field, ctClass);
 		if (attributes.get("static") != null) {
-			ctField.setModifiers(ctField.getModifiers() | Modifier.STATIC | Modifier.PUBLIC);
+			ctField.setModifiers(ctField.getModifiers() | Modifier.STATIC);
 		}
+		ctField.setModifiers(Modifier.setPublic(ctField.getModifiers()));
 		CtField.Initializer initializer = CtField.Initializer.byExpr(initialise);
 		ctClass.addField(ctField, initializer);
 	}
