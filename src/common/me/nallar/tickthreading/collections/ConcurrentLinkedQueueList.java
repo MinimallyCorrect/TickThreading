@@ -5,19 +5,25 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class ConcurrentLinkedQueueList extends ConcurrentLinkedQueue implements List {
+@SuppressWarnings ("ConstantConditions")
+public class ConcurrentLinkedQueueList<T> extends ConcurrentLinkedQueue<T> implements List<T> {
+	@Override
+	public boolean addAll(Collection<? extends T> c) {
+		return c == this || super.addAll(c);
+	}
+
 	@Override
 	public boolean addAll(int index, Collection c) {
 		return false;
 	}
 
 	@Override
-	public Object get(int index) {
+	public T get(int index) {
 		return null;
 	}
 
 	@Override
-	public Object set(int index, Object element) {
+	public T set(int index, Object element) {
 		return null;
 	}
 
@@ -26,7 +32,7 @@ public class ConcurrentLinkedQueueList extends ConcurrentLinkedQueue implements 
 	}
 
 	@Override
-	public Object remove(int index) {
+	public T remove(int index) {
 		return null;
 	}
 
@@ -41,17 +47,17 @@ public class ConcurrentLinkedQueueList extends ConcurrentLinkedQueue implements 
 	}
 
 	@Override
-	public ListIterator listIterator() {
+	public ListIterator<T> listIterator() {
 		return null;
 	}
 
 	@Override
-	public ListIterator listIterator(int index) {
+	public ListIterator<T> listIterator(int index) {
 		return null;
 	}
 
 	@Override
-	public List subList(int fromIndex, int toIndex) {
+	public List<T> subList(int fromIndex, int toIndex) {
 		return null;
 	}
 }
