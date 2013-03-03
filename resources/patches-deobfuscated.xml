@@ -507,6 +507,7 @@
 		<class id="universalelectricity.core.electricity.ElectricityNetwork">
 			<replaceFieldInitialisers field="consumers" newInitialiser="new me.nallar.tickthreading.collections.CHashMap($$);"/>
 			<replaceFieldInitialisers field="producers" newInitialiser="new me.nallar.tickthreading.collections.CHashMap($$);"/>
+			<synchronize>addConductor,cleanConductors,resetConductors,onOverCharge,getTotalResistance,refreshConductors</synchronize>
 		</class>
 	</universalElectricity>
 </mods>
