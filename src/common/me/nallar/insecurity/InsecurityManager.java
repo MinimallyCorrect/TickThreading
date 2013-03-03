@@ -27,7 +27,7 @@ public class InsecurityManager extends java.lang.SecurityManager {
 	@Override
 	public void checkExit(int status) {
 		super.checkExit(status);
-		FMLLog.log(Level.WARNING, new Throwable(), "Server stopped.");
+		FMLLog.log(Level.WARNING, new NotAnErrorJustAWarningPleaseDontMakeAnIssueAboutThis(), "Server stopped.");
 		for (Handler handler : FMLLog.getLogger().getHandlers()) {
 			handler.flush();
 		}

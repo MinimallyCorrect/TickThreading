@@ -34,7 +34,6 @@ import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.gui.IUpdatePlayerListBox;
 import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.ReportedException;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
@@ -56,6 +55,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	private static double networkTPS = 0;
 	private Map<Integer, Integer> exceptionCount;
 	private boolean tickNetworkInMainThread;
+	public List<WorldServer> worlds;
 	@Declare
 	public static java.util.LinkedList playersToCheckWorld_;
 	@Declare
@@ -116,7 +116,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			if (this.startServer()) {
 				FMLLog.fine("calling handleServerStarted()");
 				FMLCommonHandler.instance().handleServerStarted();
-				FMLCommonHandler.instance().onWorldLoadTick(worldServers);
+				FMLCommonHandler.instance().onWorldLoadTick(worlds == null ? worldServers : worlds.toArray(new WorldServer[worlds.size()]));
 				Set<Configuration> toSaveConfigurationSet = MinecraftServer.toSaveConfigurationSet;
 				MinecraftServer.toSaveConfigurationSet = null;
 				for (Configuration configuration : toSaveConfigurationSet) {
@@ -200,7 +200,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 	@Override
 	public String getServerModName() {
-		return "tickthreading-fml";
+		return "mcpc,craftbukkit,forge,fml,tickthreading";
 	}
 
 	@Override
@@ -274,6 +274,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				playersToCheckWorld.clear();
 			}
 		}
+		spigotTick();
 		theProfiler.endSection();
 		theProfiler.endSection();
 		tickTime = tickTime * 0.98f + ((this.tickTimeArray[this.tickCounter % 100] = System.nanoTime() - var1) * 0.02f);
@@ -281,11 +282,11 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 	@Override
 	public void updateTimeLightAndEntities() {
-		theProfiler.startSection("levels");
+		final Profiler profiler = theProfiler;
+		profiler.startSection("levels");
 		int var1;
 
 		Integer[] dimensionIdsToTick = this.dimensionIdsToTick = DimensionManager.getIDs();
-		Profiler profiler = this.theProfiler;
 
 		if (threadManager == null) {
 			threadManager = new ThreadManager(8, "World Tick");
@@ -332,6 +333,10 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		DimensionManager.unloadWorlds(worldTickTimes);
 
 		profiler.endSection();
+	}
+
+	public void spigotTick() {
+		// Replaced in patcher
 	}
 
 	@Declare
@@ -390,7 +395,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				world.getWorldVec3Pool().clear();
 				profiler.endSection();
 
-				if (this.tickCounter % 60 == 0) {
+				if (this.tickCounter % 30 == 0) {
 					profiler.startSection("timeSync");
 					this.serverConfigManager.sendPacketToAllPlayersInDimension(new Packet4UpdateTime(world.getTotalWorldTime(), world.getWorldTime()), world.provider.dimensionId);
 					profiler.endSection();
@@ -473,43 +478,19 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			currentlySaving = true;
 			this.serverConfigManager.saveAllPlayerData();
 			this.saveAllWorlds(false);
-			for (WorldServer world : this.worldServers) {
-				world.flush();
+			if (worlds == null) {
+				for (WorldServer world : this.worldServers) {
+					world.flush();
+				}
+			} else {
+				for (WorldServer world : worlds) {
+					world.flush();
+				}
 			}
 			currentlySaving = false;
 		} else {
 			Log.severe("Server is already saving or crashed while saving - not attempting to save.");
 		}
-	}
-
-	@Override
-	protected void initialWorldChunkLoad() {
-		if (!TickThreading.instance.shouldLoadSpawn) {
-			return;
-		}
-		int loadedChunks = 0;
-		this.setUserMessage("menu.generatingTerrain");
-		byte dimension = 0;
-		long startTime = System.currentTimeMillis();
-		logger.info("Preparing start region for level " + dimension);
-		WorldServer worldServer = this.worldServers[dimension];
-		ChunkCoordinates spawnPoint = worldServer.getSpawnPoint();
-
-		for (int var11 = -192; var11 <= 192 && this.isServerRunning(); var11 += 16) {
-			for (int var12 = -192; var12 <= 192 && this.isServerRunning(); var12 += 16) {
-				long currentTime = System.currentTimeMillis();
-
-				if (currentTime - startTime > 1000L) {
-					this.outputPercentRemaining("Preparing spawn area", loadedChunks * 100 / 625);
-					startTime = currentTime;
-				}
-
-				++loadedChunks;
-				worldServer.theChunkProviderServer.loadChunk(spawnPoint.posX + var11 >> 4, spawnPoint.posZ + var12 >> 4);
-			}
-		}
-
-		this.clearCurrentTask();
 	}
 
 	public static class TickRunnable implements Runnable {

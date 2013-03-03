@@ -12,6 +12,12 @@
 			<addAll fromClass="me.nallar.patched.PatchMinecraftServer"/>
 			<public field="mcServer"/>
 		</class>
+		<class id="net.minecraft.server.MinecraftServer" env="mcpc">
+			<replaceMethod code="org.bukkit.craftbukkit.v1_4_R1.util.WatchdogThread.tick();">spigotTick</replaceMethod>
+		</class>
+		<class id="net.minecraft.server.MinecraftServer" env="forge">
+			<addAll fromClass="me.nallar.patched.PatchMinecraftServerForge"/>
+		</class>
 		<class id="net.minecraft.profiler.Profiler">
 			<addAll fromClass="me.nallar.patched.PatchProfiler"/>
 		</class>
