@@ -18,6 +18,7 @@ import me.nallar.tickthreading.minecraft.DeadLockDetector;
 import me.nallar.tickthreading.minecraft.ThreadManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
+import me.nallar.tickthreading.util.contextaccess.ContextAccess;
 import net.minecraft.block.Block;
 import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.entity.player.EntityPlayer;
@@ -39,6 +40,7 @@ import net.minecraft.world.chunk.storage.IChunkLoader;
 import net.minecraft.world.gen.ChunkProviderServer;
 import net.minecraft.world.storage.ISaveHandler;
 import net.minecraft.world.storage.WorldInfo;
+import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.ForgeChunkManager;
 
 public abstract class PatchWorldServer extends WorldServer implements Runnable {
@@ -92,7 +94,9 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		DeadLockDetector.tick("Saving a world before unload", System.nanoTime() + 30000000000L);
 		this.saveHandler.flush();
 
-		ttStop();
+		if (ContextAccess.$.getContext(1).equals(DimensionManager.class)) {
+			ttStop();
+		}
 	}
 
 	@Override

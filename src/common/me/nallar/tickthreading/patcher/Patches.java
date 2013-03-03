@@ -392,7 +392,6 @@ public class Patches {
 		String initialise = attributes.get("code");
 		String arraySize = attributes.get("arraySize");
 		initialise = "{ " + field + " = " + (initialise == null ? ("new " + clazz + (arraySize == null ? "()" : '[' + arraySize + ']')) : initialise) + "; }";
-		// Return value ignored - just used to cause a NotFoundException if the field doesn't exist.
 		if ((ctClass.getDeclaredField(field).getModifiers() & Modifier.STATIC) == Modifier.STATIC) {
 			ctClass.makeClassInitializer().insertAfter(initialise);
 		} else {

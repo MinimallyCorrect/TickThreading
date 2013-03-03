@@ -499,4 +499,9 @@
 			<synchronize field="$1">getNoteBlockEvents</synchronize>
 		</class>
 	</thaumcraft>
+	<universalElectricity>
+		<class id="universalelectricity.core.electricity.ElectricityNetwork">
+
+		</class>
+	</universalElectricity>
 </mods>
