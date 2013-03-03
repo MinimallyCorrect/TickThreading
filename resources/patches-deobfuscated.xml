@@ -502,7 +502,8 @@
 	</thaumcraft>
 	<universalElectricity>
 		<class id="universalelectricity.core.electricity.ElectricityNetwork">
-
+			<replaceFieldInitialisers field="consumers" newInitialiser="new me.nallar.tickthreading.collections.CHashMap($$);"/>
+			<replaceFieldInitialisers field="producers" newInitialiser="new me.nallar.tickthreading.collections.CHashMap($$);"/>
 		</class>
 	</universalElectricity>
 </mods>

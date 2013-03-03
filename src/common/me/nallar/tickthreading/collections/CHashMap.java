@@ -4,32 +4,36 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+
+import org.cliffc.high_scale_lib.NonBlockingHashMap;
 
 /**
  * Concurrent HashMap, which extends HashMap.
- * Necessary as ConcurrentHashMap does not, so it's
+ * Necessary as NonBlockingHashMap does not, so it's
  * much harder to replace usages of HashMap with it
  */
 @SuppressWarnings ("UnusedDeclaration")
 public class CHashMap<K, V> extends HashMap<K, V> {
 	private static final long serialVersionUID = 7249069246763182397L;
-	private final ConcurrentHashMap<K, V> hashMap;
+	private final NonBlockingHashMap<K, V> hashMap;
 
 	public CHashMap(int initialCapacity, float loadFactor) {
-		hashMap = new ConcurrentHashMap<K, V>(initialCapacity, loadFactor);
+		hashMap = new NonBlockingHashMap<K, V>(initialCapacity);
 	}
 
 	public CHashMap(int initialCapacity) {
-		hashMap = new ConcurrentHashMap<K, V>(initialCapacity);
+		hashMap = new NonBlockingHashMap<K, V>(initialCapacity);
 	}
 
 	public CHashMap() {
-		hashMap = new ConcurrentHashMap<K, V>();
+		hashMap = new NonBlockingHashMap<K, V>();
 	}
 
 	public CHashMap(Map<? extends K, ? extends V> m) {
-		hashMap = new ConcurrentHashMap<K, V>(m);
+		hashMap = new NonBlockingHashMap<K, V>(m.size());
+		for (Map.Entry<? extends K, ? extends V> entry : m.entrySet()) {
+			hashMap.put(entry.getKey(), entry.getValue());
+		}
 	}
 
 	@Override
@@ -54,7 +58,7 @@ public class CHashMap<K, V> extends HashMap<K, V> {
 
 	@Override
 	public V put(K key, V value) {
-		return hashMap.put(key, value);
+		return key == null ? null : hashMap.put(key, value);
 	}
 
 	@Override
@@ -64,7 +68,7 @@ public class CHashMap<K, V> extends HashMap<K, V> {
 
 	@Override
 	public V remove(Object key) {
-		return hashMap.remove(key);
+		return key == null ? null : hashMap.remove(key);
 	}
 
 	@Override

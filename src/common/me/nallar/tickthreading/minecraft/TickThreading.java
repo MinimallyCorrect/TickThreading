@@ -28,7 +28,6 @@ import me.nallar.tickthreading.util.FieldUtil;
 import me.nallar.tickthreading.util.LocationUtil;
 import me.nallar.tickthreading.util.PatchUtil;
 import me.nallar.tickthreading.util.VersionUtil;
-import me.nallar.tickthreading.util.contextaccess.ContextAccess;
 import net.minecraft.command.ServerCommandManager;
 import net.minecraft.network.packet.PacketCount;
 import net.minecraft.server.MinecraftServer;

@@ -4,9 +4,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.google.common.base.Splitter;
 
@@ -63,11 +65,130 @@ public class Patches {
 		ctClass.addMethod(CtNewMethod.make(attributes.get("code"), ctClass));
 	}
 
-	@Patch
-	public void changeFieldType(CtClass ctClass, Map<String, String> attributes) {
-
+	@Patch (
+			requiredAttributes = "type,field"
+	)
+	public void changeFieldType(final CtClass ctClass, Map<String, String> attributes) throws CannotCompileException, NotFoundException {
+		final String field = attributes.get("field");
+		CtField oldField = ctClass.getDeclaredField(field);
+		oldField.setName(field + "_old");
+		String newType = attributes.get("type");
+		CtField ctField = new CtField(classRegistry.getClass(newType), field, ctClass);
+		ctField.setModifiers(oldField.getModifiers());
+		ctClass.addField(ctField);
+		Set<CtBehavior> allBehaviours = new HashSet<CtBehavior>();
+		Collections.addAll(allBehaviours, ctClass.getDeclaredConstructors());
+		Collections.addAll(allBehaviours, ctClass.getDeclaredMethods());
+		CtBehavior initialiser = ctClass.getClassInitializer();
+		if (initialiser != null) {
+			allBehaviours.add(initialiser);
+		}
+		for (CtBehavior ctBehavior : allBehaviours) {
+			ctBehavior.instrument(new ExprEditor() {
+				@Override
+				public void edit(FieldAccess fieldAccess) throws CannotCompileException {
+					if (fieldAccess.getClassName().equals(ctClass.getName()) && fieldAccess.getFieldName().equals(field)) {
+						if (fieldAccess.isReader()) {
+							fieldAccess.replace("$_ = $0." + field + ';');
+						} else if (fieldAccess.isWriter()) {
+							fieldAccess.replace("$0." + field + " = $1;");
+						}
+					}
+				}
+			});
+		}
 	}
 
+	@Patch (
+			requiredAttributes = "field,newInitialiser"
+	)
+	public void replaceFieldInitialisers(final CtClass ctClass, Map<String, String> attributes) throws CannotCompileException, NotFoundException {
+		final String field = attributes.get("field");
+		final CtField ctField = ctClass.getDeclaredField(field);
+		final String newInitialiser = attributes.get("newInitialiser");
+		Set<CtBehavior> allBehaviours = new HashSet<CtBehavior>();
+		Collections.addAll(allBehaviours, ctClass.getDeclaredConstructors());
+		CtBehavior initialiser = ctClass.getClassInitializer();
+		if (initialiser != null) {
+			allBehaviours.add(initialiser);
+		}
+		for (CtBehavior ctBehavior : allBehaviours) {
+			final Map<Integer, String> newExprType = new HashMap<Integer, String>();
+			ctBehavior.instrument(new ExprEditor() {
+				NewExpr lastNewExpr;
+				int newPos = 0;
+
+				@Override
+				public void edit(NewExpr e) {
+					lastNewExpr = null;
+					newPos++;
+					try {
+						if (classRegistry.getClass(e.getClassName()).subtypeOf(ctField.getType())) {
+							lastNewExpr = e;
+							Log.fine(e + "," + e.getClassName());
+						}
+					} catch (NotFoundException ignored) {
+					}
+				}
+
+				@Override
+				public void edit(FieldAccess e) {
+					NewExpr myLastNewExpr = lastNewExpr;
+					lastNewExpr = null;
+					if (myLastNewExpr != null && e.getFieldName().equals(field)) {
+						Log.fine('(' + myLastNewExpr.getSignature() + ") " + myLastNewExpr.getClassName() + " at " + myLastNewExpr.getFileName() + ':' + myLastNewExpr.getLineNumber() + ':' + newPos);
+						newExprType.put(newPos, classSignatureToName(e.getSignature()));
+					}
+				}
+
+				@Override
+				public void edit(MethodCall e) {
+					lastNewExpr = null;
+				}
+
+				@Override
+				public void edit(NewArray e) {
+					lastNewExpr = null;
+				}
+
+				@Override
+				public void edit(Cast e) {
+					lastNewExpr = null;
+				}
+
+				@Override
+				public void edit(Instanceof e) {
+					lastNewExpr = null;
+				}
+
+				@Override
+				public void edit(Handler e) {
+					lastNewExpr = null;
+				}
+
+				@Override
+				public void edit(ConstructorCall e) {
+					lastNewExpr = null;
+				}
+			});
+			ctBehavior.instrument(new ExprEditor() {
+				int newPos = 0;
+
+				@Override
+				public void edit(NewExpr e) throws CannotCompileException {
+					newPos++;
+					Log.fine(e.getFileName() + ':' + e.getLineNumber() + ", pos: " + newPos);
+					if (newExprType.containsKey(newPos)) {
+						String assignedType = newExprType.get(newPos);
+						Log.fine(assignedType + " at " + e.getFileName() + ':' + e.getLineNumber());
+						String block = "{$_=" + newInitialiser + "}";
+						Log.fine("Replaced with " + block);
+						e.replace(block);
+					}
+				}
+			});
+		}
+	}
 
 	@Patch
 	public void profile(CtMethod ctMethod, Map<String, String> attributes) throws CannotCompileException, NotFoundException {
