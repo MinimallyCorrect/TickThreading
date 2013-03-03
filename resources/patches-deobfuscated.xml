@@ -507,7 +507,12 @@
 		<class id="universalelectricity.core.electricity.ElectricityNetwork">
 			<replaceFieldInitialisers field="consumers" newInitialiser="new me.nallar.tickthreading.collections.CHashMap($$);"/>
 			<replaceFieldInitialisers field="producers" newInitialiser="new me.nallar.tickthreading.collections.CHashMap($$);"/>
-			<synchronize>addConductor,cleanConductors,resetConductors,onOverCharge,getTotalResistance,refreshConductors</synchronize>
+			<newField field="readWriteLock" class="me.nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock"/>
+			<newField field="writeLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>
+			<newField field="readLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.readLock();"/>
+			<insertAfter code="{ conductors = new me.nallar.tickthreading.collections.LockArrayList(conductors);
+			((me.nallar.tickthreading.collections.LockArrayList)conductors).lock = writeLock; }"/>
+			<lock field="readLock">addConductor,cleanConductors,resetConductors,onOverCharge,getTotalResistance,refreshConductors</lock>
 		</class>
 	</universalElectricity>
 </mods>
