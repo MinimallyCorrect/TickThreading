@@ -273,10 +273,6 @@ public class TickThreading {
 					Log.severe("Looks like another mod broke TT's replacement entity list in world: " + Log.name(event.world));
 				}
 			}
-			if (event.world instanceof WorldServer) {
-				WorldServer worldServer = (WorldServer) event.world;
-				worldServer.ttStop();
-			}
 		} catch (Exception e) {
 			Log.severe("Probable memory leak, failed to unload threading for world " + Log.name(event.world), e);
 		}
