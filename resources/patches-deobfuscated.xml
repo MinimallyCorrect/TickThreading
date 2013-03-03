@@ -84,6 +84,9 @@
 			<newField field="staticLock" class="java.lang.Object" static=""/>
 			<synchronize field="staticLock">getModdedBiomeGenerators</synchronize>
 		</class>
+		<class id="net.minecraft.world.biome.BiomeCache">
+			<synchronize>getBiomeCacheBlock,cleanupCache</synchronize>
+		</class>
 		<class id="net.minecraft.world.gen.ChunkProviderServer">
 			<public field="loadedChunks"/>
 			<final field="worldObj"/>
