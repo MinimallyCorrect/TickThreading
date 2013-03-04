@@ -517,17 +517,17 @@
 			<lock field="readLock">unregister,cleanUpNetworks,resetConductors</lock>
 		</class>
 		<class id="universalelectricity.core.electricity.ElectricityNetwork">
-			<replaceFieldInitialisers field="consumers" newInitialiser="new me.nallar.tickthreading.collections.CHashMap($$);"/>
-			<replaceFieldInitialisers field="producers" newInitialiser="new me.nallar.tickthreading.collections.CHashMap($$);"/>
-			<newField field="readWriteLock" class="me.nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock"/>
-			<newField field="writeLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>
-			<newField field="readLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.readLock();"/>
-			<insertAfter code="{
-				conductors = new me.nallar.tickthreading.collections.LockArrayList(new me.nallar.tickthreading.collections.ComodificationDebugArrayList(conductors));
-				((me.nallar.tickthreading.collections.LockArrayList)conductors).lock = writeLock;
+			<newField field="readLock" class="java.util.concurrent.locks.Lock" code="none"/>
+			<replaceMethod code="{
+				me.nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock readWriteLock = new me.nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock();
+				readLock = readWriteLock.readLock();
+				consumers = new me.nallar.tickthreading.collections.CHashMap();
+				producers = new me.nallar.tickthreading.collections.CHashMap();
+				conductors = new me.nallar.tickthreading.collections.LockArrayList();
+				((me.nallar.tickthreading.collections.LockArrayList)conductors).lock = readWriteLock.writeLock();
+				this.addConductor($1);
 			}"/>
-			<lock field="readLock">setNetwork,resetConductors,onOverCharge,getTotalResistance,refreshConductors</lock>
-			<lock field="writeLock">addConductor,cleanConductors</lock>
+			<lock field="readLock">addConductor,cleanConductors,setNetwork,resetConductors,onOverCharge,getTotalResistance,refreshConductors</lock>
 		</class>
 	</universalElectricity>
 </mods>

@@ -271,7 +271,7 @@ public class Patches {
 	}
 
 	@Patch
-	public void replaceMethod(CtMethod method, Map<String, String> attributes) throws NotFoundException, CannotCompileException, BadBytecode {
+	public void replaceMethod(CtBehavior method, Map<String, String> attributes) throws NotFoundException, CannotCompileException, BadBytecode {
 		String fromClass = attributes.get("fromClass");
 		String code = attributes.get("code");
 		if (fromClass != null) {
@@ -279,9 +279,8 @@ public class Patches {
 			CtMethod replacingMethod = fromMethod == null ?
 					classRegistry.getClass(fromClass).getDeclaredMethod(method.getName(), method.getParameterTypes())
 					: MethodDescription.fromString(fromClass, fromMethod).inClass(classRegistry.getClass(fromClass));
-			replaceMethod(method, replacingMethod);
+			replaceMethod((CtMethod) method, replacingMethod);
 		} else if (code != null) {
-			Log.info("Replacing " + new MethodDescription(method).getMCPName() + " with " + code);
 			method.setBody(code);
 		} else {
 			Log.severe("Missing required attributes for replaceMethod");
@@ -583,8 +582,12 @@ public class Patches {
 			ctField.setModifiers(ctField.getModifiers() | Modifier.STATIC);
 		}
 		ctField.setModifiers(Modifier.setPublic(ctField.getModifiers()));
-		CtField.Initializer initializer = CtField.Initializer.byExpr(initialise);
-		ctClass.addField(ctField, initializer);
+		if ("none".equalsIgnoreCase(initialise)) {
+			ctClass.addField(ctField);
+		} else {
+			CtField.Initializer initializer = CtField.Initializer.byExpr(initialise);
+			ctClass.addField(ctField, initializer);
+		}
 	}
 
 	@Patch (
