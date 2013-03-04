@@ -5,6 +5,8 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.TreeMap;
@@ -143,11 +145,22 @@ public class DeadLockDetector {
 		// which needs to be saved.
 		final MinecraftServer minecraftServer = MinecraftServer.getServer();
 		minecraftServer.getNetworkThread().stopListening();
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException ignored) {
+		}
 		new Thread() {
 			@Override
 			public void run() {
-				for (EntityPlayerMP entityPlayerMP : (Iterable<EntityPlayerMP>) minecraftServer.getConfigurationManager().playerEntityList) {
-					entityPlayerMP.playerNetServerHandler.kickPlayerFromServer("Restarting");
+				int attempts = 5;
+				while (attempts-- > 0) {
+					try {
+						for (EntityPlayerMP entityPlayerMP : new ArrayList<EntityPlayerMP>(minecraftServer.getConfigurationManager().playerEntityList)) {
+							entityPlayerMP.playerNetServerHandler.kickPlayerFromServer("Restarting");
+						}
+						attempts = 0;
+					} catch (ConcurrentModificationException ignored) {
+					}
 				}
 			}
 		}.start();
