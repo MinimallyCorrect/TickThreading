@@ -14,6 +14,10 @@ public enum VersionUtil {
 			}
 		} catch (NoClassDefFoundError ignored) {
 		}
-		return "@MOD_NAME@ v@MOD_VERSION@ for MC@MC_VERSION@" + version;
+		return TTVersionString() + version;
+	}
+
+	public static String TTVersionString() {
+		return "@MOD_NAME@ v@MOD_VERSION@ for MC@MC_VERSION@";
 	}
 }

@@ -178,7 +178,7 @@ public class PatchManager {
 		List<Element> modElements = DomUtil.elementList(configDocument.getDocumentElement().getChildNodes());
 		for (Element modElement : modElements) {
 			for (Element classElement : DomUtil.getElementsByTag(modElement, "class")) {
-				hashes.put(classElement.getAttribute("id"), DomUtil.getHash(classElement) + VersionUtil.versionString().hashCode() * 31);
+				hashes.put(classElement.getAttribute("id"), DomUtil.getHash(classElement) + VersionUtil.TTVersionString().hashCode() * 31);
 			}
 		}
 		return hashes;

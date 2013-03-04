@@ -166,7 +166,8 @@ public class ClassRegistry {
 			}
 			int hash = stringIntegerEntry.getValue();
 			Integer currentHash = expectedPatchHashes.get(location);
-			expectedPatchHashes.put(location, (currentHash == null) ? hash : currentHash * 31 + hash);
+			currentHash = (currentHash == null) ? hash : currentHash * 13 + hash;
+			expectedPatchHashes.put(location, currentHash);
 		}
 	}
 
@@ -181,7 +182,9 @@ public class ClassRegistry {
 	public boolean shouldPatch() {
 		for (File file : expectedPatchHashes.keySet()) {
 			if (shouldPatch(file)) {
-				Log.info("Patching required for " + file);
+				Integer expectedPatchHash = expectedPatchHashes.get(file);
+				Log.warning("Patching required for " + file + " because " + (expectedPatchHash == null ? "it has not been patched" : "it is out of date." +
+						"\nExpected " + expectedPatchHash + ", got " + locationToPatchHash.get(file)));
 				return true;
 			}
 		}
