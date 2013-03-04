@@ -181,6 +181,7 @@ public class ClassRegistry {
 	public boolean shouldPatch() {
 		for (File file : expectedPatchHashes.keySet()) {
 			if (shouldPatch(file)) {
+				Log.info("Patching required for " + file);
 				return true;
 			}
 		}
