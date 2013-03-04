@@ -96,6 +96,9 @@
 		<class id="net.minecraft.world.gen.ChunkProviderServer">
 			<addAll fromClass="me.nallar.patched.PatchChunkProviderServer"/>
 		</class>
+		<class id="net.minecraft.world.gen.ChunkProviderServer" env="mcpc">
+			<replaceMethod field="loadedChunkHashMap" code="return $field.get(org.bukkit.craftbukkit.V1_4_R1.util.LongHash.toLong(x, z));">getChunkIfExists</replaceMethod>
+		</class>
 		<class id="net.minecraft.world.gen.ChunkProviderServer" env="forge">
 			<addAll fromClass="me.nallar.patched.PatchChunkProviderServerForge"/>
 			<synchronize field="chunkLoadLock">unloadAllChunks,saveChunks,unload100OldestChunks</synchronize>

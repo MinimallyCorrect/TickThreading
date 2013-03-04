@@ -274,6 +274,10 @@ public class Patches {
 	public void replaceMethod(CtBehavior method, Map<String, String> attributes) throws NotFoundException, CannotCompileException, BadBytecode {
 		String fromClass = attributes.get("fromClass");
 		String code = attributes.get("code");
+		String field = attributes.get("field");
+		if (field != null) {
+			code = code.replace("$field", field);
+		}
 		if (fromClass != null) {
 			String fromMethod = attributes.get("fromMethod");
 			CtMethod replacingMethod = fromMethod == null ?

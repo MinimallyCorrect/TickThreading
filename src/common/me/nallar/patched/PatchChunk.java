@@ -16,6 +16,7 @@ import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.ChunkPosition;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityEvent;
@@ -151,7 +152,13 @@ public abstract class PatchChunk extends Chunk {
 
 		if (var2 != this.xPosition || var3 != this.zPosition) {
 			FMLLog.log(Level.WARNING, new Throwable(), "Entity %s added to the wrong chunk - expected x%d z%d, got x%d z%d", par1Entity.toString(), this.xPosition, this.zPosition, var2, var3);
-			return;
+			if (worldObj instanceof WorldServer) {
+				Chunk correctChunk = ((WorldServer) worldObj).theChunkProviderServer.getChunkIfExists(xPosition, zPosition);
+				if (correctChunk != null) {
+					correctChunk.addEntity(par1Entity);
+					return;
+				}
+			}
 		}
 
 		this.hasEntities = true;
