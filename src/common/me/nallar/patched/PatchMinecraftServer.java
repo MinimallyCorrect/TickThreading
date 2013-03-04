@@ -131,10 +131,11 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 					new FakeServerThread(new NetworkTickRunnable(this), "Network Tick", false).start();
 				}
 				long lastTick = 0L;
+				double currentMaxTPS = 0;
 				while (this.serverRunning) {
 					long curTime = System.nanoTime();
 					long wait = TARGET_TICK_TIME - (curTime - lastTick);
-					if (wait > 0 && (currentTPS > TARGET_TPS || !TickThreading.instance.aggressiveTicks)) {
+					if (wait > 0 && (currentMaxTPS > TARGET_TPS || !TickThreading.instance.aggressiveTicks)) {
 						Thread.sleep(wait / 1000000);
 						continue;
 					}
@@ -145,7 +146,8 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 					} catch (Exception e) {
 						Log.severe("Exception in main tick loop", e);
 					}
-					currentTPS = TARGET_TICK_TIME * TARGET_TPS / tickTime;
+					currentMaxTPS = TARGET_TICK_TIME * TARGET_TPS / tickTime;
+					currentTPS = currentMaxTPS > TARGET_TPS ? TARGET_TPS : currentMaxTPS;
 				}
 				try {
 					FMLCommonHandler.instance().handleServerStopping();
@@ -356,7 +358,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 	@Declare
 	public static double getTPS() {
-		return currentTPS > TARGET_TPS ? TARGET_TPS : currentTPS;
+		return currentTPS;
 	}
 
 	@Declare
