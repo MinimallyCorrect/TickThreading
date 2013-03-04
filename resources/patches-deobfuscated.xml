@@ -515,6 +515,7 @@
 				}
 				}"/>
 			<lock field="readLock">unregister,cleanUpNetworks,resetConductors</lock>
+			<synchronize>mergeConnection</synchronize>
 		</class>
 		<class id="universalelectricity.core.electricity.ElectricityNetwork">
 			<newField field="readLock" class="java.util.concurrent.locks.Lock" code="none"/>
