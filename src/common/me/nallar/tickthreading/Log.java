@@ -215,4 +215,8 @@ public class Log {
 		String deobfuscatedName = MappingUtil.debobfuscate(o.getClass().getName());
 		return "c " + deobfuscatedName + ' ' + o.toString();
 	}
+
+	public static void log(Level level, Throwable throwable, String s) {
+		LOGGER.log(level, s, throwable);
+	}
 }

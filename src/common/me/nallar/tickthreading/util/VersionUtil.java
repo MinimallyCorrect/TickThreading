@@ -1,10 +1,19 @@
 package me.nallar.tickthreading.util;
 
+import net.minecraft.server.MinecraftServer;
+
 public enum VersionUtil {
 	;
 
-	@SuppressWarnings ("SameReturnValue")
 	public static String versionString() {
-		return "@MOD_NAME@ v@MOD_VERSION@ for MC@MC_VERSION@";
+		String version = "";
+		try {
+			MinecraftServer minecraftServer = MinecraftServer.getServer();
+			if (minecraftServer != null) {
+				version = " on " + minecraftServer.getMinecraftVersion() + ' ' + minecraftServer.getServerModName();
+			}
+		} catch (NoClassDefFoundError ignored) {
+		}
+		return "@MOD_NAME@ v@MOD_VERSION@ for MC@MC_VERSION@" + version;
 	}
 }
