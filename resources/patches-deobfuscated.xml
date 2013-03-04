@@ -523,7 +523,7 @@
 			<newField field="writeLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>
 			<newField field="readLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.readLock();"/>
 			<insertAfter code="{
-				conductors = new me.nallar.tickthreading.collections.LockArrayList(conductors);
+				conductors = new me.nallar.tickthreading.collections.LockArrayList(new me.nallar.tickthreading.collections.ComodificationDebugArrayList(conductors));
 				((me.nallar.tickthreading.collections.LockArrayList)conductors).lock = writeLock;
 			}"/>
 			<lock field="readLock">setNetwork,resetConductors,onOverCharge,getTotalResistance,refreshConductors</lock>

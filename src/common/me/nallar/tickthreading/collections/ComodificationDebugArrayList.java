@@ -1,12 +1,25 @@
 package me.nallar.tickthreading.collections;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 public class ComodificationDebugArrayList<T> extends ArrayList<T> {
 	Throwable lastModification = null;
+
+	public ComodificationDebugArrayList(int initialCapacity) {
+		super(initialCapacity);
+	}
+
+	public ComodificationDebugArrayList() {
+		super();
+	}
+
+	public ComodificationDebugArrayList(Collection<? extends T> c) {
+		super(c);
+	}
 
 	@Override
 	public void ensureCapacity(int minCapacity) {
@@ -69,7 +82,7 @@ public class ComodificationDebugArrayList<T> extends ArrayList<T> {
 				lastRet = -1;
 				expectedModCount = modCount;
 			} catch (IndexOutOfBoundsException e) {
-				throw new ConcurrentModificationException();
+				throw new ComodificationException(ComodificationDebugArrayList.this.lastModification);
 			}
 		}
 
