@@ -72,6 +72,7 @@
 			<final field="provider"/>
 			<final field="theProfiler"/>
 			<public field="ambientTickCountdown"/>
+			<replaceInitializer field="playerEntities" code="new java.util.concurrent.CopyOnWriteArrayList();"/>
 		</class>
 		<class id="net.minecraft.world.WorldServer">
 			<synchronize>addBlockEvent,sendAndApplyBlockEvents</synchronize>
@@ -141,7 +142,7 @@
 			<synchronize field="loadedChunks">onUpdate</synchronize>
 			<addAll fromClass="me.nallar.patched.PatchEntityPlayerMP"/>
 			<!-- Concurrent access during iteration = boom -->
-			<newInitializer field="destroyedItemsNetCache" class="me.nallar.tickthreading.collections.ConcurrentLinkedQueueList"/>
+			<replaceInitializer field="destroyedItemsNetCache" code="new me.nallar.tickthreading.collections.ConcurrentLinkedQueueList();"/>
 		</class>
 		<class id="net.minecraft.entity.Entity">
 			<addAll fromClass="me.nallar.patched.PatchEntity"/>
@@ -326,7 +327,7 @@
 		</class>
 		<class id="buildcraft.transport.PipeTransportItems">
 			<!-- TODO: Find a more suitable way of making this concurrent without making performRemoval slow -->
-			<newInitializer field="travelingEntities" class="org.cliffc.high_scale_lib.NonBlockingHashMap"/>
+			<replaceInitializer field="travelingEntities" code="new org.cliffc.high_scale_lib.NonBlockingHashMap();"/>
 		</class>
 		<class id="buildcraft.transport.PipeTransportPower">
 			<!-- TODO: Non-static lock, if possible -->
@@ -386,9 +387,9 @@
 		</class>
 		<class id="ic2.core.EnergyNet">
 			<replaceMethodCall method="warning" code="{}">emitEnergyFrom</replaceMethodCall>
-			<newInitializer field="worldToEnergyNetMap" class="java.util.HashMap"/>
-			<newInitializer field="energySourceToEnergyPathMap" class="java.util.HashMap"/>
-			<newInitializer field="entityLivingToShockEnergyMap" class="java.util.HashMap"/>
+			<replaceInitializer field="worldToEnergyNetMap" class="java.util.HashMap"/>
+			<replaceInitializer field="energySourceToEnergyPathMap" class="java.util.HashMap"/>
+			<replaceInitializer field="entityLivingToShockEnergyMap" class="java.util.HashMap"/>
 			<!-- TODO: Add correctly implemented double checked locking -->
 			<synchronize field="ic2.core.EnergyNet.class">getForWorld</synchronize>
 			<synchronize>addTileEntity,removeTileEntity,emitEnergyFrom,discover</synchronize>

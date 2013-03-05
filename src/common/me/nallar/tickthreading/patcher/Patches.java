@@ -38,6 +38,7 @@ import javassist.expr.NewArray;
 import javassist.expr.NewExpr;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.mappings.MethodDescription;
+import org.omg.CORBA.IntHolder;
 
 @SuppressWarnings ("MethodMayBeStatic")
 public class Patches {
@@ -100,18 +101,24 @@ public class Patches {
 	}
 
 	@Patch (
-			requiredAttributes = "field,newInitialiser"
+			requiredAttributes = "field"
 	)
-	public void replaceFieldInitialisers(final CtClass ctClass, Map<String, String> attributes) throws CannotCompileException, NotFoundException {
+	public void replaceInitializer(final CtClass ctClass, Map<String, String> attributes) throws CannotCompileException, NotFoundException {
 		final String field = attributes.get("field");
 		final CtField ctField = ctClass.getDeclaredField(field);
-		final String newInitialiser = attributes.get("newInitialiser");
+		String code = attributes.get("code");
+		String clazz = attributes.get("class");
+		final String newInitialiser = code == null ? "new " + clazz + "();" : code;
+		if (newInitialiser == null) {
+			throw new NullPointerException("Must give code or class");
+		}
 		Set<CtBehavior> allBehaviours = new HashSet<CtBehavior>();
 		Collections.addAll(allBehaviours, ctClass.getDeclaredConstructors());
 		CtBehavior initialiser = ctClass.getClassInitializer();
 		if (initialiser != null) {
 			allBehaviours.add(initialiser);
 		}
+		final IntHolder replaced = new IntHolder();
 		for (CtBehavior ctBehavior : allBehaviours) {
 			final Map<Integer, String> newExprType = new HashMap<Integer, String>();
 			ctBehavior.instrument(new ExprEditor() {
@@ -184,9 +191,13 @@ public class Patches {
 						String block = "{$_=" + newInitialiser + "}";
 						Log.fine("Replaced with " + block);
 						e.replace(block);
+						replaced.value++;
 					}
 				}
 			});
+		}
+		if (replaced.value == 0) {
+			Log.severe("No field initializers found for replacement");
 		}
 	}
 
