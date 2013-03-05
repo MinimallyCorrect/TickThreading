@@ -336,7 +336,7 @@ public class ClassRegistry {
 		String patchHash = hasPatchHash ? String.valueOf(expectedPatchHashes.get(zipFile)) : "-1";
 		zout.write(patchHash.getBytes("UTF-8"));
 		if (hasPatchHash) {
-			Log.info("Patched " + replacements.size() + " classes in " + zipFile + ", patchHash: " + patchHash);
+			Log.info("Patched " + replacements.size() + " classes in " + zipFile + ", patchHash: " + patchHash + ", " + (onlyClasses ? "mod" : "server jar"));
 		}
 		zin.close();
 		zout.close();
