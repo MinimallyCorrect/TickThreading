@@ -105,6 +105,11 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 					foundTT = true;
 				}
 			}
+			for (URL url : ucp.getURLs()) {
+				if (url.toString().contains("patchedMods")) {
+					log(Level.WARNING, null, url.toString().replace("%", "%%") + " is in the classpath, but it appears to be in the patchedMods directory");
+				}
+			}
 			if (!foundTT) {
 				log(Level.SEVERE, null, "Failed to find TT jar in mods folder - make sure it has 'tickthreading' in its name!");
 			}
@@ -115,6 +120,9 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 
 	@Override
 	public void addURL(URL url) {
+		if (url.toString().contains("patchedMods")) {
+			log(Level.WARNING, null, "Adding " + url.toString().replace("%", "%%") + " to classpath when it appears to be in the patchedMods directory");
+		}
 		if (sources.contains(url)) {
 			log(Level.WARNING, null, "Attempted to add " + url.toString().replace("%", "%%") + " to classpath twice");
 			return;
