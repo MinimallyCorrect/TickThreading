@@ -74,6 +74,10 @@
 			<public field="ambientTickCountdown"/>
 			<replaceInitializer field="playerEntities" code="new java.util.concurrent.CopyOnWriteArrayList();"/>
 		</class>
+		<class id="net.minecraft.world.NextTickListEntry">
+			<newField static="" field="nextEntryID_" class="java.util.concurrent.atomic.AtomicInteger"/>
+			<insertAfter field="tickEntryID" code="this.$field = this.nextEntryID_.getAndIncrement();"/>
+		</class>
 		<class id="net.minecraft.world.WorldServer">
 			<synchronize>addBlockEvent,sendAndApplyBlockEvents</synchronize>
 			<addAll fromClass="me.nallar.patched.PatchWorldServer"/>
@@ -288,6 +292,9 @@
 			<replaceMethodCall index="0" code="{ $_ = null; }" method="log">constructMod</replaceMethodCall>
 			<replaceFieldUsage field="fingerprintNotPresent" readCode="$_ = false;">constructMod</replaceFieldUsage>
 			<replaceFieldUsage field="expectedFingerprint" readCode="$_ = null;">constructMod</replaceFieldUsage>
+		</class>
+		<class id="cpw.mods.fml.common.registry.BlockTracker">
+			<synchronize>getNextBlockId,doReserveId</synchronize>
 		</class>
 		<class id="cpw.mods.fml.common.FMLCommonHandler">
 			<addAll fromClass="me.nallar.patched.PatchFMLCommonHandler"/>
