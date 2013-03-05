@@ -108,10 +108,10 @@ public class Patches {
 		final CtField ctField = ctClass.getDeclaredField(field);
 		String code = attributes.get("code");
 		String clazz = attributes.get("class");
-		final String newInitialiser = code == null ? "new " + clazz + "();" : code;
-		if (newInitialiser == null) {
+		if (code == null && clazz == null) {
 			throw new NullPointerException("Must give code or class");
 		}
+		final String newInitialiser = code == null ? "new " + clazz + "();" : code;
 		Set<CtBehavior> allBehaviours = new HashSet<CtBehavior>();
 		Collections.addAll(allBehaviours, ctClass.getDeclaredConstructors());
 		CtBehavior initialiser = ctClass.getClassInitializer();
