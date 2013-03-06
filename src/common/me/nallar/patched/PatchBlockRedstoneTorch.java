@@ -55,8 +55,10 @@ public abstract class PatchBlockRedstoneTorch extends BlockRedstoneTorch {
 
 					if (world instanceof WorldServer) {
 						PlayerInstance playerInstance = ((WorldServer) world).getPlayerManager().getOrCreateChunkWatcher(x >> 4, z >> 4, false);
-						playerInstance.sendToAllPlayersWatchingChunk(new Packet61DoorChange(2000, x, y, z, rand.nextInt(9), false));
-						playerInstance.sendToAllPlayersWatchingChunk(new Packet61DoorChange(2000, x, y, z, rand.nextInt(9), false));
+						if (playerInstance != null) {
+							playerInstance.sendToAllPlayersWatchingChunk(new Packet61DoorChange(2000, x, y, z, rand.nextInt(9), false));
+							playerInstance.sendToAllPlayersWatchingChunk(new Packet61DoorChange(2000, x, y, z, rand.nextInt(9), false));
+						}
 					}
 				}
 			}
