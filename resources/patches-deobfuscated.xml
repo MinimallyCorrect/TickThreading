@@ -241,6 +241,9 @@
 		<class id="net.minecraft.crash.CrashReport">
 			<addAll fromClass="me.nallar.patched.PatchCrashReport"/>
 		</class>
+		<class id="net.minecraft.block.BlockRedstoneTorch">
+			<addAll fromClass="me.nallar.patched.PatchBlockRedstoneTorch"/>
+		</class>
 		<class id="net.minecraft.block.BlockRedstoneWire">
 			<synchronize>calculateCurrentChanges,updateAndPropagateCurrentStrength</synchronize>
 		</class>

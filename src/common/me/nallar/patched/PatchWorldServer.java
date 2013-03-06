@@ -236,10 +236,14 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	public void tick() {
 		final Profiler profiler = this.theProfiler;
 		final WorldInfo worldInfo = this.worldInfo;
-		int tickCount = this.tickCount++;
+		int tickCount = ++this.tickCount;
 		this.updateWeather();
 		if (this.difficultySetting < 3 && this.getWorldInfo().isHardcoreModeEnabled()) {
 			this.difficultySetting = 3;
+		}
+
+		if (tickCount % 120 == 0) {
+			redstoneBurnoutMap.clear();
 		}
 
 		if (tickCount % 200 == 0) {

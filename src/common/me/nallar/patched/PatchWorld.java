@@ -36,10 +36,13 @@ import net.minecraft.world.storage.ISaveHandler;
 import net.minecraftforge.common.ForgeChunkManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import org.cliffc.high_scale_lib.NonBlockingHashMapLong;
 
 @SuppressWarnings ("ForLoopReplaceableByForEach")
 public abstract class PatchWorld extends World {
 	private int forcedUpdateCount;
+	@Declare
+	public org.cliffc.high_scale_lib.NonBlockingHashMapLong<Integer> redstoneBurnoutMap_;
 	@Declare
 	public Set<Entity> unloadedEntitySet_;
 	@Declare
@@ -53,6 +56,7 @@ public abstract class PatchWorld extends World {
 		tickCount = rand.nextInt(5);
 		tileEntityRemovalSet = new HashSet<TileEntity>();
 		unloadedEntitySet = new HashSet<Entity>();
+		redstoneBurnoutMap = new NonBlockingHashMapLong<Integer>();
 	}
 
 	public PatchWorld(ISaveHandler par1ISaveHandler, String par2Str, WorldProvider par3WorldProvider, WorldSettings par4WorldSettings, Profiler par5Profiler) {

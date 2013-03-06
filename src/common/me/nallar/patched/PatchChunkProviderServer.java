@@ -14,8 +14,6 @@ public abstract class PatchChunkProviderServer extends ChunkProviderServer {
 		super(par1WorldServer, par2IChunkLoader, par3IChunkProvider);
 	}
 
-	private Chunk lastChunk;
-
 	@Override
 	@Declare
 	public List<Chunk> getLoadedChunks() {
