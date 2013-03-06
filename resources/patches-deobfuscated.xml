@@ -545,4 +545,9 @@
 			<lock field="readLock">addConductor,cleanConductors,setNetwork,resetConductors,onOverCharge,getTotalResistance,refreshConductors</lock>
 		</class>
 	</universalElectricity>
+	<appeng>
+		<class id="appeng.me.tile.TileController">
+			<synchronize>getCellArray</synchronize>
+		</class>
+	</appeng>
 </mods>
