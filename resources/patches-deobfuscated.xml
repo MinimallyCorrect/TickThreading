@@ -531,6 +531,9 @@
 			<lock field="readLock">unregister,cleanUpNetworks,resetConductors</lock>
 			<synchronize>mergeConnection,splitConnection</synchronize>
 		</class>
+		<class id="universalelectricity.core.electricity.ElectricityConnections">
+			<replaceInitializer field="connectors" code="new me.nallar.tickthreading.collections.CHashMap();"/>
+		</class>
 		<class id="universalelectricity.core.electricity.ElectricityNetwork">
 			<newField field="readLock" class="java.util.concurrent.locks.Lock" code="none"/>
 			<replaceMethod code="{
