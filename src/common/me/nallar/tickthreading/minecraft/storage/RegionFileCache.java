@@ -42,6 +42,9 @@ public class RegionFileCache {
 			if (regionFile != null) {
 				return regionFile;
 			}
+			if (regionFileMap.size() >= 256) {
+				closeRegionFiles();
+			}
 			String location = "r." + x + '.' + z + ".mca";
 			File regionFileFile = new File(regionDir, location);
 			regionFile = RegionFileFixer.newRegionFile(regionFileFile);
@@ -52,8 +55,12 @@ public class RegionFileCache {
 		}
 	}
 
-	public void close() {
+	public synchronized void close() {
 		closed = true;
+		closeRegionFiles();
+	}
+
+	private synchronized void closeRegionFiles() {
 		for (RegionFile regionFile : regionFileMap.values()) {
 			try {
 				regionFile.close();
