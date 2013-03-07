@@ -27,6 +27,10 @@ import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.AttributeInfo;
 import javassist.bytecode.BadBytecode;
 import javassist.bytecode.ClassFile;
+import javassist.bytecode.CodeAttribute;
+import javassist.bytecode.CodeIterator;
+import javassist.bytecode.Descriptor;
+import javassist.bytecode.Opcode;
 import javassist.expr.Cast;
 import javassist.expr.ConstructorCall;
 import javassist.expr.ExprEditor;
@@ -267,7 +271,7 @@ public class Patches {
 	@Patch (
 			requiredAttributes = "class"
 	)
-	public CtClass replace(CtClass clazz, Map<String, String> attributes) throws NotFoundException, CannotCompileException {
+	public CtClass replace(CtClass clazz, Map<String, String> attributes) throws NotFoundException, CannotCompileException, BadBytecode {
 		Log.info("Replacing " + clazz.getName() + " with " + attributes.get("class"));
 		String oldName = clazz.getName();
 		clazz.setName(oldName + "_old");
@@ -278,6 +282,37 @@ public class Patches {
 		}
 		newClass.setName(oldName);
 		newClass.setModifiers(newClass.getModifiers() & ~Modifier.ABSTRACT);
+		for (CtConstructor ctBehavior : newClass.getDeclaredConstructors()) {
+			javassist.bytecode.MethodInfo methodInfo = ctBehavior.getMethodInfo2();
+			CodeAttribute codeAttribute = methodInfo.getCodeAttribute();
+			if (codeAttribute != null) {
+				CodeIterator iterator = codeAttribute.iterator();
+				int pos = iterator.skipConstructor();
+				if (pos >= 0) {
+					int mref = iterator.u16bitAt(pos + 1);
+					String desc = codeAttribute.getConstPool().getMethodrefType(mref);
+					int num = Descriptor.numOfParameters(desc) + 1;
+					if (num > 3) {
+						pos = iterator.insertGapAt(pos, num - 3, false).position;
+					}
+
+					iterator.writeByte(Opcode.POP, pos++);
+					iterator.writeByte(Opcode.NOP, pos);
+					iterator.writeByte(Opcode.NOP, pos + 1);
+					Descriptor.Iterator it = new Descriptor.Iterator(desc);
+					while (true) {
+						it.next();
+						if (it.isParameter()) {
+							iterator.writeByte(it.is2byte() ? Opcode.POP2 : Opcode.POP,
+									pos++);
+						} else {
+							break;
+						}
+					}
+				}
+				methodInfo.rebuildStackMapIf6(newClass.getClassPool(), newClass.getClassFile2());
+			}
+		}
 		return newClass;
 	}
 
