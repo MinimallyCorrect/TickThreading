@@ -53,7 +53,7 @@ public class CHashMap<K, V> extends HashMap<K, V> {
 
 	@Override
 	public boolean containsKey(Object key) {
-		return hashMap.containsKey(key);
+		return key != null && hashMap.containsKey(key);
 	}
 
 	@Override
@@ -78,7 +78,7 @@ public class CHashMap<K, V> extends HashMap<K, V> {
 
 	@Override
 	public boolean containsValue(Object value) {
-		return hashMap.containsValue(value);
+		return value != null && hashMap.containsValue(value);
 	}
 
 	@Override
