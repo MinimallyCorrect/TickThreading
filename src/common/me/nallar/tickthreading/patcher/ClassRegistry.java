@@ -203,16 +203,22 @@ public class ClassRegistry {
 				if (new File(patchedModsFolder, backupFile.getName()).exists()) {
 					continue;
 				}
+				boolean restoreFailed = false;
 				if (!backupFile.exists()) {
+					restoreFailed = true;
+				} else {
+					fileIntegerEntry.getKey().delete();
+					try {
+						Files.move(backupFile, fileIntegerEntry.getKey());
+					} catch (IOException e) {
+						restoreFailed = true;
+						Log.severe("Failed to restore unpatched backup before patching", e);
+					}
+				}
+				if (restoreFailed) {
 					Log.severe("Can't patch - no backup for " + fileIntegerEntry.getKey().getName() + " exists, and a patched copy is already in the mods directory." +
 							"\nYou will need to replace this file with a new unpatched copy.");
 					throw new Error("Missing backup for patched file");
-				}
-				fileIntegerEntry.getKey().delete();
-				try {
-					Files.move(backupFile, fileIntegerEntry.getKey());
-				} catch (IOException e) {
-					Log.severe("Failed to restore unpatched backup before patching.");
 				}
 			}
 		}
