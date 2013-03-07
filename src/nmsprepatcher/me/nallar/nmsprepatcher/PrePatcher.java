@@ -24,12 +24,12 @@ public class PrePatcher {
 	private static final Pattern declareMethodPattern = Pattern.compile("@Declare\\s+?(public\\s+?(\\S*?)?\\s+?(\\S*?)\\s*?\\S+?\\s*?\\([^\\{]*\\)\\s*?\\{)", Pattern.DOTALL | Pattern.MULTILINE);
 	private static final Pattern declareVariablePattern = Pattern.compile("@Declare\\s+?(public [^;\r\n]+?)_;", Pattern.DOTALL | Pattern.MULTILINE);
 
-	public static void patch(File patchDirectory, File sourceDirectory) {
-		if (!patchDirectory.isDirectory()) {
-			throw new IllegalArgumentException("Not a directory! " + patchDirectory + ", " + sourceDirectory);
-		}
-		Map<File, String> patchClasses = new HashMap<File, String>();
+	private static void recursiveSearch(File patchDirectory, File sourceDirectory, Map<File, String> patchClasses) {
 		for (File file : patchDirectory.listFiles()) {
+			if (file.isDirectory()) {
+				recursiveSearch(file, sourceDirectory, patchClasses);
+				continue;
+			}
 			String contents = readFile(file);
 			if (contents == null) {
 				log.log(Level.SEVERE, "Failed to read " + file);
@@ -47,17 +47,25 @@ public class PrePatcher {
 				}
 			}
 			if (className == null) {
-				log.info("Unable to find class " + shortClassName);
+				log.info("Unable to find class " + shortClassName + " for " + file);
 				continue;
 			}
 			File sourceFile = new File(sourceDirectory, className.replace('.', '/') + ".java");
 			if (!sourceFile.exists()) {
-				log.severe("Can't find " + sourceFile + ", not patching.");
+				log.severe("Can't find " + sourceFile + " for " + file + ", not patching.");
 				continue;
 			}
 			String current = patchClasses.get(sourceFile);
 			patchClasses.put(sourceFile, (current == null ? "" : current) + contents);
 		}
+	}
+
+	public static void patch(File patchDirectory, File sourceDirectory) {
+		if (!patchDirectory.isDirectory()) {
+			throw new IllegalArgumentException("Not a directory! " + patchDirectory + ", " + sourceDirectory);
+		}
+		Map<File, String> patchClasses = new HashMap<File, String>();
+		recursiveSearch(patchDirectory, sourceDirectory, patchClasses);
 
 		for (Map.Entry<File, String> classPatchEntry : patchClasses.entrySet()) {
 			String contents = classPatchEntry.getValue();

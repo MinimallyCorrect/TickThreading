@@ -9,7 +9,7 @@
 			<newInitializer field="pathPoints" class="net.minecraft.pathfinding.PathPoint" arraySize="128"/>
 		</class>
 		<class id="net.minecraft.server.MinecraftServer">
-			<addAll fromClass="me.nallar.patched.PatchMinecraftServer"/>
+			<addAll fromClass="me.nallar.patched.server.PatchMinecraftServer"/>
 			<public field="mcServer"/>
 		</class>
 		<class id="net.minecraft.server.MinecraftServer" env="mcpc">
@@ -26,34 +26,34 @@
 			</replaceMethod>
 		</class>
 		<class id="net.minecraft.server.MinecraftServer" env="forge">
-			<addAll fromClass="me.nallar.patched.PatchMinecraftServerForge"/>
+			<addAll fromClass="me.nallar.patched.server.PatchMinecraftServerForge"/>
 		</class>
 		<class id="net.minecraft.profiler.Profiler">
 			<addAll fromClass="me.nallar.patched.PatchProfiler"/>
 		</class>
 		<class id="net.minecraft.network.NetServerHandler">
-			<addAll fromClass="me.nallar.patched.PatchNetServerHandler"/>
+			<addAll fromClass="me.nallar.patched.network.PatchNetServerHandler"/>
 			<replaceMethodCall method="warning"
 												 code="{ javassist.is.faulty.Redirects.notifyAdmins($1); }"
 							>handleFlying
 			</replaceMethodCall>
 		</class>
 		<class id="net.minecraft.network.packet.Packet10Flying">
-			<addAll fromClass="me.nallar.patched.PatchPacket10Flying"/>
+			<addAll fromClass="me.nallar.patched.network.PatchPacket10Flying"/>
 		</class>
 		<class id="net.minecraft.network.packet.Packet14BlockDig">
-			<addAll fromClass="me.nallar.patched.PatchPacketAsync"/>
+			<addAll fromClass="me.nallar.patched.network.PatchPacketAsync"/>
 		</class>
 		<class id="net.minecraft.network.packet.Packet51MapChunk">
 			<volatile field="chunkData"/>
-			<addAll fromClass="me.nallar.patched.PatchPacket51MapChunk"/>
+			<addAll fromClass="me.nallar.patched.network.PatchPacket51MapChunk"/>
 			<threadLocal field="temp" type="byte[]" threadLocalField="javassist.is.faulty.ThreadLocals.mapChunkTempByteArray">getMapChunkData</threadLocal>
 		</class>
 		<class id="net.minecraft.network.packet.Packet56MapChunks">
 			<volatile field="chunkDataBuffer"/>
 		</class>
 		<class id="net.minecraft.network.packet.Packet254ServerPing">
-			<addAll fromClass="me.nallar.patched.PatchPacketAsync"/>
+			<addAll fromClass="me.nallar.patched.network.PatchPacketAsync"/>
 		</class>
 		<class id="net.minecraft.network.NetworkListenThread">
 			<synchronize>addPlayer,networkTick</synchronize>
@@ -64,7 +64,7 @@
 			<ignoreExceptions type="java.net.SocketException">run</ignoreExceptions>
 		</class>
 		<class id="net.minecraft.world.World">
-			<addAll fromClass="me.nallar.patched.PatchWorld"/>
+			<addAll fromClass="me.nallar.patched.world.PatchWorld"/>
 			<profile>updateEntities</profile>
 			<profile>setActivePlayerChunksAndCheckLight</profile>
 			<public>releaseEntitySkin</public>
@@ -80,7 +80,7 @@
 		</class>
 		<class id="net.minecraft.world.WorldServer">
 			<synchronize>addBlockEvent,sendAndApplyBlockEvents</synchronize>
-			<addAll fromClass="me.nallar.patched.PatchWorldServer"/>
+			<addAll fromClass="me.nallar.patched.world.PatchWorldServer"/>
 			<profile>tickBlocksAndAmbiance</profile>
 			<profile>tick</profile>
 			<insertSuper>initialize</insertSuper>
@@ -99,13 +99,13 @@
 			<final field="loadedChunks"/>
 		</class>
 		<class id="net.minecraft.world.gen.ChunkProviderServer">
-			<addAll fromClass="me.nallar.patched.PatchChunkProviderServer"/>
+			<addAll fromClass="me.nallar.patched.storage.PatchChunkProviderServer"/>
 		</class>
 		<class id="net.minecraft.world.gen.ChunkProviderServer" env="mcpc">
 			<replaceMethod field="loadedChunkHashMap" code="return ($r)this.$field.get(org.bukkit.craftbukkit.v1_4_R1.util.LongHash.toLong($1, $2));">getChunkIfExists</replaceMethod>
 		</class>
 		<class id="net.minecraft.world.gen.ChunkProviderServer" env="forge">
-			<addAll fromClass="me.nallar.patched.PatchChunkProviderServerForge"/>
+			<addAll fromClass="me.nallar.patched.storage.PatchChunkProviderServerForge"/>
 			<synchronize field="chunkLoadLock">unloadAllChunks,saveChunks,unload100OldestChunks</synchronize>
 			<synchronize field="genLock">populate</synchronize>
 		</class>
@@ -113,11 +113,11 @@
 			<replaceMethod code="throw new UnsupportedOperationException();">createOrLoadRegionFile</replaceMethod>
 		</class>
 		<class id="net.minecraft.world.chunk.storage.AnvilChunkLoader" env="forge">
-			<addAll fromClass="me.nallar.patched.PatchAnvilChunkLoader"/>
+			<addAll fromClass="me.nallar.patched.storage.PatchAnvilChunkLoader"/>
 		</class>
 		<class id="net.minecraft.world.chunk.Chunk">
 			<!-- The entity list could be accessed from multiple threads, as usual causes problems during iteration -->
-			<addAll fromClass="me.nallar.patched.PatchChunk"/>
+			<addAll fromClass="me.nallar.patched.storage.PatchChunk"/>
 			<final field="xPosition"/>
 			<final field="zPosition"/>
 			<final field="entityLists"/>
@@ -137,19 +137,19 @@
 			<replaceMethod fromClass="me.nallar.patched.PatchAxisAlignedBB">intersectsWith</replaceMethod>
 		</class>
 		<class id="net.minecraft.util.LongHashMap">
-			<replace class="me.nallar.patched.LongHashMap"/>
+			<replace class="me.nallar.patched.collection.LongHashMap"/>
 		</class>
 		<class id="net.minecraft.util.IntHashMap">
-			<replace class="me.nallar.patched.IntHashMap"/>
+			<replace class="me.nallar.patched.collection.IntHashMap"/>
 		</class>
 		<class id="net.minecraft.entity.player.EntityPlayerMP">
 			<synchronize field="loadedChunks">onUpdate</synchronize>
-			<addAll fromClass="me.nallar.patched.PatchEntityPlayerMP"/>
+			<addAll fromClass="me.nallar.patched.entity.PatchEntityPlayerMP"/>
 			<!-- Concurrent access during iteration = boom -->
 			<replaceInitializer field="destroyedItemsNetCache" code="new me.nallar.tickthreading.collections.ConcurrentLinkedQueueList();"/>
 		</class>
 		<class id="net.minecraft.entity.Entity">
-			<addAll fromClass="me.nallar.patched.PatchEntity"/>
+			<addAll fromClass="me.nallar.patched.entity.PatchEntity"/>
 		</class>
 		<class id="net.minecraft.entity.Entity">
 			<final field="rand"/>
@@ -158,10 +158,10 @@
 			<insertBefore code="if ($1 == 0 &amp;&amp; $2 == 0 &amp;&amp; $3 == 0) { return; }">moveEntity</insertBefore>
 		</class>
 		<class id="net.minecraft.entity.EntityLiving">
-			<addAll fromClass="me.nallar.patched.PatchEntityLiving"/>
+			<addAll fromClass="me.nallar.patched.entity.PatchEntityLiving"/>
 		</class>
 		<class id="net.minecraft.entity.item.EntityItem">
-			<addAll fromClass="me.nallar.patched.PatchEntityItem"/>
+			<addAll fromClass="me.nallar.patched.entity.PatchEntityItem"/>
 			<insertSuper>onUpdate</insertSuper>
 		</class>
 		<class id="net.minecraft.tileentity.TileEntity">
@@ -172,7 +172,7 @@
 		</class>
 		<class id="net.minecraft.entity.EntityTracker">
 			<!-- Yet more comodification exceptions -->
-			<addAll fromClass="me.nallar.patched.PatchEntityTracker"/>
+			<addAll fromClass="me.nallar.patched.entity.PatchEntityTracker"/>
 			<newField field="readWriteLock" class="me.nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock"/>
 			<newField field="writeLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>
 			<newField field="readLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.readLock();"/>
@@ -183,7 +183,7 @@
 			<addAll fromClass="me.nallar.patched.PatchVillage"/>
 		</class>
 		<class id="net.minecraft.village.VillageCollection">
-			<addAll fromClass="me.nallar.patched.PatchVillageCollection"/>
+			<addAll fromClass="me.nallar.patched.collection.PatchVillageCollection"/>
 			<!-- Literally the most useless collection. Locking instead of voiding in case it ever does something useful in future -->
 			<newField field="readWriteLock" class="me.nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock"/>
 			<newField field="writeLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>
@@ -205,16 +205,16 @@
 			<synchronize field="$2.loadedChunks">initializeConnectionToPlayer</synchronize>
 		</class>
 		<class id="net.minecraft.server.management.ServerConfigurationManager" env="forge">
-			<addAll fromClass="me.nallar.patched.PatchServerConfigurationManager"/>
+			<addAll fromClass="me.nallar.patched.server.PatchServerConfigurationManager"/>
 		</class>
 		<class id="net.minecraft.server.management.PlayerManager">
 			<newField field="readWriteLock" class="java.util.concurrent.locks.ReentrantReadWriteLock"/>
 			<newField field="playersUpdateLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>
 			<newField field="playerUpdateLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.readLock();"/>
-			<addAll fromClass="me.nallar.patched.PatchPlayerManager"/>
+			<addAll fromClass="me.nallar.patched.world.tracking.PatchPlayerManager"/>
 		</class>
 		<class id="net.minecraft.server.management.PlayerManager" env="forge">
-			<addAll fromClass="me.nallar.patched.PatchPlayerManagerForge"/>
+			<addAll fromClass="me.nallar.patched.world.tracking.PatchPlayerManagerForge"/>
 		</class>
 		<class id="net.minecraft.server.management.PlayerManager" env="mcpc">
 			<lock field="playersUpdateLock">updatePlayerInstances</lock>
@@ -226,32 +226,32 @@
 			<profile>updatePlayerInstances</profile>
 		</class>
 		<class id="net.minecraft.server.management.PlayerInstance">
-			<addAll fromClass="me.nallar.patched.PatchPlayerInstance"/>
+			<addAll fromClass="me.nallar.patched.world.tracking.PatchPlayerInstance"/>
 			<insertBefore code="this.sendTiles();">sendChunkUpdate</insertBefore>
 		</class>
 		<class id="net.minecraft.server.management.PlayerInstance" env="forge">
-			<addAll fromClass="me.nallar.patched.PatchPlayerInstanceForge"/>
+			<addAll fromClass="me.nallar.patched.world.tracking.PatchPlayerInstanceForge"/>
 			<lock field="myManager.playerUpdateLock">flagChunkForUpdate,sendChunkUpdate</lock>
 			<replaceMethodCall index="1" code="{ $_ = null; }"/>
 			<synchronize field="$1.loadedChunks">addPlayerToChunkWatchingList,sendThisChunkToPlayer</synchronize>
 		</class>
 		<class id="net.minecraft.world.ChunkCoordIntPair">
-			<addAll fromClass="me.nallar.patched.PatchChunkCoordIntPair"/>
+			<addAll fromClass="me.nallar.patched.storage.PatchChunkCoordIntPair"/>
 		</class>
 		<class id="net.minecraft.crash.CrashReport">
-			<addAll fromClass="me.nallar.patched.PatchCrashReport"/>
+			<addAll fromClass="me.nallar.patched.server.PatchCrashReport"/>
 		</class>
 		<class id="net.minecraft.block.BlockRedstoneTorch">
-			<addAll fromClass="me.nallar.patched.PatchBlockRedstoneTorch"/>
+			<addAll fromClass="me.nallar.patched.block.PatchBlockRedstoneTorch"/>
 		</class>
 		<class id="net.minecraft.block.BlockRedstoneWire">
 			<synchronize>calculateCurrentChanges,updateAndPropagateCurrentStrength</synchronize>
 		</class>
 		<class id="net.minecraft.network.TcpConnection">
-			<addAll fromClass="me.nallar.patched.PatchTcpConnection"/>
+			<addAll fromClass="me.nallar.patched.network.PatchTcpConnection"/>
 		</class>
 		<class id="net.minecraft.network.TcpReaderThread">
-			<replace class="me.nallar.patched.PatchTcpReaderThread"/>
+			<replace class="me.nallar.patched.network.PatchTcpReaderThread"/>
 		</class>
 		<class id="net.minecraft.entity.ai.EntityAITasks">
 			<synchronize>addTask,func_85156_a,onUpdateTasks,func_75775_b</synchronize>
@@ -259,20 +259,20 @@
 	</minecraftCommon>
 	<forge>
 		<class id="net.minecraftforge.common.Configuration">
-			<addAll fromClass="me.nallar.patched.PatchConfiguration"/>
+			<addAll fromClass="me.nallar.patched.forge.PatchConfiguration"/>
 		</class>
 		<class id="net.minecraftforge.common.ConfigCategory">
-			<addAll fromClass="me.nallar.patched.PatchConfigCategory"/>
+			<addAll fromClass="me.nallar.patched.forge.PatchConfigCategory"/>
 		</class>
 		<class id="net.minecraftforge.event.Event">
-			<addAll fromClass="me.nallar.patched.PatchEvent"/>
+			<addAll fromClass="me.nallar.patched.forge.PatchEvent"/>
 		</class>
 		<class id="net.minecraftforge.common.DimensionManager">
-			<addAll fromClass="me.nallar.patched.PatchDimensionManager"/>
+			<addAll fromClass="me.nallar.patched.forge.PatchDimensionManager"/>
 			<synchronize field="unloadQueue">unloadWorld</synchronize>
 		</class>
 		<class id="net.minecraftforge.common.ForgeChunkManager">
-			<addAll fromClass="me.nallar.patched.PatchForgeChunkManager"/>
+			<addAll fromClass="me.nallar.patched.forge.PatchForgeChunkManager"/>
 		</class>
 	</forge>
 	<forgeModLoader>
@@ -280,10 +280,10 @@
 			<replace class="me.nallar.tickthreading.LogFormatter"/>
 		</class>
 		<class id="cpw.mods.fml.common.event.FMLInterModComms$IMCMessage">
-			<addAll fromClass="me.nallar.patched.PatchIMCMessage"/>
+			<addAll fromClass="me.nallar.patched.forge.PatchIMCMessage"/>
 		</class>
 		<class id="cpw.mods.fml.common.Loader">
-			<addAll fromClass="me.nallar.patched.PatchLoader"/>
+			<addAll fromClass="me.nallar.patched.forge.PatchLoader"/>
 		</class>
 		<class id="cpw.mods.fml.common.Loader$ModIdComparator">
 			<public/>
@@ -300,10 +300,10 @@
 			<synchronize>getNextBlockId,doReserveId</synchronize>
 		</class>
 		<class id="cpw.mods.fml.common.FMLCommonHandler">
-			<addAll fromClass="me.nallar.patched.PatchFMLCommonHandler"/>
+			<addAll fromClass="me.nallar.patched.forge.PatchFMLCommonHandler"/>
 		</class>
 		<class id="cpw.mods.fml.relauncher.RelaunchClassLoader">
-			<addAll fromClass="me.nallar.patched.PatchRelaunchClassLoader"/>
+			<addAll fromClass="me.nallar.patched.forge.PatchRelaunchClassLoader"/>
 			<synchronize>findClass</synchronize>
 		</class>
 		<class id="cpw.mods.fml.common.network.ModListResponsePacket">
