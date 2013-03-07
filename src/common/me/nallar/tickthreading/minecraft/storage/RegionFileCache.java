@@ -15,6 +15,7 @@ public class RegionFileCache {
 	private final Map<Long, RegionFile> regionFileMap = new HashMap<Long, RegionFile>();
 	private final File regionDir;
 	private boolean closed = false;
+	private volatile boolean closing = false;
 
 	public RegionFileCache(File worldDir) {
 		regionDir = new File(worldDir, "region").getAbsoluteFile();
@@ -34,7 +35,7 @@ public class RegionFileCache {
 
 		long hash = hash(x, z);
 		RegionFile regionFile = regionFileMap.get(hash);
-		if (regionFile != null) {
+		if (!closing && regionFile != null) {
 			return regionFile;
 		}
 		synchronized (this) {
@@ -61,6 +62,7 @@ public class RegionFileCache {
 	}
 
 	private synchronized void closeRegionFiles() {
+		closing = true;
 		for (RegionFile regionFile : regionFileMap.values()) {
 			try {
 				regionFile.close();
@@ -69,6 +71,7 @@ public class RegionFileCache {
 			}
 		}
 		regionFileMap.clear();
+		closing = false;
 	}
 
 	public DataOutputStream getChunkOutputStream(int x, int z) {
