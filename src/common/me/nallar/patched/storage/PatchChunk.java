@@ -24,6 +24,8 @@ import net.minecraftforge.event.world.ChunkEvent;
 import org.cliffc.high_scale_lib.NonBlockingHashMap;
 
 public abstract class PatchChunk extends Chunk {
+	@Declare
+	public volatile boolean unloading;
 	public Lock entityListWriteLock;
 	public Lock entityListReadLock;
 

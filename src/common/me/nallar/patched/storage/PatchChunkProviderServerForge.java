@@ -88,7 +88,50 @@ public abstract class PatchChunkProviderServerForge extends ChunkProviderServer 
 	 */
 	@Override
 	public boolean unload100OldestChunks() {
+		if (worldObj.tickCount % 3 == 0 && !this.worldObj.canNotSave && !chunksToUnload.isEmpty()) {
+			int i = 0;
+			for (ChunkCoordIntPair forced : worldObj.getPersistentChunks().keySet()) {
+				if (this.chunksToUnload.remove(ChunkCoordIntPair.chunkXZ2Int(forced.chunkXPos, forced.chunkZPos)) && chunksToUnload.isEmpty()) {
+					i = 600;
+					break;
+				}
+			}
 
+			for (; i < 600; ++i) {
+				long var2;
+				synchronized (chunksToUnload) {
+					Iterator<Long> i$ = chunksToUnload.iterator();
+					if (!i$.hasNext()) {
+						break;
+					}
+					var2 = i$.next();
+					i$.remove();
+				}
+				Chunk var3 = (Chunk) this.loadedChunkHashMap.getValueByKey(var2);
+				if (var3 != null) {
+					if (lastChunk == var3) {
+						lastChunk = null;
+					}
+					var3.onChunkUnload();
+					this.safeSaveChunk(var3);
+					this.safeSaveExtraChunkData(var3);
+					synchronized (loadedChunks) {
+						this.loadedChunks.remove(var3);
+					}
+				}
+				this.loadedChunkHashMap.remove(var2);
+			}
+
+			if (this.currentChunkLoader != null) {
+				this.currentChunkLoader.chunkTick();
+			}
+		}
+
+		if (unloadTicks++ > 1200 && this.worldObj.provider.dimensionId != 0 && TickThreading.instance.allowWorldUnloading && loadedChunks.isEmpty() && ForgeChunkManager.getPersistentChunksFor(worldObj).isEmpty() && (!TickThreading.instance.shouldLoadSpawn || !DimensionManager.shouldLoadSpawn(worldObj.provider.dimensionId))) {
+			DimensionManager.unloadWorld(worldObj.provider.dimensionId);
+		}
+
+		return this.currentChunkProvider.unload100OldestChunks();
 	}
 
 	@Override
