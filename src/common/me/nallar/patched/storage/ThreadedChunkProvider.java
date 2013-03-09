@@ -5,7 +5,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import me.nallar.patched.annotation.FakeExtend;
-import me.nallar.patched.collection.NonBlockingLongSet;
+import me.nallar.tickthreading.collections.NonBlockingLongSet;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.entity.EnumCreatureType;
