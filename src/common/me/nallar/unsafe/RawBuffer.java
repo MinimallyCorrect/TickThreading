@@ -8,7 +8,7 @@ import sun.misc.Unsafe;
  */
 public class RawBuffer {
 	public static final Unsafe $ = UnsafeAccess.$;
-	public final long address;
+	public long address;
 	int sizeBytes;
 	int size;
 
@@ -29,7 +29,7 @@ public class RawBuffer {
 	public void resize(int sizeBytes, int size) {
 		assert sizeBytes > 0 && size > 0;
 		int oldSizeBytes = this.sizeBytes;
-		$.reallocateMemory(address, sizeBytes);
+		address = $.reallocateMemory(address, sizeBytes);
 		if (sizeBytes > oldSizeBytes) {
 			$.setMemory(address + oldSizeBytes, address + sizeBytes, (byte) 0);
 		}

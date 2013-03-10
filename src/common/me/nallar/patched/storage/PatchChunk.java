@@ -24,8 +24,6 @@ import net.minecraftforge.event.world.ChunkEvent;
 import org.cliffc.high_scale_lib.NonBlockingHashMap;
 
 public abstract class PatchChunk extends Chunk {
-	@Declare
-	public boolean unloading_;
 	public Lock entityListWriteLock;
 	public Lock entityListReadLock;
 
@@ -45,7 +43,7 @@ public abstract class PatchChunk extends Chunk {
 
 	@Override
 	public String toString() {
-		return (unloading ? "un" : "") + "loaded chunk at " + xPosition + ',' + zPosition;
+		return "chunk at " + xPosition + ',' + zPosition;
 	}
 
 	@Override

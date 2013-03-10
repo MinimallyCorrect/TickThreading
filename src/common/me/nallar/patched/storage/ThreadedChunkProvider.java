@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -17,7 +18,6 @@ import cpw.mods.fml.common.registry.GameRegistry;
 import me.nallar.patched.annotation.FakeExtend;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.collections.NonBlockingLongSet;
-import me.nallar.tickthreading.collections.RunnableArrayBlockingQueue;
 import me.nallar.tickthreading.minecraft.ChunkGarbageCollector;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
@@ -57,13 +57,14 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	static {
 		int p = Runtime.getRuntime().availableProcessors();
-		chunkLoadThreadPool = new ThreadPoolExecutor(1, p, 60L, TimeUnit.SECONDS, new RunnableArrayBlockingQueue(p * 10), new ServerThreadFactory());
+		chunkLoadThreadPool = new ThreadPoolExecutor(1, p, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(p * 10), new ThreadPoolExecutor.CallerRunsPolicy());
 		chunkLoadThreadPool.allowCoreThreadTimeOut(true);
 	}
 
 	private final NonBlockingHashMapLong<Object> chunkLoadLocks = new NonBlockingHashMapLong<Object>();
 	private final LongHashMap chunks = new LongHashMap();
 	private final LongHashMap loadingChunks = new LongHashMap();
+	private final LongHashMap unloadingChunks = new LongHashMap();
 	private final NonBlockingLongSet unloadStage0 = new NonBlockingLongSet();
 	private final ConcurrentLinkedQueue<QueuedUnload> unloadStage1 = new ConcurrentLinkedQueue<QueuedUnload>();
 	private final IChunkProvider generator; // Mojang shouldn't use the same interface for  :(
@@ -127,8 +128,18 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				if (chunk == null) {
 					continue;
 				}
-				chunk.unloading = true;
-				unloadStage1.add(new QueuedUnload(chunk, chunkHash, ticks));
+				if (lastChunk == chunk) {
+					lastChunk = null;
+				}
+				chunk.onChunkUnload();
+				loadedChunks.remove(chunk);
+				synchronized (chunks) {
+					chunks.remove(chunkHash);
+				}
+				synchronized (unloadingChunks) {
+					unloadingChunks.add(chunkHash, chunk);
+					unloadStage1.add(new QueuedUnload(chunk, chunkHash, ticks));
+				}
 			}
 
 			if (loader != null) {
@@ -139,24 +150,19 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		long queueThreshold = ticks - 30;
 		// Handle unloading stage 1
 		{
-			QueuedUnload queuedUnload = unloadStage1.peek();
-			while (queuedUnload != null && queuedUnload.ticks <= queueThreshold) {
-				Chunk chunk = queuedUnload.chunk;
-				if (!unloadStage1.remove(queuedUnload) || !chunk.unloading) {
+			synchronized (unloadingChunks) {
+				QueuedUnload queuedUnload = unloadStage1.peek();
+				while (queuedUnload != null && queuedUnload.ticks <= queueThreshold) {
+					Chunk chunk = queuedUnload.chunk;
+					long chunkHash = queuedUnload.chunkHash;
+					if (!unloadStage1.remove(queuedUnload) || unloadingChunks.remove(chunkHash) != chunk) {
+						queuedUnload = unloadStage1.peek();
+						continue;
+					}
+					safeSaveChunk(chunk);
+					safeSaveExtraChunkData(chunk);
 					queuedUnload = unloadStage1.peek();
-					continue;
 				}
-				if (lastChunk == chunk) {
-					lastChunk = null;
-				}
-				chunk.onChunkUnload();
-				safeSaveChunk(chunk);
-				safeSaveExtraChunkData(chunk);
-				loadedChunks.remove(chunk);
-				synchronized (chunks) {
-					chunks.remove(queuedUnload.chunkHash);
-				}
-				queuedUnload = unloadStage1.peek();
 			}
 		}
 
@@ -259,6 +265,13 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		// Lock on the lock for this chunk - prevent multiple instances of the same chunk
 		ThreadLocal<Boolean> worldGenInProgress = world.worldGenInProgress;
 		synchronized (lock) {
+			synchronized (unloadingChunks) {
+				chunk = (Chunk) unloadingChunks.remove(key);
+				if (chunk != null) {
+					safeSaveChunk(chunk);
+					safeSaveExtraChunkData(chunk);
+				}
+			}
 			chunk = (Chunk) chunks.getValueByKey(key);
 			if (chunk != null) {
 				return chunk;
@@ -477,7 +490,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		if (chunk == null) {
 			return null;
 		}
-		chunk.unloading = false;
 		lastChunk = chunk;
 		return chunk;
 	}

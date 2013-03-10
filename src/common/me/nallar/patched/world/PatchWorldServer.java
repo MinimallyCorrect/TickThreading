@@ -79,11 +79,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	public Object[] getChunks() {
 		List<Chunk> loadedChunks = theChunkProviderServer.getLoadedChunks();
 		synchronized (loadedChunks) {
-			Object[] chunks = new Object[loadedChunks.size()];
-			for (int i = 0; i < chunks.length; i++) {
-				chunks[i] = loadedChunks.get(i);
-			}
-			return chunks;
+			return loadedChunks.toArray();
 		}
 	}
 
