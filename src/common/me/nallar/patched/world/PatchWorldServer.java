@@ -12,6 +12,7 @@ import java.util.TreeSet;
 
 import com.google.common.collect.ImmutableSetMultimap;
 
+import me.nallar.exception.ConcurrencyError;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.collections.TreeHashSet;
 import me.nallar.tickthreading.minecraft.DeadLockDetector;
@@ -72,6 +73,18 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		} catch (NoSuchFieldError ignored) {
 			//Spigot support
 			chunkTickSet = new HashSet<ChunkCoordIntPair>();
+		}
+	}
+
+	@Declare
+	public Object[] getChunks() {
+		List<Chunk> loadedChunks = theChunkProviderServer.getLoadedChunks();
+		synchronized (loadedChunks) {
+			Object[] chunks = new Object[loadedChunks.size()];
+			for (int i = 0; i < chunks.length; i++) {
+				chunks[i] = loadedChunks.get(i);
+			}
+			return chunks;
 		}
 	}
 

@@ -52,6 +52,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	 * and are encouraged to unless tryLock() is required.
 	 * This works as NativeMutex uses JVM monitors internally.
 	 */
+	public final NativeMutex generateLock = new NativeMutex();
 	private static final ThreadPoolExecutor chunkLoadThreadPool;
 
 	static {
@@ -60,7 +61,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		chunkLoadThreadPool.allowCoreThreadTimeOut(true);
 	}
 
-	public final NativeMutex generateLock = new NativeMutex();
 	private final NonBlockingHashMapLong<Object> chunkLoadLocks = new NonBlockingHashMapLong<Object>();
 	private final LongHashMap chunks = new LongHashMap();
 	private final LongHashMap loadingChunks = new LongHashMap();
@@ -88,7 +88,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	@Override
 	@Declare
-	public Iterable<Chunk> getLoadedChunks() {
+	public List<Chunk> getLoadedChunks() {
 		return loadedChunks;
 	}
 
