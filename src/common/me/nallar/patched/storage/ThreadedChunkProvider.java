@@ -108,29 +108,29 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		// Handle unload requests
 		if (world.tickCount % 3 == 0 && !world.canNotSave && !unloadStage0.isEmpty()) {
 			ImmutableSetMultimap<ChunkCoordIntPair, ForgeChunkManager.Ticket> persistentChunks = world.getPersistentChunks();
-				ChunkCoordIntPair chunkCoordIntPair = new ChunkCoordIntPair(0, 0);
-				NonBlockingHashMapLong.IteratorLong i$ = unloadStage0.iteratorLong();
-				while (i$.hasNext()) {
-					long chunkHash = i$.next();
-					i$.remove();
-					int x = (int) chunkHash;
-					int z = (int) (chunkHash >> 32);
-					chunkCoordIntPair.chunkXPos = x;
-					chunkCoordIntPair.chunkZPos = z;
-					if (persistentChunks.containsKey(chunkCoordIntPair)) {
-						continue;
-					}
-					Chunk chunk = chunks.get(chunkHash);
-					if (chunk == null) {
-						continue;
-					}
-					chunk.unloading = true;
-					unloadStage1.add(new QueuedUnload(chunk, chunkHash, ticks));
+			ChunkCoordIntPair chunkCoordIntPair = new ChunkCoordIntPair(0, 0);
+			NonBlockingHashMapLong.IteratorLong i$ = unloadStage0.iteratorLong();
+			while (i$.hasNext()) {
+				long chunkHash = i$.next();
+				i$.remove();
+				int x = (int) chunkHash;
+				int z = (int) (chunkHash >> 32);
+				chunkCoordIntPair.chunkXPos = x;
+				chunkCoordIntPair.chunkZPos = z;
+				if (persistentChunks.containsKey(chunkCoordIntPair)) {
+					continue;
 				}
+				Chunk chunk = chunks.get(chunkHash);
+				if (chunk == null) {
+					continue;
+				}
+				chunk.unloading = true;
+				unloadStage1.add(new QueuedUnload(chunk, chunkHash, ticks));
+			}
 
-				if (loader != null) {
-					loader.chunkTick();
-				}
+			if (loader != null) {
+				loader.chunkTick();
+			}
 		}
 
 		long queueThreshold = ticks - 30;

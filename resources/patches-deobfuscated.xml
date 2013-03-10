@@ -227,6 +227,8 @@
 		</class>
 		<class id="net.minecraft.world.ChunkCoordIntPair">
 			<addAll fromClass="me.nallar.patched.storage.PatchChunkCoordIntPair"/>
+			<public field="chunkXPos"/>
+			<public field="chunkZPos"/>
 		</class>
 		<class id="net.minecraft.crash.CrashReport">
 			<addAll fromClass="me.nallar.patched.server.PatchCrashReport"/>

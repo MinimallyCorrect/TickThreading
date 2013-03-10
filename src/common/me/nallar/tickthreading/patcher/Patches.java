@@ -1,7 +1,6 @@
 package me.nallar.tickthreading.patcher;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,7 +18,6 @@ import javassist.CtBehavior;
 import javassist.CtClass;
 import javassist.CtConstructor;
 import javassist.CtField;
-import javassist.CtMember;
 import javassist.CtMethod;
 import javassist.CtNewMethod;
 import javassist.CtPrimitiveType;
@@ -32,9 +30,7 @@ import javassist.bytecode.ClassFile;
 import javassist.bytecode.CodeAttribute;
 import javassist.bytecode.CodeIterator;
 import javassist.bytecode.ConstPool;
-import javassist.bytecode.ConstantAttribute;
 import javassist.bytecode.Descriptor;
-import javassist.bytecode.DuplicateMemberException;
 import javassist.bytecode.Opcode;
 import javassist.expr.Cast;
 import javassist.expr.ConstructorCall;
