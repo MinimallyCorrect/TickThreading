@@ -255,16 +255,16 @@
 		</class>
 	</minecraftCommon>
 	<bukkit>
-		<class id="orb.bukkit.craftbukkit.v1_4_R1.CraftWorld">
+		<class id="org.bukkit.craftbukkit.v1_4_R1.CraftWorld">
 			<replaceMethod
-							code="
+							code=" {
 							Object[] chunks = world.getChunks();
 							org.bukkit.Chunk[] craftChunks = new org.bukkit.Chunk[chunks.length];
-							for (int i = 0; i < craftChunks.length; i++) {
+							for (int i = 0; i &lt; craftChunks.length; i++) {
 								craftChunks[i] = ((zz) chunks[i]).bukkitChunk;
 							}
 							return craftChunks;
-							"
+							} "
 							>getLoadedChunks</replaceMethod>
 		</class>
 	</bukkit>
