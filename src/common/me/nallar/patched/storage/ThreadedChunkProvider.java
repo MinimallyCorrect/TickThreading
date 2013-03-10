@@ -57,7 +57,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	static {
 		int p = Runtime.getRuntime().availableProcessors();
-		chunkLoadThreadPool = new ThreadPoolExecutor(1, p, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(p * 10), new ThreadPoolExecutor.CallerRunsPolicy());
+		chunkLoadThreadPool = new ThreadPoolExecutor(1, p, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(p * 10), new ServerThreadFactory(), new ThreadPoolExecutor.CallerRunsPolicy());
 		chunkLoadThreadPool.allowCoreThreadTimeOut(true);
 	}
 
