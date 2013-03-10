@@ -24,6 +24,7 @@ import me.nallar.tickthreading.util.concurrent.NativeMutex;
 import me.nallar.unsafe.UnsafeUtil;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.util.IProgressUpdate;
+import net.minecraft.util.LongHashMap;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.ChunkPosition;
 import net.minecraft.world.World;
@@ -58,8 +59,8 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	public final NativeMutex generateLock = new NativeMutex();
 	private final NonBlockingHashMapLong<Object> chunkLoadLocks = new NonBlockingHashMapLong<Object>();
-	private final NonBlockingHashMapLong<Chunk> chunks = new NonBlockingHashMapLong<Chunk>();
-	private final NonBlockingHashMapLong<Chunk> loadingChunks = new NonBlockingHashMapLong<Chunk>();
+	private final LongHashMap chunks = new LongHashMap();
+	private final LongHashMap loadingChunks = new LongHashMap();
 	private final NonBlockingLongSet unloadStage0 = new NonBlockingLongSet();
 	private final ConcurrentLinkedQueue<QueuedUnload> unloadStage1 = new ConcurrentLinkedQueue<QueuedUnload>();
 	private final IChunkProvider generator; // Mojang shouldn't use the same interface for  :(
@@ -86,7 +87,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	@Override
 	@Declare
 	public Iterable<Chunk> getLoadedChunks() {
-		return chunks.values();
+		return loadedChunks;
 	}
 
 	@Override
@@ -120,7 +121,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				if (persistentChunks.containsKey(chunkCoordIntPair)) {
 					continue;
 				}
-				Chunk chunk = chunks.get(chunkHash);
+				Chunk chunk = (Chunk) chunks.getValueByKey(chunkHash);
 				if (chunk == null) {
 					continue;
 				}
@@ -140,6 +141,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			while (queuedUnload != null && queuedUnload.ticks <= queueThreshold) {
 				Chunk chunk = queuedUnload.chunk;
 				if (!unloadStage1.remove(queuedUnload) || !chunk.unloading) {
+					queuedUnload = unloadStage1.peek();
 					continue;
 				}
 				if (lastChunk == chunk) {
@@ -149,12 +151,14 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				safeSaveChunk(chunk);
 				safeSaveExtraChunkData(chunk);
 				loadedChunks.remove(chunk);
-				chunks.remove(queuedUnload.chunkHash);
+				synchronized (chunks) {
+					chunks.remove(queuedUnload.chunkHash);
+				}
 				queuedUnload = unloadStage1.peek();
 			}
 		}
 
-		if (ticks > 1200 && world.provider.dimensionId != 0 && TickThreading.instance.allowWorldUnloading && chunks.isEmpty() && ForgeChunkManager.getPersistentChunksFor(world).isEmpty() && (!TickThreading.instance.shouldLoadSpawn || !DimensionManager.shouldLoadSpawn(world.provider.dimensionId))) {
+		if (ticks > 1200 && world.provider.dimensionId != 0 && TickThreading.instance.allowWorldUnloading && loadedChunks.isEmpty() && ForgeChunkManager.getPersistentChunksFor(world).isEmpty() && (!TickThreading.instance.shouldLoadSpawn || !DimensionManager.shouldLoadSpawn(world.provider.dimensionId))) {
 			DimensionManager.unloadWorld(world.provider.dimensionId);
 		}
 
@@ -186,7 +190,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	@Override
 	public boolean chunkExists(int x, int z) {
-		return chunks.containsKey(hash(x, z));
+		return chunks.containsItem(hash(x, z));
 	}
 
 	@Override
@@ -196,8 +200,10 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	@Override
 	public void unloadAllChunks() {
-		for (Chunk chunk : chunks.values()) {
-			unloadStage0.add(hash(chunk.xPosition, chunk.zPosition));
+		synchronized (loadedChunks) {
+			for (Chunk chunk : loadedChunks) {
+				unloadStage0.add(hash(chunk.xPosition, chunk.zPosition));
+			}
 		}
 	}
 
@@ -225,21 +231,10 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		return getChunkAt(x, z, null);
 	}
 
-	public Chunk fastGetChunk(long key) {
-		Chunk chunk = chunks.get(key);
-
-		if (chunk != null) {
-			chunk.unloading = false;
-		}
-
-		return chunk;
-	}
-
 	@SuppressWarnings ("ConstantConditions")
 	@Declare
 	public Chunk getChunkAt(final int x, final int z, final Runnable runnable) {
-		long key = hash(x, z);
-		Chunk chunk = fastGetChunk(key);
+		Chunk chunk = getChunkIfExists(x, z);
 
 		if (chunk != null) {
 			if (runnable != null) {
@@ -250,7 +245,10 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 		if (runnable != null) {
 			chunkLoadThreadPool.execute(new ChunkLoadRunnable(x, z, runnable, this));
+			return null;
 		}
+
+		long key = hash(x, z);
 
 		final Object lock = getLock(x, z);
 		boolean inLoadingMap = false;
@@ -258,15 +256,15 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		// Lock on the lock for this chunk - prevent multiple instances of the same chunk
 		ThreadLocal<Boolean> worldGenInProgress = world.worldGenInProgress;
 		synchronized (lock) {
-			chunk = chunks.get(key);
+			chunk = (Chunk) chunks.getValueByKey(key);
 			if (chunk != null) {
 				return chunk;
 			}
-			chunk = loadingChunks.get(key);
+			chunk = (Chunk) loadingChunks.getValueByKey(key);
 			if (chunk == null) {
 				chunk = safeLoadChunk(x, z);
 				if (chunk != null) {
-					loadingChunks.put(key, chunk);
+					loadingChunks.add(key, chunk);
 					inLoadingMap = true;
 				}
 			} else if (worldGenInProgress != null && worldGenInProgress.get() == Boolean.TRUE) {
@@ -292,11 +290,11 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 					if (worldGenInProgress != null) {
 						worldGenInProgress.set(Boolean.TRUE);
 					}
-					chunk = chunks.get(key);
+					chunk = (Chunk) chunks.getValueByKey(key);
 					if (chunk != null) {
 						return chunk;
 					}
-					chunk = loadingChunks.get(key);
+					chunk = (Chunk) loadingChunks.getValueByKey(key);
 					if (chunk == null) {
 						if (generator == null) {
 							chunk = defaultEmptyChunk;
@@ -319,13 +317,13 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 					}
 
 					if (!inLoadingMap) {
-						loadingChunks.put(key, chunk);
+						loadingChunks.add(key, chunk);
 					}
 
 					chunk.populateChunk(this, this, x, z);
 
 					loadingChunks.remove(key);
-					chunks.put(key, chunk);
+					chunks.add(key, chunk);
 					loadedChunks.add(chunk);
 				}
 			}
@@ -411,18 +409,20 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	public boolean saveChunks(boolean saveAll, IProgressUpdate progressUpdate) {
 		int savedChunks = 0;
 
-		for (Chunk chunk : chunks.values()) {
+		synchronized (loadedChunks) {
+			for (Chunk chunk : loadedChunks) {
 
-			if (saveAll) {
-				safeSaveExtraChunkData(chunk);
-			}
+				if (saveAll) {
+					safeSaveExtraChunkData(chunk);
+				}
 
-			if (chunk.needsSaving(saveAll)) {
-				safeSaveChunk(chunk);
-				chunk.isModified = false;
+				if (chunk.needsSaving(saveAll)) {
+					safeSaveChunk(chunk);
+					chunk.isModified = false;
 
-				if (++savedChunks == 24 && !saveAll) {
-					return false;
+					if (++savedChunks == 24 && !saveAll) {
+						return false;
+					}
 				}
 			}
 		}
@@ -441,7 +441,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	@Override
 	public String makeString() {
-		return "Loaded " + chunks.size() + " Unload0 " + unloadStage0.size() + " Unload1 " + unloadStage1.size();
+		return "Loaded " + loadedChunks.size() + " Unload0 " + unloadStage0.size() + " Unload1 " + unloadStage1.size();
 	}
 
 	@Override
@@ -456,7 +456,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	@Override
 	public int getLoadedChunkCount() {
-		return chunks.size();
+		return loadedChunks.size();
 	}
 
 	@Override
@@ -470,7 +470,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		if (chunk != null && chunk.xPosition == x && chunk.zPosition == z) {
 			return chunk;
 		}
-		chunk = chunks.get(hash(x, z));
+		chunk = (Chunk) chunks.getValueByKey(hash(x, z));
 		if (chunk == null) {
 			return null;
 		}

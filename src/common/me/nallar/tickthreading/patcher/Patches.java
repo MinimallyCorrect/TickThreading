@@ -565,6 +565,27 @@ public class Patches {
 	}
 
 	@Patch (
+			emptyConstructor = false
+	)
+	public void noFinal(Object o, Map<String, String> attributes) throws NotFoundException {
+		String field = attributes.get("field");
+		if (field != null) {
+			CtClass ctClass = (CtClass) o;
+			CtField ctField = ctClass.getDeclaredField(field);
+			ctField.setModifiers(Modifier.clear(ctField.getModifiers(), Modifier.FINAL));
+		} else if (o instanceof CtClass) {
+			CtClass ctClass = (CtClass) o;
+			ctClass.setModifiers(Modifier.setPublic(ctClass.getModifiers()));
+			for (CtConstructor ctConstructor : ctClass.getDeclaredConstructors()) {
+				public_(ctConstructor, Collections.<String, String>emptyMap());
+			}
+		} else {
+			CtBehavior ctBehavior = (CtBehavior) o;
+			ctBehavior.setModifiers(Modifier.clear(ctBehavior.getModifiers(), Modifier.FINAL));
+		}
+	}
+
+	@Patch (
 			requiredAttributes = "field"
 	)
 	public void newInitializer(CtClass ctClass, Map<String, String> attributes) throws NotFoundException, CannotCompileException, IOException {

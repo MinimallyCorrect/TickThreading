@@ -223,12 +223,16 @@
 			<addAll fromClass="me.nallar.patched.world.tracking.PatchPlayerInstanceForge"/>
 			<lock field="myManager.playerUpdateLock">flagChunkForUpdate,sendChunkUpdate</lock>
 			<replaceMethodCall index="1" code="{ $_ = null; }"/>
+		</class>
+		<class id="net.minecraft.server.management.PlayerInstance">
 			<synchronize field="$1.loadedChunks">addPlayerToChunkWatchingList,sendThisChunkToPlayer</synchronize>
 		</class>
 		<class id="net.minecraft.world.ChunkCoordIntPair">
 			<addAll fromClass="me.nallar.patched.storage.PatchChunkCoordIntPair"/>
 			<public field="chunkXPos"/>
 			<public field="chunkZPos"/>
+			<noFinal field="chunkXPos"/>
+			<noFinal field="chunkZPos"/>
 		</class>
 		<class id="net.minecraft.crash.CrashReport">
 			<addAll fromClass="me.nallar.patched.server.PatchCrashReport"/>
