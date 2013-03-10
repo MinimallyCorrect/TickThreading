@@ -5,14 +5,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+
+import com.google.common.collect.ImmutableSetMultimap;
 
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.registry.GameRegistry;
-import me.nallar.exception.ConcurrencyError;
 import me.nallar.patched.annotation.FakeExtend;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.collections.NonBlockingLongSet;
+import me.nallar.tickthreading.collections.RunnableArrayBlockingQueue;
 import me.nallar.tickthreading.minecraft.ChunkGarbageCollector;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
@@ -45,11 +49,17 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	 * and are encouraged to unless tryLock() is required.
 	 * This works as NativeMutex uses JVM monitors internally.
 	 */
+	private static final ThreadPoolExecutor chunkLoadThreadPool;
+
+	static {
+		int p = Runtime.getRuntime().availableProcessors();
+		chunkLoadThreadPool = new ThreadPoolExecutor(1, p, 60L, TimeUnit.SECONDS, new RunnableArrayBlockingQueue(p * 10));
+	}
+
 	public final NativeMutex generateLock = new NativeMutex();
 	private final NonBlockingHashMapLong<Object> chunkLoadLocks = new NonBlockingHashMapLong<Object>();
 	private final NonBlockingHashMapLong<Chunk> chunks = new NonBlockingHashMapLong<Chunk>();
 	private final NonBlockingHashMapLong<Chunk> loadingChunks = new NonBlockingHashMapLong<Chunk>();
-	private final NonBlockingHashMapLong<Chunk> unloadingChunks = new NonBlockingHashMapLong<Chunk>();
 	private final NonBlockingLongSet unloadStage0 = new NonBlockingLongSet();
 	private final ConcurrentLinkedQueue<QueuedUnload> unloadStage1 = new ConcurrentLinkedQueue<QueuedUnload>();
 	private final IChunkProvider generator; // Mojang shouldn't use the same interface for  :(
@@ -70,6 +80,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		this.world = world;
 		currentChunkLoader = this.loader = loader;
 		loadedChunks = Collections.synchronizedList(new ArrayList<Chunk>());
+		chunkLoadThreadPool.allowCoreThreadTimeOut(true);
 	}
 
 	@Override
@@ -93,35 +104,33 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	@SuppressWarnings ({"ConstantConditions", "FieldRepeatedlyAccessedInMethod"})
 	private void tick() {
-		boolean empty = false;
 		int ticks = this.ticks++;
 		// Handle unload requests
 		if (world.tickCount % 3 == 0 && !world.canNotSave && !unloadStage0.isEmpty()) {
-			for (ChunkCoordIntPair forced : world.getPersistentChunks().keySet()) {
-				if (unloadStage0.remove(hash(forced.chunkXPos, forced.chunkZPos)) && unloadStage0.isEmpty()) {
-					empty = true;
-					break;
-				}
-			}
-
-			if (!empty) {
+			ImmutableSetMultimap<ChunkCoordIntPair, ForgeChunkManager.Ticket> persistentChunks = world.getPersistentChunks();
+				ChunkCoordIntPair chunkCoordIntPair = new ChunkCoordIntPair(0, 0);
 				NonBlockingHashMapLong.IteratorLong i$ = unloadStage0.iteratorLong();
 				while (i$.hasNext()) {
 					long chunkHash = i$.next();
 					i$.remove();
+					int x = (int) chunkHash;
+					int z = (int) (chunkHash >> 32);
+					chunkCoordIntPair.chunkXPos = x;
+					chunkCoordIntPair.chunkZPos = z;
+					if (persistentChunks.containsKey(chunkCoordIntPair)) {
+						continue;
+					}
 					Chunk chunk = chunks.get(chunkHash);
 					if (chunk == null) {
 						continue;
 					}
 					chunk.unloading = true;
-					unloadingChunks.put(chunkHash, chunk);
-					unloadStage1.add(new QueuedUnload(chunkHash, ticks));
+					unloadStage1.add(new QueuedUnload(chunk, chunkHash, ticks));
 				}
 
 				if (loader != null) {
 					loader.chunkTick();
 				}
-			}
 		}
 
 		long queueThreshold = ticks - 30;
@@ -129,8 +138,8 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		{
 			QueuedUnload queuedUnload = unloadStage1.peek();
 			while (queuedUnload != null && queuedUnload.ticks <= queueThreshold) {
-				Chunk chunk = unloadingChunks.remove(queuedUnload.chunkHash);
-				if (!unloadStage1.remove(queuedUnload) || chunk == null || !chunk.unloading) {
+				Chunk chunk = queuedUnload.chunk;
+				if (!unloadStage1.remove(queuedUnload) || !chunk.unloading) {
 					continue;
 				}
 				if (lastChunk == chunk) {
@@ -159,8 +168,10 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	public static class QueuedUnload implements Comparable<QueuedUnload> {
 		public final int ticks;
 		public final long chunkHash;
+		public final Chunk chunk;
 
-		public QueuedUnload(long chunkHash, int ticks) {
+		public QueuedUnload(Chunk chunk, long chunkHash, int ticks) {
+			this.chunk = chunk;
 			this.chunkHash = chunkHash;
 			this.ticks = ticks;
 		}
@@ -214,16 +225,31 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		return getChunkAt(x, z, null);
 	}
 
-	public Chunk getChunkAt(int x, int z, Runnable runnable) {
-		long key = hash(x, z);
+	public Chunk fastGetChunk(long key) {
 		Chunk chunk = chunks.get(key);
 
 		if (chunk != null) {
 			chunk.unloading = false;
+		}
+
+		return chunk;
+	}
+
+	@SuppressWarnings ("ConstantConditions")
+	@Declare
+	public Chunk getChunkAt(final int x, final int z, final Runnable runnable) {
+		long key = hash(x, z);
+		Chunk chunk = fastGetChunk(key);
+
+		if (chunk != null) {
 			if (runnable != null) {
 				runnable.run();
 			}
 			return chunk;
+		}
+
+		if (runnable != null) {
+			chunkLoadThreadPool.execute(new ChunkLoadRunnable(x, z, runnable, this));
 		}
 
 		final Object lock = getLock(x, z);
@@ -234,9 +260,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		synchronized (lock) {
 			chunk = chunks.get(key);
 			if (chunk != null) {
-				if (runnable != null) {
-					runnable.run();
-				}
 				return chunk;
 			}
 			chunk = loadingChunks.get(key);
@@ -247,9 +270,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 					inLoadingMap = true;
 				}
 			} else if (worldGenInProgress != null && worldGenInProgress.get() == Boolean.TRUE) {
-				if (runnable != null) {
-					runnable.run();
-				}
 				return chunk;
 			} else {
 				inLoadingMap = true;
@@ -274,9 +294,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 					}
 					chunk = chunks.get(key);
 					if (chunk != null) {
-						if (runnable != null) {
-							runnable.run();
-						}
 						return chunk;
 					}
 					chunk = loadingChunks.get(key);
@@ -321,11 +338,8 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		// TODO: Do initial mob spawning here - doing it while locked is stupid and can cause deadlocks with some bukkit plugins
 
 		chunk.onChunkLoad();
-		chunkLoadLocks.remove(hash(x, z));
+		chunkLoadLocks.remove(key);
 
-		if (runnable != null) {
-			runnable.run();
-		}
 		return chunk;
 	}
 
@@ -466,6 +480,34 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	}
 
 	private static long hash(int x, int z) {
-		return (long) x & 4294967295L | ((long) z & 4294967295L) << 32;
+		return (((long) z) << 32) | (x & 0xffffffffL);
+	}
+
+	public static class ChunkLoadRunnable implements Runnable {
+		private final int x;
+		private final int z;
+		private final Runnable runnable;
+		private final ChunkProviderServer provider;
+
+		public ChunkLoadRunnable(int x, int z, Runnable runnable, ChunkProviderServer provider) {
+			this.x = x;
+			this.z = z;
+			this.runnable = runnable;
+			this.provider = provider;
+		}
+
+		@Override
+		public void run() {
+			try {
+				Chunk ch = provider.getChunkAt(x, z, null);
+				if (ch == null) {
+					FMLLog.warning("Failed to load chunk at " + x + ',' + z + " asynchronously.");
+				} else {
+					runnable.run();
+				}
+			} catch (Throwable t) {
+				FMLLog.log(Level.SEVERE, t, "Exception loading chunk asynchronously.");
+			}
+		}
 	}
 }
