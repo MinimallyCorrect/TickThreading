@@ -56,11 +56,13 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	private final IChunkLoader loader;
 	private final WorldServer world;
 	private int ticks = 0;
-	public final Set<Long> chunksToUnloadSet = unloadStage0;
 	private Chunk lastChunk;
 	// Mojang compatiblity fields.
+	public final Set<Long> chunksToUnload = unloadStage0;
 	public final List<Chunk> loadedChunks;
 	public final IChunkLoader currentChunkLoader;
+	@SuppressWarnings ("UnusedDeclaration")
+	public boolean loadChunkOnProvideRequest = true;
 
 	public ThreadedChunkProvider(WorldServer world, IChunkLoader loader, IChunkProvider generator) {
 		super(world, loader, generator); // This call will be removed by javassist.
@@ -79,7 +81,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	@Override
 	@Declare
 	public Set<Long> getChunksToUnloadSet() {
-		return chunksToUnloadSet;
+		return unloadStage0;
 	}
 
 	@Override
@@ -114,9 +116,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 					chunk.unloading = true;
 					unloadingChunks.put(chunkHash, chunk);
 					unloadStage1.add(new QueuedUnload(chunkHash, ticks));
-					if (chunks.remove(chunkHash) == null) {
-						throw new ConcurrencyError("Chunk was already removed from chunk map during transition from queued -> stage 0 removal.");
-					}
 				}
 
 				if (loader != null) {
@@ -131,7 +130,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			QueuedUnload queuedUnload = unloadStage1.peek();
 			while (queuedUnload != null && queuedUnload.ticks <= queueThreshold) {
 				Chunk chunk = unloadingChunks.remove(queuedUnload.chunkHash);
-				if (chunk == null || !unloadStage1.remove(queuedUnload) || !chunk.unloading) {
+				if (!unloadStage1.remove(queuedUnload) || chunk == null || !chunk.unloading) {
 					continue;
 				}
 				if (lastChunk == chunk) {
@@ -141,6 +140,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				safeSaveChunk(chunk);
 				safeSaveExtraChunkData(chunk);
 				loadedChunks.remove(chunk);
+				chunks.remove(queuedUnload.chunkHash);
 				queuedUnload = unloadStage1.peek();
 			}
 		}
@@ -206,16 +206,23 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	@Override
 	public Chunk provideChunk(int x, int z) {
-		return loadChunk(x, z);
+		return getChunkAt(x, z, null);
 	}
 
 	@Override
 	public Chunk loadChunk(int x, int z) {
+		return getChunkAt(x, z, null);
+	}
+
+	public Chunk getChunkAt(int x, int z, Runnable runnable) {
 		long key = hash(x, z);
 		Chunk chunk = chunks.get(key);
 
 		if (chunk != null) {
 			chunk.unloading = false;
+			if (runnable != null) {
+				runnable.run();
+			}
 			return chunk;
 		}
 
@@ -227,6 +234,9 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		synchronized (lock) {
 			chunk = chunks.get(key);
 			if (chunk != null) {
+				if (runnable != null) {
+					runnable.run();
+				}
 				return chunk;
 			}
 			chunk = loadingChunks.get(key);
@@ -237,6 +247,9 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 					inLoadingMap = true;
 				}
 			} else if (worldGenInProgress != null && worldGenInProgress.get() == Boolean.TRUE) {
+				if (runnable != null) {
+					runnable.run();
+				}
 				return chunk;
 			} else {
 				inLoadingMap = true;
@@ -261,6 +274,9 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 					}
 					chunk = chunks.get(key);
 					if (chunk != null) {
+						if (runnable != null) {
+							runnable.run();
+						}
 						return chunk;
 					}
 					chunk = loadingChunks.get(key);
@@ -307,6 +323,9 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		chunk.onChunkLoad();
 		chunkLoadLocks.remove(hash(x, z));
 
+		if (runnable != null) {
+			runnable.run();
+		}
 		return chunk;
 	}
 

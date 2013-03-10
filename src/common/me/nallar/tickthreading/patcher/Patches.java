@@ -1,6 +1,7 @@
 package me.nallar.tickthreading.patcher;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,6 +19,7 @@ import javassist.CtBehavior;
 import javassist.CtClass;
 import javassist.CtConstructor;
 import javassist.CtField;
+import javassist.CtMember;
 import javassist.CtMethod;
 import javassist.CtNewMethod;
 import javassist.CtPrimitiveType;
@@ -30,7 +32,9 @@ import javassist.bytecode.ClassFile;
 import javassist.bytecode.CodeAttribute;
 import javassist.bytecode.CodeIterator;
 import javassist.bytecode.ConstPool;
+import javassist.bytecode.ConstantAttribute;
 import javassist.bytecode.Descriptor;
+import javassist.bytecode.DuplicateMemberException;
 import javassist.bytecode.Opcode;
 import javassist.expr.Cast;
 import javassist.expr.ConstructorCall;
@@ -89,15 +93,24 @@ public class Patches {
 		if (initialiser != null) {
 			allBehaviours.add(initialiser);
 		}
+		final boolean remove = attributes.containsKey("remove");
 		for (CtBehavior ctBehavior : allBehaviours) {
 			ctBehavior.instrument(new ExprEditor() {
 				@Override
 				public void edit(FieldAccess fieldAccess) throws CannotCompileException {
 					if (fieldAccess.getClassName().equals(ctClass.getName()) && fieldAccess.getFieldName().equals(field)) {
 						if (fieldAccess.isReader()) {
-							fieldAccess.replace("$_ = $0." + field + ';');
+							if (remove) {
+								fieldAccess.replace("$_ = null;");
+							} else {
+								fieldAccess.replace("$_ = $0." + field + ';');
+							}
 						} else if (fieldAccess.isWriter()) {
-							fieldAccess.replace("$0." + field + " = $1;");
+							if (remove) {
+								fieldAccess.replace("$_ = null;");
+							} else {
+								fieldAccess.replace("$0." + field + " = $1;");
+							}
 						}
 					}
 				}
@@ -617,7 +630,6 @@ public class Patches {
 		}
 		try {
 			CtField ctField = ctClass.getDeclaredField(field);
-			ctField.setModifiers(Modifier.setPublic(ctField.getModifiers()));
 			Log.warning(field + " already exists as " + ctField);
 			return;
 		} catch (NotFoundException ignored) {

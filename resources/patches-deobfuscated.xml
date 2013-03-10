@@ -95,6 +95,10 @@
 		<class id="net.minecraft.world.gen.ChunkProviderServer">
 			<replace class="me.nallar.patched.storage.ThreadedChunkProvider"/>
 		</class>
+		<class id="net.minecraft.world.gen.ChunkProviderServer" env="mcpc">
+			<changeFieldType field="chunksToUnload" type="org.bukkit.craftbukkit.v1_4_R1.util.LongHashSet" remove="true"/>
+			<insertAfter field="chunksToUnload" code="$field = new org.bukkit.craftbukkit.v1_4_R1.util.LongHashSet();"/>
+		</class>
 		<class id="net.minecraft.world.chunk.storage.RegionFileCache" env="forge">
 			<replaceMethod code="throw new UnsupportedOperationException();">createOrLoadRegionFile</replaceMethod>
 		</class>
