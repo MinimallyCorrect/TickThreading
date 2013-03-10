@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -20,6 +21,7 @@ import me.nallar.tickthreading.collections.RunnableArrayBlockingQueue;
 import me.nallar.tickthreading.minecraft.ChunkGarbageCollector;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
+import me.nallar.tickthreading.util.FakeServerThread;
 import me.nallar.tickthreading.util.concurrent.NativeMutex;
 import me.nallar.unsafe.UnsafeUtil;
 import net.minecraft.entity.EnumCreatureType;
@@ -54,7 +56,8 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	static {
 		int p = Runtime.getRuntime().availableProcessors();
-		chunkLoadThreadPool = new ThreadPoolExecutor(1, p, 60L, TimeUnit.SECONDS, new RunnableArrayBlockingQueue(p * 10));
+		chunkLoadThreadPool = new ThreadPoolExecutor(1, p, 60L, TimeUnit.SECONDS, new RunnableArrayBlockingQueue(p * 10), new ServerThreadFactory());
+		chunkLoadThreadPool.allowCoreThreadTimeOut(true);
 	}
 
 	public final NativeMutex generateLock = new NativeMutex();
@@ -81,7 +84,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		this.world = world;
 		currentChunkLoader = this.loader = loader;
 		loadedChunks = Collections.synchronizedList(new ArrayList<Chunk>());
-		chunkLoadThreadPool.allowCoreThreadTimeOut(true);
 	}
 
 	@Override
@@ -231,6 +233,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		return getChunkAt(x, z, null);
 	}
 
+	@Override
 	@SuppressWarnings ("ConstantConditions")
 	@Declare
 	public Chunk getChunkAt(final int x, final int z, final Runnable runnable) {
@@ -508,6 +511,13 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			} catch (Throwable t) {
 				FMLLog.log(Level.SEVERE, t, "Exception loading chunk asynchronously.");
 			}
+		}
+	}
+
+	public static class ServerThreadFactory implements ThreadFactory {
+		@Override
+		public Thread newThread(Runnable r) {
+			return new FakeServerThread(r, "Async ChunkLoader", true);
 		}
 	}
 }
