@@ -1,7 +1,7 @@
 package me.nallar.patched;
 
 import me.nallar.tickthreading.patcher.Declare;
-import me.nallar.tickthreading.util.concurrent.SimpleMutex;
+import me.nallar.tickthreading.util.concurrent.NativeMutex;
 import net.minecraft.server.management.PlayerInstance;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.WorldServer;
@@ -28,7 +28,7 @@ public abstract class PatchTileEntity extends TileEntity {
 	public java.util.concurrent.locks.Lock zPlusLock_;
 
 	public void construct() {
-		thisLock = new SimpleMutex();
+		thisLock = new NativeMutex();
 	}
 
 	@Override

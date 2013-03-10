@@ -1,7 +1,6 @@
 package me.nallar.tickthreading.minecraft;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -19,7 +18,11 @@ public class ChunkGarbageCollector {
 		try {
 			Class.forName("org.bukkit.craftbukkit.libs.jline.Terminal");
 		} catch (ClassNotFoundException e) {
-			return true;
+			try {
+				Class.forName("org.bukkit.craftbukkit.v1_4_R1.libs.jline.Terminal");
+			} catch (ClassNotFoundException e1) {
+				return true;
+			}
 		}
 		return false;
 	}
@@ -34,7 +37,7 @@ public class ChunkGarbageCollector {
 		int viewDistance = MinecraftServer.getServer().getConfigurationManager().getViewDistance() + 1;
 		ChunkProviderServer chunkProvider = worldServer.theChunkProviderServer;
 		Set<Long> chunksToUnload = new HashSet<Long>();
-		List<Chunk> loadedChunks = chunkProvider.getLoadedChunks();
+		Iterable<Chunk> loadedChunks = chunkProvider.getLoadedChunks();
 		synchronized (loadedChunks) {
 			for (Chunk chunk : loadedChunks) {
 				chunksToUnload.add(ChunkCoordIntPair.chunkXZ2Int(chunk.xPosition, chunk.zPosition));

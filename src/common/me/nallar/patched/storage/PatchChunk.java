@@ -25,7 +25,7 @@ import org.cliffc.high_scale_lib.NonBlockingHashMap;
 
 public abstract class PatchChunk extends Chunk {
 	@Declare
-	public volatile boolean unloading;
+	public boolean unloading_;
 	public Lock entityListWriteLock;
 	public Lock entityListReadLock;
 
@@ -41,6 +41,11 @@ public abstract class PatchChunk extends Chunk {
 		TwoWayReentrantReadWriteLock twoWayReentrantReadWriteLock = new TwoWayReentrantReadWriteLock();
 		entityListWriteLock = twoWayReentrantReadWriteLock.writeLock();
 		entityListReadLock = twoWayReentrantReadWriteLock.readLock();
+	}
+
+	@Override
+	public String toString() {
+		return (unloading ? "un" : "") + "loaded chunk at " + xPosition + ',' + zPosition;
 	}
 
 	@Override

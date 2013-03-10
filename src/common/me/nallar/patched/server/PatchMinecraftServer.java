@@ -19,7 +19,6 @@ import cpw.mods.fml.relauncher.RelaunchClassLoader;
 import cpw.mods.fml.relauncher.Side;
 import me.nallar.insecurity.InsecurityManager;
 import me.nallar.tickthreading.Log;
-import me.nallar.tickthreading.minecraft.ChunkGarbageCollector;
 import me.nallar.tickthreading.minecraft.DeadLockDetector;
 import me.nallar.tickthreading.minecraft.ThreadManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
@@ -426,9 +425,6 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				profiler.startSection("tracker");
 				world.getEntityTracker().updateTrackedEntities();
 				profiler.endSection();
-				if (this.tickCounter % TickThreading.instance.chunkGCInterval == 0) {
-					ChunkGarbageCollector.garbageCollect(world);
-				}
 				if (this.tickCounter % 102 == 0) {
 					exceptionCount.put(id, 0);
 				}

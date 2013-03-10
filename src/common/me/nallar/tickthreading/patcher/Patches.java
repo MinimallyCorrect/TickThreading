@@ -188,7 +188,6 @@ public class Patches {
 				@Override
 				public void edit(NewExpr e) throws CannotCompileException {
 					newPos++;
-					Log.fine(e.getFileName() + ':' + e.getLineNumber() + ", pos: " + newPos);
 					if (newExprType.containsKey(newPos)) {
 						String assignedType = newExprType.get(newPos);
 						Log.fine(assignedType + " at " + e.getFileName() + ':' + e.getLineNumber());
@@ -279,40 +278,35 @@ public class Patches {
 		ClassFile classFile = newClass.getClassFile2();
 		if (classFile.getSuperclass().equals(oldName)) {
 			classFile.setSuperclass(null);
+			for (CtConstructor ctBehavior : newClass.getDeclaredConstructors()) {
+				javassist.bytecode.MethodInfo methodInfo = ctBehavior.getMethodInfo2();
+				CodeAttribute codeAttribute = methodInfo.getCodeAttribute();
+				if (codeAttribute != null) {
+					CodeIterator iterator = codeAttribute.iterator();
+					int pos = iterator.skipSuperConstructor();
+					if (pos >= 0) {
+						int mref = iterator.u16bitAt(pos + 1);
+						iterator.write16bit(pos + 1, codeAttribute.getConstPool().addNameAndTypeInfo("<init>", "java.lang.Object"));
+						String desc = codeAttribute.getConstPool().getMethodrefType(mref);
+						int num = Descriptor.numOfParameters(desc) + 1;
+						pos = iterator.insertGapAt(pos, num, false).position;
+						Descriptor.Iterator it = new Descriptor.Iterator(desc);
+						while (true) {
+							it.next();
+							if (it.isParameter()) {
+								iterator.writeByte(it.is2byte() ? Opcode.POP2 : Opcode.POP,
+										pos++);
+							} else {
+								break;
+							}
+						}
+					}
+					methodInfo.rebuildStackMapIf6(newClass.getClassPool(), newClass.getClassFile2());
+				}
+			}
 		}
 		newClass.setName(oldName);
 		newClass.setModifiers(newClass.getModifiers() & ~Modifier.ABSTRACT);
-		for (CtConstructor ctBehavior : newClass.getDeclaredConstructors()) {
-			javassist.bytecode.MethodInfo methodInfo = ctBehavior.getMethodInfo2();
-			CodeAttribute codeAttribute = methodInfo.getCodeAttribute();
-			if (codeAttribute != null) {
-				CodeIterator iterator = codeAttribute.iterator();
-				int pos = iterator.skipConstructor();
-				if (pos >= 0) {
-					int mref = iterator.u16bitAt(pos + 1);
-					String desc = codeAttribute.getConstPool().getMethodrefType(mref);
-					int num = Descriptor.numOfParameters(desc) + 1;
-					if (num > 3) {
-						pos = iterator.insertGapAt(pos, num - 3, false).position;
-					}
-
-					iterator.writeByte(Opcode.POP, pos++);
-					iterator.writeByte(Opcode.NOP, pos);
-					iterator.writeByte(Opcode.NOP, pos + 1);
-					Descriptor.Iterator it = new Descriptor.Iterator(desc);
-					while (true) {
-						it.next();
-						if (it.isParameter()) {
-							iterator.writeByte(it.is2byte() ? Opcode.POP2 : Opcode.POP,
-									pos++);
-						} else {
-							break;
-						}
-					}
-				}
-				methodInfo.rebuildStackMapIf6(newClass.getClassPool(), newClass.getClassFile2());
-			}
-		}
 		return newClass;
 	}
 
@@ -888,7 +882,6 @@ public class Patches {
 			public void edit(NewExpr e) throws CannotCompileException {
 				newPos++;
 				try {
-					Log.fine(e.getFileName() + ':' + e.getLineNumber() + ", pos: " + newPos);
 					if (newExprType.containsKey(newPos)) {
 						String replacementType = null, assignedType = newExprType.get(newPos);
 						Log.fine(assignedType + " at " + e.getFileName() + ':' + e.getLineNumber());

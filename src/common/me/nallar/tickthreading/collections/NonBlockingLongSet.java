@@ -100,8 +100,7 @@ public class NonBlockingLongSet extends AbstractSet<Long> implements Set<Long>, 
 		return s.retainAll(c);
 	}
 
-	private void readObject(java.io.ObjectInputStream stream)
-			throws IOException, ClassNotFoundException {
+	private void readObject(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException {
 		stream.defaultReadObject();
 		s = m.keySet();
 	}

@@ -3,14 +3,21 @@ package me.nallar.patched.storage;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.logging.Level;
 
+import cpw.mods.fml.common.FMLLog;
+import cpw.mods.fml.common.registry.GameRegistry;
+import me.nallar.exception.ConcurrencyError;
 import me.nallar.patched.annotation.FakeExtend;
+import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.collections.NonBlockingLongSet;
+import me.nallar.tickthreading.minecraft.ChunkGarbageCollector;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
+import me.nallar.tickthreading.util.concurrent.NativeMutex;
+import me.nallar.unsafe.UnsafeUtil;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.util.IProgressUpdate;
-import net.minecraft.util.LongHashMap;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.ChunkPosition;
 import net.minecraft.world.World;
@@ -31,29 +38,52 @@ import org.cliffc.high_scale_lib.NonBlockingHashMapLong;
  */
 @FakeExtend
 public abstract class ThreadedChunkProvider extends ChunkProviderServer implements IChunkProvider {
-	private final LongHashMap chunkLoadLocks = new LongHashMap();
+	/**
+	 * You may also use a synchronized block on generateLock,
+	 * and are encourage to unless tryLock() is required.
+	 * This works as NativeMutex uses JVM monitors internally.
+	 */
+	public final NativeMutex generateLock = new NativeMutex();
+	private final NonBlockingHashMapLong<Object> chunkLoadLocks = new NonBlockingHashMapLong<Object>();
 	private final NonBlockingHashMapLong<Chunk> chunks = new NonBlockingHashMapLong<Chunk>();
+	private final NonBlockingHashMapLong<Chunk> loadingChunks = new NonBlockingHashMapLong<Chunk>();
 	private final NonBlockingHashMapLong<Chunk> unloadingChunks = new NonBlockingHashMapLong<Chunk>();
 	private final NonBlockingLongSet unloadStage0 = new NonBlockingLongSet();
 	private final ConcurrentLinkedQueue<QueuedUnload> unloadStage1 = new ConcurrentLinkedQueue<QueuedUnload>();
-	private final IChunkProvider chunkGenerator; // Mojang shouldn't use the same interface for this. :(
+	private final IChunkProvider generator; // Mojang shouldn't use the same interface for  :(
+	private final IChunkLoader loader;
 	private final WorldServer world;
 	private int ticks = 0;
-	public final Set<Long> chunksToUnloadSet = new NonBlockingLongSet();
+	public final Set<Long> chunksToUnloadSet = unloadStage0;
 	private Chunk lastChunk;
 
-	public ThreadedChunkProvider(WorldServer worldServer, IChunkLoader chunkLoader, IChunkProvider chunkGenerator) {
-		super(worldServer, chunkLoader, chunkGenerator); // This call will be removed by javassist.
-		this.chunkGenerator = chunkGenerator;
-		world = worldServer;
+	public ThreadedChunkProvider(WorldServer world, IChunkLoader loader, IChunkProvider generator) {
+		super(world, loader, generator); // This call will be removed by javassist.
+		this.generator = generator;
+		this.world = world;
+		this.loader = loader;
+	}
+
+	@Override
+	@Declare
+	public Iterable<Chunk> getLoadedChunks() {
+		return chunks.values();
+	}
+
+	@Override
+	@Declare
+	public Set<Long> getChunksToUnloadSet() {
+		return chunksToUnloadSet;
 	}
 
 	@Override
 	public boolean unload100OldestChunks() {
-		return tick();
+		tick();
+
+		return generator.unload100OldestChunks();
 	}
 
-	private boolean tick() {
+	private void tick() {
 		boolean empty = false;
 		int ticks = this.ticks++;
 		// Handle unload requests
@@ -74,13 +104,16 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 					if (chunk == null) {
 						continue;
 					}
+					chunk.unloading = true;
 					unloadingChunks.put(chunkHash, chunk);
 					unloadStage1.add(new QueuedUnload(chunkHash, ticks));
-					chunks.remove(chunkHash);
+					if (chunks.remove(chunkHash) == null) {
+						throw new ConcurrencyError("Chunk was already removed from chunk map during transition from queued -> stage 0 removal.");
+					}
 				}
 
-				if (this.currentChunkLoader != null) {
-					this.currentChunkLoader.chunkTick();
+				if (loader != null) {
+					loader.chunkTick();
 				}
 			}
 		}
@@ -91,30 +124,30 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			QueuedUnload queuedUnload = unloadStage1.peek();
 			while (queuedUnload != null && queuedUnload.ticks <= queueThreshold) {
 				Chunk chunk = unloadingChunks.remove(queuedUnload.chunkHash);
-				if (chunk == null || !unloadStage1.remove(queuedUnload)) {
+				if (chunk == null || !unloadStage1.remove(queuedUnload) || !chunk.unloading) {
 					continue;
 				}
 				if (lastChunk == chunk) {
 					lastChunk = null;
 				}
 				chunk.onChunkUnload();
-				this.safeSaveChunk(chunk);
-				this.safeSaveExtraChunkData(chunk);
-				synchronized (loadedChunks) {
-					this.loadedChunks.remove(chunk);
-				}
+				safeSaveChunk(chunk);
+				safeSaveExtraChunkData(chunk);
 				queuedUnload = unloadStage1.peek();
 			}
 		}
 
-		if (ticks > 1200 && this.world.provider.dimensionId != 0 && TickThreading.instance.allowWorldUnloading && loadedChunks.isEmpty() && ForgeChunkManager.getPersistentChunksFor(world).isEmpty() && (!TickThreading.instance.shouldLoadSpawn || !DimensionManager.shouldLoadSpawn(world.provider.dimensionId))) {
+		if (ticks > 1200 && world.provider.dimensionId != 0 && TickThreading.instance.allowWorldUnloading && chunks.isEmpty() && ForgeChunkManager.getPersistentChunksFor(world).isEmpty() && (!TickThreading.instance.shouldLoadSpawn || !DimensionManager.shouldLoadSpawn(world.provider.dimensionId))) {
 			DimensionManager.unloadWorld(world.provider.dimensionId);
 		}
 
-		return this.currentChunkProvider.unload100OldestChunks();
+		if (ticks % TickThreading.instance.chunkGCInterval == 0) {
+			ChunkGarbageCollector.garbageCollect(world);
+		}
 	}
 
 	// Public visibility as it will be accessed from net.minecraft.whatever, not actually this class
+	// (Inner classes are not remapped in patching)
 	public static class QueuedUnload implements Comparable<QueuedUnload> {
 		public final int ticks;
 		public final long chunkHash;
@@ -134,57 +167,234 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	@Override
 	public boolean chunkExists(int x, int z) {
-		return super.chunkExists(x, z);
+		return chunks.containsKey(hash(x, z));
 	}
 
 	@Override
 	public void unloadChunksIfNotNearSpawn(int x, int z) {
-		super.unloadChunksIfNotNearSpawn(x, z);
+		unloadStage0.add(hash(x, z));
 	}
 
 	@Override
 	public void unloadAllChunks() {
-		super.unloadAllChunks();
+		for (Chunk chunk : chunks.values()) {
+			chunksToUnload.add(chunk);
+		}
 	}
 
-	@Override
-	public Chunk loadChunk(int x, int z) {
-		return super.loadChunk(x, z);
+	public Object getLock(int x, int z) {
+		long hash = hash(x, z);
+		Object lock = chunkLoadLocks.get(hash);
+		if (lock != null) {
+			return lock;
+		}
+		Object newLock = new Object();
+		lock = chunkLoadLocks.putIfAbsent(hash, newLock);
+		if (lock != null) {
+			return lock;
+		}
+		return lock;
 	}
 
 	@Override
 	public Chunk provideChunk(int x, int z) {
-		return super.provideChunk(x, z);
+		return loadChunk(x, z);
+	}
+
+	@Override
+	public Chunk loadChunk(int x, int z) {
+		long key = hash(x, z);
+		Chunk chunk = (Chunk) chunks.get(key);
+
+		if (chunk != null) {
+			chunk.unloading = false;
+			return chunk;
+		}
+
+		final Object lock = getLock(x, z);
+		boolean inLoadingMap = false;
+
+		// Lock on the lock for this chunk - prevent multiple instances of the same chunk
+		ThreadLocal<Boolean> worldGenInProgress = world.worldGenInProgress;
+		synchronized (lock) {
+			chunk = chunks.get(key);
+			if (chunk != null) {
+				return chunk;
+			}
+			chunk = loadingChunks.get(key);
+			if (chunk == null) {
+				chunk = safeLoadChunk(x, z);
+				if (chunk != null) {
+					loadingChunks.put(key, chunk);
+					inLoadingMap = true;
+				}
+			} else if (worldGenInProgress != null && worldGenInProgress.get() == Boolean.TRUE) {
+				return chunk;
+			} else {
+				inLoadingMap = true;
+			}
+		}
+		// Unlock this chunk - avoids a deadlock
+		// Thread A - requests chunk A - needs genned
+		// Thread B - requests chunk B - needs genned
+		// In thread A, redpower tries to load chunk B
+		// because its marble gen is buggy.
+		// Thread B is now waiting for the generate lock,
+		// Thread A is waiting for the lock on chunk B
+
+		// Lock the generation lock - ChunkProviderGenerate isn't threadsafe at all
+		// TODO: Possibly make ChunkProviderGenerate threadlocal? Would need many changes to
+		// structure code to get it to work properly.
+		try {
+			synchronized (generateLock) {
+				synchronized (lock) {
+					if (worldGenInProgress != null) {
+						worldGenInProgress.set(Boolean.TRUE);
+					}
+					chunk = chunks.get(key);
+					if (chunk != null) {
+						return chunk;
+					}
+					chunk = loadingChunks.get(key);
+					if (chunk == null) {
+						if (generator == null) {
+							chunk = defaultEmptyChunk;
+						} else {
+							try {
+								chunk = generator.provideChunk(x, z);
+							} catch (Throwable t) {
+								Log.severe("Failed to generate a chunk in " + Log.name(world) + " at chunk coords " + x + ',' + z);
+								throw UnsafeUtil.throwIgnoreChecked(t);
+							}
+						}
+					} else {
+						if (generator != null) {
+							generator.recreateStructures(x, z);
+						}
+					}
+
+					if (chunk == null) {
+						throw new IllegalStateException("Null chunk was provided for " + x + ',' + z);
+					}
+
+					if (!inLoadingMap) {
+						loadingChunks.put(key, chunk);
+					}
+
+					chunk.populateChunk(this, this, x, z);
+
+					loadingChunks.remove(key);
+					chunks.put(key, chunk);
+				}
+			}
+		} finally {
+			if (worldGenInProgress != null) {
+				worldGenInProgress.set(Boolean.FALSE);
+			}
+		}
+
+		// TODO: Do initial mob spawning here - doing it while locked is stupid and can cause deadlocks with some bukkit plugins
+
+		chunk.onChunkLoad();
+		chunkLoadLocks.remove(hash(x, z));
+
+		return chunk;
 	}
 
 	@Override
 	protected Chunk safeLoadChunk(int x, int z) {
-		return super.safeLoadChunk(x, z);
+		if (loader == null) {
+			return null;
+		}
+		try {
+			Chunk chunk = loader.loadChunk(world, x, z);
+
+			if (chunk != null) {
+				chunk.lastSaveTime = world.getTotalWorldTime();
+
+				if (currentChunkProvider != null) {
+					currentChunkProvider.recreateStructures(x, z);
+				}
+			}
+
+			return chunk;
+		} catch (Exception e) {
+			FMLLog.log(Level.SEVERE, e, "Failed to load chunk at " + x + ',' + z);
+			return null;
+		}
 	}
 
 	@Override
 	protected void safeSaveExtraChunkData(Chunk chunk) {
-		super.safeSaveExtraChunkData(chunk);
+		if (loader == null) {
+			return;
+		}
+		try {
+			loader.saveExtraChunkData(world, chunk);
+		} catch (Exception e) {
+			FMLLog.log(Level.SEVERE, e, "Failed to save extra chunk data for " + chunk);
+		}
 	}
 
 	@Override
 	protected void safeSaveChunk(Chunk chunk) {
-		super.safeSaveChunk(chunk);
+		if (loader != null) {
+			try {
+				chunk.lastSaveTime = world.getTotalWorldTime();
+				loader.saveChunk(world, chunk);
+			} catch (Exception e) {
+
+			}
+		}
 	}
 
 	@Override
 	public void populate(IChunkProvider chunkProvider, int x, int z) {
-		super.populate(chunkProvider, x, z);
+		synchronized (generateLock) {
+			Chunk var4 = provideChunk(x, z);
+
+			if (!var4.isTerrainPopulated) {
+				var4.isTerrainPopulated = true;
+
+				if (currentChunkProvider != null) {
+					currentChunkProvider.populate(chunkProvider, x, z);
+					GameRegistry.generateWorld(x, z, world, currentChunkProvider, chunkProvider);
+					var4.setChunkModified();
+				}
+			}
+		}
 	}
 
 	@Override
 	public boolean saveChunks(boolean saveAll, IProgressUpdate progressUpdate) {
-		return super.saveChunks(saveAll, progressUpdate);
+		int savedChunks = 0;
+
+		for (Chunk chunk : chunks.values()) {
+
+			if (saveAll) {
+				safeSaveExtraChunkData(chunk);
+			}
+
+			if (chunk.needsSaving(saveAll)) {
+				safeSaveChunk(chunk);
+				chunk.isModified = false;
+
+				if (++savedChunks == 24 && !saveAll) {
+					return false;
+				}
+			}
+		}
+
+		if (saveAll && loader != null) {
+			loader.saveExtraData();
+		}
+
+		return true;
 	}
 
 	@Override
 	public boolean canSave() {
-		return super.canSave();
+		return !world.canNotSave;
 	}
 
 	@Override
@@ -194,41 +404,40 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	@Override
 	public List getPossibleCreatures(EnumCreatureType creatureType, int x, int y, int z) {
-		return super.getPossibleCreatures(creatureType, x, y, z);
+		return generator.getPossibleCreatures(creatureType, x, y, z);
 	}
 
 	@Override
 	public ChunkPosition findClosestStructure(World world, String name, int x, int y, int z) {
-		return super.findClosestStructure(world, name, x, y, z);
+		return generator.findClosestStructure(world, name, x, y, z);
 	}
 
 	@Override
 	public int getLoadedChunkCount() {
-		return super.getLoadedChunkCount();
+		return chunks.size();
 	}
 
 	@Override
 	public void recreateStructures(int x, int z) {
-		super.recreateStructures(x, z);
-	}
-
-	@Override
-	public List<Chunk> getLoadedChunks() {
-		return super.getLoadedChunks();
 	}
 
 	@Override
 	@Declare
 	public Chunk getChunkIfExists(int x, int z) {
-		return chunks.get(hash(x, z));
+		Chunk chunk = lastChunk;
+		if (chunk != null && chunk.xPosition == x && chunk.zPosition == z) {
+			return chunk;
+		}
+		chunk = chunks.get(hash(x, z));
+		if (chunk == null) {
+			return null;
+		}
+		chunk.unloading = false;
+		lastChunk = chunk;
+		return chunk;
 	}
 
-	private void garbageCollect() {
-
-	}
-
-	private static long hash(int x, int z)
-	{
-		return (long)x & 4294967295L | ((long)z & 4294967295L) << 32;
+	private static long hash(int x, int z) {
+		return (long) x & 4294967295L | ((long) z & 4294967295L) << 32;
 	}
 }

@@ -16,60 +16,36 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 
-import me.nallar.tickthreading.Log;
+import me.nallar.unsafe.UnsafeAccess;
+import sun.misc.Unsafe;
 
-public final class SimpleMutex implements Lock {
-	protected boolean locked = false;
-	int waiting = 0;
-
-	@Override
-	public synchronized void lockInterruptibly() throws InterruptedException {
-		if (!locked) {
-			locked = true;
-			return;
-		}
-		waiting++;
-		do {
-			wait(1L);
-		} while (locked);
-		waiting--;
-		locked = true;
-	}
+public final class NativeSpinLockMutex implements Lock {
+	private static final Unsafe $ = UnsafeAccess.$;
 
 	@Override
 	public synchronized void lock() {
-		if (!locked) {
-			locked = true;
-			return;
-		}
-		try {
-			waiting++;
-			do {
-				wait(1L);
-			} while (locked);
-			waiting--;
-			locked = true;
-		} catch (InterruptedException ex) {
-			// For better performance, we just assume interruption won't happen...
-			Log.severe("Interrupted while locking", ex);
+		//noinspection StatementWithEmptyBody
+		while (!$.tryMonitorEnter(this)) {
+			// Spin lock.
+			// TODO: Could we instead work on something else here?
+			// Avoids overhead of OS scheduling without doing nothing
+			// might not be worth the effort to get it working correctly
 		}
 	}
 
 	@Override
 	public synchronized void unlock() {
-		locked = false;
-		if (waiting != 0) {
-			notify();
-		}
+		$.monitorExit(this);
 	}
 
 	@Override
 	public synchronized boolean tryLock() {
-		if (!locked) {
-			locked = true;
-			return true;
-		}
-		return false;
+		return $.tryMonitorEnter(this);
+	}
+
+	@Override
+	public synchronized void lockInterruptibly() throws InterruptedException {
+		throw new UnsupportedOperationException();
 	}
 
 	@Override

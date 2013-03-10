@@ -30,6 +30,8 @@ public final class SpinLockMutex implements Lock {
 		while (!$.compareAndSwapInt(this, index, 0, 1)) {
 			// Spin lock.
 			// TODO: Could we instead work on something else here?
+			// Avoids overhead of OS scheduling without doing nothing
+			// might not be worth the effort to get it working correctly
 		}
 	}
 
