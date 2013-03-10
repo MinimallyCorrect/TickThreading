@@ -56,6 +56,7 @@ public class DumpCommand extends Command {
 	}
 
 	public static TableFormatter dump(TableFormatter tf, World world, int x, int y, int z, int maxLen) {
+		@SuppressWarnings ("MismatchedQueryAndUpdateOfStringBuilder")
 		StringBuilder sb = tf.sb;
 		int blockId = world.getBlockIdWithoutLoad(x, y, z);
 		if (blockId < 1) {

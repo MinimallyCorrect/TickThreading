@@ -74,8 +74,8 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 				}
 				synchronized (entityPlayerMP.loadedChunks) {
 					par1NetHandler.handleFlying(this);
-					sendChunks(entityPlayerMP);
 				}
+				sendChunks(entityPlayerMP);
 			} else {
 				nsh.lastPZ = this.zPosition;
 				nsh.lastPX = this.xPosition;
@@ -89,9 +89,7 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 						}
 					}
 				}
-				synchronized (entityPlayerMP.loadedChunks) {
-					sendChunks(entityPlayerMP);
-				}
+				sendChunks(entityPlayerMP);
 			}
 		}
 	}
@@ -113,24 +111,26 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 			if (timings) {
 				st = System.nanoTime();
 			}
-			ArrayList var6 = new ArrayList();
-			Iterator var7 = entityPlayerMP.loadedChunks.iterator();
-			ArrayList var8 = new ArrayList();
+			ArrayList chunks = new ArrayList();
+			ArrayList tileEntities = new ArrayList();
+			synchronized (entityPlayerMP.loadedChunks) {
+				Iterator var7 = entityPlayerMP.loadedChunks.iterator();
 
-			while (var7.hasNext() && var6.size() < 5) {
-				ChunkCoordIntPair var9 = (ChunkCoordIntPair) var7.next();
-				int x = var9.chunkXPos;
-				int z = var9.chunkZPos;
-				var7.remove();
+				while (var7.hasNext() && chunks.size() < 5) {
+					ChunkCoordIntPair var9 = (ChunkCoordIntPair) var7.next();
+					int x = var9.chunkXPos;
+					int z = var9.chunkZPos;
+					var7.remove();
 
-				Chunk chunk = entityPlayerMP.worldObj.getChunkFromChunkCoords(x, z);
-				var6.add(chunk);
-				var8.addAll(chunk.chunkTileEntityMap.values());
+					Chunk chunk = entityPlayerMP.worldObj.getChunkFromChunkCoords(x, z);
+					chunks.add(chunk);
+					tileEntities.addAll(chunk.chunkTileEntityMap.values());
+				}
 			}
 
-			if (!var6.isEmpty()) {
-				netServerHandler.sendPacketToPlayer(new Packet56MapChunks(var6));
-				Iterator var11 = var8.iterator();
+			if (!chunks.isEmpty()) {
+				netServerHandler.sendPacketToPlayer(new Packet56MapChunks(chunks));
+				Iterator var11 = tileEntities.iterator();
 
 				while (var11.hasNext()) {
 					Packet var5 = ((TileEntity) var11.next()).getDescriptionPacket();
@@ -139,7 +139,7 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 					}
 				}
 
-				var11 = var6.iterator();
+				var11 = chunks.iterator();
 
 				while (var11.hasNext()) {
 					Chunk var10 = (Chunk) var11.next();

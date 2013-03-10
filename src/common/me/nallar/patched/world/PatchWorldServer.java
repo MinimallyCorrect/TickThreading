@@ -12,7 +12,6 @@ import java.util.TreeSet;
 
 import com.google.common.collect.ImmutableSetMultimap;
 
-import me.nallar.exception.ConcurrencyError;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.collections.TreeHashSet;
 import me.nallar.tickthreading.minecraft.DeadLockDetector;
