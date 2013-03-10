@@ -1,5 +1,7 @@
 package me.nallar.patched.storage;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -40,7 +42,7 @@ import org.cliffc.high_scale_lib.NonBlockingHashMapLong;
 public abstract class ThreadedChunkProvider extends ChunkProviderServer implements IChunkProvider {
 	/**
 	 * You may also use a synchronized block on generateLock,
-	 * and are encourage to unless tryLock() is required.
+	 * and are encouraged to unless tryLock() is required.
 	 * This works as NativeMutex uses JVM monitors internally.
 	 */
 	public final NativeMutex generateLock = new NativeMutex();
@@ -56,12 +58,16 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	private int ticks = 0;
 	public final Set<Long> chunksToUnloadSet = unloadStage0;
 	private Chunk lastChunk;
+	// Mojang compatiblity fields.
+	public final List<Chunk> loadedChunks;
+	public final IChunkLoader currentChunkLoader;
 
 	public ThreadedChunkProvider(WorldServer world, IChunkLoader loader, IChunkProvider generator) {
 		super(world, loader, generator); // This call will be removed by javassist.
 		this.generator = generator;
 		this.world = world;
-		this.loader = loader;
+		currentChunkLoader = this.loader = loader;
+		loadedChunks = Collections.synchronizedList(new ArrayList<Chunk>());
 	}
 
 	@Override
@@ -83,6 +89,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		return generator.unload100OldestChunks();
 	}
 
+	@SuppressWarnings ({"ConstantConditions", "FieldRepeatedlyAccessedInMethod"})
 	private void tick() {
 		boolean empty = false;
 		int ticks = this.ticks++;
@@ -133,6 +140,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				chunk.onChunkUnload();
 				safeSaveChunk(chunk);
 				safeSaveExtraChunkData(chunk);
+				loadedChunks.remove(chunk);
 				queuedUnload = unloadStage1.peek();
 			}
 		}
@@ -178,7 +186,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	@Override
 	public void unloadAllChunks() {
 		for (Chunk chunk : chunks.values()) {
-			chunksToUnload.add(chunk);
+			unloadStage0.add(hash(chunk.xPosition, chunk.zPosition));
 		}
 	}
 
@@ -193,7 +201,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		if (lock != null) {
 			return lock;
 		}
-		return lock;
+		return newLock;
 	}
 
 	@Override
@@ -204,7 +212,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	@Override
 	public Chunk loadChunk(int x, int z) {
 		long key = hash(x, z);
-		Chunk chunk = (Chunk) chunks.get(key);
+		Chunk chunk = chunks.get(key);
 
 		if (chunk != null) {
 			chunk.unloading = false;
@@ -285,6 +293,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 					loadingChunks.remove(key);
 					chunks.put(key, chunk);
+					loadedChunks.add(chunk);
 				}
 			}
 		} finally {
@@ -312,8 +321,8 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			if (chunk != null) {
 				chunk.lastSaveTime = world.getTotalWorldTime();
 
-				if (currentChunkProvider != null) {
-					currentChunkProvider.recreateStructures(x, z);
+				if (generator != null) {
+					generator.recreateStructures(x, z);
 				}
 			}
 
@@ -343,7 +352,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				chunk.lastSaveTime = world.getTotalWorldTime();
 				loader.saveChunk(world, chunk);
 			} catch (Exception e) {
-
+				FMLLog.log(Level.SEVERE, e, "Failed to save chunk " + chunk);
 			}
 		}
 	}
@@ -356,9 +365,9 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			if (!var4.isTerrainPopulated) {
 				var4.isTerrainPopulated = true;
 
-				if (currentChunkProvider != null) {
-					currentChunkProvider.populate(chunkProvider, x, z);
-					GameRegistry.generateWorld(x, z, world, currentChunkProvider, chunkProvider);
+				if (generator != null) {
+					generator.populate(chunkProvider, x, z);
+					GameRegistry.generateWorld(x, z, world, generator, chunkProvider);
 					var4.setChunkModified();
 				}
 			}

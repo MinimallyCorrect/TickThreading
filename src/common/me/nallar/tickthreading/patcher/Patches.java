@@ -29,6 +29,7 @@ import javassist.bytecode.BadBytecode;
 import javassist.bytecode.ClassFile;
 import javassist.bytecode.CodeAttribute;
 import javassist.bytecode.CodeIterator;
+import javassist.bytecode.ConstPool;
 import javassist.bytecode.Descriptor;
 import javassist.bytecode.Opcode;
 import javassist.expr.Cast;
@@ -286,8 +287,9 @@ public class Patches {
 					int pos = iterator.skipSuperConstructor();
 					if (pos >= 0) {
 						int mref = iterator.u16bitAt(pos + 1);
-						iterator.write16bit(pos + 1, codeAttribute.getConstPool().addNameAndTypeInfo("<init>", "java.lang.Object"));
-						String desc = codeAttribute.getConstPool().getMethodrefType(mref);
+						ConstPool constPool = codeAttribute.getConstPool();
+						iterator.write16bit(constPool.addMethodrefInfo(constPool.addClassInfo("java.lang.Object"), "<init>", "()V"), pos + 1);
+						String desc = constPool.getMethodrefType(mref);
 						int num = Descriptor.numOfParameters(desc) + 1;
 						pos = iterator.insertGapAt(pos, num, false).position;
 						Descriptor.Iterator it = new Descriptor.Iterator(desc);

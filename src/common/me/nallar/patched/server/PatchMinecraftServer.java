@@ -81,6 +81,9 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 	@Override
 	public void initiateShutdown() {
+		if (!serverRunning) {
+			return;
+		}
 		SecurityManager securityManager = System.getSecurityManager();
 		if (securityManager != null) {
 			securityManager.checkExit(1);
