@@ -28,7 +28,7 @@ public class DeadLockDetector {
 	private static volatile String lastJob = "";
 	private static volatile long lastTickTime = 0;
 	private static final ITickHandler tickHandler = new ITickHandler() {
-		private final EnumSet<TickType> tickTypes = EnumSet.of(TickType.SERVER, TickType.CLIENTGUI);
+		private final EnumSet<TickType> tickTypes = EnumSet.of(TickType.SERVER, TickType.CLIENT);
 
 		@Override
 		public void tickStart(EnumSet<TickType> type, Object... tickData) {
@@ -116,7 +116,8 @@ public class DeadLockDetector {
 		TreeMap<String, Thread> sortedThreads = new TreeMap<String, Thread>();
 		StringBuilder sb = new StringBuilder();
 		ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-		sb.append("The server appears to have deadlocked.")
+		sb
+				.append("The server appears to have deadlocked.")
 				.append("\nLast tick ").append(deadTime / 1000000000).append("s ago.")
 				.append("\nTicking: ").append(lastJob).append('\n');
 		Map<Thread, StackTraceElement[]> traces = Thread.getAllStackTraces();
@@ -124,11 +125,11 @@ public class DeadLockDetector {
 			sortedThreads.put(thread.getName(), thread);
 		}
 		for (Thread thread : sortedThreads.values()) {
-			sb.append("Current Thread: ").append(thread.getName()).append('\n').append("    PID: ").append(thread.getId())
+			sb
+					.append("Current Thread: ").append(thread.getName()).append('\n').append("    PID: ").append(thread.getId())
 					.append(" | Alive: ").append(thread.isAlive()).append(" | State: ").append(thread.getState())
-					.append(" | Daemon: ").append(thread.isDaemon()).append(" | Priority:").append(thread.getPriority())
-					.append('\n');
-			sb.append("    ").append(toString(threadMXBean.getThreadInfo(thread.getId(), Integer.MAX_VALUE), false)).append('\n');
+					.append(" | Daemon: ").append(thread.isDaemon()).append(" | Priority:").append(thread.getPriority()).append('\n')
+					.append("    ").append(toString(threadMXBean.getThreadInfo(thread.getId(), Integer.MAX_VALUE), false)).append('\n');
 		}
 		long[] deadlockedThreads = threadMXBean.findDeadlockedThreads();
 
@@ -145,10 +146,7 @@ public class DeadLockDetector {
 		// which needs to be saved.
 		final MinecraftServer minecraftServer = MinecraftServer.getServer();
 		minecraftServer.getNetworkThread().stopListening();
-		try {
-			Thread.sleep(500);
-		} catch (InterruptedException ignored) {
-		}
+		trySleep(500);
 		new Thread() {
 			@Override
 			public void run() {
@@ -164,18 +162,12 @@ public class DeadLockDetector {
 				}
 			}
 		}.start();
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException ignored) {
-		}
+		trySleep(1000);
 		if (minecraftServer.currentlySaving) {
 			Log.severe("World state is possibly corrupted! Sleeping for 2 minutes - will force save after.");
 			Log.flush();
 			minecraftServer.currentlySaving = false;
-			try {
-				Thread.sleep(1000 * 120);
-			} catch (InterruptedException ignored) {
-			}
+			trySleep(120000);
 		}
 		Log.info("Attempting to save");
 		Log.flush();
@@ -183,10 +175,7 @@ public class DeadLockDetector {
 			new Thread() {
 				@Override
 				public void run() {
-					try {
-						Thread.sleep(300000);
-					} catch (InterruptedException ignored) {
-					}
+					trySleep(300000);
 					Log.severe("Froze while attempting to stop - halting server.");
 					Log.flush();
 					Runtime.getRuntime().halt(1);
@@ -205,13 +194,17 @@ public class DeadLockDetector {
 		minecraftServer.initiateShutdown();
 		Log.flush();
 		if (TickThreading.instance.exitOnDeadlock) {
-			try {
-				Thread.sleep(5000);
-			} catch (InterruptedException ignored) {
-			}
+			trySleep(5000);
 			Runtime.getRuntime().exit(1);
 		}
 		return false;
+	}
+
+	private static void trySleep(long millis) {
+		try {
+			Thread.sleep(millis);
+		} catch (InterruptedException ignored) {
+		}
 	}
 
 	private static String toString(ThreadInfo threadInfo, boolean name) {
