@@ -141,6 +141,10 @@
 		<class id="net.minecraft.entity.Entity">
 			<addAll fromClass="me.nallar.patched.entity.PatchEntity"/>
 		</class>
+		<class id="net.minecraft.nbt.NBTTagCompound">
+			<replaceInitializer field="tagMap" code="new java.util.concurrent.ConcurrentHashMap();"/>
+			<final field="tagMap"/>
+		</class>
 		<class id="net.minecraft.entity.Entity">
 			<final field="rand"/>
 			<newField static="" field="nextEntityID_" class="java.util.concurrent.atomic.AtomicInteger"/>
@@ -347,7 +351,7 @@
 		</class>
 		<class id="buildcraft.transport.PipeTransportItems">
 			<!-- TODO: Find a more suitable way of making this concurrent without making performRemoval slow -->
-			<replaceInitializer field="travelingEntities" code="new org.cliffc.high_scale_lib.NonBlockingHashMap();"/>
+			<replaceInitializer field="travelingEntities" code="new java.util.concurrent.ConcurrentHashMap();"/>
 		</class>
 		<class id="buildcraft.transport.PipeTransportPower">
 			<!-- TODO: Non-static lock, if possible -->

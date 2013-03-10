@@ -15,6 +15,8 @@ public class ChunkGarbageCollector {
 	public static final boolean enabled = supportsGC();
 
 	private static boolean supportsGC() {
+		return true;
+		/*
 		try {
 			Class.forName("org.bukkit.craftbukkit.libs.jline.Terminal");
 		} catch (ClassNotFoundException e) {
@@ -25,6 +27,7 @@ public class ChunkGarbageCollector {
 			}
 		}
 		return false;
+		*/
 	}
 
 	public static final Profiler profiler = MinecraftServer.getServer().theProfiler;
