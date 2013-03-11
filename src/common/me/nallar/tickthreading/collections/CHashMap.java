@@ -58,7 +58,7 @@ public class CHashMap<K, V> extends HashMap<K, V> {
 
 	@Override
 	public V put(K key, V value) {
-		return key == null ? null : hashMap.put(key, value);
+		return (key == null || value == null) ? null : hashMap.put(key, value);
 	}
 
 	@Override
