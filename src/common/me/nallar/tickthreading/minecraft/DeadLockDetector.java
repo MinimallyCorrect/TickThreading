@@ -124,12 +124,36 @@ public class DeadLockDetector {
 		for (Thread thread : traces.keySet()) {
 			sortedThreads.put(thread.getName(), thread);
 		}
+		String lastString = "";
+		boolean lastWasDuplicate = false;
+		Thread currentThread = Thread.currentThread();
 		for (Thread thread : sortedThreads.values()) {
-			sb
-					.append("Current Thread: ").append(thread.getName()).append('\n').append("    PID: ").append(thread.getId())
-					.append(" | Alive: ").append(thread.isAlive()).append(" | State: ").append(thread.getState())
-					.append(" | Daemon: ").append(thread.isDaemon()).append(" | Priority:").append(thread.getPriority()).append('\n')
-					.append("    ").append(toString(threadMXBean.getThreadInfo(thread.getId(), Integer.MAX_VALUE), false)).append('\n');
+			if (thread == currentThread) {
+				continue;
+			}
+			String toString = toString(threadMXBean.getThreadInfo(thread.getId(), Integer.MAX_VALUE), false);
+			if (toString.equals(lastString)) {
+				toString = null;
+			}
+			if (toString != null) {
+				if (lastWasDuplicate) {
+					sb.append("\n\n");
+				}
+				sb
+						.append("Thread: ").append(thread.getName()).append('\n')
+						.append("    PID: ").append(thread.getId())
+						.append(" | State: ").append(thread.getState())
+						.append(" | Daemon: ").append(thread.isDaemon()).append(" | Priority:").append(thread.getPriority()).append('\n')
+						.append(toString);
+				lastString = toString;
+			} else {
+				if (lastWasDuplicate) {
+					sb.append(", ").append(thread.getName());
+				} else {
+					sb.append("Threads in same state: ").append(thread.getName());
+				}
+			}
+			lastWasDuplicate = toString == null;
 		}
 		long[] deadlockedThreads = threadMXBean.findDeadlockedThreads();
 

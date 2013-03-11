@@ -185,6 +185,9 @@
 			<lock field="writeLock">addVillagerPosition</lock>
 			<lock field="readLock">findNearestVillage,func_82566_a</lock>
 		</class>
+		<class id="net.minecraft.server.dedicated.DedicatedServerSleepThread">
+			<disable>run</disable>
+		</class>
 		<class id="net.minecraft.server.management.ServerConfigurationManager">
 			<newField field="readWriteLock" class="me.nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock"/>
 			<newField field="playersUpdateLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>

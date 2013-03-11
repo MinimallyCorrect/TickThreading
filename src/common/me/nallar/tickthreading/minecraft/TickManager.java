@@ -55,7 +55,7 @@ public final class TickManager {
 
 	public TickManager(World world, int regionSize, int threads, boolean waitForCompletion) {
 		this.waitForCompletion = waitForCompletion;
-		threadManager = new ThreadManager(threads, "Tile/Entity Tick for " + Log.name(world));
+		threadManager = new ThreadManager(threads, "Entities in " + Log.name(world));
 		this.world = world;
 		this.regionSize = regionSize;
 		shuffleCount = world.rand.nextInt(shuffleInterval);
