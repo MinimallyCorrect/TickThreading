@@ -45,6 +45,7 @@ import org.cliffc.high_scale_lib.NonBlockingHashMapLong;
  * this replaces it with an implementation which is intended to be compatible
  * with both Forge and MCPC+.
  */
+@SuppressWarnings ("SynchronizationOnStaticField") // Necessary. Chunk generation is not threadsafe at all :(
 @FakeExtend
 public abstract class ThreadedChunkProvider extends ChunkProviderServer implements IChunkProvider {
 	/**
@@ -52,7 +53,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	 * and are encouraged to unless tryLock() is required.
 	 * This works as NativeMutex uses JVM monitors internally.
 	 */
-	public final NativeMutex generateLock = new NativeMutex();
+	public static final NativeMutex generateLock = new NativeMutex();
 	private static final ThreadPoolExecutor chunkLoadThreadPool;
 
 	static {
