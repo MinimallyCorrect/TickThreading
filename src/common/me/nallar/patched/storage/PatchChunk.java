@@ -156,7 +156,7 @@ public abstract class PatchChunk extends Chunk {
 		int var3 = MathHelper.floor_double(par1Entity.posZ / 16.0D);
 
 		if (var2 != this.xPosition || var3 != this.zPosition) {
-			FMLLog.log(Level.WARNING, new Throwable(), "Entity %s added to the wrong chunk - expected x%d z%d, got x%d z%d", par1Entity.toString(), this.xPosition, this.zPosition, var2, var3);
+			FMLLog.log(Level.FINE, new Throwable(), "Entity %s added to the wrong chunk - expected x%d z%d, got x%d z%d", par1Entity.toString(), this.xPosition, this.zPosition, var2, var3);
 			if (worldObj instanceof WorldServer) {
 				Chunk correctChunk = ((WorldServer) worldObj).theChunkProviderServer.getChunkIfExists(xPosition, zPosition);
 				if (correctChunk != null) {
