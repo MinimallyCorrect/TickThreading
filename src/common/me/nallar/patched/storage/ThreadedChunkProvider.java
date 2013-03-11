@@ -150,27 +150,35 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		long queueThreshold = ticks - 30;
 		// Handle unloading stage 1
 		{
-			synchronized (unloadingChunks) {
-				QueuedUnload queuedUnload = unloadStage1.peek();
-				while (queuedUnload != null && queuedUnload.ticks <= queueThreshold) {
-					Chunk chunk = queuedUnload.chunk;
-					long chunkHash = queuedUnload.chunkHash;
+			QueuedUnload queuedUnload = unloadStage1.peek();
+			while (queuedUnload != null && queuedUnload.ticks <= queueThreshold) {
+				Chunk chunk = queuedUnload.chunk;
+				long chunkHash = queuedUnload.chunkHash;
+				synchronized (unloadingChunks) {
 					if (!unloadStage1.remove(queuedUnload) || unloadingChunks.remove(chunkHash) != chunk) {
 						queuedUnload = unloadStage1.peek();
 						continue;
 					}
-					safeSaveChunk(chunk);
-					safeSaveExtraChunkData(chunk);
-					queuedUnload = unloadStage1.peek();
 				}
+				safeSaveChunk(chunk);
+				safeSaveExtraChunkData(chunk);
+				queuedUnload = unloadStage1.peek();
 			}
 		}
 
-		if (ticks > 1200 && world.provider.dimensionId != 0 && TickThreading.instance.allowWorldUnloading && loadedChunks.isEmpty() && ForgeChunkManager.getPersistentChunksFor(world).isEmpty() && (!TickThreading.instance.shouldLoadSpawn || !DimensionManager.shouldLoadSpawn(world.provider.dimensionId))) {
+		if (ticks > 1200 && world.provider.dimensionId != 0 && TickThreading.instance.allowWorldUnloading && loadedChunks.isEmpty() && ForgeChunkManager.getPersistentChunksFor(world).
+
+				isEmpty()
+
+				&& (!TickThreading.instance.shouldLoadSpawn || !DimensionManager.shouldLoadSpawn(world.provider.dimensionId)))
+
+		{
 			DimensionManager.unloadWorld(world.provider.dimensionId);
 		}
 
-		if (ticks % TickThreading.instance.chunkGCInterval == 0) {
+		if (ticks % TickThreading.instance.chunkGCInterval == 0)
+
+		{
 			ChunkGarbageCollector.garbageCollect(world);
 		}
 	}
@@ -267,10 +275,10 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		synchronized (lock) {
 			synchronized (unloadingChunks) {
 				chunk = (Chunk) unloadingChunks.remove(key);
-				if (chunk != null) {
-					safeSaveChunk(chunk);
-					safeSaveExtraChunkData(chunk);
-				}
+			}
+			if (chunk != null) {
+				safeSaveChunk(chunk);
+				safeSaveExtraChunkData(chunk);
 			}
 			chunk = (Chunk) chunks.getValueByKey(key);
 			if (chunk != null) {
