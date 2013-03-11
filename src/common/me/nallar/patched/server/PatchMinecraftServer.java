@@ -47,6 +47,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	private AtomicInteger currentWorld;
 	private Integer[] dimensionIdsToTick;
 	private Runnable tickRunnable;
+	public static int currentTick;
 	private static int TARGET_TPS;
 	private static int TARGET_TICK_TIME;
 	private static int NETWORK_TPS;
@@ -55,7 +56,8 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	private static double networkTPS = 0;
 	private Map<Integer, Integer> exceptionCount;
 	private boolean tickNetworkInMainThread;
-	public List<WorldServer> worlds;
+	@Declare
+	public List<WorldServer> worlds_;
 	@Declare
 	public static java.util.LinkedList playersToCheckWorld_;
 	@Declare
@@ -105,6 +107,24 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		NETWORK_TICK_TIME = 1000000000 / NETWORK_TPS;
 	}
 
+	@Declare
+	public int getId(WorldServer world) {
+		if (worlds == null) {
+			for (int i = 0; i < worldServers.length; i++) {
+				if (worldServers[i] == world) {
+					return i;
+				}
+			}
+		} else {
+			for (int i = 0; i < worlds.size(); i++) {
+				if (worlds.get(i) == world) {
+					return i;
+				}
+			}
+		}
+		return Integer.MIN_VALUE;
+	}
+
 	@Override
 	public void run() {
 		toSaveConfigurationSet = new HashSet<Configuration>();
@@ -142,7 +162,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 						continue;
 					}
 					lastTick = curTime;
-					tickCounter++;
+					currentTick = tickCounter++;
 					try {
 						this.tick();
 					} catch (Exception e) {

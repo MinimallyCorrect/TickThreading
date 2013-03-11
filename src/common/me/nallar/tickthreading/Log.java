@@ -14,7 +14,9 @@ import java.util.logging.Logger;
 import cpw.mods.fml.common.FMLLog;
 import me.nallar.reporting.Reporter;
 import me.nallar.tickthreading.util.MappingUtil;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 
 @SuppressWarnings ({"UnusedDeclaration", "UseOfSystemOutOrSystemErr"})
 public class Log {
@@ -208,6 +210,9 @@ public class Log {
 	}
 
 	public static String name(World world) {
+		if (world.provider == null) {
+			return "Broken world with ID " + MinecraftServer.getServer().getId((WorldServer) world);
+		}
 		return world.provider.getDimensionName() + '/' + world.provider.dimensionId + (world.isRemote ? "-r" : "");
 	}
 

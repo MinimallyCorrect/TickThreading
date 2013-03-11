@@ -100,10 +100,12 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	@Override
 	public void flush() {
 		DeadLockDetector.tick("Saving a world before unload", System.nanoTime() + 30000000000L);
-		this.saveHandler.flush();
+		if (saveHandler != null) {
+			this.saveHandler.flush();
 
-		if (ContextAccess.$.getContext(1).equals(DimensionManager.class)) {
-			ttStop();
+			if (ContextAccess.$.getContext(1).equals(DimensionManager.class)) {
+				ttStop();
+			}
 		}
 	}
 

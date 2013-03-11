@@ -1,12 +1,14 @@
 package me.nallar.patched.forge;
 
 import java.util.Hashtable;
+import java.util.List;
 import java.util.logging.Level;
 
 import cpw.mods.fml.common.FMLLog;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.unsafe.UnsafeUtil;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
@@ -35,6 +37,14 @@ public abstract class PatchDimensionManager extends DimensionManager {
 						}
 						w.flush();
 						setWorld(id, null);
+						List<WorldServer> worlds = MinecraftServer.getServer().worlds;
+						if (worlds != null) {
+							for (int i = 0; i < worlds.size(); i++) {
+								if (worlds.get(i).provider.dimensionId == id) {
+									worlds.remove(i);
+								}
+							}
+						}
 						if (TickThreading.instance.cleanWorlds) {
 							UnsafeUtil.clean(w);
 						}
