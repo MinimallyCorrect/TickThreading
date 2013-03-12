@@ -444,6 +444,12 @@
 		<class id="codechicken.chunkloader.CommandChunkLoaders">
 			<synchronize field="codechicken.chunkloader.ChunkLoaderEventHandler.staticLock">handleCommand</synchronize>
 		</class>
+		<class id="codechicken.core.world.WorldExtension">
+			<replaceInitializer field="chunkMap" class="me.nallar.tickthreading.collections.CHashMap"/>
+		</class>
+		<class id="codechicken.xycraftcopy.core.world.WorldExtension">
+			<replaceInitializer field="chunkMap" class="me.nallar.tickthreading.collections.CHashMap"/>
+		</class>
 	</chickenChunks>
 	<wirelessRedstone>
 		<class id="codechicken.wirelessredstone.core.RedstoneEtherServer">

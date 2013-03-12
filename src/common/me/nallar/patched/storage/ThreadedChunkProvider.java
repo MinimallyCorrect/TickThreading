@@ -132,10 +132,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 					lastChunk = null;
 				}
 				chunk.onChunkUnload();
-				loadedChunks.remove(chunk);
-				synchronized (chunks) {
-					chunks.remove(chunkHash);
-				}
+				chunk.unloading = true;
 				synchronized (unloadingChunks) {
 					unloadingChunks.add(chunkHash, chunk);
 					unloadStage1.add(new QueuedUnload(chunk, chunkHash, ticks));
@@ -147,7 +144,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			}
 		}
 
-		long queueThreshold = ticks - 30;
+		long queueThreshold = ticks - 15;
 		// Handle unloading stage 1
 		{
 			QueuedUnload queuedUnload = unloadStage1.peek();
@@ -160,8 +157,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 						continue;
 					}
 				}
-				safeSaveChunk(chunk);
-				safeSaveExtraChunkData(chunk);
+				finalizeUnload(chunk, chunkHash);
 				queuedUnload = unloadStage1.peek();
 			}
 		}
@@ -181,6 +177,20 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		{
 			ChunkGarbageCollector.garbageCollect(world);
 		}
+	}
+
+	private void finalizeUnload(Chunk chunk, long chunkHash) {
+		if (!chunk.unloading) {
+			throw new IllegalArgumentException("Chunk " + chunk + " is not unloading.");
+		}
+		if (chunk.alreadySavedAfterUnload) {
+			return;
+		}
+		chunk.alreadySavedAfterUnload = true;
+		safeSaveChunk(chunk);
+		safeSaveExtraChunkData(chunk);
+		loadedChunks.remove(chunk);
+		chunks.remove(chunkHash);
 	}
 
 	// Public visibility as it will be accessed from net.minecraft.whatever, not actually this class
@@ -277,8 +287,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				chunk = (Chunk) unloadingChunks.remove(key);
 			}
 			if (chunk != null) {
-				safeSaveChunk(chunk);
-				safeSaveExtraChunkData(chunk);
+				finalizeUnload(chunk, key);
 			}
 			chunk = (Chunk) chunks.getValueByKey(key);
 			if (chunk != null) {
@@ -402,13 +411,14 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	@Override
 	protected void safeSaveChunk(Chunk chunk) {
-		if (loader != null) {
-			try {
-				chunk.lastSaveTime = world.getTotalWorldTime();
-				loader.saveChunk(world, chunk);
-			} catch (Exception e) {
-				FMLLog.log(Level.SEVERE, e, "Failed to save chunk " + chunk);
-			}
+		if (loader == null) {
+			return;
+		}
+		try {
+			chunk.lastSaveTime = world.getTotalWorldTime();
+			loader.saveChunk(world, chunk);
+		} catch (Exception e) {
+			FMLLog.log(Level.SEVERE, e, "Failed to save chunk " + chunk);
 		}
 	}
 
@@ -435,6 +445,14 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 		synchronized (loadedChunks) {
 			for (Chunk chunk : loadedChunks) {
+
+				if (chunk.unloading) {
+					if (saveAll) {
+						chunk.alreadySavedAfterUnload = true;
+					} else {
+						continue;
+					}
+				}
 
 				if (saveAll) {
 					safeSaveExtraChunkData(chunk);
