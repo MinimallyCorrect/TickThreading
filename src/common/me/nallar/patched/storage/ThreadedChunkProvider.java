@@ -115,16 +115,16 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			ChunkCoordIntPair chunkCoordIntPair = new ChunkCoordIntPair(0, 0);
 			NonBlockingHashMapLong.IteratorLong i$ = unloadStage0.iteratorLong();
 			while (i$.hasNext()) {
-				long chunkHash = i$.next();
+				long key = i$.next();
 				i$.remove();
-				int x = (int) chunkHash;
-				int z = (int) (chunkHash >> 32);
+				int x = (int) key;
+				int z = (int) (key >> 32);
 				chunkCoordIntPair.chunkXPos = x;
 				chunkCoordIntPair.chunkZPos = z;
 				if (persistentChunks.containsKey(chunkCoordIntPair)) {
 					continue;
 				}
-				Chunk chunk = (Chunk) chunks.getValueByKey(chunkHash);
+				Chunk chunk = (Chunk) chunks.getValueByKey(key);
 				if (chunk == null) {
 					continue;
 				}
@@ -134,8 +134,8 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				chunk.onChunkUnload();
 				chunk.unloading = true;
 				synchronized (unloadingChunks) {
-					unloadingChunks.add(chunkHash, chunk);
-					unloadStage1.add(new QueuedUnload(chunk, chunkHash, ticks));
+					unloadingChunks.add(key, chunk);
+					unloadStage1.add(new QueuedUnload(chunk, key, ticks));
 				}
 			}
 
@@ -150,7 +150,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			QueuedUnload queuedUnload = unloadStage1.peek();
 			while (queuedUnload != null && queuedUnload.ticks <= queueThreshold) {
 				Chunk chunk = queuedUnload.chunk;
-				long chunkHash = queuedUnload.chunkHash;
+				long chunkHash = queuedUnload.key;
 				synchronized (unloadingChunks) {
 					if (!unloadStage1.remove(queuedUnload) || unloadingChunks.remove(chunkHash) != chunk) {
 						queuedUnload = unloadStage1.peek();
@@ -191,12 +191,12 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	// (Inner classes are not remapped in patching)
 	public static class QueuedUnload implements Comparable<QueuedUnload> {
 		public final int ticks;
-		public final long chunkHash;
+		public final long key;
 		public final Chunk chunk;
 
-		public QueuedUnload(Chunk chunk, long chunkHash, int ticks) {
+		public QueuedUnload(Chunk chunk, long key, int ticks) {
 			this.chunk = chunk;
-			this.chunkHash = chunkHash;
+			this.key = key;
 			this.ticks = ticks;
 		}
 
@@ -210,25 +210,25 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	@Override
 	public boolean chunkExists(int x, int z) {
-		return chunks.containsItem(hash(x, z));
+		return chunks.containsItem(key(x, z));
 	}
 
 	@Override
 	public void unloadChunksIfNotNearSpawn(int x, int z) {
-		unloadStage0.add(hash(x, z));
+		unloadStage0.add(key(x, z));
 	}
 
 	@Override
 	public void unloadAllChunks() {
 		synchronized (loadedChunks) {
 			for (Chunk chunk : loadedChunks) {
-				unloadStage0.add(hash(chunk.xPosition, chunk.zPosition));
+				unloadStage0.add(key(chunk.xPosition, chunk.zPosition));
 			}
 		}
 	}
 
 	public Object getLock(int x, int z) {
-		long hash = hash(x, z);
+		long hash = key(x, z);
 		Object lock = chunkLoadLocks.get(hash);
 		if (lock != null) {
 			return lock;
@@ -269,7 +269,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			return null;
 		}
 
-		long key = hash(x, z);
+		long key = key(x, z);
 
 		final Object lock = getLock(x, z);
 		boolean inLoadingMap = false;
@@ -509,7 +509,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		if (chunk != null && chunk.xPosition == x && chunk.zPosition == z) {
 			return chunk;
 		}
-		chunk = (Chunk) chunks.getValueByKey(hash(x, z));
+		chunk = (Chunk) chunks.getValueByKey(key(x, z));
 		if (chunk == null) {
 			return null;
 		}
@@ -517,7 +517,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		return chunk;
 	}
 
-	private static long hash(int x, int z) {
+	private static long key(int x, int z) {
 		return (((long) z) << 32) | (x & 0xffffffffL);
 	}
 
