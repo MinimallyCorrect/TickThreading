@@ -28,6 +28,8 @@ public abstract class PatchChunk extends Chunk {
 	public boolean unloading_;
 	@Declare
 	public boolean alreadySavedAfterUnload_;
+	@Declare
+	public boolean unloaded_;
 	public Lock entityListWriteLock;
 	public Lock entityListReadLock;
 

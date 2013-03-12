@@ -125,7 +125,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 					continue;
 				}
 				Chunk chunk = (Chunk) chunks.getValueByKey(key);
-				if (chunk == null) {
+				if (chunk == null || chunk.unloaded) {
 					continue;
 				}
 				if (lastChunk == chunk) {
@@ -156,6 +156,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 						queuedUnload = unloadStage1.peek();
 						continue;
 					}
+					chunk.unloaded = true;
 				}
 				finalizeUnload(chunk, chunkHash);
 				queuedUnload = unloadStage1.peek();
@@ -279,6 +280,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		synchronized (lock) {
 			synchronized (unloadingChunks) {
 				chunk = (Chunk) unloadingChunks.remove(key);
+				chunk.unloaded = true;
 			}
 			if (chunk != null) {
 				finalizeUnload(chunk, key);
