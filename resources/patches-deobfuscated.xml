@@ -92,6 +92,9 @@
 		<class id="net.minecraft.world.biome.BiomeCache">
 			<synchronize>getBiomeCacheBlock,cleanupCache</synchronize>
 		</class>
+		<class id="net.minecraft.world.gen.structure.MapGenStructure">
+			<replaceInitializer field="structureMap" code="new java.util.concurrent.ConcurrentHashMap();"/>
+		</class>
 		<class id="net.minecraft.world.gen.ChunkProviderServer">
 			<replace class="me.nallar.patched.storage.ThreadedChunkProvider"/>
 		</class>
