@@ -121,7 +121,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				int z = (int) (key >> 32);
 				chunkCoordIntPair.chunkXPos = x;
 				chunkCoordIntPair.chunkZPos = z;
-				if (persistentChunks.containsKey(chunkCoordIntPair)) {
+				if (persistentChunks.containsKey(chunkCoordIntPair) || unloadingChunks.containsItem(key)) {
 					continue;
 				}
 				Chunk chunk = (Chunk) chunks.getValueByKey(key);
