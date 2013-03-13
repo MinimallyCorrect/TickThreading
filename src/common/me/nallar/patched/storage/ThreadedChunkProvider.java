@@ -280,7 +280,9 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		synchronized (lock) {
 			synchronized (unloadingChunks) {
 				chunk = (Chunk) unloadingChunks.remove(key);
-				chunk.unloaded = true;
+				if (chunk != null) {
+					chunk.unloaded = true;
+				}
 			}
 			if (chunk != null) {
 				finalizeUnload(chunk, key);
