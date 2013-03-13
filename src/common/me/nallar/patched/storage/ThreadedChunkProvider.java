@@ -387,7 +387,11 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				chunk.lastSaveTime = world.getTotalWorldTime();
 
 				if (generator != null) {
-					generator.recreateStructures(x, z);
+					try {
+						generator.recreateStructures(x, z);
+					} catch (Exception e) {
+						FMLLog.log(Level.WARNING, e, "Failed to recreate generated structures for chunk at " + x + ',' + z);
+					}
 				}
 			}
 
