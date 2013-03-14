@@ -23,6 +23,7 @@ import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.world.ChunkEvent;
 import org.cliffc.high_scale_lib.NonBlockingHashMap;
 
+@SuppressWarnings ("unchecked")
 public abstract class PatchChunk extends Chunk {
 	@Declare
 	public boolean unloading_;
@@ -50,6 +51,7 @@ public abstract class PatchChunk extends Chunk {
 		return "chunk at " + xPosition + ',' + zPosition;
 	}
 
+	@SuppressWarnings ("FieldRepeatedlyAccessedInMethod") // Patcher makes entityLists final
 	@Override
 	@Declare
 	public void getEntitiesWithinAABBForEntity(Entity excludedEntity, AxisAlignedBB collisionArea, List collidingAABBs, int limit) {
@@ -69,8 +71,8 @@ public abstract class PatchChunk extends Chunk {
 			for (int var6 = var4; var6 <= var5; ++var6) {
 				List var7 = this.entityLists[var6];
 
-				for (int var8 = 0; var8 < var7.size(); ++var8) {
-					Entity var9 = (Entity) var7.get(var8);
+				for (Object aVar7 : var7) {
+					Entity var9 = (Entity) aVar7;
 
 					if (var9 != excludedEntity && var9.boundingBox.intersectsWith(collisionArea)) {
 						collidingAABBs.add(var9);
@@ -80,8 +82,8 @@ public abstract class PatchChunk extends Chunk {
 						Entity[] var10 = var9.getParts();
 
 						if (var10 != null) {
-							for (int var11 = 0; var11 < var10.length; ++var11) {
-								var9 = var10[var11];
+							for (Entity aVar10 : var10) {
+								var9 = aVar10;
 
 								if (var9 != excludedEntity && var9.boundingBox.intersectsWith(collisionArea)) {
 									collidingAABBs.add(var9);
@@ -122,6 +124,7 @@ public abstract class PatchChunk extends Chunk {
 		}
 	}
 
+	@SuppressWarnings ("FieldRepeatedlyAccessedInMethod") // Patcher makes worldObj final
 	@Override
 	public void onChunkUnload() {
 		this.isChunkLoaded = false;
@@ -131,8 +134,8 @@ public abstract class PatchChunk extends Chunk {
 			removalSet.add(var2);
 		}
 
-		for (int var3 = 0; var3 < this.entityLists.length; ++var3) {
-			this.worldObj.unloadEntities(this.entityLists[var3]);
+		for (List entityList : this.entityLists) {
+			this.worldObj.unloadEntities(entityList);
 		}
 
 		this.isChunkLoaded = true;
@@ -140,21 +143,28 @@ public abstract class PatchChunk extends Chunk {
 
 	@Override
 	public void onChunkLoad() {
-		this.isChunkLoaded = true;
-
 		for (TileEntity tileEntity : toInvalidate) {
 			tileEntity.invalidate();
 		}
 		toInvalidate.clear();
 
-		worldObj.addTileEntity(this.chunkTileEntityMap.values());
-
-		for (int var1 = 0; var1 < this.entityLists.length; ++var1) {
-			this.worldObj.addLoadedEntities(this.entityLists[var1]);
-		}
 		MinecraftForge.EVENT_BUS.post(new ChunkEvent.Load(this));
 	}
 
+	@SuppressWarnings ("FieldRepeatedlyAccessedInMethod") // Patcher makes worldObj final
+	@Override
+	@Declare
+	public void threadUnsafeChunkLoad() {
+		this.isChunkLoaded = true;
+
+		worldObj.addTileEntity(this.chunkTileEntityMap.values());
+
+		for (List entityList : this.entityLists) {
+			worldObj.addLoadedEntities(entityList);
+		}
+	}
+
+	@SuppressWarnings ("FieldRepeatedlyAccessedInMethod") // Patcher makes x/zPosition and worldObj final
 	@Override
 	public void addEntity(Entity par1Entity) {
 		int var2 = MathHelper.floor_double(par1Entity.posX / 16.0D);

@@ -363,6 +363,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 					}
 
 					chunk.populateChunk(this, this, x, z);
+					chunk.threadUnsafeChunkLoad();
 
 					loadingChunks.remove(key);
 					chunks.add(key, chunk);
@@ -393,14 +394,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 			if (chunk != null) {
 				chunk.lastSaveTime = world.getTotalWorldTime();
-
-				if (generator != null) {
-					try {
-						generator.recreateStructures(x, z);
-					} catch (Exception e) {
-						FMLLog.log(Level.WARNING, e, "Failed to recreate generated structures for chunk at " + x + ',' + z);
-					}
-				}
 			}
 
 			return chunk;

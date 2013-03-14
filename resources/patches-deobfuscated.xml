@@ -71,6 +71,7 @@
 			<final field="worldAccesses"/>
 			<final field="provider"/>
 			<final field="theProfiler"/>
+			<final field="MAX_ENTITY_RADIUS"/>
 			<public field="ambientTickCountdown"/>
 			<replaceInitializer field="playerEntities" code="new java.util.concurrent.CopyOnWriteArrayList();"/>
 		</class>
