@@ -37,6 +37,8 @@ import net.minecraft.world.chunk.storage.IChunkLoader;
 import net.minecraft.world.gen.ChunkProviderServer;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.ForgeChunkManager;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.world.ChunkEvent;
 import org.cliffc.high_scale_lib.NonBlockingHashMapLong;
 
 /**
@@ -70,6 +72,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	private final IChunkProvider generator; // Mojang shouldn't use the same interface for  :(
 	private final IChunkLoader loader;
 	private final WorldServer world;
+	private final ThreadLocal<Boolean> inUnload = new BooleanThreadLocal();
 	private int ticks = 0;
 	private Chunk lastChunk;
 	// Mojang compatiblity fields.
@@ -125,13 +128,15 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 					continue;
 				}
 				Chunk chunk = (Chunk) chunks.getValueByKey(key);
-				if (chunk == null || chunk.unloaded) {
+				if (chunk == null || chunk.unloading) {
 					continue;
 				}
 				if (lastChunk == chunk) {
 					lastChunk = null;
 				}
 				chunk.onChunkUnload();
+				loadedChunks.remove(chunk);
+				chunks.remove(key);
 				chunk.unloading = true;
 				synchronized (unloadingChunks) {
 					unloadingChunks.add(key, chunk);
@@ -156,9 +161,8 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 						queuedUnload = unloadStage1.peek();
 						continue;
 					}
-					chunk.unloaded = true;
 				}
-				finalizeUnload(chunk, chunkHash);
+				finalizeUnload(chunk);
 				queuedUnload = unloadStage1.peek();
 			}
 		}
@@ -174,18 +178,25 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		}
 	}
 
-	private void finalizeUnload(Chunk chunk, long chunkHash) {
+	private void finalizeUnload(Chunk chunk) {
 		if (!chunk.unloading) {
 			throw new IllegalArgumentException("Chunk " + chunk + " is not unloading.");
 		}
 		if (chunk.alreadySavedAfterUnload) {
 			return;
 		}
+		boolean notInUnload = !inUnload.get();
+		if (notInUnload) {
+			inUnload.set(true);
+		}
 		chunk.alreadySavedAfterUnload = true;
+		chunk.isChunkLoaded = false;
+		MinecraftForge.EVENT_BUS.post(new ChunkEvent.Unload(chunk));
 		safeSaveChunk(chunk);
 		safeSaveExtraChunkData(chunk);
-		loadedChunks.remove(chunk);
-		chunks.remove(chunkHash);
+		if (notInUnload) {
+			inUnload.set(false);
+		}
 	}
 
 	// Public visibility as it will be accessed from net.minecraft.whatever, not actually this class
@@ -280,12 +291,9 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		synchronized (lock) {
 			synchronized (unloadingChunks) {
 				chunk = (Chunk) unloadingChunks.remove(key);
-				if (chunk != null) {
-					chunk.unloaded = true;
-				}
 			}
-			if (chunk != null) {
-				finalizeUnload(chunk, key);
+			if (chunk != null && !inUnload.get()) {
+				finalizeUnload(chunk);
 			}
 			chunk = (Chunk) chunks.getValueByKey(key);
 			if (chunk != null) {
@@ -561,6 +569,13 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		@Override
 		public Thread newThread(Runnable r) {
 			return new FakeServerThread(r, "Async ChunkLoader", true);
+		}
+	}
+
+	public static class BooleanThreadLocal extends ThreadLocal<Boolean> {
+		@Override
+		public Boolean initialValue() {
+			return false;
 		}
 	}
 }

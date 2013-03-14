@@ -28,8 +28,6 @@ public abstract class PatchChunk extends Chunk {
 	public boolean unloading_;
 	@Declare
 	public boolean alreadySavedAfterUnload_;
-	@Declare
-	public boolean unloaded_;
 	public Lock entityListWriteLock;
 	public Lock entityListReadLock;
 
@@ -136,7 +134,8 @@ public abstract class PatchChunk extends Chunk {
 		for (int var3 = 0; var3 < this.entityLists.length; ++var3) {
 			this.worldObj.unloadEntities(this.entityLists[var3]);
 		}
-		MinecraftForge.EVENT_BUS.post(new ChunkEvent.Unload(this));
+
+		this.isChunkLoaded = true;
 	}
 
 	@Override
