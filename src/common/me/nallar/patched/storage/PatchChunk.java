@@ -147,8 +147,6 @@ public abstract class PatchChunk extends Chunk {
 			tileEntity.invalidate();
 		}
 		toInvalidate.clear();
-
-		MinecraftForge.EVENT_BUS.post(new ChunkEvent.Load(this));
 	}
 
 	@SuppressWarnings ("FieldRepeatedlyAccessedInMethod") // Patcher makes worldObj final
@@ -162,6 +160,8 @@ public abstract class PatchChunk extends Chunk {
 		for (List entityList : this.entityLists) {
 			worldObj.addLoadedEntities(entityList);
 		}
+
+		MinecraftForge.EVENT_BUS.post(new ChunkEvent.Load(this));
 	}
 
 	@SuppressWarnings ("FieldRepeatedlyAccessedInMethod") // Patcher makes x/zPosition and worldObj final
