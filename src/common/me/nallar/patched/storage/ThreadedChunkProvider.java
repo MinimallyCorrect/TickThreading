@@ -226,8 +226,15 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	}
 
 	@Override
+	@Declare
+	public boolean unloadChunk(int x, int z) {
+		long hash = key(x, z);
+		return chunks.containsItem(hash) && unloadStage0.add(hash);
+	}
+
+	@Override
 	public void unloadChunksIfNotNearSpawn(int x, int z) {
-		unloadStage0.add(key(x, z));
+		unloadChunk(x, z);
 	}
 
 	@Override
