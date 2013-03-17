@@ -96,7 +96,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 			boolean foundTT = false;
 			for (File file : new File(minecraftdir, "mods").listFiles()) {
 				if (file.getName().toLowerCase().contains("tickthreading") && file.getName().endsWith(".jar")) {
-					URL toAdd = file.toURI().toURL();
+					URL toAdd = new URL(file.toURI().toURL().toString().replace("/./", "/"));
 					if (!sources.contains(toAdd)) {
 						sources.add(toAdd);
 						ucp.addURL(toAdd);

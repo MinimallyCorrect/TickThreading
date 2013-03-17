@@ -17,7 +17,7 @@ Updating TickThreading
 - Start and stop the server OR change the path to the TT jar in the "PATCHME" file
 - Run PATCHME.cmd/sh
 
-Extra Performance Hints For Servers
+Optional - these JVM flags may improve performance
 ==========
 
 - Your start.bat/sh should look something like this (replace 8192 with the RAM the server should be allowed to use, in megabytes):
