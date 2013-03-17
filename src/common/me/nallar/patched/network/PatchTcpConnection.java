@@ -82,14 +82,5 @@ public abstract class PatchTcpConnection extends TcpConnection {
 
 	@Override
 	public void wakeThreads() {
-		if (this.readThread != null) {
-			synchronized (readThread) {
-				readThread.notify();
-			}
-		}
-
-		if (this.writeThread != null) {
-			this.writeThread.interrupt();
-		}
 	}
 }
