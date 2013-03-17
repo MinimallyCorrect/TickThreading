@@ -420,11 +420,8 @@
 		</class>
 		<class id="ic2.core.EnergyNet">
 			<replaceMethodCall method="warning" code="{}">emitEnergyFrom</replaceMethodCall>
-			<replaceInitializer field="worldToEnergyNetMap" class="java.util.HashMap"/>
 			<replaceInitializer field="energySourceToEnergyPathMap" class="java.util.HashMap"/>
 			<replaceInitializer field="entityLivingToShockEnergyMap" class="java.util.HashMap"/>
-			<!-- TODO: Add correctly implemented double checked locking -->
-			<synchronize field="ic2.core.EnergyNet.class">getForWorld</synchronize>
 			<synchronize>addTileEntity,removeTileEntity,emitEnergyFrom,discover</synchronize>
 		</class>
 	</industrialCraft>
