@@ -442,7 +442,7 @@
 			<synchronize field="$1.b.g">calculateChunkChanges</synchronize>
 		</class>
 		<class id="codechicken.chunkloader.ChunkLoaderManager">
-			<disable>cleanChunks</disable>
+			<insertAfter code="cleanupTicks = -1;">initConfig</insertAfter>
 		</class>
 		<class id="codechicken.chunkloader.CommandChunkLoaders">
 			<synchronize field="codechicken.chunkloader.ChunkLoaderEventHandler.staticLock">handleCommand</synchronize>
