@@ -70,6 +70,9 @@ public class PrePatcher {
 		for (Map.Entry<File, String> classPatchEntry : patchClasses.entrySet()) {
 			String contents = classPatchEntry.getValue();
 			File sourceFile = classPatchEntry.getKey();
+			String shortClassName = sourceFile.getName();
+			shortClassName = shortClassName.substring(shortClassName.lastIndexOf('/') + 1);
+			shortClassName = shortClassName.substring(0, shortClassName.indexOf('.'));
 			String sourceString = readFile(sourceFile).trim();
 			int previousIndex = sourceString.indexOf("\n//PREPATCH\n");
 			int cutIndex = previousIndex == -1 ? sourceString.lastIndexOf('}') : previousIndex;
@@ -111,6 +114,7 @@ public class PrePatcher {
 			sourceString = sourceString.replace("\nfinal ", " ");
 			sourceString = sourceString.replace(" final ", " ");
 			sourceString = sourceString.replace("\nclass", "\npublic class");
+			sourceString = sourceString.replace("\n    " + shortClassName, "\n    public " + shortClassName);
 			sourceString = sourceString.replace("private class", "public class");
 			sourceString = sourceString.replace("protected class", "public class");
 			Matcher privateMatcher = privatePattern.matcher(sourceString);
