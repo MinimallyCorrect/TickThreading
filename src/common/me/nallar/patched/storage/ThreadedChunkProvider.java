@@ -73,7 +73,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	private final WorldServer world;
 	private final Chunk emptyChunk;
 	private final ThreadLocal<Boolean> inUnload = new BooleanThreadLocal();
-	private int ticks = 0;
+	private int unloadTicks = 0;
 	private Chunk lastChunk;
 	// Mojang compatiblity fields.
 	public final Set<Long> chunksToUnload = unloadStage0;
@@ -106,8 +106,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	@Override
 	public boolean unload100OldestChunks() {
-		tick();
-
 		return generator.unload100OldestChunks();
 	}
 
@@ -117,9 +115,9 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	public void tick() {
 		loadChunkOnProvideRequest = TickThreading.instance.loadChunkOnProvideRequest;
 
-		int ticks = this.ticks++;
+		int ticks = world.tickCount;
 		// Handle unload requests
-		if (world.tickCount % 3 == 0 && !world.canNotSave && !unloadStage0.isEmpty()) {
+		if (ticks % 3 == 0 && !world.canNotSave && !unloadStage0.isEmpty()) {
 			ImmutableSetMultimap<ChunkCoordIntPair, ForgeChunkManager.Ticket> persistentChunks = world.getPersistentChunks();
 			ChunkCoordIntPair chunkCoordIntPair = new ChunkCoordIntPair(0, 0);
 			NonBlockingHashMapLong.IteratorLong i$ = unloadStage0.iteratorLong();
@@ -160,10 +158,11 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		}
 
 		long queueThreshold = ticks - 15;
+		int done = 0;
 		// Handle unloading stage 1
 		{
 			QueuedUnload queuedUnload = unloadStage1.peek();
-			while (queuedUnload != null && queuedUnload.ticks <= queueThreshold) {
+			while (done++ <= 200 && queuedUnload != null && queuedUnload.ticks <= queueThreshold) {
 				long chunkHash = queuedUnload.key;
 				synchronized (unloadingChunks) {
 					if (!unloadStage1.remove(queuedUnload)) {
@@ -176,7 +175,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			}
 		}
 
-		if (ticks > 1200 && world.provider.dimensionId != 0 && TickThreading.instance.allowWorldUnloading
+		if (this.unloadTicks++ > 1200 && world.provider.dimensionId != 0 && TickThreading.instance.allowWorldUnloading
 				&& loadedChunks.isEmpty() && ForgeChunkManager.getPersistentChunksFor(world).isEmpty()
 				&& (!TickThreading.instance.shouldLoadSpawn || !DimensionManager.shouldLoadSpawn(world.provider.dimensionId))) {
 			DimensionManager.unloadWorld(world.provider.dimensionId);
@@ -218,20 +217,13 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	// Public visibility as it will be accessed from net.minecraft.whatever, not actually this class
 	// (Inner classes are not remapped in patching)
-	public static class QueuedUnload implements Comparable<QueuedUnload> {
+	public static class QueuedUnload {
 		public final int ticks;
 		public final long key;
 
 		public QueuedUnload(long key, int ticks) {
 			this.key = key;
 			this.ticks = ticks;
-		}
-
-		@Override
-		public int compareTo(QueuedUnload o) {
-			long t1 = o.ticks;
-			long t2 = ticks;
-			return t1 == t2 ? 0 : (t1 < t2 ? -1 : 1);
 		}
 	}
 
