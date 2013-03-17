@@ -305,8 +305,6 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 			threadManager.waitForCompletion();
 		}
 
-		theChunkProviderServer.tick();
-
 		HashSet<ChunkCoordIntPair> activeChunkSet = chunkTickSet;
 		if (tickCount % 5 == 0) {
 			Profiler profiler = this.theProfiler;

@@ -78,6 +78,7 @@ public class TickThreading {
 	public boolean lockRegionBorders = true;
 	public boolean allowWorldUnloading = true;
 	public boolean requireOpForDumpCommand = true;
+	public boolean loadChunkOnProvideRequest = true;
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load
@@ -197,6 +198,7 @@ public class TickThreading {
 		antiCheatNotify = antiCheatNotifyProperty.getBoolean(antiCheatNotify);
 		cleanWorlds = cleanWorldsProperty.getBoolean(cleanWorlds);
 		allowWorldUnloading = allowWorldUnloadingProperty.getBoolean(allowWorldUnloading);
+		loadChunkOnProvideRequest = config.get(Configuration.CATEGORY_GENERAL, "loadChunkOnProvideRequest", loadChunkOnProvideRequest, "Whether to load chunks in ChunkProviderServer.provideChunk").getBoolean(loadChunkOnProvideRequest);
 		int[] disabledDimensions = disabledFastMobSpawningDimensionsProperty.getIntList();
 		disabledFastMobSpawningDimensions = new HashSet<Integer>(disabledDimensions.length);
 		for (int disabledDimension : disabledDimensions) {

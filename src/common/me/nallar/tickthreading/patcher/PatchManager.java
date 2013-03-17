@@ -299,12 +299,13 @@ public class PatchManager {
 				Log.severe("Missing required attributes " + requiredAttributes.toString() + " when patching " + ctClass.getName());
 				return null;
 			}
-			if (isClassPatch || (!emptyConstructor && patchElement.getTextContent().isEmpty())) {
+			String textContent = patchElement.getTextContent().trim();
+			if (isClassPatch || (!emptyConstructor && textContent.isEmpty())) {
 				return run(ctClass, attributes);
-			} else if (patchElement.getTextContent().isEmpty()) {
+			} else if (textContent.isEmpty()) {
 				run(ctClass.getConstructors()[0], attributes);
 			} else {
-				List<MethodDescription> methodDescriptions = MethodDescription.fromListString(ctClass.getName(), patchElement.getTextContent());
+				List<MethodDescription> methodDescriptions = MethodDescription.fromListString(ctClass.getName(), textContent);
 				Log.fine("Patching methods " + methodDescriptions.toString());
 				for (MethodDescription methodDescription : methodDescriptions) {
 					run(methodDescription.inClass(ctClass), attributes);
