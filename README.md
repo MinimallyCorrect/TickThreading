@@ -1,7 +1,7 @@
 TickThreading [![Build Status](http://nallar.me/buildservice/job/TickThreading/badge/icon)](http://nallar.me/buildservice/job/TickThreading/)
 ==========
-Mod to run entity and tileentity ticks in threads and a patcher to improve thread-safety issues.
-Optionally, allows for automatically variable tick rate per tick region.
+Mod to run entity and tileentity ticks in threads and a patcher to make the server and any mods/plugins threadsafe.
+Optionally, allows for automatically variable tick rate per tick region. (Normally a chunk)
 
 Copyright &copy; 2012, nallar <rallan.pcl+tt@gmail.com>
 TickThreading is licensed under the [N Open License, Version 1][License]
@@ -13,7 +13,7 @@ Compatibility with other mods
 Configuration
 -----
 TickThreading uses minecraft forge's suggested config location - minecraft folder/configs/TickThreading.cfg
-It's commented quite well, and is hopefully understandable. If any of the descriptions don't make sense just make an issue.
+It's commented quite well, and is hopefully understandable. If any of the descriptions don't make sense please make an issue.
 
 Logging
 -----
@@ -40,6 +40,11 @@ Coding and Pull Request Formatting
 * Pull requests must be formatted properly.
 
 Please follow the above conventions if you want your pull requests accepted.
+
+Acknowledgements
+----------------------------------
+
+YourKit is kindly supporting open source projects with its full-featured Java Profiler. YourKit, LLC is the creator of innovative and intelligent tools for profiling Java and .NET applications. Take a look at YourKit's leading software products: [YourKit Java Profiler](http://www.yourkit.com/java/profiler/index.jsp) and [YourKit .NET Profiler](http://www.yourkit.com/.net/profiler/index.jsp).
 
 [License]: http://nallar.me/licenses/n-open-license-v1.txt
 [Jenkins]: http://nallar.me/buildservice
