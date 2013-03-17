@@ -454,10 +454,10 @@
 			<replaceInitializer field="chunkMap" class="me.nallar.tickthreading.collections.CHashMap"/>
 		</class>
 		<class id="codechicken.core.world.WorldExtensionManager$WorldExtensionEventHandler">
-			<synchronize/>
+			<synchronize>onChunkLoad,onChunkUnLoad,onChunkDataLoad,onChunkDataSave</synchronize>
 		</class>
 		<class id="codechicken.xycraftcopy.core.world.WorldExtensionManager$WorldExtensionEventHandler">
-			<synchronize/>
+			<synchronize>onChunkLoad,onChunkUnLoad,onChunkDataLoad,onChunkDataSave</synchronize>
 		</class>
 	</chickenChunks>
 	<wirelessRedstone>
