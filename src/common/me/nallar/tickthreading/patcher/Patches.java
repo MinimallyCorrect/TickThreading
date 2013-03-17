@@ -301,15 +301,9 @@ public class Patches {
 						String desc = constPool.getMethodrefType(mref);
 						int num = Descriptor.numOfParameters(desc) + 1;
 						pos = iterator.insertGapAt(pos, num, false).position;
-						Descriptor.Iterator it = new Descriptor.Iterator(desc);
-						while (true) {
-							it.next();
-							if (it.isParameter()) {
-								iterator.writeByte(it.is2byte() ? Opcode.POP2 : Opcode.POP,
-										pos++);
-							} else {
-								break;
-							}
+						Descriptor.Iterator i$ = new Descriptor.Iterator(desc);
+						for (i$.next(); i$.isParameter(); i$.next()) {
+							iterator.writeByte(i$.is2byte() ? Opcode.POP2 : Opcode.POP, pos++);
 						}
 					}
 					methodInfo.rebuildStackMapIf6(newClass.getClassPool(), newClass.getClassFile2());
