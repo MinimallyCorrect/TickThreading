@@ -520,7 +520,7 @@ public final class TickManager {
 			stats.append('\n');
 			averageAverageTickTime /= tickRegions.size();
 			stats.append("---- World stats ----");
-			stats.append(world.getChunkProvider().makeString());
+			stats.append('\n').append(world.getChunkProvider().makeString());
 			stats.append("\nAverage tick time: ").append(averageAverageTickTime).append("ms");
 			stats.append("\nMax tick time: ").append(maxTickTime).append("ms");
 			stats.append("\nEffective tick time: ").append(lastTickLength / 1000000f).append("ms");
