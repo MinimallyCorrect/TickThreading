@@ -114,13 +114,11 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 			ArrayList chunks = new ArrayList();
 			ArrayList tileEntities = new ArrayList();
 			synchronized (entityPlayerMP.loadedChunks) {
-				Iterator var7 = entityPlayerMP.loadedChunks.iterator();
+				ChunkCoordIntPair chunkCoordIntPair;
 
-				while (var7.hasNext() && chunks.size() < 5) {
-					ChunkCoordIntPair var9 = (ChunkCoordIntPair) var7.next();
-					var7.remove();
-					int x = var9.chunkXPos;
-					int z = var9.chunkZPos;
+				while (chunks.size() < 5 && (chunkCoordIntPair = (ChunkCoordIntPair) entityPlayerMP.loadedChunks.remove(0)) != null) {
+					int x = chunkCoordIntPair.chunkXPos;
+					int z = chunkCoordIntPair.chunkZPos;
 
 					Chunk chunk = entityPlayerMP.worldObj.getChunkFromChunkCoords(x, z);
 					chunks.add(chunk);

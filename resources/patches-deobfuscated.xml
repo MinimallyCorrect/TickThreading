@@ -222,6 +222,7 @@
 			<lock field="playersUpdateLock">updatePlayerInstances</lock>
 		</class>
 		<class id="net.minecraft.server.management.PlayerManager">
+			<replaceMethodCall method="sort" index="1" code="{ }">updateMountedMovingPlayer</replaceMethodCall>
 			<synchronize field="$1.loadedChunks">addPlayer,removePlayer,filterChunkLoadQueue</synchronize>
 			<synchronize field="$1.loadedChunks">updateMountedMovingPlayer</synchronize>
 			<synchronize>addPlayer,removePlayer</synchronize>

@@ -14,50 +14,57 @@ public class ConcurrentLinkedQueueList<T> extends ConcurrentLinkedQueue<T> imple
 
 	@Override
 	public boolean addAll(int index, Collection c) {
-		return false;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public T get(int index) {
-		return null;
+		if (index == 0) {
+			return this.peek();
+		}
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public T set(int index, Object element) {
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public void add(int index, Object element) {
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public T remove(int index) {
-		return null;
+		if (index == 0) {
+			return this.poll();
+		}
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public int indexOf(Object o) {
-		return 0;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public int lastIndexOf(Object o) {
-		return 0;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public ListIterator<T> listIterator() {
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public ListIterator<T> listIterator(int index) {
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public List<T> subList(int fromIndex, int toIndex) {
-		return null;
+		throw new UnsupportedOperationException();
 	}
 }
