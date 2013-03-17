@@ -325,7 +325,14 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			chunk = (Chunk) loadingChunks.getValueByKey(key);
 			if (chunk == null) {
 				chunk = safeLoadChunk(x, z);
-				if (chunk != null) {
+				if (chunk.xPosition != x || chunk.zPosition != z) {
+					Log.severe("Chunk at " + chunk.xPosition + ',' + chunk.zPosition + " was stored at " + x + ',' + z + "\nResetting this chunk.");
+					chunk = null;
+				}
+				if (chunk == null) {
+					loadingChunks.add(key, emptyChunk);
+					inLoadingMap = true;
+				} else {
 					loadingChunks.add(key, chunk);
 					inLoadingMap = true;
 				}
@@ -361,9 +368,9 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 						return chunk;
 					}
 					chunk = (Chunk) loadingChunks.getValueByKey(key);
-					if (chunk == null) {
+					if (chunk == null || chunk == emptyChunk) {
 						if (generator == null) {
-							chunk = defaultEmptyChunk;
+							chunk = emptyChunk;
 						} else {
 							try {
 								chunk = generator.provideChunk(x, z);
