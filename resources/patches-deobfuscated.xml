@@ -453,6 +453,12 @@
 		<class id="codechicken.xycraftcopy.core.world.WorldExtension">
 			<replaceInitializer field="chunkMap" class="me.nallar.tickthreading.collections.CHashMap"/>
 		</class>
+		<class id="codechicken.core.world.WorldExtensionManager$WorldExtensionEventHandler">
+			<synchronize/>
+		</class>
+		<class id="codechicken.xycraftcopy.core.world.WorldExtensionManager$WorldExtensionEventHandler">
+			<synchronize/>
+		</class>
 	</chickenChunks>
 	<wirelessRedstone>
 		<class id="codechicken.wirelessredstone.core.RedstoneEtherServer">
@@ -582,4 +588,10 @@
 			<synchronize>getCellArray</synchronize>
 		</class>
 	</appeng>
+	<xyCraft>
+		<class id="soaryn.xycraft.machines.block.XyCraftWorldExtension">
+			<replaceInitializer field="multiBlocks" class="me.nallar.tickthreading.collections.CHashMap"/>
+			<synchronize>updateDeffered,defer,remMultiBlock</synchronize>
+		</class>
+	</xyCraft>
 </mods>

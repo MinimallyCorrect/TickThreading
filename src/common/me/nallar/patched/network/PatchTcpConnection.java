@@ -76,7 +76,20 @@ public abstract class PatchTcpConnection extends TcpConnection {
 			} catch (Throwable ignored) {
 			}
 			FMLLog.log(Level.SEVERE, e, "Failed to handle packet from " + name);
-			this.networkShutdown("disconnect.genericReason", "Internal exception: " + e.toString());
+			this.networkShutdown("Internal error: " + e.getMessage(), e);
+		}
+	}
+
+	@Override
+	public void wakeThreads() {
+		if (this.readThread != null) {
+			synchronized (readThread) {
+				readThread.notify();
+			}
+		}
+
+		if (this.writeThread != null) {
+			this.writeThread.interrupt();
 		}
 	}
 }

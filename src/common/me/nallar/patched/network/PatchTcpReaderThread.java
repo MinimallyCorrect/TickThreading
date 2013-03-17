@@ -22,9 +22,11 @@ public abstract class PatchTcpReaderThread extends ThreadMinecraftServer {
 			if (tcpConnection.isRunning()) {
 				while (true) {
 					if (!tcpConnection.readNetworkPacket()) {
-						try {
-							sleep(2L);
-						} catch (InterruptedException ignored) {
+						synchronized (this) {
+							try {
+								wait(2L);
+							} catch (InterruptedException ignored) {
+							}
 						}
 					}
 					if (count++ % 5 == 0) {
