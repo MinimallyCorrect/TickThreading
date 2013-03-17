@@ -20,6 +20,11 @@ public class NonBlockingLongSet extends AbstractSet<Long> implements Set<Long>, 
 		s = m.keySet();
 	}
 
+	public NonBlockingLongSet(NonBlockingHashMapLong<Boolean> m) {
+		this.m = m;
+		s = m.keySet();
+	}
+
 	public NonBlockingHashMapLong.IteratorLong iteratorLong() {
 		return (NonBlockingHashMapLong.IteratorLong) s.iterator();
 	}
@@ -44,13 +49,25 @@ public class NonBlockingLongSet extends AbstractSet<Long> implements Set<Long>, 
 		return m.containsKey(o);
 	}
 
+	public boolean contains(long l) {
+		return m.containsKey(l);
+	}
+
 	@Override
 	public boolean remove(Object o) {
 		return m.remove(o) != null;
 	}
 
+	public boolean remove(long l) {
+		return m.remove(l) != null;
+	}
+
 	@Override
 	public boolean add(Long e) {
+		return m.put(e, Boolean.TRUE) == null;
+	}
+
+	public boolean add(long e) {
 		return m.put(e, Boolean.TRUE) == null;
 	}
 

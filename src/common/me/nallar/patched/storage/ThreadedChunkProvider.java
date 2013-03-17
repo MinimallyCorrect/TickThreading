@@ -124,8 +124,12 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			ChunkCoordIntPair chunkCoordIntPair = new ChunkCoordIntPair(0, 0);
 			NonBlockingHashMapLong.IteratorLong i$ = unloadStage0.iteratorLong();
 			while (i$.hasNext()) {
-				long key = i$.next();
+				long key = i$.nextLong();
 				i$.remove();
+				if (key == 0) {
+					// Iterator can't remove 0 key for some reason.
+					unloadStage0.remove(0L);
+				}
 				int x = (int) key;
 				int z = (int) (key >> 32);
 				chunkCoordIntPair.chunkXPos = x;
@@ -331,7 +335,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				}
 				if (chunk == null) {
 					loadingChunks.add(key, emptyChunk);
-					inLoadingMap = true;
 				} else {
 					loadingChunks.add(key, chunk);
 					inLoadingMap = true;
