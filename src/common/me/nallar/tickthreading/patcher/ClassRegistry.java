@@ -77,7 +77,7 @@ public class ClassRegistry {
 			extension = extension.substring(extension.lastIndexOf('.') + 1);
 			try {
 				if (file.isDirectory()) {
-					if (!".disabled".equals(file.getName())) {
+					if (!".disabled".equals(file.getName()) && !patchedModsFolderName.equalsIgnoreCase(file.getName())) {
 						loadFiles(Arrays.asList(file.listFiles()));
 					}
 				} else if ("jar".equals(extension) || "zip".equals(extension) || "litemod".equals(extension)) {
@@ -130,7 +130,11 @@ public class ClassRegistry {
 					renameFile = null;
 				} else {
 					zin = new ZipInputStream(new FileInputStream(zipFile));
-					zout = new ZipOutputStream(new FileOutputStream(new File(patchedModsFolder, zipFile.getName())));
+					File patchedModFile = new File(patchedModsFolder, zipFile.getName());
+					if (patchedModFile.exists() && !patchedModFile.delete()) {
+						Log.severe("Failed to write patches for " + zipFile + ", could not delete old patchedMods file.");
+					}
+					zout = new ZipOutputStream(new FileOutputStream(patchedModFile));
 					patchedClasses += writeChanges(zipFile, zin, zout, true);
 				}
 				zin = null;
@@ -242,7 +246,9 @@ public class ClassRegistry {
 			return;
 		}
 		try {
-			MinecraftServer.getServer();
+			if (MinecraftServer.getServer() == null) {
+				throw new NullPointerException();
+			}
 		} catch (Throwable t) {
 			file.delete();
 			return;
