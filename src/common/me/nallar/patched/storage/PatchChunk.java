@@ -7,6 +7,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
 
 import cpw.mods.fml.common.FMLLog;
+import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.patcher.Declare;
 import me.nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock;
 import net.minecraft.block.Block;
@@ -172,7 +173,9 @@ public abstract class PatchChunk extends Chunk {
 			FMLLog.log(Level.FINE, new Throwable(), "Entity %s added to the wrong chunk - expected x%d z%d, got x%d z%d", par1Entity.toString(), this.xPosition, this.zPosition, var2, var3);
 			if (worldObj instanceof WorldServer) {
 				Chunk correctChunk = ((WorldServer) worldObj).theChunkProviderServer.getChunkIfExists(xPosition, zPosition);
-				if (correctChunk != null) {
+				if (correctChunk == this) {
+					Log.severe("What?! This chunk isn't at the position it says it's at...: " + this + " was added at " + xPosition + ", " + zPosition);
+				} else if (correctChunk != null) {
 					correctChunk.addEntity(par1Entity);
 					return;
 				}
