@@ -25,10 +25,6 @@ import org.cliffc.high_scale_lib.NonBlockingHashMap;
 
 @SuppressWarnings ("unchecked")
 public abstract class PatchChunk extends Chunk {
-	@Declare
-	public boolean unloading_;
-	@Declare
-	public boolean alreadySavedAfterUnload_;
 	public Lock entityListWriteLock;
 	public Lock entityListReadLock;
 
@@ -127,6 +123,8 @@ public abstract class PatchChunk extends Chunk {
 	@SuppressWarnings ("FieldRepeatedlyAccessedInMethod") // Patcher makes worldObj final
 	@Override
 	public void onChunkUnload() {
+		isChunkLoaded = false;
+
 		Set<TileEntity> removalSet = worldObj.tileEntityRemovalSet;
 		for (TileEntity var2 : (Iterable<TileEntity>) this.chunkTileEntityMap.values()) {
 			removalSet.add(var2);
