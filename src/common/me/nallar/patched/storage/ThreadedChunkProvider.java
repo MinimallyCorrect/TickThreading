@@ -196,7 +196,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			inUnload.set(true);
 		}
 		chunk.isChunkLoaded = false;
-		MinecraftForge.EVENT_BUS.post(new ChunkEvent.Unload(chunk));
 		safeSaveChunk(chunk);
 		safeSaveExtraChunkData(chunk);
 		if (notInUnload) {

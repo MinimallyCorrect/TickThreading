@@ -135,6 +135,8 @@ public abstract class PatchChunk extends Chunk {
 		for (List entityList : this.entityLists) {
 			this.worldObj.unloadEntities(entityList);
 		}
+
+		MinecraftForge.EVENT_BUS.post(new ChunkEvent.Unload(this));
 	}
 
 	@Override
