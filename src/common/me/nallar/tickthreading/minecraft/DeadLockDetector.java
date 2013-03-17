@@ -122,7 +122,7 @@ public class DeadLockDetector {
 				.append("\nTicking: ").append(lastJob).append('\n');
 		Map<Thread, StackTraceElement[]> traces = Thread.getAllStackTraces();
 		for (Thread thread : traces.keySet()) {
-			sortedThreads.put(thread.getName(), thread);
+			sortedThreads.put(thread.getName() + thread.getId(), thread);
 		}
 		String lastString = "";
 		boolean lastWasDuplicate = false;
