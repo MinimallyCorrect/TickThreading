@@ -329,7 +329,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			chunk = (Chunk) loadingChunks.getValueByKey(key);
 			if (chunk == null) {
 				chunk = safeLoadChunk(x, z);
-				if (chunk.xPosition != x || chunk.zPosition != z) {
+				if (chunk != null && (chunk.xPosition != x || chunk.zPosition != z)) {
 					Log.severe("Chunk at " + chunk.xPosition + ',' + chunk.zPosition + " was stored at " + x + ',' + z + "\nResetting this chunk.");
 					chunk = null;
 				}
