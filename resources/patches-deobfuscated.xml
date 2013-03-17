@@ -20,9 +20,7 @@
 					while (!processQueue.isEmpty()) {
 							((Runnable) processQueue.remove()).run();
 					}
-
-					org.bukkit.craftbukkit.v1_4_R1.chunkio.ChunkIOExecutor.tick();
-        }">spigotTLETick
+					}">spigotTLETick
 			</replaceMethod>
 		</class>
 		<class id="net.minecraft.server.MinecraftServer" env="forge">
@@ -98,6 +96,13 @@
 		</class>
 		<class id="net.minecraft.world.gen.ChunkProviderServer">
 			<replace class="me.nallar.patched.storage.ThreadedChunkProvider"/>
+		</class>
+		<class id="org.bukkit.craftbukkit.v1_4_R1.chunkio.ChunkIOExecutor" env="mcpc">
+			<replaceInitializer field="instance" code="null;"/>
+			<replaceMethod code="throw new UnsupportedOperationException();">tick</replaceMethod>
+			<disable>adjustPoolSize</disable>
+			<replaceMethod code="((^class:ChunkProviderServer^)$1.^method:World/getChunkProvider^()).getChunkAt($2, $3, null);">waitForChunkLoad</replaceMethod>
+			<replaceMethod code="$3.getChunkAt($4, $5, $6);">queueChunkLoad</replaceMethod>
 		</class>
 		<class id="net.minecraft.world.gen.ChunkProviderServer" env="mcpc">
 			<changeFieldType field="chunksToUnload" type="org.bukkit.craftbukkit.v1_4_R1.util.LongHashSet" remove="true"/>

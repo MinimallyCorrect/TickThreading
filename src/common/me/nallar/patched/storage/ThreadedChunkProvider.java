@@ -37,8 +37,6 @@ import net.minecraft.world.chunk.storage.IChunkLoader;
 import net.minecraft.world.gen.ChunkProviderServer;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.ForgeChunkManager;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.world.ChunkEvent;
 import org.cliffc.high_scale_lib.NonBlockingHashMapLong;
 
 /**

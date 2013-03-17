@@ -12,9 +12,9 @@ import me.nallar.tickthreading.util.CollectionsUtil;
 
 public class MethodDescription {
 	public final String clazz;
-	private final String returnType;
-	private final String parameters;
-	private final String name;
+	public final String returnType;
+	public final String parameters;
+	public final String name;
 	private Integer cachedHashCode = null;
 
 	private MethodDescription(String clazz, String name, String returnType, String parameters) {

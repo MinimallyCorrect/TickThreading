@@ -20,6 +20,8 @@ import me.nallar.tickthreading.Log;
 public class MCPMappings extends Mappings {
 	private static final Pattern extendsPattern = Pattern.compile("\\s+?extends\\s+?([\\S]+)[^\\{]+?\\{", Pattern.DOTALL | Pattern.MULTILINE);
 	private static final Pattern packagePattern = Pattern.compile("package\\s+?([^\\s;]+)[^;]*?;", Pattern.DOTALL | Pattern.MULTILINE);
+	private static final Pattern classObfuscatePattern = Pattern.compile("\\^class:([^\\^]+)\\^", Pattern.DOTALL | Pattern.MULTILINE);
+	private static final Pattern methodObfuscatePattern = Pattern.compile("\\^method:([^\\^/]+)/([^\\^/]+)\\^", Pattern.DOTALL | Pattern.MULTILINE);
 	private final Map<String, String> methodSeargeMappings = new HashMap<String, String>();
 	private final Map<String, String> fieldSeargeMappings = new HashMap<String, String>();
 	private final BiMap<ClassDescription, ClassDescription> classMappings = HashBiMap.create();
@@ -27,6 +29,7 @@ public class MCPMappings extends Mappings {
 	private final Map<FieldDescription, FieldDescription> fieldMappings = new HashMap<FieldDescription, FieldDescription>();
 	private final Map<String, MethodDescription> parameterlessMethodMappings = new HashMap<String, MethodDescription>();
 	private final Map<String, String> classNameToSuperClassName = new HashMap<String, String>();
+	private final Map<String, String> shortClassNameToFullName = new HashMap<String, String>();
 
 	@Override
 	public MethodDescription map(MethodDescription methodDescription) {
@@ -34,7 +37,6 @@ public class MCPMappings extends Mappings {
 		if (obfuscated == null) {
 			obfuscated = parameterlessMethodMappings.get(methodDescription.getShortName());
 			if (methodDescription.isExact() || obfuscated == null) {
-				Log.info("Failed to" + (obfuscated == null ? "" : " directly") + " map " + methodDescription.getShortName() + (obfuscated == null ? "" : ", would map to " + obfuscated));
 				obfuscated = methodDescription;
 				obfuscated.obfuscateClasses();
 			}
@@ -45,6 +47,58 @@ public class MCPMappings extends Mappings {
 	@Override
 	public MethodDescription rmap(MethodDescription methodDescription) {
 		return methodMappings.inverse().get(methodDescription);
+	}
+
+	public String obfuscate(String code) {
+		StringBuffer result = new StringBuffer();
+
+		{
+			Matcher methodMatcher = methodObfuscatePattern.matcher(code);
+			while (methodMatcher.find()) {
+				String className = shortClassNameToFullClassName(methodMatcher.group(1));
+				String methodDescriptionString = methodMatcher.group(2);
+				if (className == null) {
+					className = methodMatcher.group(1);
+					if (!className.contains(".")) {
+						Log.severe("Could not find " + methodMatcher.group(1));
+						continue;
+					}
+				}
+				MethodDescription methodDescription = MethodDescription.fromString(className, methodDescriptionString);
+				MethodDescription mapped = map(methodDescription);
+				methodMatcher.appendReplacement(result, mapped.name);
+			}
+			methodMatcher.appendTail(result);
+		}
+
+		{
+			Matcher classMatcher = classObfuscatePattern.matcher(result);
+			result = new StringBuffer();
+			while (classMatcher.find()) {
+				String className = classStringToClassName(classMatcher.group(1));
+				if (className == null) {
+					Log.severe("Could not find " + classMatcher.group(1));
+					continue;
+				}
+				classMatcher.appendReplacement(result, className);
+			}
+			classMatcher.appendTail(result);
+		}
+
+		return result.toString();
+	}
+
+	private String classStringToClassName(String name) {
+		String mapped = shortClassNameToFullClassName(name);
+		if (mapped != null) {
+			name = mapped;
+		}
+		return map(new ClassDescription(name)).name;
+	}
+
+	@Override
+	public String shortClassNameToFullClassName(String shortName) {
+		return shortClassNameToFullName.get(shortName);
 	}
 
 	@Override
@@ -60,7 +114,6 @@ public class MCPMappings extends Mappings {
 			do {
 				className = classNameToSuperClassName.get(fieldDescription.className);
 				if (className != null) {
-					Log.info(fieldDescription + " -> " + className);
 					fieldDescription = new FieldDescription(className, fieldDescription.name);
 					obfuscated = fieldMappings.get(fieldDescription);
 				}
@@ -90,6 +143,7 @@ public class MCPMappings extends Mappings {
 				String toClass = srgScanner.next().replace('/', '.');
 				ClassDescription obfuscatedClass = new ClassDescription(fromClass);
 				ClassDescription deobfuscatedClass = new ClassDescription(toClass);
+				shortClassNameToFullName.put(deobfuscatedClass.name.substring(deobfuscatedClass.name.lastIndexOf('.') + 1), deobfuscatedClass.name);
 				classMappings.put(deobfuscatedClass, obfuscatedClass);
 				File sourceLocation = new File(mappingsSrg.getParentFile().getParentFile(), "src/minecraft/" + (toClass.replace('.', '/') + ".java"));
 				try {

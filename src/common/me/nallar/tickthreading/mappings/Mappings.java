@@ -28,4 +28,8 @@ public abstract class Mappings {
 	public abstract FieldDescription map(FieldDescription fieldDescription);
 
 	public abstract MethodDescription rmap(MethodDescription methodDescription);
+
+	public abstract String obfuscate(String code);
+
+	public abstract String shortClassNameToFullClassName(String shortName);
 }

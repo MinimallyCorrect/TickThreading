@@ -122,7 +122,9 @@ public class PatchManager {
 			String className = classElement.getAttribute("id");
 			ClassDescription deobfuscatedClass = new ClassDescription(className);
 			ClassDescription obfuscatedClass = mappings.map(deobfuscatedClass);
-			classElement.setAttribute("id", obfuscatedClass.name);
+			if (obfuscatedClass != null) {
+				classElement.setAttribute("id", obfuscatedClass.name);
+			}
 			NodeList patchElements = classElement.getChildNodes();
 			for (Element patchElement : DomUtil.elementList(patchElements)) {
 				String textContent = patchElement.getTextContent().trim();
@@ -160,6 +162,14 @@ public class PatchManager {
 					FieldDescription obfuscatedField = mappings.map(new FieldDescription(type, field));
 					if (obfuscatedField != null) {
 						patchElement.setAttribute("field", prefix + obfuscatedField.name + after);
+					}
+				}
+				String code = patchElement.getAttribute("code");
+				if (!code.isEmpty()) {
+					String obfuscatedCode = mappings.obfuscate(code);
+					if (!code.equals(obfuscatedCode)) {
+						patchElement.setAttribute("code", obfuscatedCode);
+						Log.info("Obfuscated " + code + " to " + obfuscatedCode);
 					}
 				}
 				String clazz = patchElement.getAttribute("class");
