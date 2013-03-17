@@ -127,8 +127,6 @@ public abstract class PatchChunk extends Chunk {
 	@SuppressWarnings ("FieldRepeatedlyAccessedInMethod") // Patcher makes worldObj final
 	@Override
 	public void onChunkUnload() {
-		this.isChunkLoaded = false;
-
 		Set<TileEntity> removalSet = worldObj.tileEntityRemovalSet;
 		for (TileEntity var2 : (Iterable<TileEntity>) this.chunkTileEntityMap.values()) {
 			removalSet.add(var2);
@@ -137,8 +135,6 @@ public abstract class PatchChunk extends Chunk {
 		for (List entityList : this.entityLists) {
 			this.worldObj.unloadEntities(entityList);
 		}
-
-		this.isChunkLoaded = true;
 	}
 
 	@Override

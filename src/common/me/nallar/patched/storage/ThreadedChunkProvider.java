@@ -140,7 +140,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				chunk.unloading = true;
 				synchronized (unloadingChunks) {
 					unloadingChunks.add(key, chunk);
-					unloadStage1.add(new QueuedUnload(chunk, key, ticks));
+					unloadStage1.add(new QueuedUnload(key, ticks));
 				}
 			}
 
@@ -154,15 +154,14 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		{
 			QueuedUnload queuedUnload = unloadStage1.peek();
 			while (queuedUnload != null && queuedUnload.ticks <= queueThreshold) {
-				Chunk chunk = queuedUnload.chunk;
 				long chunkHash = queuedUnload.key;
 				synchronized (unloadingChunks) {
-					if (!unloadStage1.remove(queuedUnload) || unloadingChunks.remove(chunkHash) != chunk) {
+					if (!unloadStage1.remove(queuedUnload)) {
 						queuedUnload = unloadStage1.peek();
 						continue;
 					}
 				}
-				finalizeUnload(chunk);
+				finalizeUnload(chunkHash);
 				queuedUnload = unloadStage1.peek();
 			}
 		}
@@ -178,24 +177,33 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		}
 	}
 
-	private void finalizeUnload(Chunk chunk) {
-		if (!chunk.unloading) {
-			throw new IllegalArgumentException("Chunk " + chunk + " is not unloading.");
+	private void finalizeUnload(long key) {
+		Chunk chunk;
+		synchronized (unloadingChunks) {
+			chunk = (Chunk) unloadingChunks.getValueByKey(key);
 		}
-		if (chunk.alreadySavedAfterUnload) {
+		if (chunk == null || !chunk.unloading) {
 			return;
+		}
+		synchronized (chunk) {
+			if (chunk.alreadySavedAfterUnload) {
+				return;
+			}
+			chunk.alreadySavedAfterUnload = true;
 		}
 		boolean notInUnload = !inUnload.get();
 		if (notInUnload) {
 			inUnload.set(true);
 		}
-		chunk.alreadySavedAfterUnload = true;
 		chunk.isChunkLoaded = false;
 		MinecraftForge.EVENT_BUS.post(new ChunkEvent.Unload(chunk));
 		safeSaveChunk(chunk);
 		safeSaveExtraChunkData(chunk);
 		if (notInUnload) {
 			inUnload.set(false);
+		}
+		synchronized (unloadingChunks) {
+			unloadingChunks.remove(key);
 		}
 	}
 
@@ -204,10 +212,8 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	public static class QueuedUnload implements Comparable<QueuedUnload> {
 		public final int ticks;
 		public final long key;
-		public final Chunk chunk;
 
-		public QueuedUnload(Chunk chunk, long key, int ticks) {
-			this.chunk = chunk;
+		public QueuedUnload(long key, int ticks) {
 			this.key = key;
 			this.ticks = ticks;
 		}
@@ -296,12 +302,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		// Lock on the lock for this chunk - prevent multiple instances of the same chunk
 		ThreadLocal<Boolean> worldGenInProgress = world.worldGenInProgress;
 		synchronized (lock) {
-			synchronized (unloadingChunks) {
-				chunk = (Chunk) unloadingChunks.remove(key);
-			}
-			if (chunk != null && !inUnload.get()) {
-				finalizeUnload(chunk);
-			}
+			finalizeUnload(key);
 			chunk = (Chunk) chunks.getValueByKey(key);
 			if (chunk != null) {
 				return chunk;

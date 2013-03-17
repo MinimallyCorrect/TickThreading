@@ -118,9 +118,9 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 
 				while (var7.hasNext() && chunks.size() < 5) {
 					ChunkCoordIntPair var9 = (ChunkCoordIntPair) var7.next();
+					var7.remove();
 					int x = var9.chunkXPos;
 					int z = var9.chunkZPos;
-					var7.remove();
 
 					Chunk chunk = entityPlayerMP.worldObj.getChunkFromChunkCoords(x, z);
 					chunks.add(chunk);

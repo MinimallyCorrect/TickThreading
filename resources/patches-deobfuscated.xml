@@ -141,6 +141,7 @@
 			<addAll fromClass="me.nallar.patched.entity.PatchEntityPlayerMP"/>
 			<!-- Concurrent access during iteration = boom -->
 			<replaceInitializer field="destroyedItemsNetCache" code="new me.nallar.tickthreading.collections.ConcurrentLinkedQueueList();"/>
+			<replaceInitializer field="loadedChunks" code="new me.nallar.tickthreading.collections.ConcurrentLinkedQueueList();"/>
 		</class>
 		<class id="net.minecraft.entity.Entity">
 			<addAll fromClass="me.nallar.patched.entity.PatchEntity"/>
