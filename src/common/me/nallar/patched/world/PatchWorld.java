@@ -18,6 +18,7 @@ import net.minecraft.block.Block;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityTracker;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.tileentity.TileEntity;
@@ -27,6 +28,7 @@ import net.minecraft.util.ReportedException;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldProvider;
+import net.minecraft.world.WorldServer;
 import net.minecraft.world.WorldSettings;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.ChunkProviderServer;
@@ -238,11 +240,16 @@ public abstract class PatchWorld extends World {
 
 	@Override
 	public void addLoadedEntities(List par1List) {
+		EntityTracker entityTracker = null;
+		//noinspection RedundantCast
+		if (((Object) this instanceof WorldServer)) {
+			entityTracker = ((WorldServer) (Object) this).getEntityTracker();
+		}
 		for (int var2 = 0; var2 < par1List.size(); ++var2) {
 			Entity entity = (Entity) par1List.get(var2);
 			if (MinecraftForge.EVENT_BUS.post(new EntityJoinWorldEvent(entity, this))) {
 				par1List.remove(var2--);
-			} else {
+			} else if (entityTracker == null || !entityTracker.isTracking(entity.entityId)) {
 				loadedEntityList.add(entity);
 				this.obtainEntitySkin(entity);
 			}
