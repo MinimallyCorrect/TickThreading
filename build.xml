@@ -208,7 +208,10 @@
 
 		<fail message="MCP failed to build">
 			<condition>
-				<resourcecontains resource="${mcp.dir}/logs/client_compile.log" substring="error:"/>
+				<or>
+					<resourcecontains resource="${mcp.dir}/logs/client_compile.log" substring="error:"/>
+					<resourcecontains resource="${mcp.dir}/logs/client_compile.log" substring=" errors"/>
+				</or>
 			</condition>
 		</fail>
 

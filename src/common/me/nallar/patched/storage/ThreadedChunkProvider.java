@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -21,7 +20,7 @@ import me.nallar.tickthreading.collections.NonBlockingLongSet;
 import me.nallar.tickthreading.minecraft.ChunkGarbageCollector;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
-import me.nallar.tickthreading.util.FakeServerThread;
+import me.nallar.tickthreading.util.ServerThreadFactory;
 import me.nallar.tickthreading.util.concurrent.NativeMutex;
 import me.nallar.unsafe.UnsafeUtil;
 import net.minecraft.entity.EnumCreatureType;
@@ -58,7 +57,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	static {
 		int p = Runtime.getRuntime().availableProcessors();
-		chunkLoadThreadPool = new ThreadPoolExecutor(1, p, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(p * 10), new ServerThreadFactory(), new ThreadPoolExecutor.CallerRunsPolicy());
+		chunkLoadThreadPool = new ThreadPoolExecutor(1, p, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(p * 10), new ServerThreadFactory("Async ChunkLoader"), new ThreadPoolExecutor.CallerRunsPolicy());
 		chunkLoadThreadPool.allowCoreThreadTimeOut(true);
 	}
 
@@ -601,13 +600,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			} catch (Throwable t) {
 				FMLLog.log(Level.SEVERE, t, "Exception loading chunk asynchronously.");
 			}
-		}
-	}
-
-	public static class ServerThreadFactory implements ThreadFactory {
-		@Override
-		public Thread newThread(Runnable r) {
-			return new FakeServerThread(r, "Async ChunkLoader", true);
 		}
 	}
 

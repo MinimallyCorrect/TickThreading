@@ -23,6 +23,7 @@ public class PrePatcher {
 	private static final Pattern extendsPattern = Pattern.compile("\\s+?extends\\s+?([\\S]+)[^\\{]+?\\{", Pattern.DOTALL | Pattern.MULTILINE);
 	private static final Pattern declareMethodPattern = Pattern.compile("@Declare\\s+?(public\\s+?(\\S*?)?\\s+?(\\S*?)\\s*?\\S+?\\s*?\\([^\\{]*\\)\\s*?\\{)", Pattern.DOTALL | Pattern.MULTILINE);
 	private static final Pattern declareVariablePattern = Pattern.compile("@Declare\\s+?(public [^;\r\n]+?)_;", Pattern.DOTALL | Pattern.MULTILINE);
+	private static final Pattern packageVariablePattern = Pattern.compile("\n    ? ?([^ ]+  ? ?[^ ]+);");
 
 	private static void recursiveSearch(File patchDirectory, File sourceDirectory, Map<File, String> patchClasses) {
 		for (File file : patchDirectory.listFiles()) {
@@ -106,11 +107,14 @@ public class PrePatcher {
 				source.append(var).append(";\n");
 			}
 			source.append("\n}");
-			sourceString = source.toString();
+			Matcher packageMatcher = packageVariablePattern.matcher(source);
+			StringBuffer sb = new StringBuffer();
+			while (packageMatcher.find()) {
+				packageMatcher.appendReplacement(sb, "\n    public " + packageMatcher.group(1) + ';');
+			}
+			packageMatcher.appendTail(sb);
+			sourceString = sb.toString();
 			// TODO: Fix package -> public properly later.
-			sourceString = sourceString.replace("    boolean isOutputEncrypted;", "    public boolean isOutputEncrypted;");
-			sourceString = sourceString.replace("    File file;", "public File file;");
-			sourceString = sourceString.replace("PlayerManager myManager;", "public PlayerManager myManager;").replace("public public", "public");
 			sourceString = sourceString.replace("\nfinal ", " ");
 			sourceString = sourceString.replace(" final ", " ");
 			sourceString = sourceString.replace("\nclass", "\npublic class");

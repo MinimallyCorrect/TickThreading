@@ -82,5 +82,8 @@ public abstract class PatchTcpConnection extends TcpConnection {
 
 	@Override
 	public void wakeThreads() {
+		if (this.writeThread != null) {
+			this.writeThread.interrupt();
+		}
 	}
 }
