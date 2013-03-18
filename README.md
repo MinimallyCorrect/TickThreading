@@ -41,6 +41,12 @@ Coding and Pull Request Formatting
 
 Please follow the above conventions if you want your pull requests accepted.
 
+Contributors
+----------------------------------
+
+* [nallar](https://github.com/nallar/ "Ross Allan")
+* Everyone who's helped with testing and reporting bugs :)
+
 Acknowledgements
 ----------------------------------
 
