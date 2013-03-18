@@ -7,6 +7,7 @@ import net.minecraft.server.management.PlayerManager;
 import net.minecraft.world.WorldServer;
 
 public abstract class PatchPlayerManagerForge extends PlayerManager {
+	private int unloadAllChunksCounter;
 	public Object chunkWatcherLock;
 	private net.minecraft.util.LongHashMap loadingPlayerInstances;
 	@Declare
@@ -76,7 +77,7 @@ public abstract class PatchPlayerManagerForge extends PlayerManager {
 			playersUpdateLock.unlock();
 		}
 
-		if (this.players.isEmpty()) {
+		if (unloadAllChunksCounter++ % 300 == 0 && this.players.isEmpty()) {
 			this.theWorldServer.theChunkProviderServer.unloadAllChunks();
 		}
 	}

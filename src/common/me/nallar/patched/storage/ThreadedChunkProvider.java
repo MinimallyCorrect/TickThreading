@@ -245,9 +245,11 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	@Override
 	public void unloadAllChunks() {
-		synchronized (loadedChunks) {
-			for (Chunk chunk : loadedChunks) {
-				unloadStage0.add(key(chunk.xPosition, chunk.zPosition));
+		if (loadedChunks.size() > world.getPersistentChunks().size()) {
+			synchronized (loadedChunks) {
+				for (Chunk chunk : loadedChunks) {
+					unloadStage0.add(key(chunk.xPosition, chunk.zPosition));
+				}
 			}
 		}
 	}
