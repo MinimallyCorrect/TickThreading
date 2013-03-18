@@ -22,7 +22,6 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.world.ChunkEvent;
-import org.cliffc.high_scale_lib.NonBlockingHashMap;
 
 @SuppressWarnings ("unchecked")
 public abstract class PatchChunk extends Chunk {
@@ -40,7 +39,6 @@ public abstract class PatchChunk extends Chunk {
 	private List<TileEntity> toInvalidate;
 
 	public void construct() {
-		chunkTileEntityMap = new NonBlockingHashMap();
 		toInvalidate = new ArrayList<TileEntity>();
 		TwoWayReentrantReadWriteLock twoWayReentrantReadWriteLock = new TwoWayReentrantReadWriteLock();
 		entityListWriteLock = twoWayReentrantReadWriteLock.writeLock();

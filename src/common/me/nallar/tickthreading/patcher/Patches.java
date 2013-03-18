@@ -201,7 +201,7 @@ public class Patches {
 					if (newExprType.containsKey(newPos)) {
 						String assignedType = newExprType.get(newPos);
 						Log.fine(assignedType + " at " + e.getFileName() + ':' + e.getLineNumber());
-						String block = "{$_=" + newInitialiser + "}";
+						String block = "{$_=" + newInitialiser + '}';
 						Log.fine("Replaced with " + block);
 						e.replace(block);
 						replaced.value++;
