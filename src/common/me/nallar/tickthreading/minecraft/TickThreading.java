@@ -155,7 +155,7 @@ public class TickThreading {
 		Property targetTPSProperty = config.get(Configuration.CATEGORY_GENERAL, "targetTPS", targetTPS);
 		targetTPSProperty.comment = "TPS the server should try to run at.";
 		Property concurrentNetworkTicksProperty = config.get(Configuration.CATEGORY_GENERAL, "concurrentNetworkTicks", concurrentNetworkTicks);
-		concurrentNetworkTicksProperty.comment = "Whether network ticks should be ran in the main thread.";
+		concurrentNetworkTicksProperty.comment = "Whether network ticks should be ran in a separate thread from the main minecraft thread. This is likely to be very buggy, especially with mods doing custom networking such as IC2!";
 		Property antiCheatKickProperty = config.get(Configuration.CATEGORY_GENERAL, "antiCheatKick", antiCheatKick);
 		antiCheatKickProperty.comment = "Whether to kick players for detected cheating";
 		Property antiCheatNotifyProperty = config.get(Configuration.CATEGORY_GENERAL, "antiCheatNotify", antiCheatNotify);
