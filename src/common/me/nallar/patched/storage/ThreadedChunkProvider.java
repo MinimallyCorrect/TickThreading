@@ -61,6 +61,11 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		chunkLoadThreadPool.allowCoreThreadTimeOut(true);
 	}
 
+	private static final Runnable doNothingRunnable = new Runnable() {
+		@Override
+		public void run() {
+		}
+	};
 	private final NonBlockingHashMapLong<Object> chunkLoadLocks = new NonBlockingHashMapLong<Object>();
 	private final LongHashMap chunks = new LongHashMap();
 	private final LongHashMap loadingChunks = new LongHashMap();
@@ -73,6 +78,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	private final Chunk emptyChunk;
 	private final ThreadLocal<Boolean> inUnload = new BooleanThreadLocal();
 	private final boolean loadChunkIfNotFound;
+	private boolean loadedPersistentChunks = false;
 	private int unloadTicks = 0;
 	private Chunk lastChunk;
 	// Mojang compatiblity fields.
@@ -181,6 +187,13 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 		if (ticks % TickThreading.instance.chunkGCInterval == 0) {
 			ChunkGarbageCollector.garbageCollect(world);
+		}
+
+		if (!loadChunkIfNotFound && !loadedPersistentChunks && unloadTicks >= 5) {
+			loadedPersistentChunks = true;
+			for (ChunkCoordIntPair chunkCoordIntPair : world.getPersistentChunks().keySet()) {
+				getChunkAt(chunkCoordIntPair.chunkXPos, chunkCoordIntPair.chunkZPos, doNothingRunnable);
+			}
 		}
 	}
 
