@@ -72,6 +72,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	private final WorldServer world;
 	private final Chunk emptyChunk;
 	private final ThreadLocal<Boolean> inUnload = new BooleanThreadLocal();
+	private final boolean loadChunkIfNotFound;
 	private int unloadTicks = 0;
 	private Chunk lastChunk;
 	// Mojang compatiblity fields.
@@ -88,7 +89,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		currentChunkLoader = this.loader = loader;
 		loadedChunks = Collections.synchronizedList(new ArrayList<Chunk>());
 		emptyChunk = new EmptyChunk(world, 0, 0);
-		loadChunkOnProvideRequest = TickThreading.instance.loadChunkOnProvideRequest;
+		loadChunkIfNotFound = TickThreading.instance.loadChunkOnProvideRequest;
 	}
 
 	@Override
@@ -112,8 +113,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	@Override
 	@Declare
 	public void tick() {
-		loadChunkOnProvideRequest = TickThreading.instance.loadChunkOnProvideRequest;
-
 		int ticks = world.tickCount;
 		// Handle unload requests
 		if (ticks % 3 == 0 && !world.canNotSave && !unloadStage0.isEmpty()) {
@@ -276,7 +275,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			return chunk;
 		}
 
-		if (loadChunkOnProvideRequest) {
+		if (loadChunkIfNotFound) {
 			return getChunkAt(x, z, null);
 		}
 
