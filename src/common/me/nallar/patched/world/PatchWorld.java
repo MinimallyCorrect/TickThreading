@@ -53,7 +53,8 @@ public abstract class PatchWorld extends World {
 	public int tickCount_;
 
 	public void construct() {
-		tickCount = rand.nextInt(5);
+		tickCount = rand.nextInt(240); // So when different worlds do every N tick actions,
+		// they won't all happen at the same time even if the worlds loaded at the same time
 		tileEntityRemovalSet = new HashSet<TileEntity>();
 		unloadedEntitySet = new HashSet<Entity>();
 		redstoneBurnoutMap = new NonBlockingHashMapLong<Integer>();
