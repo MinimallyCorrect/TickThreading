@@ -11,6 +11,7 @@ import net.minecraftforge.event.world.ChunkWatchEvent;
 
 public abstract class PatchPlayerInstanceForge extends PlayerInstance {
 	private static byte[] unloadSequence;
+	private boolean loaded;
 
 	public PatchPlayerInstanceForge(PlayerManager par1PlayerManager, int par2, int par3) {
 		super(par1PlayerManager, par2, par3);
@@ -24,6 +25,34 @@ public abstract class PatchPlayerInstanceForge extends PlayerInstance {
 
 	public static void staticConstruct() {
 		unloadSequence = new byte[]{0x78, (byte) 0x9C, 0x63, 0x64, 0x1C, (byte) 0xD9, 0x00, 0x00, (byte) 0x81, (byte) 0x80, 0x01, 0x01};
+	}
+
+	public void construct() {
+		myManager.getWorldServer().theChunkProviderServer.getChunkAt(chunkLocation.chunkXPos, chunkLocation.chunkZPos, new Runnable() {
+			@Override
+			public void run() {
+				loaded = true;
+			}
+		});
+	}
+
+	@Override
+	public void addPlayerToChunkWatchingList(final EntityPlayerMP par1EntityPlayerMP) {
+		if (this.playersInChunk.contains(par1EntityPlayerMP)) {
+			throw new IllegalStateException("Failed to add player. " + par1EntityPlayerMP + " already is in chunk " + this.chunkLocation.chunkXPos + ", " + this.chunkLocation.chunkZPos);
+		} else {
+			this.playersInChunk.add(par1EntityPlayerMP);
+			if (loaded) {
+				par1EntityPlayerMP.loadedChunks.add(chunkLocation);
+			} else {
+				myManager.getWorldServer().theChunkProviderServer.getChunkAt(chunkLocation.chunkXPos, chunkLocation.chunkZPos, new Runnable() {
+					@Override
+					public void run() {
+						par1EntityPlayerMP.loadedChunks.add(chunkLocation);
+					}
+				});
+			}
+		}
 	}
 
 	@Override
