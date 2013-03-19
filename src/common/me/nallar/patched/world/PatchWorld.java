@@ -38,7 +38,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import org.cliffc.high_scale_lib.NonBlockingHashMapLong;
 
-@SuppressWarnings ({"ForLoopReplaceableByForEach", "unchecked"})
+@SuppressWarnings ("unchecked")
 public abstract class PatchWorld extends World {
 	private int forcedUpdateCount;
 	@Declare
@@ -115,6 +115,71 @@ public abstract class PatchWorld extends World {
 			}
 		}
 		return 0;
+	}
+
+	@Override
+	public EntityPlayer getClosestPlayer(double x, double y, double z, double maxRange) {
+		double closestRange = Double.MAX_VALUE;
+		EntityPlayer target = null;
+
+		for (EntityPlayer playerEntity : (Iterable<EntityPlayer>) this.playerEntities) {
+			if (!playerEntity.capabilities.disableDamage && playerEntity.isEntityAlive()) {
+				double distanceSq = playerEntity.getDistanceSq(x, y, z);
+
+				if ((maxRange < 0.0D || distanceSq < (maxRange * maxRange)) && (distanceSq < closestRange)) {
+					closestRange = distanceSq;
+					target = playerEntity;
+				}
+			}
+		}
+
+		return target;
+	}
+
+	@SuppressWarnings ("ConstantConditions")
+	@Override
+	public EntityPlayer getClosestVulnerablePlayer(double x, double y, double z, double maxRange) {
+		double closestRange = Double.MAX_VALUE;
+		EntityPlayer target = null;
+
+		for (EntityPlayer playerEntity : (Iterable<EntityPlayer>) this.playerEntities) {
+			if (!playerEntity.capabilities.disableDamage && playerEntity.isEntityAlive()) {
+				double distanceSq = playerEntity.getDistanceSq(x, y, z);
+				double effectiveMaxRange = maxRange;
+
+				if (playerEntity.isSneaking()) {
+					effectiveMaxRange = maxRange * 0.800000011920929D;
+				}
+
+				if (playerEntity.getHasActivePotion()) {
+					float var18 = playerEntity.func_82243_bO();
+
+					if (var18 < 0.1F) {
+						var18 = 0.1F;
+					}
+
+					effectiveMaxRange *= (double) (0.7F * var18);
+				}
+
+				if ((maxRange < 0.0D || distanceSq < (effectiveMaxRange * effectiveMaxRange)) && (distanceSq < closestRange)) {
+					closestRange = distanceSq;
+					target = playerEntity;
+				}
+			}
+		}
+
+		return target;
+	}
+
+	@Override
+	public EntityPlayer getPlayerEntityByName(String name) {
+		for (EntityPlayer player : (Iterable<EntityPlayer>) playerEntities) {
+			if (name.equals(player.username)) {
+				return player;
+			}
+		}
+
+		return null;
 	}
 
 	@Override
@@ -213,13 +278,17 @@ public abstract class PatchWorld extends World {
 			int var8 = MathHelper.floor_double(par1Entity.posZ / 16.0D);
 
 			if (!par1Entity.addedToChunk || par1Entity.chunkCoordX != var6 || par1Entity.chunkCoordY != var7 || par1Entity.chunkCoordZ != var8) {
-				if (par1Entity.addedToChunk && this.chunkExists(par1Entity.chunkCoordX, par1Entity.chunkCoordZ)) {
-					this.getChunkFromChunkCoords(par1Entity.chunkCoordX, par1Entity.chunkCoordZ).removeEntityAtIndex(par1Entity, par1Entity.chunkCoordY);
+				if (par1Entity.addedToChunk) {
+					Chunk chunk = getChunkIfExists(par1Entity.chunkCoordX, par1Entity.chunkCoordZ);
+					if (chunk != null) {
+						chunk.removeEntityAtIndex(par1Entity, par1Entity.chunkCoordY);
+					}
 				}
 
-				if (this.chunkExists(var6, var8)) {
+				Chunk chunk = getChunkIfExists(var6, var8);
+				if (chunk != null) {
 					par1Entity.addedToChunk = true;
-					this.getChunkFromChunkCoords(var6, var8).addEntity(par1Entity);
+					chunk.addEntity(par1Entity);
 				} else {
 					par1Entity.addedToChunk = false;
 				}
@@ -272,12 +341,12 @@ public abstract class PatchWorld extends World {
 		for (int chunkx = (minX >> 4); chunkx <= ((maxX - 1) >> 4); chunkx++) {
 			int cx = chunkx << 4;
 			for (int chunkz = (minZ >> 4); chunkz <= ((maxZ - 1) >> 4); chunkz++) {
-				if (!this.chunkExists(chunkx, chunkz)) {
+				Chunk chunk = this.getChunkIfExists(chunkx, chunkz);
+				if (chunk == null) {
 					continue;
 				}
-				int cz = chunkz << 4;
-				Chunk chunk = this.getChunkFromChunkCoords(chunkx, chunkz);
 				// Compute ranges within chunk
+				int cz = chunkz << 4;
 				int xstart = (minX < cx) ? cx : minX;
 				int xend = (maxX < (cx + 16)) ? maxX : (cx + 16);
 				int zstart = (minZ < cz) ? cz : minZ;
@@ -303,16 +372,16 @@ public abstract class PatchWorld extends World {
 		}
 
 		double var14 = 0.25D;
-		List var16 = this.getEntitiesWithinAABBExcludingEntity(par1Entity, par2AxisAlignedBB.expand(var14, var14, var14), 100);
+		List<Entity> var16 = this.getEntitiesWithinAABBExcludingEntity(par1Entity, par2AxisAlignedBB.expand(var14, var14, var14), 100);
 
-		for (int var15 = 0; var15 < var16.size(); ++var15) {
-			AxisAlignedBB var13 = ((Entity) var16.get(var15)).getBoundingBox();
+		for (Entity aVar16 : var16) {
+			AxisAlignedBB var13 = aVar16.getBoundingBox();
 
 			if (var13 != null && var13.intersectsWith(par2AxisAlignedBB)) {
 				return true;
 			}
 
-			var13 = par1Entity.getCollisionBox((Entity) var16.get(var15));
+			var13 = par1Entity.getCollisionBox(aVar16);
 
 			if (var13 != null && var13.intersectsWith(par2AxisAlignedBB)) {
 				return true;
@@ -338,11 +407,12 @@ public abstract class PatchWorld extends World {
 		for (int chunkx = (var3 >> 4); chunkx <= ((var4 - 1) >> 4); chunkx++) {
 			int cx = chunkx << 4;
 			for (int chunkz = (var7 >> 4); chunkz <= ((var8 - 1) >> 4); chunkz++) {
-				if (!this.chunkExists(chunkx, chunkz)) {
+				Chunk chunk = this.getChunkIfExists(chunkx, chunkz);
+				if (chunk == null) {
 					continue;
 				}
+				// Compute ranges within chunk
 				int cz = chunkz << 4;
-				Chunk chunk = this.getChunkFromChunkCoords(chunkx, chunkz);
 				// Compute ranges within chunk
 				int xstart = (var3 < cx) ? cx : var3;
 				int xend = (var4 < (cx + 16)) ? var4 : (cx + 16);
@@ -366,16 +436,16 @@ public abstract class PatchWorld extends World {
 		}
 
 		double var14 = 0.25D;
-		List var16 = this.getEntitiesWithinAABBExcludingEntity(par1Entity, par2AxisAlignedBB.expand(var14, var14, var14), limit);
+		List<Entity> var16 = this.getEntitiesWithinAABBExcludingEntity(par1Entity, par2AxisAlignedBB.expand(var14, var14, var14), limit);
 
-		for (int var15 = 0; var15 < var16.size(); ++var15) {
-			AxisAlignedBB var13 = ((Entity) var16.get(var15)).getBoundingBox();
+		for (Entity aVar16 : var16) {
+			AxisAlignedBB var13 = aVar16.getBoundingBox();
 
 			if (var13 != null && var13.intersectsWith(par2AxisAlignedBB)) {
 				collidingBoundingBoxes.add(var13);
 			}
 
-			var13 = par1Entity.getCollisionBox((Entity) var16.get(var15));
+			var13 = par1Entity.getCollisionBox(aVar16);
 
 			if (var13 != null && var13.intersectsWith(par2AxisAlignedBB)) {
 				collidingBoundingBoxes.add(var13);
@@ -413,8 +483,9 @@ public abstract class PatchWorld extends World {
 
 		for (int x = minX; x <= maxX; ++x) {
 			for (int z = minZ; z <= maxZ; ++z) {
-				if (this.chunkExists(x, z)) {
-					this.getChunkFromChunkCoords(x, z).getEntitiesWithinAABBForEntity(par1Entity, par2AxisAlignedBB, entitiesWithinAABBExcludingEntity, limit);
+				Chunk chunk = getChunkIfExists(x, z);
+				if (chunk != null) {
+					chunk.getEntitiesWithinAABBForEntity(par1Entity, par2AxisAlignedBB, entitiesWithinAABBExcludingEntity, limit);
 				}
 			}
 		}
@@ -433,8 +504,9 @@ public abstract class PatchWorld extends World {
 
 		for (int var7 = var3; var7 <= var4; ++var7) {
 			for (int var8 = var5; var8 <= var6; ++var8) {
-				if (this.chunkExists(var7, var8)) {
-					this.getChunkFromChunkCoords(var7, var8).getEntitiesWithinAABBForEntity(par1Entity, par2AxisAlignedBB, entitiesWithinAABBExcludingEntity);
+				Chunk chunk = getChunkIfExists(var7, var8);
+				if (chunk != null) {
+					chunk.getEntitiesWithinAABBForEntity(par1Entity, par2AxisAlignedBB, entitiesWithinAABBExcludingEntity);
 				}
 			}
 		}
@@ -447,17 +519,39 @@ public abstract class PatchWorld extends World {
 		if (loadedEntityList instanceof EntityList) {
 			return ((EntityList) this.loadedEntityList).manager.getEntityCount(entityType);
 		}
-		int var2 = 0;
+		int count = 0;
 
-		for (int var3 = 0; var3 < this.loadedEntityList.size(); ++var3) {
-			Entity var4 = (Entity) this.loadedEntityList.get(var3);
+		for (Entity e : (Iterable<Entity>) this.loadedEntityList) {
 
-			if (entityType.isAssignableFrom(var4.getClass())) {
-				++var2;
+			if (entityType.isAssignableFrom(e.getClass())) {
+				++count;
 			}
 		}
 
-		return var2;
+		return count;
+	}
+
+	@Override
+	public boolean checkChunksExist(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+		if (minY > 255 || maxY < 0) {
+			return false;
+		}
+
+		minX >>= 4;
+		minZ >>= 4;
+		maxX >>= 4;
+		maxZ >>= 4;
+
+		ChunkProviderServer chunkProviderServer = (ChunkProviderServer) chunkProvider;
+		for (int x = minX; x <= maxX; ++x) {
+			for (int z = minZ; z <= maxZ; ++z) {
+				if (!chunkProviderServer.chunkExists(x, z)) {
+					return false;
+				}
+			}
+		}
+
+		return true;
 	}
 
 	@Override
@@ -505,8 +599,11 @@ public abstract class PatchWorld extends World {
 				var3 = entity.chunkCoordX;
 				var13 = entity.chunkCoordZ;
 
-				if (entity.addedToChunk && this.chunkExists(var3, var13)) {
-					this.getChunkFromChunkCoords(var3, var13).removeEntity(entity);
+				if (entity.addedToChunk) {
+					Chunk chunk = getChunkIfExists(var3, var13);
+					if (chunk != null) {
+						chunk.removeEntity(entity);
+					}
 				}
 
 				releaseEntitySkin(entity);
@@ -554,8 +651,11 @@ public abstract class PatchWorld extends World {
 					var3 = var2.chunkCoordX;
 					var13 = var2.chunkCoordZ;
 
-					if (var2.addedToChunk && this.chunkExists(var3, var13)) {
-						this.getChunkFromChunkCoords(var3, var13).removeEntity(var2);
+					if (var2.addedToChunk) {
+						Chunk chunk = getChunkIfExists(var3, var13);
+						if (chunk != null) {
+							chunk.removeEntity(var2);
+						}
 					}
 
 					this.loadedEntityList.remove(var1--);
@@ -595,12 +695,10 @@ public abstract class PatchWorld extends World {
 				if (var9.isInvalid()) {
 					var14.remove();
 
-					if (this.chunkExists(var9.xCoord >> 4, var9.zCoord >> 4)) {
-						Chunk var11 = this.getChunkFromChunkCoords(var9.xCoord >> 4, var9.zCoord >> 4);
+					Chunk var11 = this.getChunkIfExists(var9.xCoord >> 4, var9.zCoord >> 4);
 
-						if (var11 != null) {
-							var11.cleanChunkBlockTileEntity(var9.xCoord & 15, var9.yCoord, var9.zCoord & 15);
-						}
+					if (var11 != null) {
+						var11.cleanChunkBlockTileEntity(var9.xCoord & 15, var9.yCoord, var9.zCoord & 15);
 					}
 				}
 			}
@@ -625,20 +723,16 @@ public abstract class PatchWorld extends World {
 		this.theProfiler.endStartSection("pendingTileEntities");
 
 		if (!this.addedTileEntityList.isEmpty()) {
-			for (int var10 = 0; var10 < this.addedTileEntityList.size(); ++var10) {
-				TileEntity var12 = (TileEntity) this.addedTileEntityList.get(var10);
+			for (TileEntity te : (Iterable<TileEntity>) this.addedTileEntityList) {
+				if (te.isInvalid()) {
+					Chunk var15 = this.getChunkIfExists(te.xCoord >> 4, te.zCoord >> 4);
 
-				if (!var12.isInvalid()) {
-					if (!this.loadedTileEntityList.contains(var12)) {
-						this.loadedTileEntityList.add(var12);
+					if (var15 != null) {
+						var15.cleanChunkBlockTileEntity(te.xCoord & 15, te.yCoord, te.zCoord & 15);
 					}
 				} else {
-					if (this.chunkExists(var12.xCoord >> 4, var12.zCoord >> 4)) {
-						Chunk var15 = this.getChunkFromChunkCoords(var12.xCoord >> 4, var12.zCoord >> 4);
-
-						if (var15 != null) {
-							var15.cleanChunkBlockTileEntity(var12.xCoord & 15, var12.yCoord, var12.zCoord & 15);
-						}
+					if (!this.loadedTileEntityList.contains(te)) {
+						this.loadedTileEntityList.add(te);
 					}
 				}
 			}
@@ -648,6 +742,12 @@ public abstract class PatchWorld extends World {
 
 		this.theProfiler.endSection();
 		this.theProfiler.endSection();
+	}
+
+	@Override
+	@Declare
+	public Chunk getChunkIfExists(int x, int z) {
+		return ((ChunkProviderServer) chunkProvider).getChunkIfExists(x, z);
 	}
 
 	@Override

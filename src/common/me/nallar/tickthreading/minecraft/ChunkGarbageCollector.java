@@ -47,8 +47,7 @@ public class ChunkGarbageCollector {
 			}
 		}
 
-		for (Object player_ : worldServer.playerEntities) {
-			EntityPlayerMP player = (EntityPlayerMP) player_;
+		for (EntityPlayerMP player : (Iterable<EntityPlayerMP>) worldServer.playerEntities) {
 			int cX = (int) player.managedPosX >> 4;
 			int cZ = (int) player.managedPosZ >> 4;
 			int minX = cX - viewDistance;

@@ -185,16 +185,12 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 		if (TickThreading.instance.shouldFastSpawn(par0WorldServer)) {
 			return spawnMobsQuickly(par0WorldServer, par1, par2, par3);
 		}
-		if (par0WorldServer.playerEntities.isEmpty()) {
-			return 0;
-		}
 		double tpsFactor = Math.max(1, Math.min(0.1d, MinecraftServer.getTPS() / 20d));
 		HashMap<ChunkCoordIntPair, Boolean> eligibleChunksForSpawning = new HashMap<ChunkCoordIntPair, Boolean>();
 		int var4;
 		int var7;
 
-		for (var4 = 0; var4 < par0WorldServer.playerEntities.size(); ++var4) {
-			EntityPlayer var5 = (EntityPlayer) par0WorldServer.playerEntities.get(var4);
+		for (EntityPlayer var5 : (Iterable<EntityPlayer>) par0WorldServer.playerEntities) {
 			int var6 = MathHelper.floor_double(var5.posX / 16.0D);
 			var7 = MathHelper.floor_double(var5.posZ / 16.0D);
 			byte var8 = 8;
