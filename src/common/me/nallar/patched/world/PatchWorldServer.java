@@ -308,7 +308,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		}
 
 		HashSet<ChunkCoordIntPair> activeChunkSet = chunkTickSet;
-		if (tickCount % 5 == 0) {
+		if (tickCount % 7 == 0) {
 			Profiler profiler = this.theProfiler;
 			profiler.startSection("buildList");
 
@@ -338,10 +338,12 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 			Random rand = this.rand;
 			if (!playerEntities.isEmpty()) {
 				EntityPlayer entityPlayer = playerEntities.get(rand.nextInt(playerEntities.size()));
-				int x = ((int) entityPlayer.posX) + rand.nextInt(11) - 5;
-				int y = ((int) entityPlayer.posY) + rand.nextInt(11) - 5;
-				int z = ((int) entityPlayer.posZ) + rand.nextInt(11) - 5;
-				this.updateAllLightTypes(x, y, z);
+				if (entityPlayer != null) {
+					int x = ((int) entityPlayer.posX) + rand.nextInt(11) - 5;
+					int y = ((int) entityPlayer.posY) + rand.nextInt(11) - 5;
+					int z = ((int) entityPlayer.posZ) + rand.nextInt(11) - 5;
+					this.updateAllLightTypes(x, y, z);
+				}
 			}
 
 			profiler.endSection();
