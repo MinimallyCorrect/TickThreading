@@ -35,6 +35,11 @@ public abstract class PatchDimensionManager extends DimensionManager {
 						} catch (Throwable t) {
 							Log.severe("A mod failed to handle a world unload", t);
 						}
+						try {
+							fireBukkitWorldUnload(w);
+						} catch (Throwable t) {
+							Log.severe("A plugin failed to handle a world unload", t);
+						}
 						w.flush();
 						setWorld(id, null);
 						List<WorldServer> worlds = MinecraftServer.getServer().worlds;
@@ -53,5 +58,9 @@ public abstract class PatchDimensionManager extends DimensionManager {
 			}
 			unloadQueue.clear();
 		}
+	}
+
+	public static void fireBukkitWorldUnload(WorldServer w) {
+
 	}
 }

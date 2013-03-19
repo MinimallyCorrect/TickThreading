@@ -246,7 +246,8 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	public void tick() {
 		final Profiler profiler = this.theProfiler;
 		final WorldInfo worldInfo = this.worldInfo;
-		int tickCount = ++this.tickCount;
+		final int tickCount = ++this.tickCount;
+		final boolean hasPlayers = !playerEntities.isEmpty();
 		this.updateWeather();
 		if (this.difficultySetting < 3 && this.getWorldInfo().isHardcoreModeEnabled()) {
 			this.difficultySetting = 3;
@@ -260,7 +261,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 			this.provider.worldChunkMgr.cleanupCache();
 		}
 
-		if (this.areAllPlayersAsleep()) {
+		if (hasPlayers && this.areAllPlayersAsleep()) {
 			long var2 = worldInfo.getWorldTime();
 			worldInfo.setWorldTime(var2 + 24000L - (var2 % 24000L));
 			this.wakeAllPlayers();
@@ -268,12 +269,13 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 
 		profiler.startSection("mobSpawner");
 
-		if (this.getGameRules().getGameRuleBooleanValue("doMobSpawning")) {
+		if (hasPlayers && this.getGameRules().getGameRuleBooleanValue("doMobSpawning")) {
 			SpawnerAnimals.findChunksForSpawning(this, this.spawnHostileMobs, this.spawnPeacefulMobs, worldInfo.getWorldTotalTime() % 400L == 0L);
 		}
 
 		profiler.endStartSection("chunkSource");
-		this.chunkProvider.unload100OldestChunks();
+		theChunkProviderServer.unload100OldestChunks();
+		theChunkProviderServer.tick();
 		this.skylightSubtracted = this.calculateSkylightSubtracted(1.0F);
 
 		this.sendAndApplyBlockEvents();
@@ -304,8 +306,6 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		if (concurrentTicks) {
 			threadManager.waitForCompletion();
 		}
-
-		theChunkProviderServer.tick();
 
 		HashSet<ChunkCoordIntPair> activeChunkSet = chunkTickSet;
 		if (tickCount % 5 == 0) {

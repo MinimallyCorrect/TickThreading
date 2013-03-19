@@ -321,6 +321,13 @@
 			<addAll fromClass="me.nallar.patched.forge.PatchDimensionManager"/>
 			<synchronize field="unloadQueue">unloadWorld</synchronize>
 		</class>
+		<class id="net.minecraftforge.common.DimensionManager" env="mcpc">
+			<replaceMethod code="{
+				org.bukkit.Bukkit.getServer().getPluginManager().callEvent(new org.bukkit.event.world.WorldUnloadEvent($1.getWorld()));
+			}
+			">fireBukkitWorldUnload
+			</replaceMethod>
+		</class>
 		<class id="net.minecraftforge.common.ForgeChunkManager">
 			<addAll fromClass="me.nallar.patched.forge.PatchForgeChunkManager"/>
 		</class>
