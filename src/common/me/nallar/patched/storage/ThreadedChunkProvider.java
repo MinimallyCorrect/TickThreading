@@ -313,7 +313,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	public void unloadChunkImmediately(int x, int z, boolean save) {
 		Chunk chunk = getChunkIfExists(x, z);
-		if (chunk == null) {
+		if (chunk == null || !fireBukkitUnloadEvent(chunk)) {
 			return;
 		}
 		chunk.unloading = true;
