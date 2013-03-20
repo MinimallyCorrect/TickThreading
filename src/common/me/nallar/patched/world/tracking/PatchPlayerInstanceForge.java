@@ -11,7 +11,8 @@ import net.minecraftforge.event.world.ChunkWatchEvent;
 
 public abstract class PatchPlayerInstanceForge extends PlayerInstance {
 	private static byte[] unloadSequence;
-	private boolean loaded;
+	@Declare
+	public boolean loaded_;
 
 	public PatchPlayerInstanceForge(PlayerManager par1PlayerManager, int par2, int par3) {
 		super(par1PlayerManager, par2, par3);
@@ -28,12 +29,7 @@ public abstract class PatchPlayerInstanceForge extends PlayerInstance {
 	}
 
 	public void construct() {
-		myManager.getWorldServer().theChunkProviderServer.getChunkAt(chunkLocation.chunkXPos, chunkLocation.chunkZPos, new Runnable() {
-			@Override
-			public void run() {
-				loaded = true;
-			}
-		});
+		myManager.getWorldServer().theChunkProviderServer.getChunkAt(chunkLocation.chunkXPos, chunkLocation.chunkZPos, new LoadRunnable(this));
 	}
 
 	@Override
@@ -45,12 +41,7 @@ public abstract class PatchPlayerInstanceForge extends PlayerInstance {
 			if (loaded) {
 				par1EntityPlayerMP.loadedChunks.add(chunkLocation);
 			} else {
-				myManager.getWorldServer().theChunkProviderServer.getChunkAt(chunkLocation.chunkXPos, chunkLocation.chunkZPos, new Runnable() {
-					@Override
-					public void run() {
-						par1EntityPlayerMP.loadedChunks.add(chunkLocation);
-					}
-				});
+				myManager.getWorldServer().theChunkProviderServer.getChunkAt(chunkLocation.chunkXPos, chunkLocation.chunkZPos, new AddToPlayerRunnable(par1EntityPlayerMP, chunkLocation));
 			}
 		}
 	}
@@ -91,6 +82,34 @@ public abstract class PatchPlayerInstanceForge extends PlayerInstance {
 
 				this.myManager.getWorldServer().theChunkProviderServer.unloadChunksIfNotNearSpawn(this.chunkLocation.chunkXPos, this.chunkLocation.chunkZPos);
 			}
+		}
+	}
+
+	public static class AddToPlayerRunnable implements Runnable {
+		private final EntityPlayerMP par1EntityPlayerMP;
+		private final ChunkCoordIntPair chunkLocation;
+
+		public AddToPlayerRunnable(EntityPlayerMP par1EntityPlayerMP, ChunkCoordIntPair chunkLocation) {
+			this.par1EntityPlayerMP = par1EntityPlayerMP;
+			this.chunkLocation = chunkLocation;
+		}
+
+		@Override
+		public void run() {
+			par1EntityPlayerMP.loadedChunks.add(chunkLocation);
+		}
+	}
+
+	public static class LoadRunnable implements Runnable {
+		final PlayerInstance playerInstance;
+
+		public LoadRunnable(PlayerInstance playerInstance) {
+			this.playerInstance = playerInstance;
+		}
+
+		@Override
+		public void run() {
+			playerInstance.loaded = true;
 		}
 	}
 }

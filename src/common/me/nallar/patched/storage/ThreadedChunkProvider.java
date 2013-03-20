@@ -20,6 +20,7 @@ import me.nallar.tickthreading.collections.NonBlockingLongSet;
 import me.nallar.tickthreading.minecraft.ChunkGarbageCollector;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
+import me.nallar.tickthreading.util.DoNothingRunnable;
 import me.nallar.tickthreading.util.ServerThreadFactory;
 import me.nallar.tickthreading.util.concurrent.NativeMutex;
 import me.nallar.unsafe.UnsafeUtil;
@@ -61,11 +62,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		chunkLoadThreadPool.allowCoreThreadTimeOut(true);
 	}
 
-	private static final Runnable doNothingRunnable = new Runnable() {
-		@Override
-		public void run() {
-		}
-	};
+	private static final Runnable doNothingRunnable = new DoNothingRunnable();
 	private final NonBlockingHashMapLong<Object> chunkLoadLocks = new NonBlockingHashMapLong<Object>();
 	private final LongHashMap chunks = new LongHashMap();
 	private final LongHashMap loadingChunks = new LongHashMap();
@@ -191,8 +188,16 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 		if (!loadChunkIfNotFound && !loadedPersistentChunks && unloadTicks >= 5) {
 			loadedPersistentChunks = true;
+			int loaded = 0;
+			int possible = world.getPersistentChunks().size();
 			for (ChunkCoordIntPair chunkCoordIntPair : world.getPersistentChunks().keySet()) {
-				getChunkAt(chunkCoordIntPair.chunkXPos, chunkCoordIntPair.chunkZPos, doNothingRunnable);
+				if (getChunkAt(chunkCoordIntPair.chunkXPos, chunkCoordIntPair.chunkZPos, doNothingRunnable) == null) {
+					loaded++;
+				}
+				possible++;
+			}
+			if (possible > 0) {
+				Log.info("Loaded " + loaded + '/' + possible + " persistent chunks in " + Log.name(world));
 			}
 		}
 	}

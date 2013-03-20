@@ -52,6 +52,7 @@ public class PatchManager {
 	public final ClassRegistry classRegistry = new ClassRegistry();
 	public File backupDirectory;
 	public String patchEnvironment = "forge";
+	public Map<String, CtClass> patchingClasses;
 
 	public PatchManager() {
 	}
@@ -81,7 +82,7 @@ public class PatchManager {
 
 	public void loadPatches(Class<? extends Patches> patchClass) {
 		try {
-			patchTypes = patchClass.getDeclaredConstructors()[0].newInstance(classRegistry);
+			patchTypes = patchClass.getDeclaredConstructors()[0].newInstance(this, classRegistry);
 		} catch (Exception e) {
 			Log.severe("Failed to instantiate patch class", e);
 		}
@@ -196,7 +197,7 @@ public class PatchManager {
 
 	public void runPatches() {
 		List<Element> modElements = DomUtil.elementList(configDocument.getDocumentElement().getChildNodes());
-		Map<String, CtClass> patchedClasses = new HashMap<String, CtClass>();
+		patchingClasses = new HashMap<String, CtClass>();
 		for (Element modElement : modElements) {
 			for (Element classElement : DomUtil.getElementsByTag(modElement, "class")) {
 				String className = classElement.getAttribute("id");
@@ -235,11 +236,11 @@ public class PatchManager {
 					}
 				}
 				if (patched) {
-					patchedClasses.put(className, ctClass);
+					patchingClasses.put(className, ctClass);
 				}
 			}
 		}
-		for (Map.Entry<String, CtClass> entry : patchedClasses.entrySet()) {
+		for (Map.Entry<String, CtClass> entry : patchingClasses.entrySet()) {
 			String className = entry.getKey();
 			CtClass ctClass = entry.getValue();
 			try {
@@ -248,6 +249,7 @@ public class PatchManager {
 				Log.severe("Javassist failed to save " + className, e);
 			}
 		}
+		patchingClasses = null;
 	}
 
 	public void save(File file) throws TransformerException {

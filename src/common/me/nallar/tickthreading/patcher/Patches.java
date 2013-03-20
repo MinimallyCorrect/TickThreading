@@ -47,9 +47,11 @@ import org.omg.CORBA.IntHolder;
 
 @SuppressWarnings ("MethodMayBeStatic")
 public class Patches {
+	private final PatchManager patchManager;
 	private final ClassRegistry classRegistry;
 
-	public Patches(ClassRegistry classRegistry) {
+	public Patches(PatchManager patchManager, ClassRegistry classRegistry) {
+		this.patchManager = patchManager;
 		this.classRegistry = classRegistry;
 	}
 
@@ -281,10 +283,11 @@ public class Patches {
 			requiredAttributes = "class"
 	)
 	public CtClass replace(CtClass clazz, Map<String, String> attributes) throws NotFoundException, CannotCompileException, BadBytecode {
-		Log.info("Replacing " + clazz.getName() + " with " + attributes.get("class"));
+		String fromClass = attributes.get("class");
+		Log.info("Replacing " + clazz.getName() + " with " + fromClass);
 		String oldName = clazz.getName();
 		clazz.setName(oldName + "_old");
-		CtClass newClass = classRegistry.getClass(attributes.get("class"));
+		CtClass newClass = classRegistry.getClass(fromClass);
 		ClassFile classFile = newClass.getClassFile2();
 		if (classFile.getSuperclass().equals(oldName)) {
 			classFile.setSuperclass(null);
@@ -312,7 +315,24 @@ public class Patches {
 		}
 		newClass.setName(oldName);
 		newClass.setModifiers(newClass.getModifiers() & ~Modifier.ABSTRACT);
+		publicInnerClasses(fromClass);
 		return newClass;
+	}
+
+	@Patch
+	public void publicInnerClasses(String outer) {
+		boolean exists = true;
+		for (int i = 1; exists; i++) {
+			try {
+				String innerName = outer + '$' + i;
+				CtClass innerClass = classRegistry.getClass(innerName);
+				public_(innerClass, Collections.<String, String>emptyMap());
+				Log.info("Made " + innerName + " public.");
+				patchManager.patchingClasses.put(innerName, innerClass);
+			} catch (NotFoundException e) {
+				exists = false;
+			}
+		}
 	}
 
 	@Patch
@@ -510,6 +530,7 @@ public class Patches {
 		for (CtClass CtInterface : from.getInterfaces()) {
 			ctClass.addInterface(CtInterface);
 		}
+		publicInnerClasses(fromClass);
 	}
 
 	@Patch (
