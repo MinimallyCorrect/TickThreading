@@ -323,6 +323,7 @@
 							} "
 							>unloadChunk(IIZZ)Z
 			</replaceMethod>
+			<disable>processChunkGC</disable>
 		</class>
 	</bukkit>
 	<forge>

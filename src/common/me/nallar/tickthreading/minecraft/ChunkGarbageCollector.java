@@ -12,30 +12,9 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.ChunkProviderServer;
 
 public class ChunkGarbageCollector {
-	public static final boolean enabled = supportsGC();
-
-	private static boolean supportsGC() {
-		return true;
-		/*
-		try {
-			Class.forName("org.bukkit.craftbukkit.libs.jline.Terminal");
-		} catch (ClassNotFoundException e) {
-			try {
-				Class.forName("org.bukkit.craftbukkit.v1_4_R1.libs.jline.Terminal");
-			} catch (ClassNotFoundException e1) {
-				return true;
-			}
-		}
-		return false;
-		*/
-	}
-
 	public static final Profiler profiler = MinecraftServer.getServer().theProfiler;
 
 	public static void garbageCollect(WorldServer worldServer) {
-		if (!enabled) {
-			return;
-		}
 		profiler.startSection("chunkGC");
 		int viewDistance = MinecraftServer.getServer().getConfigurationManager().getViewDistance() + 1;
 		ChunkProviderServer chunkProvider = worldServer.theChunkProviderServer;
