@@ -312,6 +312,8 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	}
 
 	public void unloadChunkImmediately(int x, int z, boolean save) {
+		long key = key(x, z);
+		finalizeUnload(key);
 		Chunk chunk = getChunkIfExists(x, z);
 		if (chunk == null || !fireBukkitUnloadEvent(chunk)) {
 			return;
@@ -324,7 +326,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			safeSaveExtraChunkData(chunk);
 		}
 		loadedChunks.remove(chunk);
-		chunks.remove(key(x, z));
+		chunks.remove(key);
 	}
 
 	@Override
