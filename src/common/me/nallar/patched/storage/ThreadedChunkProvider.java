@@ -72,7 +72,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	private final IChunkProvider generator; // Mojang shouldn't use the same interface for  :(
 	private final IChunkLoader loader;
 	private final WorldServer world;
-	private final Chunk emptyChunk;
+	private final Chunk defaultEmptyChunk;
 	private final ThreadLocal<Boolean> inUnload = new BooleanThreadLocal();
 	private final boolean loadChunkIfNotFound;
 	private boolean loadedPersistentChunks = false;
@@ -91,7 +91,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		this.world = world;
 		currentChunkLoader = this.loader = loader;
 		loadedChunks = Collections.synchronizedList(new ArrayList<Chunk>());
-		emptyChunk = new EmptyChunk(world, 0, 0);
+		defaultEmptyChunk = new EmptyChunk(world, 0, 0);
 		loadChunkIfNotFound = TickThreading.instance.loadChunkOnProvideRequest;
 	}
 
@@ -297,7 +297,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			return getChunkAt(x, z, null);
 		}
 
-		return emptyChunk;
+		return defaultEmptyChunk;
 	}
 
 	@Override
@@ -309,6 +309,22 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	@Declare
 	public final Chunk getChunkAt(final int x, final int z, final Runnable runnable) {
 		return getChunkAt(x, z, true, runnable);
+	}
+
+	public void unloadChunkImmediately(int x, int z, boolean save) {
+		Chunk chunk = getChunkIfExists(x, z);
+		if (chunk == null) {
+			return;
+		}
+		chunk.unloading = true;
+		chunk.onChunkUnload();
+		chunk.isChunkLoaded = false;
+		if (save || chunk.isModified) {
+			safeSaveChunk(chunk);
+			safeSaveExtraChunkData(chunk);
+		}
+		loadedChunks.remove(chunk);
+		chunks.remove(key(x, z));
 	}
 
 	@Override
@@ -350,7 +366,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 					chunk = null;
 				}
 				if (chunk == null) {
-					loadingChunks.add(key, emptyChunk);
+					loadingChunks.add(key, defaultEmptyChunk);
 				} else {
 					loadingChunks.add(key, chunk);
 					inLoadingMap = true;
@@ -387,9 +403,9 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 						return chunk;
 					}
 					chunk = (Chunk) loadingChunks.getValueByKey(key);
-					if (chunk == null || chunk == emptyChunk) {
+					if (chunk == null || chunk == defaultEmptyChunk) {
 						if (generator == null) {
-							chunk = emptyChunk;
+							chunk = defaultEmptyChunk;
 						} else {
 							if (!allowGenerate) {
 								loadingChunks.remove(key);

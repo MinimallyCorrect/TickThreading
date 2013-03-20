@@ -311,6 +311,18 @@
 							} "
 							>loadChunk(IIZ)Z
 			</replaceMethod>
+			<replaceMethod
+							code=" {
+								if ($4 &amp;&amp; isChunkInUse($1, $2)) {
+										return false;
+								}
+
+								world.^field:WorldServer/theChunkProviderServer^.unloadChunkImmediately($1, $2, $3);
+
+								return true;
+							} "
+							>unloadChunk(IIZZ)Z
+			</replaceMethod>
 		</class>
 	</bukkit>
 	<forge>
