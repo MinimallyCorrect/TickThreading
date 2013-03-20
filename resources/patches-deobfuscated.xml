@@ -305,6 +305,12 @@
 							} "
 							>getLoadedChunks
 			</replaceMethod>
+			<replaceMethod
+							code=" {
+								return world.^field:WorldServer/theChunkProviderServer^.getChunkAt($1, $2, $3, null) == null;
+							} "
+							>loadChunk(IIZ)Z
+			</replaceMethod>
 		</class>
 	</bukkit>
 	<forge>

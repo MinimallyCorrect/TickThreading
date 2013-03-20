@@ -118,8 +118,8 @@ public class PatchManager {
 	}
 
 	public void obfuscate(Mappings mappings) {
-		NodeList classNodes = ((Element) configDocument.getElementsByTagName("minecraftCommon").item(0)).getElementsByTagName("class");
-		for (Element classElement : DomUtil.elementList(classNodes)) {
+		NodeList minecraftClassNodes = ((Element) configDocument.getElementsByTagName("minecraftCommon").item(0)).getElementsByTagName("class");
+		for (Element classElement : DomUtil.elementList(minecraftClassNodes)) {
 			String className = classElement.getAttribute("id");
 			ClassDescription deobfuscatedClass = new ClassDescription(className);
 			ClassDescription obfuscatedClass = mappings.map(deobfuscatedClass);
@@ -165,19 +165,23 @@ public class PatchManager {
 						patchElement.setAttribute("field", prefix + obfuscatedField.name + after);
 					}
 				}
+				String clazz = patchElement.getAttribute("class");
+				if (!clazz.isEmpty()) {
+					ClassDescription obfuscatedClazz = mappings.map(new ClassDescription(clazz));
+					if (obfuscatedClazz != null) {
+						patchElement.setAttribute("class", obfuscatedClazz.name);
+					}
+				}
+			}
+		}
+		for (Element classElement : DomUtil.getElementsByTag(configDocument.getDocumentElement(), "class")) {
+			for (Element patchElement : DomUtil.elementList(classElement.getChildNodes())) {
 				String code = patchElement.getAttribute("code");
 				if (!code.isEmpty()) {
 					String obfuscatedCode = mappings.obfuscate(code);
 					if (!code.equals(obfuscatedCode)) {
 						patchElement.setAttribute("code", obfuscatedCode);
 						Log.info("Obfuscated " + code + " to " + obfuscatedCode);
-					}
-				}
-				String clazz = patchElement.getAttribute("class");
-				if (!clazz.isEmpty()) {
-					ClassDescription obfuscatedClazz = mappings.map(new ClassDescription(clazz));
-					if (obfuscatedClazz != null) {
-						patchElement.setAttribute("class", obfuscatedClazz.name);
 					}
 				}
 			}

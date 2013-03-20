@@ -22,6 +22,7 @@ public class MCPMappings extends Mappings {
 	private static final Pattern packagePattern = Pattern.compile("package\\s+?([^\\s;]+)[^;]*?;", Pattern.DOTALL | Pattern.MULTILINE);
 	private static final Pattern classObfuscatePattern = Pattern.compile("\\^class:([^\\^]+)\\^", Pattern.DOTALL | Pattern.MULTILINE);
 	private static final Pattern methodObfuscatePattern = Pattern.compile("\\^method:([^\\^/]+)/([^\\^/]+)\\^", Pattern.DOTALL | Pattern.MULTILINE);
+	private static final Pattern fieldObfuscatePattern = Pattern.compile("\\^field:([^\\^/]+)/([^\\^/]+)\\^", Pattern.DOTALL | Pattern.MULTILINE);
 	private final Map<String, String> methodSeargeMappings = new HashMap<String, String>();
 	private final Map<String, String> fieldSeargeMappings = new HashMap<String, String>();
 	private final BiMap<ClassDescription, ClassDescription> classMappings = HashBiMap.create();
@@ -49,6 +50,7 @@ public class MCPMappings extends Mappings {
 		return methodMappings.inverse().get(methodDescription);
 	}
 
+	@Override
 	public String obfuscate(String code) {
 		StringBuffer result = new StringBuffer();
 
@@ -69,6 +71,26 @@ public class MCPMappings extends Mappings {
 				methodMatcher.appendReplacement(result, mapped.name);
 			}
 			methodMatcher.appendTail(result);
+		}
+
+		{
+			Matcher fieldMatcher = fieldObfuscatePattern.matcher(result);
+			result = new StringBuffer();
+			while (fieldMatcher.find()) {
+				String className = shortClassNameToFullClassName(fieldMatcher.group(1));
+				String fieldName = fieldMatcher.group(2);
+				if (className == null) {
+					className = fieldMatcher.group(1);
+					if (!className.contains(".")) {
+						Log.severe("Could not find " + fieldMatcher.group(1));
+						continue;
+					}
+				}
+				FieldDescription fieldDescription = new FieldDescription(className, fieldName);
+				FieldDescription mapped = map(fieldDescription);
+				fieldMatcher.appendReplacement(result, mapped.name);
+			}
+			fieldMatcher.appendTail(result);
 		}
 
 		{

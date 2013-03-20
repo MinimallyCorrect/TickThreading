@@ -286,7 +286,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	}
 
 	@Override
-	public Chunk provideChunk(int x, int z) {
+	public final Chunk provideChunk(int x, int z) {
 		Chunk chunk = getChunkIfExists(x, z);
 
 		if (chunk != null) {
@@ -301,14 +301,20 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	}
 
 	@Override
-	public Chunk loadChunk(int x, int z) {
+	public final Chunk loadChunk(int x, int z) {
 		return getChunkAt(x, z, null);
+	}
+
+	@Override
+	@Declare
+	public final Chunk getChunkAt(final int x, final int z, final Runnable runnable) {
+		return getChunkAt(x, z, true, runnable);
 	}
 
 	@Override
 	@SuppressWarnings ("ConstantConditions")
 	@Declare
-	public Chunk getChunkAt(final int x, final int z, final Runnable runnable) {
+	public final Chunk getChunkAt(final int x, final int z, boolean allowGenerate, final Runnable runnable) {
 		Chunk chunk = getChunkIfExists(x, z);
 
 		if (chunk != null) {
@@ -385,6 +391,11 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 						if (generator == null) {
 							chunk = emptyChunk;
 						} else {
+							if (!allowGenerate) {
+								loadingChunks.remove(key);
+								chunkLoadLocks.remove(key);
+								return null;
+							}
 							try {
 								chunk = generator.provideChunk(x, z);
 								wasGenerated = true;
@@ -577,7 +588,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	@Override
 	@Declare
-	public Chunk getChunkIfExists(int x, int z) {
+	public final Chunk getChunkIfExists(int x, int z) {
 		Chunk chunk = lastChunk;
 		if (chunk != null && chunk.xPosition == x && chunk.zPosition == z) {
 			return chunk;
