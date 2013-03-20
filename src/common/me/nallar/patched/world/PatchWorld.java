@@ -543,10 +543,9 @@ public abstract class PatchWorld extends World {
 		maxX >>= 4;
 		maxZ >>= 4;
 
-		ChunkProviderServer chunkProviderServer = (ChunkProviderServer) chunkProvider;
 		for (int x = minX; x <= maxX; ++x) {
 			for (int z = minZ; z <= maxZ; ++z) {
-				if (!chunkProviderServer.chunkExists(x, z)) {
+				if (!chunkProvider.chunkExists(x, z)) {
 					return false;
 				}
 			}
