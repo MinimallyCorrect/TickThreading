@@ -1,5 +1,8 @@
 package me.nallar.patched.nbt;
 
+import java.util.Map;
+
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagByte;
 import net.minecraft.nbt.NBTTagByteArray;
 import net.minecraft.nbt.NBTTagCompound;
@@ -14,6 +17,17 @@ import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.ReportedException;
 
 public abstract class PatchNBTTagCompound extends NBTTagCompound {
+	@Override
+	public NBTBase copy() {
+		NBTTagCompound var1 = new NBTTagCompound(this.getName());
+
+		for (Map.Entry<String, NBTBase> o : ((Map<String, NBTBase>) this.tagMap).entrySet()) {
+			var1.setTag(o.getKey(), o.getValue().copy());
+		}
+
+		return var1;
+	}
+
 	@Override
 	public byte getByte(String tag) {
 		try {
