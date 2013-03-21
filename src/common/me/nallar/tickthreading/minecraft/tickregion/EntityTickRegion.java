@@ -21,20 +21,20 @@ public class EntityTickRegion extends TickRegion {
 
 	@Override
 	public void doTick() {
-		try {
-			ChunkProviderServer chunkProvider = (ChunkProviderServer) world.getChunkProvider();
-			boolean profilingEnabled = manager.profilingEnabled || this.profilingEnabled;
-			EntityTickProfiler entityTickProfiler = null;
-			long startTime = 0;
+		ChunkProviderServer chunkProvider = (ChunkProviderServer) world.getChunkProvider();
+		boolean profilingEnabled = manager.profilingEnabled || this.profilingEnabled;
+		EntityTickProfiler entityTickProfiler = null;
+		long startTime = 0;
+		if (profilingEnabled) {
+			entityTickProfiler = manager.entityTickProfiler;
+		}
+		Iterator<Entity> entitiesIterator = entitySet.iterator();
+		while (entitiesIterator.hasNext()) {
 			if (profilingEnabled) {
-				entityTickProfiler = manager.entityTickProfiler;
+				startTime = System.nanoTime();
 			}
-			Iterator<Entity> entitiesIterator = entitySet.iterator();
-			while (entitiesIterator.hasNext()) {
-				if (profilingEnabled) {
-					startTime = System.nanoTime();
-				}
-				Entity entity = entitiesIterator.next();
+			Entity entity = entitiesIterator.next();
+			try {
 				if (entity.ridingEntity != null) {
 					if (!entity.ridingEntity.isDead && entity.ridingEntity.riddenByEntity == entity) {
 						continue;
@@ -69,12 +69,12 @@ public class EntityTickRegion extends TickRegion {
 					// Note to self for when I decide this is wrong later:
 					// Entities are supposed to move, of course this will happen!
 				}
-				if (profilingEnabled) {
-					entityTickProfiler.record(entity, System.nanoTime() - startTime);
-				}
+			} catch (Throwable throwable) {
+				Log.severe("Exception ticking entity " + entity + " in " + toString() + ':', throwable);
 			}
-		} catch (Throwable throwable) {
-			Log.severe("Exception during entity tick at " + toString() + ':', throwable);
+			if (profilingEnabled) {
+				entityTickProfiler.record(entity, System.nanoTime() - startTime);
+			}
 		}
 	}
 
