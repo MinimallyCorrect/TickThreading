@@ -90,7 +90,7 @@ public class TickThreading {
 					" or the patches are out of date" +
 					"\nTo patch your server, simply run the PATCHME.bat/sh file in your server directory");
 			MinecraftServer.getServer().initiateShutdown();
-			throw new RuntimeException("Missing patches.");
+			Runtime.getRuntime().exit(1);
 		}
 		instance = this;
 	}
