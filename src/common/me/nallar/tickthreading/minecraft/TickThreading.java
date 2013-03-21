@@ -51,7 +51,6 @@ public class TickThreading {
 	private boolean enableTileEntityTickThreading = true;
 	private int regionSize = 16;
 	private boolean variableTickRate = true;
-	private boolean requirePatched = true;
 	public boolean exitOnDeadlock = false;
 	final Map<World, TickManager> managers = new WeakHashMap<World, TickManager>();
 	private DeadLockDetector deadLockDetector = null;
@@ -81,17 +80,17 @@ public class TickThreading {
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load
-		if (requirePatched && PatchUtil.shouldPatch(LocationUtil.getJarLocations())) {
-			Log.severe("TickThreading is disabled, because your server has not been patched" +
-					" or the patches are out of date" +
-					"\nTo patch your server, simply run the PATCHME.bat/sh file in your server directory");
-			MinecraftServer.getServer().initiateShutdown();
-			throw new Error("Missing patches.");
-		}
 		try {
 			PatchUtil.writePatchRunners();
 		} catch (IOException e) {
 			Log.severe("Failed to write patch runners", e);
+		}
+		if (PatchUtil.shouldPatch(LocationUtil.getJarLocations())) {
+			Log.severe("TickThreading is disabled, because your server has not been patched" +
+					" or the patches are out of date" +
+					"\nTo patch your server, simply run the PATCHME.bat/sh file in your server directory");
+			MinecraftServer.getServer().initiateShutdown();
+			throw new RuntimeException("Missing patches.");
 		}
 		instance = this;
 	}
@@ -127,8 +126,6 @@ public class TickThreading {
 		profileCommandName.comment = "Name of the command to be used for profiling reports.";
 		Property dumpCommandName = config.get(Configuration.CATEGORY_GENERAL, "dumpCommandName", DumpCommand.name);
 		dumpCommandName.comment = "Name of the command to be used for profiling reports.";
-		Property requirePatchedProperty = config.get(Configuration.CATEGORY_GENERAL, "requirePatched", requirePatched);
-		requirePatchedProperty.comment = "If the server must be patched to run with TickThreading";
 		Property exitOnDeadlockProperty = config.get(Configuration.CATEGORY_GENERAL, "exitOnDeadlock", exitOnDeadlock);
 		exitOnDeadlockProperty.comment = "If the server should shut down when a deadlock is detected";
 		Property requireOpForTicksCommandProperty = config.get(Configuration.CATEGORY_GENERAL, "requireOpsForTicksCommand", requireOpForTicksCommand);
@@ -185,7 +182,6 @@ public class TickThreading {
 		enableEntityTickThreading = enableEntityTickThreadingProperty.getBoolean(enableEntityTickThreading);
 		enableTileEntityTickThreading = enableTileEntityTickThreadingProperty.getBoolean(enableTileEntityTickThreading);
 		variableTickRate = variableTickRateProperty.getBoolean(variableTickRate);
-		requirePatched = requirePatchedProperty.getBoolean(requirePatched);
 		exitOnDeadlock = exitOnDeadlockProperty.getBoolean(exitOnDeadlock);
 		enableChunkTickThreading = enableChunkTickThreadingProperty.getBoolean(enableChunkTickThreading);
 		enableWorldTickThreading = enableWorldTickThreadingProperty.getBoolean(enableWorldTickThreading);
