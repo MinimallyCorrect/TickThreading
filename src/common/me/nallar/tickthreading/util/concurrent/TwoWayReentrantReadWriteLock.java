@@ -7,11 +7,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 
-/**
- * Derived from http://tutorials.jenkov.com/java-concurrency/read-write-locks.html#full
- */
 public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
-	private static final boolean prioritiseWriteRequests = false;
 	private final Map<Thread, Integer> readingThreads = new HashMap<Thread, Integer>();
 	private int writeAccesses = 0;
 	private int writeRequests = 0;
@@ -53,7 +49,7 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 	public final synchronized void lockRead() {
 		Thread callingThread = Thread.currentThread();
 		readRequests++;
-		while (writingThread != callingThread && (writingThread != null || (prioritiseWriteRequests && writeRequests > 0 && readingThreads.get(callingThread) == null))) {
+		while (writingThread != callingThread && writingThread != null) {
 			try {
 				wait();
 			} catch (InterruptedException ignored) {
@@ -82,6 +78,7 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 		}
 	}
 
+	@SuppressWarnings ("FieldRepeatedlyAccessedInMethod")
 	public final synchronized void lockWrite() {
 		writeRequests++;
 		Thread callingThread = Thread.currentThread();

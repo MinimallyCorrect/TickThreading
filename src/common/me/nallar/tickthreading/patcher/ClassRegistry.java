@@ -31,6 +31,10 @@ import me.nallar.tickthreading.util.EnumerableWrapper;
 import me.nallar.unsafe.UnsafeUtil;
 import net.minecraft.server.MinecraftServer;
 
+// Unchecked - Enumeration cast due to old java APIs.
+// ResultOfMethodCallIgnored - No, I do not care if mkdir fails to make the directory.
+// FieldRepeatedlyAccessedInMethod - I don't care about minor optimisations in patcher code, can't find a way to change inspections per package.
+@SuppressWarnings ({"unchecked", "ResultOfMethodCallIgnored", "FieldRepeatedlyAccessedInMethod"})
 public class ClassRegistry {
 	public String hashFileName = "patcher.hash";
 	public String patchedModsFolderName = "patchedMods";
@@ -76,12 +80,18 @@ public class ClassRegistry {
 			String extension = file.getName().toLowerCase();
 			extension = extension.substring(extension.lastIndexOf('.') + 1);
 			try {
-				if (file.isDirectory()) {
+				File[] files = file.listFiles();
+				if (files != null) {
 					if (!".disabled".equals(file.getName()) && !patchedModsFolderName.equalsIgnoreCase(file.getName())) {
-						loadFiles(Arrays.asList(file.listFiles()));
+						loadFiles(Arrays.asList(files));
 					}
 				} else if ("jar".equals(extension) || "zip".equals(extension) || "litemod".equals(extension)) {
-					loadZip(new ZipFile(file));
+					ZipFile zipFile = new ZipFile(file);
+					try {
+						loadZip(zipFile);
+					} finally {
+						zipFile.close();
+					}
 					loadHashes(file);
 				}
 			} catch (ZipException e) {
@@ -98,6 +108,7 @@ public class ClassRegistry {
 		replacementFiles.put(className.replace('.', '/') + ".class", replacement);
 	}
 
+	@SuppressWarnings ("IOResourceOpenedButNotSafelyClosed")
 	public void save(File backupDirectory) throws IOException {
 		closeClassPath();
 		File tempFile = null, renameFile = null;
@@ -126,7 +137,9 @@ public class ClassRegistry {
 					zin = new ZipInputStream(new FileInputStream(tempFile));
 					zout = new ZipOutputStream(new FileOutputStream(zipFile));
 					writeChanges(zipFile, zin, zout, false);
-					tempFile.delete();
+					if (!tempFile.delete()) {
+						Log.warning("Failed to delete temporary patching file " + tempFile + " after patching " + zipFile);
+					}
 					renameFile = null;
 				} else {
 					zin = new ZipInputStream(new FileInputStream(zipFile));
@@ -147,8 +160,8 @@ public class ClassRegistry {
 			if (zout != null) {
 				zout.close();
 			}
-			if (renameFile != null) {
-				tempFile.renameTo(renameFile);
+			if (renameFile != null && !tempFile.renameTo(renameFile)) {
+				Log.warning("Failed to restore " + renameFile + " after patching, you will need to get a new copy of it.");
 			}
 			throw UnsafeUtil.throwIgnoreChecked(e);
 		} finally {
@@ -251,20 +264,25 @@ public class ClassRegistry {
 				throw new NullPointerException();
 			}
 		} catch (Throwable t) {
-			file.delete();
+			if (!file.delete()) {
+				Log.warning("Unable to delete old patchedMods file " + file);
+			}
 			return;
 		}
 		ZipFile zip = new ZipFile(file);
-		for (ZipEntry zipEntry : new EnumerableWrapper<ZipEntry>((Enumeration<ZipEntry>) zip.entries())) {
-			String name = zipEntry.getName();
-			if (name.equals(hashFileName)) {
-				ByteArrayOutputStream output = new ByteArrayOutputStream();
-				ByteStreams.copy(zip.getInputStream(zipEntry), output);
-				int hash = Integer.valueOf(new String(output.toByteArray(), "UTF-8"));
-				locationToPatchHash.put(zipFile, hash);
+		try {
+			for (ZipEntry zipEntry : new EnumerableWrapper<ZipEntry>((Enumeration<ZipEntry>) zip.entries())) {
+				String name = zipEntry.getName();
+				if (name.equals(hashFileName)) {
+					ByteArrayOutputStream output = new ByteArrayOutputStream();
+					ByteStreams.copy(zip.getInputStream(zipEntry), output);
+					int hash = Integer.valueOf(new String(output.toByteArray(), "UTF-8"));
+					locationToPatchHash.put(zipFile, hash);
+				}
 			}
+		} finally {
+			zip.close();
 		}
-		zip.close();
 	}
 
 	public void loadZip(ZipFile zip) throws IOException {
@@ -299,7 +317,6 @@ public class ClassRegistry {
 				locationToPatchHash.put(file, hash);
 			}
 		}
-		zip.close();
 	}
 
 	private static File makeTempFile(File tempLocation, File file) {
@@ -311,8 +328,9 @@ public class ClassRegistry {
 	}
 
 	private static void delete(File f) {
-		if (f.isDirectory()) {
-			for (File c : f.listFiles()) {
+		File[] files = f.listFiles();
+		if (files != null) {
+			for (File c : files) {
 				delete(c);
 			}
 		}

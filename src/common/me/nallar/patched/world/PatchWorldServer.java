@@ -43,6 +43,7 @@ import net.minecraft.world.storage.WorldInfo;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.ForgeChunkManager;
 
+@SuppressWarnings ("unchecked") // Can't make the code in WorldServer checked. Yet. // TODO: Add type parameters via prepatcher?
 public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	private Iterator chunkCoordIterator;
 	private ThreadManager threadManager;
@@ -75,6 +76,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		}
 	}
 
+	@Override
 	@Declare
 	public Object[] getChunks() {
 		List<Chunk> loadedChunks = theChunkProviderServer.getLoadedChunks();
@@ -497,8 +499,8 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	public void markBlockForUpdate(int x, int y, int z) {
 		if (worldGenInProgress == null || !worldGenInProgress.get()) {
 			final List<IWorldAccess> worldAccesses = this.worldAccesses;
-			for (int i = 0, size = worldAccesses.size(); i < size; ++i) {
-				worldAccesses.get(i).markBlockForUpdate(x, y, z);
+			for (IWorldAccess worldAccess : worldAccesses) {
+				worldAccess.markBlockForUpdate(x, y, z);
 			}
 		}
 	}

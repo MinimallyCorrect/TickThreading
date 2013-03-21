@@ -102,6 +102,7 @@ public class Log {
 			} finally {
 				randomAccessFile.close();
 			}
+			//noinspection IOResourceOpenedButNotSafelyClosed
 			handler = new Handler() {
 				private final LogFormatter logFormatter = new LogFormatter();
 				private final BufferedWriter outputWriter = new BufferedWriter(new FileWriter(saveFile));

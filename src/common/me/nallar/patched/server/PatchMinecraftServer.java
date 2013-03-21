@@ -107,6 +107,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		NETWORK_TICK_TIME = 1000000000 / NETWORK_TPS;
 	}
 
+	@Override
 	@Declare
 	public int getId(WorldServer world) {
 		if (worlds == null) {
