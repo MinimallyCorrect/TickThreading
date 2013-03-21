@@ -52,11 +52,8 @@ public enum DomUtil {
 		for (Element child : elementList(node.getChildNodes())) {
 			hash += (hash << 5) + getHash(child);
 		}
-		hash += (hash << 5) + node.getTagName().hashCode();
-		for (Map.Entry<String, String> entry : getAttributes(node).entrySet()) {
-			hash += (hash << 5) + entry.getKey().hashCode();
-			hash += (hash << 5) + entry.getValue().hashCode();
-		}
+		hash += (hash << 5) + node.getTagName().length();
+		hash += (hash << 5) + getAttributes(node).size();
 		return hash;
 	}
 
