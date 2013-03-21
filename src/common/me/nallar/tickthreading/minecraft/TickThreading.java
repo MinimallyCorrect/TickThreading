@@ -46,7 +46,6 @@ public class TickThreading {
 	private final Runtime runtime = Runtime.getRuntime();
 	private static final int loadedEntityFieldIndex = 0;
 	private static final int loadedTileEntityFieldIndex = 2;
-	public final boolean enabled;
 	private int tickThreads = 0;
 	private boolean enableEntityTickThreading = true;
 	private boolean enableTileEntityTickThreading = true;
@@ -82,7 +81,13 @@ public class TickThreading {
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load
-		enabled = !(requirePatched && PatchUtil.shouldPatch(LocationUtil.getJarLocations()));
+		if (requirePatched && PatchUtil.shouldPatch(LocationUtil.getJarLocations())) {
+			Log.severe("TickThreading is disabled, because your server has not been patched" +
+					" or the patches are out of date" +
+					"\nTo patch your server, simply run the PATCHME.bat/sh file in your server directory");
+			MinecraftServer.getServer().initiateShutdown();
+			throw new Error("Missing patches.");
+		}
 		try {
 			PatchUtil.writePatchRunners();
 		} catch (IOException e) {
@@ -93,9 +98,7 @@ public class TickThreading {
 
 	@Mod.Init
 	public void init(FMLInitializationEvent event) {
-		if (enabled) {
-			MinecraftForge.EVENT_BUS.register(this);
-		}
+		MinecraftForge.EVENT_BUS.register(this);
 	}
 
 	@Mod.PreInit
@@ -209,25 +212,19 @@ public class TickThreading {
 
 	@Mod.ServerStarting
 	public void serverStarting(FMLServerStartingEvent event) {
-		if (enabled) {
-			Log.severe(VersionUtil.versionString() + " is installed on this server!"
-					+ "\nIf anything breaks, check if it is still broken without TickThreading"
-					+ "\nWe don't want to annoy mod devs with issue reports caused by TickThreading."
-					+ "\nSeriously, please don't."
-					+ "\nIf it's only broken with TickThreading, report it at http://github.com/nallar/TickThreading");
-			ServerCommandManager serverCommandManager = (ServerCommandManager) event.getServer().getCommandManager();
-			serverCommandManager.registerCommand(new TicksCommand());
-			serverCommandManager.registerCommand(new TPSCommand());
-			serverCommandManager.registerCommand(new ProfileCommand());
-			serverCommandManager.registerCommand(new DumpCommand());
-			MinecraftServer.setTargetTPS(targetTPS);
-			FMLLog.info("Loaded " + RelaunchClassLoader.patchedClasses + " patched classes" +
-					"\nUsed " + RelaunchClassLoader.usedPatchedClasses + '.');
-		} else {
-			Log.severe("TickThreading is disabled, because your server has not been patched" +
-					" or the patches are out of date" +
-					"\nTo patch your server, simply run the PATCHME.bat/sh file in your server directory");
-		}
+		Log.severe(VersionUtil.versionString() + " is installed on this server!"
+				+ "\nIf anything breaks, check if it is still broken without TickThreading"
+				+ "\nWe don't want to annoy mod devs with issue reports caused by TickThreading."
+				+ "\nSeriously, please don't."
+				+ "\nIf it's only broken with TickThreading, report it at http://github.com/nallar/TickThreading");
+		ServerCommandManager serverCommandManager = (ServerCommandManager) event.getServer().getCommandManager();
+		serverCommandManager.registerCommand(new TicksCommand());
+		serverCommandManager.registerCommand(new TPSCommand());
+		serverCommandManager.registerCommand(new ProfileCommand());
+		serverCommandManager.registerCommand(new DumpCommand());
+		MinecraftServer.setTargetTPS(targetTPS);
+		FMLLog.info("Loaded " + RelaunchClassLoader.patchedClasses + " patched classes" +
+				"\nUsed " + RelaunchClassLoader.usedPatchedClasses + '.');
 	}
 
 	@ForgeSubscribe

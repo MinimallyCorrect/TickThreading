@@ -184,15 +184,16 @@ public class ClassRegistry {
 	}
 
 	public boolean shouldPatch() {
-		for (File file : expectedPatchHashes.keySet()) {
-			if (shouldPatch(file)) {
-				Integer expectedPatchHash = expectedPatchHashes.get(file);
-				Log.warning("Patching required for " + file + " because " + (expectedPatchHash == null ? "it has not been patched" : "it is out of date." +
-						"\nExpected " + expectedPatchHash + ", got " + locationToPatchHash.get(file)));
-				return true;
+		boolean shouldPatch = false;
+		for (Map.Entry<File, Integer> fileIntegerEntry : expectedPatchHashes.entrySet()) {
+			if (shouldPatch(fileIntegerEntry.getKey())) {
+				Integer expectedPatchHash = fileIntegerEntry.getValue();
+				Log.warning("Patching required for " + fileIntegerEntry.getKey() + " because " + (expectedPatchHash == null ? "it has not been patched" : "it is out of date." +
+						"\nExpected " + expectedPatchHash + ", got " + locationToPatchHash.get(fileIntegerEntry.getKey())));
+				shouldPatch = true;
 			}
 		}
-		return false;
+		return shouldPatch;
 	}
 
 	public void restoreBackups(File backupDirectory) {
