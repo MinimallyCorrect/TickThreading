@@ -173,6 +173,7 @@
 			<addAll fromClass="me.nallar.patched.entity.PatchEntity"/>
 		</class>
 		<class id="net.minecraft.nbt.NBTTagCompound">
+			<addAll fromClass="me.nallar.patched.nbt.PatchNBTTagCompound"/>
 			<replaceInitializer field="tagMap" code="new java.util.concurrent.ConcurrentHashMap();"/>
 			<final field="tagMap"/>
 		</class>

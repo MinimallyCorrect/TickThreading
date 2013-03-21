@@ -1,19 +1,23 @@
 package me.nallar.tickthreading.util;
 
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import java.io.StringWriter;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import me.nallar.tickthreading.Log;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 public enum DomUtil {
 	;
@@ -43,21 +47,45 @@ public enum DomUtil {
 		return nodes;
 	}
 
-	public static String nodeToString(Node node) {
-		TransformerFactory transFactory = TransformerFactory.newInstance();
-		try {
-			Transformer transformer = transFactory.newTransformer();
-			StringWriter buffer = new StringWriter();
-			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-			transformer.transform(new DOMSource(node), new StreamResult(buffer));
-			return buffer.toString();
-		} catch (TransformerException e) {
-			Log.severe("Failed to convert " + node + " to string.", e);
+	public static int getHash(Element node) {
+		int hash = 5381;
+		for (Element child : elementList(node.getChildNodes())) {
+			hash += (hash << 5) + getHash(child);
 		}
-		return "";
+		hash += (hash << 5) + node.getTagName().hashCode();
+		for (Map.Entry<String, String> entry : getAttributes(node).entrySet()) {
+			hash += (hash << 5) + entry.getKey().hashCode();
+			hash += (hash << 5) + entry.getValue().hashCode();
+		}
+		return hash;
 	}
 
-	public static int getHash(Node node) {
-		return nodeToString(node).hashCode();
+	public static Map<String, String> getAttributes(Node node) {
+		NamedNodeMap attributeMap = node.getAttributes();
+		HashMap<String, String> attributes = new HashMap<String, String>(attributeMap.getLength());
+		for (int i = 0; i < attributeMap.getLength(); i++) {
+			Node attr = attributeMap.item(i);
+			if (attr instanceof Attr) {
+				attributes.put(((Attr) attr).getName(), ((Attr) attr).getValue());
+			}
+		}
+		return attributes;
+	}
+
+	public static Document readDocumentFromInputStream(InputStream configInputStream) throws IOException, SAXException {
+		if (configInputStream == null) {
+			throw new NullPointerException("configInputStream");
+		}
+		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+		try {
+			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+			return docBuilder.parse(configInputStream);
+		} catch (ParserConfigurationException e) {
+			//This exception is thrown, and no shorthand way of getting a DocumentBuilder without it.
+			//Should not be thrown, as we do not do anything to the DocumentBuilderFactory.
+			Log.severe("Java was bad, this shouldn't happen. DocBuilder instantiation via default docBuilderFactory failed", e);
+			configInputStream.close();
+		}
+		return null;
 	}
 }

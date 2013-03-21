@@ -1,8 +1,5 @@
 package me.nallar.tickthreading.patcher;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -36,11 +33,8 @@ import me.nallar.tickthreading.util.CollectionsUtil;
 import me.nallar.tickthreading.util.DomUtil;
 import me.nallar.tickthreading.util.LocationUtil;
 import me.nallar.tickthreading.util.VersionUtil;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -53,9 +47,6 @@ public class PatchManager {
 	public File backupDirectory;
 	public String patchEnvironment = "forge";
 	public Map<String, CtClass> patchingClasses;
-
-	public PatchManager() {
-	}
 
 	public PatchManager(InputStream configStream, Class<? extends Patches> patchClass) throws IOException, SAXException {
 		this(configStream, patchClass, new File(LocationUtil.directoryOf(patchClass).getAbsoluteFile().getParentFile(), "TickThreadingBackups"));
@@ -97,24 +88,7 @@ public class PatchManager {
 	}
 
 	public void loadConfig(InputStream configInputStream) throws IOException, SAXException {
-		configDocument = getConfigDocument(configInputStream);
-	}
-
-	private static Document getConfigDocument(InputStream configInputStream) throws IOException, SAXException {
-		if (configInputStream == null) {
-			throw new NullPointerException("configInputStream");
-		}
-		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-		try {
-			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-			return docBuilder.parse(configInputStream);
-		} catch (ParserConfigurationException e) {
-			//This exception is thrown, and no shorthand way of getting a DocumentBuilder without it.
-			//Should not be thrown, as we do not do anything to the DocumentBuilderFactory.
-			Log.severe("Java was bad, this shouldn't happen. DocBuilder instantiation via default docBuilderFactory failed", e);
-			configInputStream.close();
-		}
-		return null;
+		configDocument = DomUtil.readDocumentFromInputStream(configInputStream);
 	}
 
 	public void obfuscate(Mappings mappings) {
@@ -264,42 +238,31 @@ public class PatchManager {
 		transformer.transform(input, output);
 	}
 
-	private static Map<String, String> getAttributes(Node node) {
-		NamedNodeMap attributeMap = node.getAttributes();
-		HashMap<String, String> attributes = new HashMap<String, String>(attributeMap.getLength());
-		for (int i = 0; i < attributeMap.getLength(); i++) {
-			Node attr = attributeMap.item(i);
-			if (attr instanceof Attr) {
-				attributes.put(((Attr) attr).getName(), ((Attr) attr).getValue());
-			}
-		}
-		return attributes;
-	}
-
 	public class PatchMethodDescriptor {
-		public String name;
+		public final String name;
 		public final List<String> requiredAttributes;
 		public final Method patchMethod;
 		public final boolean isClassPatch;
 		public final boolean emptyConstructor;
 
 		public PatchMethodDescriptor(Method method, Patch patch) {
-			this.name = patch.name();
+			String name = patch.name();
 			if (Arrays.asList(method.getParameterTypes()).contains(Map.class)) {
 				this.requiredAttributes = CollectionsUtil.split(patch.requiredAttributes());
 			} else {
 				this.requiredAttributes = null;
 			}
-			if (this.name == null || this.name.isEmpty()) {
-				this.name = method.getName();
+			if (name == null || name.isEmpty()) {
+				name = method.getName();
 			}
+			this.name = name;
 			emptyConstructor = patch.emptyConstructor();
 			isClassPatch = method.getParameterTypes()[0].equals(CtClass.class);
 			patchMethod = method;
 		}
 
 		public Object run(Element patchElement, CtClass ctClass) {
-			Map<String, String> attributes = getAttributes(patchElement);
+			Map<String, String> attributes = DomUtil.getAttributes(patchElement);
 			Log.fine("Patching " + ctClass.getName() + " with " + this.name + '(' + CollectionsUtil.joinMap(attributes) + ')');
 			if (requiredAttributes != null && !attributes.keySet().containsAll(requiredAttributes)) {
 				Log.severe("Missing required attributes " + requiredAttributes.toString() + " when patching " + ctClass.getName());
