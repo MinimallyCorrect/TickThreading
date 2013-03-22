@@ -251,13 +251,18 @@ public abstract class PatchEntityLiving extends EntityLiving {
 		theProfiler.endSection();
 		theProfiler.startSection("looting");
 
-		if (!worldObj.isRemote && this.canPickUpLoot && !this.dead && !((Object) this instanceof EntityPlayerMP) && worldObj.getGameRules().getGameRuleBooleanValue("mobGriefing")) {
+		if (!worldObj.isRemote && this.canPickUpLoot && !this.dead && worldObj.getGameRules().getGameRuleBooleanValue("mobGriefing")) {
 			List<EntityItem> entityItemList = worldObj.getEntitiesWithinAABB(EntityItem.class, this.boundingBox.expand(1.0D, 0.0D, 1.0D));
 
 			for (EntityItem entityItem : entityItemList) {
 
 				if (!entityItem.isDead && entityItem.getEntityItem() != null) {
 					ItemStack itemStack = entityItem.getEntityItem();
+
+					if (!((Object) this instanceof EntityPlayerMP) && (!(itemStack.getItem() instanceof ItemArmor)) || entityItem.delayBeforeCanPickup > 8) {
+						continue;
+					}
+
 					int var6 = func_82159_b(itemStack);
 
 					if (var6 > -1) {
