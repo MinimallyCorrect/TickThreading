@@ -7,8 +7,8 @@ import java.util.List;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 
-abstract class Command extends CommandBase {
-	static void sendChat(ICommandSender commandSender, String message) {
+public abstract class Command extends CommandBase {
+	public static void sendChat(ICommandSender commandSender, String message) {
 		while (message != null) {
 			int nlIndex = message.indexOf('\n');
 			String sent;

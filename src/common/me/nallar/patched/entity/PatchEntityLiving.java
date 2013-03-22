@@ -191,7 +191,7 @@ public abstract class PatchEntityLiving extends EntityLiving {
 			this.motionZ = 0.0D;
 		}
 
-		if (--collidingEntityTickSkipCounter >= 0) {
+		if (--collisionSkipCounter >= 0) {
 			return;
 		}
 

@@ -81,6 +81,11 @@ public class DumpCommand extends Command {
 			sb.append("No tile entity at ").append(Log.name(world)).append(" x,y,z").append(x).append(',').append(y).append(',').append(z).append('\n');
 			return tf;
 		}
+		dump(tf, toDump, maxLen);
+		return tf;
+	}
+
+	public static void dump(TableFormatter tf, Object toDump, int maxLen) {
 		tf
 				.heading("Field")
 				.heading("Value");
@@ -101,6 +106,5 @@ public class DumpCommand extends Command {
 			}
 		} while ((clazz = clazz.getSuperclass()) != Object.class);
 		tf.finishTable();
-		return tf;
 	}
 }

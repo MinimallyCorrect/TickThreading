@@ -17,7 +17,7 @@ public abstract class PatchEntity extends Entity {
 	@Declare
 	public me.nallar.tickthreading.minecraft.tickregion.EntityTickRegion tickRegion_;
 	@Declare
-	public int collidingEntityTickSkipCounter_;
+	public int collisionSkipCounter_;
 	private int lavaCheckTicks;
 	private boolean inLava;
 
@@ -108,9 +108,9 @@ public abstract class PatchEntity extends Entity {
 
 			List<AxisAlignedBB> collidingBoundingBoxes = this.worldObj.getCollidingBoundingBoxes(this, this.boundingBox.addCoord(vX, vY, vZ), 12);
 			int collidingBoundingBoxesSize = collidingBoundingBoxes.size();
-			collidingEntityTickSkipCounter = collidingBoundingBoxesSize / 11;
-			if (collidingEntityTickSkipCounter != 0 && tickRegion != null) {
-				collidingEntityTickSkipCounter = tickRegion.size() / 50;
+			collisionSkipCounter = collidingBoundingBoxesSize / 11;
+			if (collisionSkipCounter != 0 && tickRegion != null) {
+				collisionSkipCounter = tickRegion.size() / 50;
 			}
 
 			for (int i = 0; i < collidingBoundingBoxesSize; ++i) {
