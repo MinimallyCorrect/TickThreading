@@ -6,6 +6,7 @@ import net.minecraft.block.Block;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
@@ -250,7 +251,7 @@ public abstract class PatchEntityLiving extends EntityLiving {
 		theProfiler.endSection();
 		theProfiler.startSection("looting");
 
-		if (!worldObj.isRemote && this.canPickUpLoot && !this.dead && worldObj.getGameRules().getGameRuleBooleanValue("mobGriefing")) {
+		if (!worldObj.isRemote && this.canPickUpLoot && !this.dead && !((Object) this instanceof EntityPlayerMP) && worldObj.getGameRules().getGameRuleBooleanValue("mobGriefing")) {
 			List<EntityItem> entityItemList = worldObj.getEntitiesWithinAABB(EntityItem.class, this.boundingBox.expand(1.0D, 0.0D, 1.0D));
 
 			for (EntityItem entityItem : entityItemList) {
