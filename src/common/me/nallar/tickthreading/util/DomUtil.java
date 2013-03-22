@@ -5,6 +5,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,7 +29,7 @@ public enum DomUtil {
 
 	public static List<Element> elementList(NodeList nodeList) {
 		List<Node> nodes = nodeList(nodeList);
-		ArrayList<Element> elements = new ArrayList<Element>(nodeList.getLength());
+		ArrayList<Element> elements = new ArrayList<Element>(nodes.size());
 		for (Node node : nodes) {
 			if (node instanceof Element) {
 				elements.add((Element) node);
@@ -39,12 +40,7 @@ public enum DomUtil {
 	}
 
 	public static List<Node> nodeList(NodeList nodeList) {
-		int length = nodeList.getLength();
-		List<Node> nodes = new ArrayList<Node>(length);
-		for (int i = 0; i < length; i++) {
-			nodes.add(nodeList.item(i));
-		}
-		return nodes;
+		return new NodeListWhichIsActuallyAList(nodeList);
 	}
 
 	public static int getHash(Element node) {
@@ -53,7 +49,7 @@ public enum DomUtil {
 			hash += (hash << 5) + getHash(child);
 		}
 		hash += (hash << 5) + node.getTagName().length();
-		hash += (hash << 5) + getAttributes(node).size();
+		hash += (hash << 5) + node.getAttributes().getLength();
 		return hash;
 	}
 
@@ -85,4 +81,23 @@ public enum DomUtil {
 		}
 		return null;
 	}
+
+	private static class NodeListWhichIsActuallyAList extends AbstractList<Node> implements List<Node> {
+		private final NodeList nodeList;
+
+		NodeListWhichIsActuallyAList(NodeList nodeList) {
+			this.nodeList = nodeList;
+		}
+
+		@Override
+		public Node get(int index) {
+			return nodeList.item(index);
+		}
+
+		@Override
+		public int size() {
+			return nodeList.getLength();
+		}
+	}
+
 }
