@@ -324,6 +324,16 @@
 							} "
 							>unloadChunk(IIZZ)Z
 			</replaceMethod>
+			<replaceMethod
+							code=" {
+								world.^field:WorldServer/theChunkProviderServer^.regenerateChunk($1, $2);
+
+								refreshChunk($1, $2);
+
+								return true;
+							} "
+							>regenerateChunk
+			</replaceMethod>
 			<replaceMethod code="throw new UnsupportedOperationException(&quot;Not threadsafe.&quot;);">chunkLoadPostProcess</replaceMethod>
 			<disable>processChunkGC</disable>
 		</class>

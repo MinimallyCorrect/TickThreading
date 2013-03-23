@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableSetMultimap;
 
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.registry.GameRegistry;
+import me.nallar.exception.ConcurrencyError;
 import me.nallar.patched.annotation.FakeExtend;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.collections.NonBlockingLongSet;
@@ -295,7 +296,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		}
 
 		if (loadChunkIfNotFound) {
-			return getChunkAt(x, z, null);
+			return getChunkAt(x, z, false, false, null);
 		}
 
 		return defaultEmptyChunk;
@@ -303,13 +304,13 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	@Override
 	public final Chunk loadChunk(int x, int z) {
-		return getChunkAt(x, z, null);
+		return getChunkAt(x, z, true, false, null);
 	}
 
 	@Override
 	@Declare
 	public final Chunk getChunkAt(final int x, final int z, final Runnable runnable) {
-		return getChunkAt(x, z, true, runnable);
+		return getChunkAt(x, z, true, false, runnable);
 	}
 
 	public void unloadChunkImmediately(int x, int z, boolean save) {
@@ -330,10 +331,24 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		chunks.remove(key);
 	}
 
+	public Chunk regenerateChunk(int x, int z) {
+		synchronized (getLock(x, z)) {
+			unloadChunkImmediately(x, z, false);
+		}
+		return getChunkAt(x, z, true, true, null);
+	}
+
 	@Override
 	@SuppressWarnings ("ConstantConditions")
 	@Declare
 	public final Chunk getChunkAt(final int x, final int z, boolean allowGenerate, final Runnable runnable) {
+		return getChunkAt(x, z, allowGenerate, false, runnable);
+	}
+
+	@Override
+	@SuppressWarnings ("ConstantConditions")
+	@Declare
+	public final Chunk getChunkAt(final int x, final int z, boolean allowGenerate, boolean regenerate, final Runnable runnable) {
 		Chunk chunk = getChunkIfExists(x, z);
 
 		if (chunk != null) {
@@ -363,7 +378,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			}
 			chunk = (Chunk) loadingChunks.getValueByKey(key);
 			if (chunk == null) {
-				chunk = safeLoadChunk(x, z);
+				chunk = regenerate ? null : safeLoadChunk(x, z);
 				if (chunk != null && (chunk.xPosition != x || chunk.zPosition != z)) {
 					Log.severe("Chunk at " + chunk.xPosition + ',' + chunk.zPosition + " was stored at " + x + ',' + z + "\nResetting this chunk.");
 					chunk = null;
@@ -437,12 +452,12 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 						loadingChunks.add(key, chunk);
 					}
 
-					chunk.populateChunk(this, this, x, z);
 					chunk.threadUnsafeChunkLoad();
 
 					loadingChunks.remove(key);
 					chunks.add(key, chunk);
 					loadedChunks.add(chunk);
+					chunk.populateChunk(this, this, x, z);
 				}
 			}
 		} finally {
@@ -525,12 +540,12 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			if (chunk.isTerrainPopulated) {
 				return;
 			}
-			chunk.isTerrainPopulated = true;
 			if (generator != null) {
 				generator.populate(chunkProvider, x, z);
 				GameRegistry.generateWorld(x, z, world, generator, chunkProvider);
 				chunk.setChunkModified();
 			}
+			chunk.isTerrainPopulated = true;
 		}
 	}
 
