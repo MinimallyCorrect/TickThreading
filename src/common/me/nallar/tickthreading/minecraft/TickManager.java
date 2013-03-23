@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -42,8 +41,8 @@ public final class TickManager {
 	private final boolean waitForCompletion;
 	public final EntityTickProfiler entityTickProfiler = new EntityTickProfiler();
 	public final World world;
-	public final List<TileEntity> tileEntityList = new ArrayList<TileEntity>();
-	public final List<Entity> entityList = new ArrayList<Entity>();
+	public final ArrayList<TileEntity> tileEntityList = new ArrayList<TileEntity>();
+	public final ArrayList<Entity> entityList = new ArrayList<Entity>();
 	public Object tileEntityLock = new Object();
 	public Object entityLock = new Object();
 	private final Map<Integer, TileEntityTickRegion> tileEntityCallables = new HashMap<Integer, TileEntityTickRegion>();

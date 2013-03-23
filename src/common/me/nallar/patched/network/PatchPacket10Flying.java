@@ -4,10 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import javassist.is.faulty.Redirects;
 import javassist.is.faulty.Timings;
-import me.nallar.tickthreading.minecraft.TickThreading;
-import me.nallar.tickthreading.util.TableFormatter;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.NetServerHandler;
 import net.minecraft.network.packet.NetHandler;
@@ -15,7 +12,6 @@ import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet10Flying;
 import net.minecraft.network.packet.Packet56MapChunks;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.management.ServerConfigurationManager;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.WorldServer;

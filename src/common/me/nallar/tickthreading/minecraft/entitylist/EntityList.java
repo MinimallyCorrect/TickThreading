@@ -15,9 +15,9 @@ import net.minecraft.world.World;
 * */
 public abstract class EntityList<T> extends ArrayList<T> {
 	public final TickManager manager;
-	public final List innerList;
+	public final ArrayList innerList;
 
-	EntityList(World world, Field overriddenField, TickManager manager, List innerList) {
+	EntityList(World world, Field overriddenField, TickManager manager, ArrayList innerList) {
 		this.manager = manager;
 		this.innerList = innerList;
 		overriddenField.setAccessible(true);
@@ -72,6 +72,81 @@ public abstract class EntityList<T> extends ArrayList<T> {
 	@Override
 	public boolean contains(Object o) {
 		return innerList.contains(o);
+	}
+
+	@Override
+	public void trimToSize() {
+		innerList.trimToSize();
+	}
+
+	@Override
+	public void ensureCapacity(final int minCapacity) {
+		innerList.ensureCapacity(minCapacity);
+	}
+
+	@Override
+	public boolean isEmpty() {
+		return innerList.isEmpty();
+	}
+
+	@Override
+	public int indexOf(final Object o) {
+		return innerList.indexOf(o);
+	}
+
+	@Override
+	public int lastIndexOf(final Object o) {
+		return innerList.lastIndexOf(o);
+	}
+
+	@Override
+	public Object clone() {
+		return innerList.clone();
+	}
+
+	@Override
+	public Object[] toArray() {
+		return innerList.toArray();
+	}
+
+	@Override
+	public <T1> T1[] toArray(final T1[] a) {
+		return (T1[]) innerList.toArray(a);
+	}
+
+	@Override
+	public T set(final int index, final T element) {
+		throw new UnsupportedOperationException("Not implemented");
+	}
+
+	@Override
+	public void add(final int index, final T element) {
+		throw new UnsupportedOperationException("Not implemented");
+	}
+
+	@Override
+	public T remove(final int index) {
+		throw new UnsupportedOperationException("Not implemented");
+	}
+
+	@Override
+	public void clear() {
+		innerList.clear();
+	}
+
+	@Override
+	public boolean addAll(final int index, final Collection<? extends T> c) {
+		throw new UnsupportedOperationException("Not implemented");
+	}
+
+	@Override
+	protected void removeRange(final int fromIndex, final int toIndex) {
+		throw new UnsupportedOperationException("Not implemented");
+	}
+
+	@Override
+	public List<T> subList(final int fromIndex, final int toIndex) {
+		throw new UnsupportedOperationException("Not implemented");
 	}
 
 	@Override

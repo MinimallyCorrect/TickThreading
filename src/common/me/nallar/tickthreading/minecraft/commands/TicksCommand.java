@@ -48,6 +48,7 @@ public class TicksCommand extends Command {
 			TableFormatter tf = new TableFormatter(commandSender);
 			TickManager tickManager = TickThreading.instance.getManager(world);
 			tickManager.writeEntityStats(tf);
+			tf.sb.append('\n');
 			tickManager.fixDiscrepancies(tf);
 			sendChat(commandSender, String.valueOf(tf));
 		} else {

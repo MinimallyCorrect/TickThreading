@@ -14,7 +14,6 @@ import com.google.common.collect.ImmutableSetMultimap;
 
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.registry.GameRegistry;
-import me.nallar.exception.ConcurrencyError;
 import me.nallar.patched.annotation.FakeExtend;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.collections.NonBlockingLongSet;
