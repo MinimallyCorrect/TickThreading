@@ -656,9 +656,4 @@
 			<synchronize>updateDeffered,defer,remMultiBlock</synchronize>
 		</class>
 	</xyCraft>
-	<denLib>
-		<class id="denoflionsx.denLib">
-			<replaceMethod code="return javassist.is.faulty.Redirects.md5Hash($1);">Hash</replaceMethod>
-		</class>
-	</denLib>
 </mods>
