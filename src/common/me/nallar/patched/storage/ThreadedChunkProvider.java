@@ -8,6 +8,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
 import com.google.common.collect.ImmutableSetMultimap;
@@ -63,7 +64,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	}
 
 	private static final Runnable doNothingRunnable = new DoNothingRunnable();
-	private final NonBlockingHashMapLong<Object> chunkLoadLocks = new NonBlockingHashMapLong<Object>();
+	private final NonBlockingHashMapLong<AtomicInteger> chunkLoadLocks = new NonBlockingHashMapLong<AtomicInteger>();
 	private final LongHashMap chunks = new LongHashMap();
 	private final LongHashMap loadingChunks = new LongHashMap();
 	private final LongHashMap unloadingChunks = new LongHashMap();
@@ -272,20 +273,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		}
 	}
 
-	public Object getLock(int x, int z) {
-		long hash = key(x, z);
-		Object lock = chunkLoadLocks.get(hash);
-		if (lock != null) {
-			return lock;
-		}
-		Object newLock = new Object();
-		lock = chunkLoadLocks.putIfAbsent(hash, newLock);
-		if (lock != null) {
-			return lock;
-		}
-		return newLock;
-	}
-
 	@Override
 	public final Chunk provideChunk(int x, int z) {
 		Chunk chunk = getChunkIfExists(x, z);
@@ -331,9 +318,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	}
 
 	public Chunk regenerateChunk(int x, int z) {
-		synchronized (getLock(x, z)) {
-			unloadChunkImmediately(x, z, false);
-		}
+		unloadChunkImmediately(x, z, false);
 		return getChunkAt(x, z, true, true, null);
 	}
 
@@ -364,104 +349,107 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 		long key = key(x, z);
 
-		final Object lock = getLock(x, z);
-		boolean inLoadingMap = false;
-
-		// Lock on the lock for this chunk - prevent multiple instances of the same chunk
-		ThreadLocal<Boolean> worldGenInProgress = world.worldGenInProgress;
-		synchronized (lock) {
-			finalizeUnload(key);
-			chunk = (Chunk) chunks.getValueByKey(key);
-			if (chunk != null) {
-				return chunk;
-			}
-			chunk = (Chunk) loadingChunks.getValueByKey(key);
-			if (chunk == null) {
-				chunk = regenerate ? null : safeLoadChunk(x, z);
-				if (chunk != null && (chunk.xPosition != x || chunk.zPosition != z)) {
-					Log.severe("Chunk at " + chunk.xPosition + ',' + chunk.zPosition + " was stored at " + x + ',' + z + "\nResetting this chunk.");
-					chunk = null;
-				}
-				if (chunk == null) {
-					loadingChunks.add(key, defaultEmptyChunk);
-				} else {
-					loadingChunks.add(key, chunk);
-					inLoadingMap = true;
-				}
-			} else if (worldGenInProgress != null && worldGenInProgress.get() == Boolean.TRUE) {
-				return chunk;
-			} else {
-				inLoadingMap = true;
-			}
-		}
-		// Unlock this chunk - avoids a deadlock
-		// Thread A - requests chunk A - needs genned
-		// Thread B - requests chunk B - needs genned
-		// In thread A, redpower tries to load chunk B
-		// because its marble gen is buggy.
-		// Thread B is now waiting for the generate lock,
-		// Thread A is waiting for the lock on chunk B
-
-		// Lock the generation lock - ChunkProviderGenerate isn't threadsafe at all
-		// TODO: Possibly make ChunkProviderGenerate threadlocal? Would need many changes to
-		// structure code to get it to work properly.
+		final AtomicInteger lock = getLock(key);
 		boolean innerGenerate = false;
 		boolean wasGenerated = false;
 		try {
-			synchronized (generateLock) {
-				synchronized (lock) {
-					if (worldGenInProgress != null) {
-						if (!(innerGenerate = (worldGenInProgress.get() == Boolean.TRUE))) {
-							worldGenInProgress.set(Boolean.TRUE);
-						}
-					}
-					chunk = (Chunk) chunks.getValueByKey(key);
-					if (chunk != null) {
-						return chunk;
-					}
-					chunk = (Chunk) loadingChunks.getValueByKey(key);
-					if (chunk == null || chunk == defaultEmptyChunk) {
-						if (generator == null) {
-							chunk = defaultEmptyChunk;
-						} else {
-							if (!allowGenerate) {
-								loadingChunks.remove(key);
-								chunkLoadLocks.remove(key);
-								return defaultEmptyChunk;
-							}
-							try {
-								chunk = generator.provideChunk(x, z);
-								wasGenerated = true;
-							} catch (Throwable t) {
-								Log.severe("Failed to generate a chunk in " + Log.name(world) + " at chunk coords " + x + ',' + z);
-								throw UnsafeUtil.throwIgnoreChecked(t);
-							}
-						}
-					} else {
-						if (generator != null) {
-							generator.recreateStructures(x, z);
-						}
-					}
+			boolean inLoadingMap = false;
 
+			// Lock on the lock for this chunk - prevent multiple instances of the same chunk
+			ThreadLocal<Boolean> worldGenInProgress = world.worldGenInProgress;
+			synchronized (lock) {
+				finalizeUnload(key);
+				chunk = (Chunk) chunks.getValueByKey(key);
+				if (chunk != null) {
+					return chunk;
+				}
+				chunk = (Chunk) loadingChunks.getValueByKey(key);
+				if (chunk == null) {
+					chunk = regenerate ? null : safeLoadChunk(x, z);
+					if (chunk != null && (chunk.xPosition != x || chunk.zPosition != z)) {
+						Log.severe("Chunk at " + chunk.xPosition + ',' + chunk.zPosition + " was stored at " + x + ',' + z + "\nResetting this chunk.");
+						chunk = null;
+					}
 					if (chunk == null) {
-						throw new IllegalStateException("Null chunk was provided for " + x + ',' + z);
-					}
-
-					if (!inLoadingMap) {
+						loadingChunks.add(key, defaultEmptyChunk);
+					} else {
 						loadingChunks.add(key, chunk);
+						inLoadingMap = true;
 					}
+				} else if (worldGenInProgress != null && worldGenInProgress.get() == Boolean.TRUE) {
+					return chunk;
+				} else {
+					inLoadingMap = true;
+				}
+			}
+			// Unlock this chunk - avoids a deadlock
+			// Thread A - requests chunk A - needs genned
+			// Thread B - requests chunk B - needs genned
+			// In thread A, redpower tries to load chunk B
+			// because its marble gen is buggy.
+			// Thread B is now waiting for the generate lock,
+			// Thread A is waiting for the lock on chunk B
 
-					chunk.threadUnsafeChunkLoad();
+			// Lock the generation lock - ChunkProviderGenerate isn't threadsafe at all
+			// TODO: Possibly make ChunkProviderGenerate threadlocal? Would need many changes to
+			// structure code to get it to work properly.
+			try {
+				synchronized (generateLock) {
+					synchronized (lock) {
+						if (worldGenInProgress != null) {
+							if (!(innerGenerate = (worldGenInProgress.get() == Boolean.TRUE))) {
+								worldGenInProgress.set(Boolean.TRUE);
+							}
+						}
+						chunk = (Chunk) chunks.getValueByKey(key);
+						if (chunk != null) {
+							return chunk;
+						}
+						chunk = (Chunk) loadingChunks.getValueByKey(key);
+						if (chunk == null || chunk == defaultEmptyChunk) {
+							if (generator == null) {
+								chunk = defaultEmptyChunk;
+							} else {
+								if (!allowGenerate) {
+									return defaultEmptyChunk;
+								}
+								try {
+									chunk = generator.provideChunk(x, z);
+									wasGenerated = true;
+								} catch (Throwable t) {
+									Log.severe("Failed to generate a chunk in " + Log.name(world) + " at chunk coords " + x + ',' + z);
+									throw UnsafeUtil.throwIgnoreChecked(t);
+								}
+							}
+						} else {
+							if (generator != null) {
+								generator.recreateStructures(x, z);
+							}
+						}
 
-					loadingChunks.remove(key);
-					chunks.add(key, chunk);
-					loadedChunks.add(chunk);
-					chunk.populateChunk(this, this, x, z);
+						if (chunk == null) {
+							throw new IllegalStateException("Null chunk was provided for " + x + ',' + z);
+						}
+
+						if (!inLoadingMap) {
+							loadingChunks.add(key, chunk);
+						}
+
+						chunk.threadUnsafeChunkLoad();
+
+						chunks.add(key, chunk);
+						loadedChunks.add(chunk);
+						chunk.populateChunk(this, this, x, z);
+					}
+				}
+			} finally {
+				if (!innerGenerate && worldGenInProgress != null) {
+					worldGenInProgress.set(Boolean.FALSE);
 				}
 			}
 		} finally {
-			if (!innerGenerate && worldGenInProgress != null) {
-				worldGenInProgress.set(Boolean.FALSE);
+			if (lock.decrementAndGet() == 0) {
+				loadingChunks.remove(key);
 			}
 		}
 
@@ -472,6 +460,21 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		chunkLoadLocks.remove(key);
 
 		return chunk;
+	}
+
+	private AtomicInteger getLock(long key) {
+		AtomicInteger lock = chunkLoadLocks.get(key);
+		if (lock != null) {
+			lock.incrementAndGet();
+			return lock;
+		}
+		AtomicInteger newLock = new AtomicInteger(1);
+		lock = chunkLoadLocks.putIfAbsent(key, newLock);
+		if (lock != null) {
+			lock.incrementAndGet();
+			return lock;
+		}
+		return newLock;
 	}
 
 	@Override
@@ -597,7 +600,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	@Override
 	public String makeString() {
-		return "Loaded " + loadedChunks.size() + " Unload0 " + unloadStage0.size() + " Unload1 " + unloadStage1.size();
+		return "Loaded " + loadedChunks.size() + " Unload " + unloadStage0.size() + " UnloadSave " + unloadStage1.size() + " Locks " + chunkLoadLocks.size();
 	}
 
 	@Override
