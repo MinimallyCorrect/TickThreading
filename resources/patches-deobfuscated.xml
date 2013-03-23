@@ -656,4 +656,9 @@
 			<synchronize>updateDeffered,defer,remMultiBlock</synchronize>
 		</class>
 	</xyCraft>
+	<denLib>
+		<class id="denoflionsx.denLib">
+			<replaceMethod code="return $1;">Hash</replaceMethod>
+		</class>
+	</denLib>
 </mods>
