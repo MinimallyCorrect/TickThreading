@@ -20,11 +20,13 @@ public abstract class PatchServerConfigurationManager extends ServerConfiguratio
 
 	@Override
 	public void transferPlayerToDimension(EntityPlayerMP entityPlayerMP, int toDimensionId, Teleporter teleporter) {
+		WorldServer fromDimension;
+		WorldServer toDimension;
 		synchronized (entityPlayerMP.loadedChunks) {
 			int fromDimensionId = entityPlayerMP.dimension;
-			WorldServer fromDimension = this.mcServer.worldServerForDimension(fromDimensionId);
+			fromDimension = this.mcServer.worldServerForDimension(fromDimensionId);
 			entityPlayerMP.dimension = toDimensionId;
-			WorldServer toDimension = this.mcServer.worldServerForDimension(toDimensionId);
+			toDimension = this.mcServer.worldServerForDimension(toDimensionId);
 			Log.info(entityPlayerMP + " from " + Log.name(fromDimension) + " to " + Log.name(toDimension));
 			if (fromDimension == toDimension) {
 				if (!toDimension.playerEntities.contains(entityPlayerMP)) {
@@ -45,9 +47,6 @@ public abstract class PatchServerConfigurationManager extends ServerConfiguratio
 			}
 			this.transferEntityToWorld(entityPlayerMP, fromDimensionId, fromDimension, toDimension, teleporter);
 			entityPlayerMP.setWorld(toDimension);
-			fromDimension.getPlayerManager().removePlayer(entityPlayerMP);
-			toDimension.getPlayerManager().removePlayer(entityPlayerMP);
-			toDimension.getPlayerManager().addPlayer(entityPlayerMP);
 			toDimension.theChunkProviderServer.loadChunk((int) entityPlayerMP.posX >> 4, (int) entityPlayerMP.posZ >> 4);
 			if (!toDimension.playerEntities.contains(entityPlayerMP)) {
 				toDimension.spawnEntityInWorld(entityPlayerMP);
@@ -63,6 +62,9 @@ public abstract class PatchServerConfigurationManager extends ServerConfiguratio
 
 			GameRegistry.onPlayerChangedDimension(entityPlayerMP);
 		}
+		fromDimension.getPlayerManager().removePlayer(entityPlayerMP);
+		toDimension.getPlayerManager().removePlayer(entityPlayerMP);
+		toDimension.getPlayerManager().addPlayer(entityPlayerMP);
 	}
 
 	public PatchServerConfigurationManager(MinecraftServer par1MinecraftServer) {
