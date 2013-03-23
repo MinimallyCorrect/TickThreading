@@ -79,6 +79,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	private int unloadTicks = 0;
 	private Chunk lastChunk;
 	// Mojang compatiblity fields.
+	public final IChunkProvider currentChunkProvider;
 	public final Set<Long> chunksToUnload = unloadStage0;
 	public final List<Chunk> loadedChunks;
 	public final IChunkLoader currentChunkLoader;
@@ -87,7 +88,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	public ThreadedChunkProvider(WorldServer world, IChunkLoader loader, IChunkProvider generator) {
 		super(world, loader, generator); // This call will be removed by javassist.
-		this.generator = generator;
+		currentChunkProvider = this.generator = generator;
 		this.world = world;
 		currentChunkLoader = this.loader = loader;
 		loadedChunks = Collections.synchronizedList(new ArrayList<Chunk>());
