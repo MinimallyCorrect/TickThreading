@@ -427,7 +427,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 							if (!allowGenerate) {
 								loadingChunks.remove(key);
 								chunkLoadLocks.remove(key);
-								return null;
+								return defaultEmptyChunk;
 							}
 							try {
 								chunk = generator.provideChunk(x, z);
