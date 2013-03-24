@@ -560,6 +560,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	public boolean saveChunks(boolean saveAll, IProgressUpdate progressUpdate) {
 		int savedChunks = 0;
 
+		List<Chunk> chunksToSave = new ArrayList<Chunk>();
 		synchronized (loadedChunks) {
 			for (Chunk chunk : loadedChunks) {
 
@@ -571,18 +572,22 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 					}
 				}
 
-				if (saveAll) {
-					safeSaveExtraChunkData(chunk);
-				}
-
 				if (chunk.needsSaving(saveAll)) {
-					safeSaveChunk(chunk);
-					chunk.isModified = false;
-
-					if (++savedChunks == 24 && !saveAll) {
-						return false;
-					}
+					chunksToSave.add(chunk);
 				}
+			}
+		}
+
+		for (Chunk chunk : chunksToSave) {
+			if (saveAll) {
+				safeSaveExtraChunkData(chunk);
+			}
+
+			safeSaveChunk(chunk);
+			chunk.isModified = false;
+
+			if (++savedChunks == 24 && !saveAll) {
+				return false;
 			}
 		}
 
