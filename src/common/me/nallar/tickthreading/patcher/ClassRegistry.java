@@ -6,9 +6,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipEntry;
@@ -101,8 +103,10 @@ public class ClassRegistry {
 	}
 
 	public void update(String className, byte[] replacement) {
-		if (duplicateClassNamesToLocations.containsKey(className)) {
-			Log.warning(className + " is in multiple jars: " + CollectionsUtil.join(duplicateClassNamesToLocations.get(className), ", "));
+		Collection<File> duplicates = duplicateClassNamesToLocations.get(className);
+		if (duplicates != null) {
+			Log.warning(className + " is in multiple jars: " + CollectionsUtil.join(duplicates, ", "));
+			updatedFiles.addAll(duplicates);
 		}
 		updatedFiles.add(classNameToLocation.get(className));
 		replacementFiles.put(className.replace('.', '/') + ".class", replacement);
