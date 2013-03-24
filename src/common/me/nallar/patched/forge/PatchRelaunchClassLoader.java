@@ -157,10 +157,14 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 				try {
 					Enumeration<ZipEntry> zipEntryEnumeration = (Enumeration<ZipEntry>) zipFile.entries();
 					int patchedClasses = 0;
+					int alreadyLoadedPatchedClasses = 0;
 					while (zipEntryEnumeration.hasMoreElements()) {
 						ZipEntry zipEntry = zipEntryEnumeration.nextElement();
 						String name = zipEntry.getName();
-						if (!name.toLowerCase().endsWith(".class") || replacedClasses.containsKey(name)) {
+						if (!name.toLowerCase().endsWith(".class")) {
+							continue;
+						} else if (replacedClasses.containsKey(name)) {
+							alreadyLoadedPatchedClasses++;
 							continue;
 						}
 						patchedClasses++;
@@ -168,7 +172,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 						replacedClasses.put(name, contents);
 					}
 					RelaunchClassLoader.patchedClasses += patchedClasses;
-					log(Level.INFO, null, "Loaded " + patchedClasses + " patched classes for " + patchedModFile.getName());
+					log(Level.INFO, null, "Loaded " + patchedClasses + " patched classes for " + patchedModFile.getName() + ". " + alreadyLoadedPatchedClasses + " classes not loaded, as already loaded from another patchedMods file.");
 				} finally {
 					zipFile.close();
 				}
