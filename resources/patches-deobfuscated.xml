@@ -668,6 +668,7 @@
 		<class id="icbm.api.RadarRegistry">
 			<replaceMethod code="detectableEntities.remove($1);">unregister(L^class:Entity^;)V</replaceMethod>
 			<replaceMethod code="detectableTileEntities.remove($1);">unregister(L^class:TileEntity^;)V</replaceMethod>
+			<replaceMethodCall code="$_ = $1.getTEWithoutLoad($$);" method="^method:World/getBlockTileEntity^">cleanUpArray</replaceMethodCall>
 			<synchronize static=""/>
 		</class>
 	</icbm>

@@ -152,12 +152,15 @@ public class PatchManager {
 		}
 		for (Element classElement : DomUtil.getElementsByTag(configDocument.getDocumentElement(), "class")) {
 			for (Element patchElement : DomUtil.elementList(classElement.getChildNodes())) {
-				String code = patchElement.getAttribute("code");
-				if (!code.isEmpty()) {
-					String obfuscatedCode = mappings.obfuscate(code);
-					if (!code.equals(obfuscatedCode)) {
-						patchElement.setAttribute("code", obfuscatedCode);
-						Log.info("Obfuscated " + code + " to " + obfuscatedCode);
+				Map<String, String> attributes = DomUtil.getAttributes(patchElement);
+				for (String key : attributes.keySet()) {
+					String code = patchElement.getAttribute(key);
+					if (!code.isEmpty()) {
+						String obfuscatedCode = mappings.obfuscate(key);
+						if (!code.equals(obfuscatedCode)) {
+							patchElement.setAttribute("code", obfuscatedCode);
+							Log.info("Obfuscated " + code + " to " + obfuscatedCode);
+						}
 					}
 				}
 				String textContent = patchElement.getTextContent();
