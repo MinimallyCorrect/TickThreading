@@ -579,6 +579,11 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		}
 
 		for (Chunk chunk : chunksToSave) {
+			if (chunks.getValueByKey(key(chunk.xPosition, chunk.zPosition)) != chunk) {
+				Log.warning("Not saving " + chunk + ", not in correct location in chunks map.");
+				continue;
+			}
+
 			if (saveAll) {
 				safeSaveExtraChunkData(chunk);
 			}
