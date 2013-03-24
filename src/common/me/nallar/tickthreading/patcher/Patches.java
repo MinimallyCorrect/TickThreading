@@ -217,6 +217,33 @@ public class Patches {
 	}
 
 	@Patch
+	public void replaceAllInitializers(CtClass ctClass, Map<String, String> attributes) throws CannotCompileException, NotFoundException {
+		final String type = attributes.get("field");
+		final String code = attributes.get("code");
+		final String clazz = attributes.get("class");
+		if (code == null && clazz == null) {
+			throw new NullPointerException("Must give code or class");
+		}
+		final String newInitialiser = code == null ? "new " + clazz + "();" : code;
+		final Set<CtBehavior> allBehaviours = new HashSet<CtBehavior>();
+		Collections.addAll(allBehaviours, ctClass.getDeclaredConstructors());
+		final CtBehavior initialiser = ctClass.getClassInitializer();
+		if (initialiser != null) {
+			allBehaviours.add(initialiser);
+		}
+		for (CtBehavior ctBehavior : allBehaviours) {
+			ctBehavior.instrument(new ExprEditor() {
+				@Override
+				public void edit(NewExpr e) throws CannotCompileException {
+					if (e.getClassName().equals(type)) {
+						e.replace(newInitialiser);
+					}
+				}
+			});
+		}
+	}
+
+	@Patch
 	public void profile(CtMethod ctMethod, Map<String, String> attributes) throws CannotCompileException, NotFoundException {
 		CtClass ctClass = ctMethod.getDeclaringClass();
 		CtMethod replacement = CtNewMethod.copy(ctMethod, ctClass, null);
@@ -413,15 +440,13 @@ public class Patches {
 		final String code = attributes.get("code");
 		final int index = Integer.valueOf(index_);
 
-		Log.fine("method: " + method + ", class: " + className + ", code" + code + ", index: " + index);
-
 		ctBehavior.instrument(new ExprEditor() {
 			private int currentIndex = 0;
 
 			@Override
 			public void edit(MethodCall methodCall) throws CannotCompileException {
 				if ((className == null || methodCall.getClassName().equals(className)) && (method.isEmpty() || methodCall.getMethodName().equals(method)) && (index == -1 || currentIndex++ == index)) {
-					Log.info("Replaced " + methodCall + " from " + ctBehavior);
+					Log.info("Replaced " + methodCall + " in " + ctBehavior);
 					methodCall.replace(code);
 				}
 			}

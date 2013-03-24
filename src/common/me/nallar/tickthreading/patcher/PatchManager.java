@@ -13,7 +13,9 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -269,7 +271,18 @@ public class PatchManager {
 				return null;
 			}
 			String textContent = patchElement.getTextContent().trim();
-			if (isClassPatch || (!emptyConstructor && textContent.isEmpty())) {
+			if (attributes.containsKey("runAll")) {
+				List<CtBehavior> ctBehaviors = new ArrayList<CtBehavior>();
+				Collections.addAll(ctBehaviors, ctClass.getDeclaredMethods());
+				Collections.addAll(ctBehaviors, ctClass.getDeclaredConstructors());
+				CtBehavior initializer = ctClass.getClassInitializer();
+				if (initializer != null) {
+					ctBehaviors.add(initializer);
+				}
+				for (CtBehavior ctBehavior : ctBehaviors) {
+					run(ctBehavior, attributes);
+				}
+			} else if (isClassPatch || (!emptyConstructor && textContent.isEmpty())) {
 				return run(ctClass, attributes);
 			} else if (textContent.isEmpty()) {
 				run(ctClass.getConstructors()[0], attributes);

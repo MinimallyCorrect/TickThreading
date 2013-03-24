@@ -294,6 +294,9 @@
 		</class>
 	</minecraftCommon>
 	<bukkit>
+		<class id="org.bukkit.plugin.SimplePluginManager">
+			<synchronize>subscribeToPermission,unsubscribeFromPermission,subscribeToDefaultPerms,unsubscribeToDefaultPerms,getPermissionSubscriptions,getDefaultPermSubscriptions</synchronize>
+		</class>
 		<class id="org.bukkit.craftbukkit.v1_4_R1.CraftWorld">
 			<replaceMethod
 							code=" {
