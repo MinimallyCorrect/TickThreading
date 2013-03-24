@@ -297,25 +297,25 @@ public final class TickManager {
 		int yPos = tileEntity.lastTTY;
 		int zPos = tileEntity.lastTTZ;
 		if (tileEntity.xMinusLock != null) {
-			TileEntity lockTileEntity = world.getBlockTileEntity(xPos - 1, yPos, zPos);
+			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos - 1, yPos, zPos);
 			if (lockTileEntity != null) {
 				lockTileEntity.xPlusLock = tileEntity.xMinusLock = null;
 			}
 		}
 		if (tileEntity.xPlusLock != null) {
-			TileEntity lockTileEntity = world.getBlockTileEntity(xPos + 1, yPos, zPos);
+			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos + 1, yPos, zPos);
 			if (lockTileEntity != null) {
 				lockTileEntity.xMinusLock = tileEntity.xPlusLock = null;
 			}
 		}
 		if (tileEntity.zMinusLock != null) {
-			TileEntity lockTileEntity = world.getBlockTileEntity(xPos, yPos, zPos - 1);
+			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos, yPos, zPos - 1);
 			if (lockTileEntity != null) {
 				lockTileEntity.zPlusLock = tileEntity.zMinusLock = null;
 			}
 		}
 		if (tileEntity.zPlusLock != null) {
-			TileEntity lockTileEntity = world.getBlockTileEntity(xPos, yPos, zPos + 1);
+			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos, yPos, zPos + 1);
 			if (lockTileEntity != null) {
 				lockTileEntity.zMinusLock = tileEntity.zPlusLock = null;
 			}
@@ -338,28 +338,28 @@ public final class TickManager {
 		boolean onPlusX = relativeXPos == maxPosition;
 		boolean onPlusZ = relativeZPos == maxPosition;
 		if (onMinusX || onMinusZ || onPlusZ) { // minus X needs locked
-			TileEntity lockTileEntity = world.getBlockTileEntity(xPos - 1, yPos, zPos);
+			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos - 1, yPos, zPos);
 			if (lockTileEntity != null) {
 				tileEntity.xMinusLock = lockTileEntity.thisLock;
 				lockTileEntity.xPlusLock = tileEntity.thisLock;
 			}
 		}
 		if (onPlusX || onMinusZ || onPlusZ) { // plus X needs locked
-			TileEntity lockTileEntity = world.getBlockTileEntity(xPos + 1, yPos, zPos);
+			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos + 1, yPos, zPos);
 			if (lockTileEntity != null) {
 				tileEntity.xPlusLock = lockTileEntity.thisLock;
 				lockTileEntity.xMinusLock = tileEntity.thisLock;
 			}
 		}
 		if (onMinusZ || onMinusX || onPlusX) { // minus Z needs locked
-			TileEntity lockTileEntity = world.getBlockTileEntity(xPos, yPos, zPos - 1);
+			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos, yPos, zPos - 1);
 			if (lockTileEntity != null) {
 				tileEntity.zMinusLock = lockTileEntity.thisLock;
 				lockTileEntity.zPlusLock = tileEntity.thisLock;
 			}
 		}
 		if (onPlusZ || onMinusX || onPlusX) { // plus Z needs locked
-			TileEntity lockTileEntity = world.getBlockTileEntity(xPos, yPos, zPos + 1);
+			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos, yPos, zPos + 1);
 			if (lockTileEntity != null) {
 				tileEntity.zPlusLock = lockTileEntity.thisLock;
 				lockTileEntity.zMinusLock = tileEntity.thisLock;

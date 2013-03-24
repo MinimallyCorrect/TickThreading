@@ -211,7 +211,18 @@ public abstract class PatchWorld extends World {
 		if (y >= 256) {
 			return null;
 		} else {
-			Chunk chunk = this.getChunkIfExists(x >> 4, z >> 4);
+			Chunk chunk = this.getChunkFromChunkCoords(x >> 4, z >> 4);
+			return chunk == null ? null : chunk.getChunkBlockTileEntity(x & 15, y, z & 15);
+		}
+	}
+
+	@Override
+	@Declare
+	public TileEntity getTEWithoutLoad(int x, int y, int z) {
+		if (y >= 256) {
+			return null;
+		} else {
+			Chunk chunk = ((ChunkProviderServer) this.chunkProvider).getChunkIfExists(x >> 4, z >> 4);
 			return chunk == null ? null : chunk.getChunkBlockTileEntity(x & 15, y, z & 15);
 		}
 	}

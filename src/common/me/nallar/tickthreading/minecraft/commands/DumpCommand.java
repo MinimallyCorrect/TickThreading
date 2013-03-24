@@ -76,7 +76,7 @@ public class DumpCommand extends Command {
 			sb.append(blockId).append(':').append(name).append(':').append(metaData).append('\n');
 		}
 		sb.append("World time: ").append(world.getWorldTime()).append('\n');
-		TileEntity toDump = world.getBlockTileEntity(x, y, z);
+		TileEntity toDump = world.getTEWithoutLoad(x, y, z);
 		if (toDump == null) {
 			sb.append("No tile entity at ").append(Log.name(world)).append(" x,y,z").append(x).append(',').append(y).append(',').append(z).append('\n');
 			return tf;
