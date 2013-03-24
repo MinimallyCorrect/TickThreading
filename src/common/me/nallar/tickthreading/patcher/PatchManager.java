@@ -156,9 +156,9 @@ public class PatchManager {
 				for (String key : attributes.keySet()) {
 					String code = patchElement.getAttribute(key);
 					if (!code.isEmpty()) {
-						String obfuscatedCode = mappings.obfuscate(key);
+						String obfuscatedCode = mappings.obfuscate(code);
 						if (!code.equals(obfuscatedCode)) {
-							patchElement.setAttribute("code", obfuscatedCode);
+							patchElement.setAttribute(key, obfuscatedCode);
 							Log.info("Obfuscated " + code + " to " + obfuscatedCode);
 						}
 					}
