@@ -372,6 +372,9 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 					}
 					if (chunk == null) {
 						loadingChunks.add(key, defaultEmptyChunk);
+						if (!allowGenerate) {
+							return defaultEmptyChunk;
+						}
 					} else {
 						loadingChunks.add(key, chunk);
 						inLoadingMap = true;
@@ -410,9 +413,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 							if (generator == null) {
 								chunk = defaultEmptyChunk;
 							} else {
-								if (!allowGenerate) {
-									return defaultEmptyChunk;
-								}
 								try {
 									chunk = generator.provideChunk(x, z);
 									wasGenerated = true;
@@ -600,7 +600,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	@Override
 	public String makeString() {
-		return "Loaded " + loadedChunks.size() + " Unload " + unloadStage0.size() + " UnloadSave " + unloadStage1.size() + " Locks " + chunkLoadLocks.size();
+		return "Loaded " + loadedChunks.size() + " Loading " + loadingChunks.getNumHashElements() + " Unload " + unloadStage0.size() + " UnloadSave " + unloadStage1.size() + " Locks " + chunkLoadLocks.size();
 	}
 
 	@Override
