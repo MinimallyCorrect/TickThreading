@@ -739,11 +739,8 @@ public class Patches {
 	)
 	public void lock(CtMethod ctMethod, Map<String, String> attributes) throws NotFoundException, CannotCompileException, IOException {
 		String field = attributes.get("field");
-		CtClass ctClass = ctMethod.getDeclaringClass();
-		CtMethod replacement = CtNewMethod.copy(ctMethod, ctClass, null);
-		ctMethod.setName(ctMethod.getName() + "_lock");
-		replacement.setBody("{ this." + field + ".lock(); try { return " + (attributes.get("methodcall") == null ? "$proceed" : ctMethod.getName()) + "($$); } finally { this." + field + ".unlock(); } }", "this", ctMethod.getName());
-		ctClass.addMethod(replacement);
+		ctMethod.insertBefore("this." + field + ".lock();");
+		ctMethod.insertAfter("this." + field + ".unlock();", true);
 	}
 
 	@Patch (
