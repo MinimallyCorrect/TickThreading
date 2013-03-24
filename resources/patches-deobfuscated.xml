@@ -664,4 +664,11 @@
 			<replaceMethod code="return $1;">Hash</replaceMethod>
 		</class>
 	</denLib>
+	<icbm>
+		<class id="icbm.api.RadarRegistry">
+			<replaceMethod code="detectableEntities.remove($1);">unregister(L^class:Entity^;)V</replaceMethod>
+			<replaceMethod code="detectableTileEntities.remove($1);">unregister(L^class:TileEntity^;)V</replaceMethod>
+			<synchronize/>
+		</class>
+	</icbm>
 </mods>

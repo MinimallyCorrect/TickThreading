@@ -160,6 +160,14 @@ public class PatchManager {
 						Log.info("Obfuscated " + code + " to " + obfuscatedCode);
 					}
 				}
+				String textContent = patchElement.getTextContent();
+				if (textContent != null && !textContent.isEmpty()) {
+					String obfuscatedTextContent = mappings.obfuscate(textContent);
+					if (!textContent.equals(obfuscatedTextContent)) {
+						patchElement.setTextContent(obfuscatedTextContent);
+						Log.info("Obfuscated " + textContent + " to " + obfuscatedTextContent);
+					}
+				}
 			}
 		}
 	}
