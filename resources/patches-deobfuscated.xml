@@ -668,8 +668,9 @@
 		<class id="icbm.api.RadarRegistry">
 			<replaceMethod code="detectableEntities.remove($1);">unregister(L^class:Entity^;)V</replaceMethod>
 			<replaceMethod code="detectableTileEntities.remove($1);">unregister(L^class:TileEntity^;)V</replaceMethod>
-			<replaceMethodCall code="$_ = $1.getTEWithoutLoad($$);" method="^method:World/getBlockTileEntity^">cleanUpArray</replaceMethodCall>
-			<synchronize static=""/>
+			<replaceMethodCall code="$_ = $0.getTEWithoutLoad($$);" method="^class:World^.^method:World/getBlockTileEntity^">cleanUpArray</replaceMethodCall>
+			<synchronize>cleanUpArray,getEntitiesWithinRadius,getTileEntitiesInArea,unregister(L^class:Entity^;)V,unregister(L^class:TileEntity^;)V,register(L^class:Entity^;)V,register(L^class:TileEntity^;)V</synchronize>
+			<insertBefore code="if (!Thread.holdsLock(icbm.api.RadarRegistry.class)) { throw new UnsupportedOperationException(&quot;Not threadsafe.&quot;); }">getEntities,getTileEntities</insertBefore>
 		</class>
 	</icbm>
 </mods>
