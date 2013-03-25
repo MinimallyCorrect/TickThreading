@@ -66,7 +66,6 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 			//MCPC+ compatibility - they also remove this.
 		}
 		pendingTickListEntries = new TreeHashSet();
-		worldGenInProgress = new BooleanThreadLocal();
 		runningTickListEntries = new ArrayList<NextTickListEntry>();
 		try {
 			chunkTickSet = (HashSet<ChunkCoordIntPair>) activeChunkSet;

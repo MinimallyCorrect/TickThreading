@@ -77,6 +77,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	private final Chunk defaultEmptyChunk;
 	private final ThreadLocal<Boolean> inUnload = new BooleanThreadLocal();
 	private final boolean loadChunkIfNotFound;
+	private final ThreadLocal<Boolean> worldGenInProgress;
 	private boolean loadedPersistentChunks = false;
 	private int unloadTicks = 0;
 	private Chunk lastChunk;
@@ -96,6 +97,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		loadedChunks = Collections.synchronizedList(new ArrayList<Chunk>());
 		defaultEmptyChunk = new EmptyChunk(world, 0, 0);
 		loadChunkIfNotFound = TickThreading.instance.loadChunkOnProvideRequest;
+		worldGenInProgress = world.worldGenInProgress = new BooleanThreadLocal();
 	}
 
 	@Override
@@ -282,7 +284,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			return chunk;
 		}
 
-		if (loadChunkIfNotFound) {
+		if (loadChunkIfNotFound || worldGenInProgress.get() == Boolean.TRUE) {
 			return getChunkAt(x, z, false, false, null);
 		}
 
@@ -348,20 +350,21 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			return null;
 		}
 
-		if (Thread.holdsLock(generateLock)) {
+		long key = key(x, z);
+		if (worldGenInProgress.get() == Boolean.TRUE) {
+			chunk = (Chunk) loadingChunks.getValueByKey(key);
+			if (chunk != null) {
+				return chunk;
+			}
 			return defaultEmptyChunk;
 		}
 
-		long key = key(x, z);
-
 		final AtomicInteger lock = getLock(key);
-		boolean innerGenerate = false;
 		boolean wasGenerated = false;
 		try {
 			boolean inLoadingMap = false;
 
 			// Lock on the lock for this chunk - prevent multiple instances of the same chunk
-			ThreadLocal<Boolean> worldGenInProgress = world.worldGenInProgress;
 			synchronized (lock) {
 				finalizeUnload(key);
 				chunk = (Chunk) chunks.getValueByKey(key);
@@ -384,8 +387,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 						loadingChunks.add(key, chunk);
 						inLoadingMap = true;
 					}
-				} else if (worldGenInProgress != null && worldGenInProgress.get() == Boolean.TRUE) {
-					return chunk;
 				} else {
 					inLoadingMap = true;
 				}
@@ -404,11 +405,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			try {
 				synchronized (generateLock) {
 					synchronized (lock) {
-						if (worldGenInProgress != null) {
-							if (!(innerGenerate = (worldGenInProgress.get() == Boolean.TRUE))) {
-								worldGenInProgress.set(Boolean.TRUE);
-							}
-						}
+						worldGenInProgress.set(Boolean.TRUE);
 						chunk = (Chunk) chunks.getValueByKey(key);
 						if (chunk != null) {
 							return chunk;
@@ -448,9 +445,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 					}
 				}
 			} finally {
-				if (!innerGenerate && worldGenInProgress != null) {
-					worldGenInProgress.set(Boolean.FALSE);
-				}
+				worldGenInProgress.set(Boolean.FALSE);
 			}
 		} finally {
 			if (lock.decrementAndGet() == 0) {
