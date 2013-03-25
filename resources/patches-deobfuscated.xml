@@ -623,7 +623,8 @@
 			<newField field="readWriteLock" class="me.nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock"/>
 			<newField field="writeLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>
 			<newField field="readLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.readLock();"/>
-			<replaceInitializer field="electricityNetworks" code="new me.nallar.tickthreading.collections.LockArrayList(); ((me.nallar.tickthreading.collections.LockArrayList)electricityNetworks).lock = writeLock;"/>
+			<replaceInitializer field="electricityNetworks" code="new me.nallar.tickthreading.collections.LockArrayList();"/>
+			<insertAfter code="((me.nallar.tickthreading.collections.LockArrayList)electricityNetworks).lock = writeLock;"/>
 			<lock field="readLock">unregister,cleanUpNetworks,resetConductors</lock>
 			<synchronize>mergeConnection,splitConnection,cleanUpNetworks</synchronize>
 			<insertBefore code="if (cleanNetworkCount++ % 15 != 0) { return; }">cleanUpNetworks</insertBefore>
