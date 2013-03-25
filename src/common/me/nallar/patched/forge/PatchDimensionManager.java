@@ -7,6 +7,7 @@ import java.util.logging.Level;
 import cpw.mods.fml.common.FMLLog;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickThreading;
+import me.nallar.tickthreading.patcher.Declare;
 import me.nallar.unsafe.UnsafeUtil;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.WorldServer;
@@ -15,6 +16,11 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.WorldEvent;
 
 public abstract class PatchDimensionManager extends DimensionManager {
+	@Declare
+	public static boolean isUnloading(WorldServer worldServer) {
+		return unloadQueue.contains(worldServer);
+	}
+
 	public static void unloadWorlds(
 			@SuppressWarnings ("UseOfObsoleteCollectionType")
 			Hashtable<Integer, long[]> worldTickTimes) {

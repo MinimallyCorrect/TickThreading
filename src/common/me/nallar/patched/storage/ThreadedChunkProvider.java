@@ -163,23 +163,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			}
 		}
 
-		long queueThreshold = ticks - 3;
-		int done = 0;
-		// Handle unloading stage 1
-		{
-			QueuedUnload queuedUnload = unloadStage1.peek();
-			while (done++ <= 200 && queuedUnload != null && queuedUnload.ticks <= queueThreshold) {
-				long chunkHash = queuedUnload.key;
-				synchronized (unloadingChunks) {
-					if (!unloadStage1.remove(queuedUnload)) {
-						queuedUnload = unloadStage1.peek();
-						continue;
-					}
-				}
-				finalizeUnload(chunkHash);
-				queuedUnload = unloadStage1.peek();
-			}
-		}
+		handleUnloadQueue(ticks - 3);
 
 		if (this.unloadTicks++ > 1200 && world.provider.dimensionId != 0 && TickThreading.instance.allowWorldUnloading
 				&& loadedChunks.isEmpty() && ForgeChunkManager.getPersistentChunksFor(world).isEmpty()
@@ -203,6 +187,25 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			}
 			if (possible > 0) {
 				Log.info("Loaded " + loaded + '/' + possible + " persistent chunks in " + Log.name(world));
+			}
+		}
+	}
+
+	private void handleUnloadQueue(long queueThreshold) {
+		int done = 0;
+		// Handle unloading stage 1
+		{
+			QueuedUnload queuedUnload = unloadStage1.peek();
+			while (done++ <= 200 && queuedUnload != null && queuedUnload.ticks <= queueThreshold) {
+				long chunkHash = queuedUnload.key;
+				synchronized (unloadingChunks) {
+					if (!unloadStage1.remove(queuedUnload)) {
+						queuedUnload = unloadStage1.peek();
+						continue;
+					}
+				}
+				finalizeUnload(chunkHash);
+				queuedUnload = unloadStage1.peek();
 			}
 		}
 	}
@@ -598,6 +601,10 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			if (++savedChunks == 24 && !saveAll) {
 				return false;
 			}
+		}
+
+		if (DimensionManager.isUnloading(world)) {
+			handleUnloadQueue(Long.MAX_VALUE);
 		}
 
 		if (saveAll && loader != null) {
