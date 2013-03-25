@@ -402,14 +402,15 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			// Lock the generation lock - ChunkProviderGenerate isn't threadsafe at all
 			// TODO: Possibly make ChunkProviderGenerate threadlocal? Would need many changes to
 			// structure code to get it to work properly.
-			try {
-				synchronized (generateLock) {
-					synchronized (lock) {
+
+			synchronized (generateLock) {
+				synchronized (lock) {
+					chunk = (Chunk) chunks.getValueByKey(key);
+					if (chunk != null) {
+						return chunk;
+					}
+					try {
 						worldGenInProgress.set(Boolean.TRUE);
-						chunk = (Chunk) chunks.getValueByKey(key);
-						if (chunk != null) {
-							return chunk;
-						}
 						chunk = (Chunk) loadingChunks.getValueByKey(key);
 						if (chunk == null || chunk == defaultEmptyChunk) {
 							if (generator == null) {
@@ -441,11 +442,12 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 						chunks.add(key, chunk);
 						loadedChunks.add(chunk);
+
 						chunk.populateChunk(this, this, x, z);
+					} finally {
+						worldGenInProgress.set(Boolean.FALSE);
 					}
 				}
-			} finally {
-				worldGenInProgress.set(Boolean.FALSE);
 			}
 		} finally {
 			if (lock.decrementAndGet() == 0) {
