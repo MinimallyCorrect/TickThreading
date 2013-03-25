@@ -164,15 +164,15 @@ public abstract class PatchChunk extends Chunk {
 	@SuppressWarnings ("FieldRepeatedlyAccessedInMethod") // Patcher makes x/zPosition and worldObj final
 	@Override
 	public void addEntity(Entity par1Entity) {
-		int var2 = MathHelper.floor_double(par1Entity.posX / 16.0D);
-		int var3 = MathHelper.floor_double(par1Entity.posZ / 16.0D);
+		int entityChunkX = MathHelper.floor_double(par1Entity.posX / 16.0D);
+		int entityChunkZ = MathHelper.floor_double(par1Entity.posZ / 16.0D);
 
-		if (var2 != this.xPosition || var3 != this.zPosition) {
-			FMLLog.log(Level.FINE, new Throwable(), "Entity %s added to the wrong chunk - expected x%d z%d, got x%d z%d", par1Entity.toString(), this.xPosition, this.zPosition, var2, var3);
+		if (entityChunkX != this.xPosition || entityChunkZ != this.zPosition) {
+			FMLLog.log(Level.FINE, new Throwable(), "Entity %s added to the wrong chunk - expected x%d z%d, got x%d z%d", par1Entity.toString(), this.xPosition, this.zPosition, entityChunkX, entityChunkZ);
 			if (worldObj instanceof WorldServer) {
-				Chunk correctChunk = ((WorldServer) worldObj).theChunkProviderServer.getChunkIfExists(xPosition, zPosition);
+				Chunk correctChunk = ((WorldServer) worldObj).theChunkProviderServer.getChunkIfExists(entityChunkX, entityChunkZ);
 				if (correctChunk == this) {
-					Log.severe("What?! This chunk isn't at the position it says it's at...: " + this + " was added at " + xPosition + ", " + zPosition);
+					Log.severe("What?! This chunk isn't at the position it says it's at...: " + this + " was added at " + entityChunkX + ", " + entityChunkZ);
 				} else if (correctChunk != null) {
 					correctChunk.addEntity(par1Entity);
 					return;

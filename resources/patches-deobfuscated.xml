@@ -619,22 +619,20 @@
 	</thaumcraft>
 	<universalElectricity>
 		<class id="universalelectricity.core.electricity.Electricity">
+			<newField field="cleanNetworkCount" class="int" code="0"/>
 			<newField field="readWriteLock" class="me.nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock"/>
 			<newField field="writeLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>
 			<newField field="readLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.readLock();"/>
-			<insertAfter code="{
-				if (electricityNetworks.getClass() == java.util.ArrayList.class) {
-					electricityNetworks = new me.nallar.tickthreading.collections.LockArrayList(electricityNetworks);
-					((me.nallar.tickthreading.collections.LockArrayList)electricityNetworks).lock = writeLock;
-				}
-				}"/>
+			<replaceInitializer field="electricityNetworks" code="new me.nallar.tickthreading.collections.LockArrayList(); ((me.nallar.tickthreading.collections.LockArrayList)electricityNetworks).lock = writeLock;"/>
 			<lock field="readLock">unregister,cleanUpNetworks,resetConductors</lock>
 			<synchronize>mergeConnection,splitConnection,cleanUpNetworks</synchronize>
+			<insertBefore code="if (cleanNetworkCount++ % 15 != 0) { return; }">cleanUpNetworks</insertBefore>
 		</class>
 		<class id="universalelectricity.core.electricity.ElectricityConnections">
 			<replaceInitializer field="connectors" code="new me.nallar.tickthreading.collections.CHashMap();"/>
 		</class>
 		<class id="universalelectricity.core.electricity.ElectricityNetwork">
+			<replaceMethodCall code="$_ = $0.getTEWithoutLoad($$);" method="^class:World^.^method:World/getBlockTileEntity^">getProduced,getRequestWithoutReduction</replaceMethodCall>
 			<newField field="readLock" class="java.util.concurrent.locks.Lock" code="none"/>
 			<replaceMethod code="{
 				me.nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock readWriteLock = new me.nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock();

@@ -26,6 +26,7 @@ import me.nallar.tickthreading.util.ServerThreadFactory;
 import me.nallar.tickthreading.util.concurrent.NativeMutex;
 import me.nallar.unsafe.UnsafeUtil;
 import net.minecraft.entity.EnumCreatureType;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.IProgressUpdate;
 import net.minecraft.util.LongHashMap;
 import net.minecraft.world.ChunkCoordIntPair;
@@ -160,7 +161,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			}
 		}
 
-		long queueThreshold = ticks - 15;
+		long queueThreshold = ticks - 3;
 		int done = 0;
 		// Handle unloading stage 1
 		{
@@ -584,7 +585,9 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 		for (Chunk chunk : chunksToSave) {
 			if (chunks.getValueByKey(key(chunk.xPosition, chunk.zPosition)) != chunk) {
-				Log.warning("Not saving " + chunk + ", not in correct location in chunks map.");
+				if (MinecraftServer.getServer().isServerRunning()) {
+					Log.warning("Not saving " + chunk + ", not in correct location in chunks map.");
+				}
 				continue;
 			}
 
