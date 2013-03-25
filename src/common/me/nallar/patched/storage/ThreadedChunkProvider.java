@@ -347,6 +347,10 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			return null;
 		}
 
+		if (Thread.holdsLock(generateLock)) {
+			return defaultEmptyChunk;
+		}
+
 		long key = key(x, z);
 
 		final AtomicInteger lock = getLock(key);
