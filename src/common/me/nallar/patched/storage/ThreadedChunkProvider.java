@@ -603,12 +603,12 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			}
 		}
 
-		if (DimensionManager.isUnloading(world)) {
+		if (saveAll) {
 			handleUnloadQueue(Long.MAX_VALUE);
-		}
 
-		if (saveAll && loader != null) {
-			loader.saveExtraData();
+			if (loader != null) {
+				loader.saveExtraData();
+			}
 		}
 
 		return true;
