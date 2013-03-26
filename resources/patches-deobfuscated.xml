@@ -367,6 +367,9 @@
 		</class>
 	</forge>
 	<forgeModLoader>
+		<class id="cpw.mods.fml.common.registry.GameRegistry">
+			<addAll fromClass="me.nallar.patched.forge.PatchGameRegistry"/>
+		</class>
 		<class id="cpw.mods.fml.relauncher.FMLLogFormatter">
 			<replace class="me.nallar.tickthreading.LogFormatter"/>
 		</class>
