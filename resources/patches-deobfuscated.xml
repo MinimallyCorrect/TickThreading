@@ -147,10 +147,10 @@
 		</class>
 		<class id="net.minecraft.util.Vec3Pool">
 			<!-- This prevents entities in multiple threads using the same Vec3 for collisions. -->
-			<synchronize>getVecFromPool</synchronize>
+			<synchronize>getVecFromPool,clear</synchronize>
 		</class>
 		<class id="net.minecraft.util.Vec3Pool" env="mcpc">
-			<synchronize>getVecFromPool,release,clear</synchronize>
+			<synchronize>release</synchronize>
 		</class>
 		<class id="net.minecraft.util.AxisAlignedBB">
 			<!-- Improves performance -->
