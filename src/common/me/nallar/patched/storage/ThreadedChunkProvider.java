@@ -584,6 +584,9 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		}
 
 		for (Chunk chunk : chunksToSave) {
+			if (chunk.unloading) {
+				continue;
+			}
 			if (chunks.getValueByKey(key(chunk.xPosition, chunk.zPosition)) != chunk) {
 				if (MinecraftServer.getServer().isServerRunning()) {
 					Log.warning("Not saving " + chunk + ", not in correct location in chunks map.");
