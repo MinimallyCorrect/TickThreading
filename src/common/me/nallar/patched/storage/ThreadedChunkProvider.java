@@ -77,6 +77,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	private final Chunk defaultEmptyChunk;
 	private final ThreadLocal<Boolean> inUnload = new BooleanThreadLocal();
 	private final boolean loadChunkIfNotFound;
+	private final boolean generateChunkIfNotFound;
 	private final ThreadLocal<Boolean> worldGenInProgress;
 	private boolean loadedPersistentChunks = false;
 	private int unloadTicks = 0;
@@ -97,6 +98,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		loadedChunks = Collections.synchronizedList(new ArrayList<Chunk>());
 		defaultEmptyChunk = new EmptyChunk(world, 0, 0);
 		loadChunkIfNotFound = TickThreading.instance.loadChunkOnProvideRequest;
+		generateChunkIfNotFound = TickThreading.instance.generateChunkOnProvideRequest;
 		worldGenInProgress = world.worldGenInProgress = new BooleanThreadLocal();
 	}
 
@@ -288,7 +290,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		}
 
 		if (loadChunkIfNotFound || worldGenInProgress.get() == Boolean.TRUE) {
-			return getChunkAt(x, z, false, false, null);
+			return getChunkAt(x, z, generateChunkIfNotFound, false, null);
 		}
 
 		return defaultEmptyChunk;
