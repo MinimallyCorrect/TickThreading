@@ -469,7 +469,7 @@
 			<replaceMethod code="this.sendTileWithNotify();">updateBlockChange</replaceMethod>
 		</class>
 		<class id="com.eloraam.redpower.core.TubeBuffer">
-			<synchronize>remove,pop,removeLast,addNew,addNewColor,addBounce,addAll,getLast,readFromNBT,writeToNBT</synchronize>
+			<synchronize>onRemove,pop,removeLast,addNew,addNewColor,addBounce,addAll,getLast,readFromNBT,writeToNBT</synchronize>
 		</class>
 		<class id="com.eloraam.redpower.core.TubeFlow">
 			<!-- TODO: Non-static lock -->
