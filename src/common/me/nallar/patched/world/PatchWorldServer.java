@@ -496,18 +496,11 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 
 	@Override
 	public void markBlockForUpdate(int x, int y, int z) {
-		if (worldGenInProgress == null || !worldGenInProgress.get()) {
+		if (worldGenInProgress == null || worldGenInProgress.get() == Boolean.FALSE) {
 			final List<IWorldAccess> worldAccesses = this.worldAccesses;
 			for (IWorldAccess worldAccess : worldAccesses) {
 				worldAccess.markBlockForUpdate(x, y, z);
 			}
-		}
-	}
-
-	public static class BooleanThreadLocal extends ThreadLocal<Boolean> {
-		@Override
-		public Boolean initialValue() {
-			return false;
 		}
 	}
 }
