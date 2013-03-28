@@ -49,22 +49,22 @@ public abstract class PatchAnvilChunkLoader extends AnvilChunkLoader {
 
 	@Override
 	protected Chunk checkedReadChunkFromNBT(World world, int x, int z, NBTTagCompound chunkTagCompound) {
-		if (!chunkTagCompound.hasKey("Level")) {
+		NBTTagCompound levelTag = (NBTTagCompound) chunkTagCompound.getTag("Level");
+		if (levelTag == null) {
 			FMLLog.severe("Chunk file at " + x + ',' + z + " is missing level data, skipping");
 			return null;
-		} else if (!chunkTagCompound.getCompoundTag("Level").hasKey("Sections")) {
+		} else if (!levelTag.hasKey("Sections")) {
 			FMLLog.severe("Chunk file at " + x + ',' + z + " is missing block data, skipping");
 			return null;
 		} else {
-			NBTTagCompound levelTag = chunkTagCompound.getCompoundTag("Level");
-			Chunk var5 = this.readChunkFromNBT(world, levelTag);
-
-			if (!var5.isAtLocation(x, z)) {
-				FMLLog.warning("Chunk file at " + x + ',' + z + " is in the wrong location; relocating. (Expected " + x + ", " + z + ", got " + var5.xPosition + ", " + var5.zPosition + ')');
+			int cX = levelTag.getInteger("xPos");
+			int cZ = levelTag.getInteger("zPos");
+			if (cX != x || cZ != z) {
+				FMLLog.warning("Chunk file at " + x + ',' + z + " is in the wrong location; relocating. (Expected " + x + ", " + z + ", got " + cX + ", " + cZ + ')');
 				levelTag.setInteger("xPos", x);
 				levelTag.setInteger("zPos", z);
-				var5 = this.readChunkFromNBT(world, levelTag);
 			}
+			Chunk var5 = this.readChunkFromNBT(world, levelTag);
 
 			try {
 				MinecraftForge.EVENT_BUS.post(new ChunkDataEvent.Load(var5, chunkTagCompound));
