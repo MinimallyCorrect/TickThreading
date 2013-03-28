@@ -119,6 +119,7 @@ public class PrePatcher {
 			sourceString = sourceString.replace(" final ", " ");
 			sourceString = sourceString.replace("\nclass", "\npublic class");
 			sourceString = sourceString.replace("\n    " + shortClassName, "\n    public " + shortClassName);
+			sourceString = sourceString.replace("\n    protected " + shortClassName, "\n    public " + shortClassName);
 			sourceString = sourceString.replace("private class", "public class");
 			sourceString = sourceString.replace("protected class", "public class");
 			Matcher privateMatcher = privatePattern.matcher(sourceString);
