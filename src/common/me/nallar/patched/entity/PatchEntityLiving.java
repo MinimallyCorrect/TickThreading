@@ -259,6 +259,8 @@ public abstract class PatchEntityLiving extends EntityLiving {
 				if (!entityItem.isDead && entityItem.getEntityItem() != null) {
 					ItemStack itemStack = entityItem.getEntityItem();
 
+					// This isn't actually redundant, because patcher.
+					//noinspection RedundantCast
 					if (!((Object) this instanceof EntityPlayerMP) && (!(itemStack.getItem() instanceof ItemArmor)) || entityItem.delayBeforeCanPickup > 8) {
 						continue;
 					}

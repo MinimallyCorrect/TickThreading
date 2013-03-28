@@ -99,6 +99,7 @@ public abstract class EntityList<T> extends ArrayList<T> {
 		return innerList.lastIndexOf(o);
 	}
 
+	@SuppressWarnings ("CloneDoesntCallSuperClone")
 	@Override
 	public Object clone() {
 		return innerList.clone();

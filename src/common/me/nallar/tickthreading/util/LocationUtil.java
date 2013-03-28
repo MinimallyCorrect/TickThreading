@@ -12,7 +12,7 @@ import me.nallar.tickthreading.patcher.PatchMain;
 
 public enum LocationUtil {
 	;
-	public static File currentDir = new File(".").getAbsoluteFile();
+	public static final File currentDir = new File(".").getAbsoluteFile();
 
 	private static String normalize(String path, String separator) {
 		path = path.replace(separator + separator, separator);
