@@ -1,10 +1,11 @@
 Installing TickThreading
 ==========
 
-- Install Forge, if you don't already have it.
+- Install Forge, if you don't already have it. MCPC+ will also work at this time.
 - [Download TickThreading](http://nallar.me/buildservice/job/TickThreading/lastSuccessfulBuild/artifact/target/)
 - Put it in your minecraft mods directory
-- Run minecraft, join a world once if using a client, else just start it if using a server
+- Run minecraft, join a world once if using a client, else just start it if using a server.
+- Using a client is known to be unstable at this time, this is mainly for servers.
 - Close minecraft
 - Run PATCHME.cmd/sh in your minecraft directory
 - Have fun, if anything breaks make an issue report or contact me on EsperNet/Freenode IRC. nick: nallar
