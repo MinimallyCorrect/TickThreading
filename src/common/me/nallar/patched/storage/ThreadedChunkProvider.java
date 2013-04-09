@@ -197,32 +197,35 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		int done = 0;
 		// Handle unloading stage 1
 		{
-			QueuedUnload queuedUnload = unloadStage1.peek();
-			while (done++ <= 200 && queuedUnload != null && queuedUnload.ticks <= queueThreshold) {
+			QueuedUnload queuedUnload;
+			while ((queuedUnload = unloadStage1.peek()) != null && queuedUnload.ticks <= queueThreshold && ++done <= 200) {
 				long chunkHash = queuedUnload.key;
 				synchronized (unloadingChunks) {
 					if (!unloadStage1.remove(queuedUnload)) {
-						queuedUnload = unloadStage1.peek();
 						continue;
 					}
 				}
-				finalizeUnload(chunkHash);
-				queuedUnload = unloadStage1.peek();
+				if (!finalizeUnload(chunkHash)) {
+					Log.warning("Couldn'nt unload " + chunkHash);
+				}
 			}
+		}
+		if (done > 0) {
+			Log.info("Processed unload of " + done + " chunks in unload queue");
 		}
 	}
 
-	private void finalizeUnload(long key) {
+	private boolean finalizeUnload(long key) {
 		Chunk chunk;
 		synchronized (unloadingChunks) {
 			chunk = (Chunk) unloadingChunks.getValueByKey(key);
 		}
 		if (chunk == null || !chunk.unloading) {
-			return;
+			return false;
 		}
 		synchronized (chunk) {
 			if (chunk.alreadySavedAfterUnload) {
-				return;
+				return false;
 			}
 			chunk.alreadySavedAfterUnload = true;
 		}
@@ -239,6 +242,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		synchronized (unloadingChunks) {
 			unloadingChunks.remove(key);
 		}
+		return true;
 	}
 
 	// Public visibility as it will be accessed from net.minecraft.whatever, not actually this class
@@ -371,13 +375,15 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 			// Lock on the lock for this chunk - prevent multiple instances of the same chunk
 			synchronized (lock) {
-				finalizeUnload(key);
 				chunk = (Chunk) chunks.getValueByKey(key);
 				if (chunk != null) {
 					return chunk;
 				}
 				chunk = (Chunk) loadingChunks.getValueByKey(key);
 				if (chunk == null) {
+					if (finalizeUnload(key)) {
+						Log.warning("Reloaded chunk at " + x + ',' + z + " too early.");
+					}
 					chunk = regenerate ? null : safeLoadChunk(x, z);
 					if (chunk != null && (chunk.xPosition != x || chunk.zPosition != z)) {
 						Log.severe("Chunk at " + chunk.xPosition + ',' + chunk.zPosition + " was stored at " + x + ',' + z + "\nResetting this chunk.");
