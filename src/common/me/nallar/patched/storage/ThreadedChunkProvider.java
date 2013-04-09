@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -59,8 +59,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	private static final ThreadPoolExecutor chunkLoadThreadPool;
 
 	static {
-		int p = Runtime.getRuntime().availableProcessors();
-		chunkLoadThreadPool = new ThreadPoolExecutor(1, p, 60L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(p * 10), new ServerThreadFactory("Async ChunkLoader"), new ThreadPoolExecutor.CallerRunsPolicy());
+		chunkLoadThreadPool = new ThreadPoolExecutor(1, Runtime.getRuntime().availableProcessors(), 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new ServerThreadFactory("Async ChunkLoader"));
 		chunkLoadThreadPool.allowCoreThreadTimeOut(true);
 	}
 

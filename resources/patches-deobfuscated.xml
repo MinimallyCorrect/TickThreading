@@ -675,7 +675,9 @@
 	<xyCraft>
 		<class id="soaryn.xycraft.machines.block.XyCraftWorldExtension">
 			<replaceInitializer field="multiBlocks" class="me.nallar.tickthreading.collections.CHashMap"/>
-			<synchronize>updateDeffered,defer,remMultiBlock</synchronize>
+			<replaceInitializer field="deferredLoadSet" class="me.nallar.tickthreading.collections.HashSetReplaceIterateTempListClear"/>
+			<synchronize>defer,remMultiBlock</synchronize>
+			<replaceFieldUsage field="useTemp" writeCode="$1 = false;"/>
 		</class>
 	</xyCraft>
 	<denLib>
