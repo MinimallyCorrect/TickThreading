@@ -128,11 +128,17 @@
 			<changeFieldType field="chunksToUnload" type="org.bukkit.craftbukkit.v1_4_R1.util.LongHashSet" remove="true"/>
 			<insertAfter field="chunksToUnload" code="$field = new org.bukkit.craftbukkit.v1_4_R1.util.LongHashSet();"/>
 		</class>
-		<class id="net.minecraft.world.chunk.storage.RegionFileCache" env="forge">
+		<class id="net.minecraft.world.chunk.NibbleArray" env="forge">
+			<addAll fromClass="me.nallar.patched.storage.PatchNibbleArray"/>
+		</class>
+		<class id="net.minecraft.world.chunk.storage.RegionFileCache">
 			<replaceMethod code="throw new UnsupportedOperationException();">createOrLoadRegionFile</replaceMethod>
 		</class>
-		<class id="net.minecraft.world.chunk.storage.AnvilChunkLoader" env="forge">
-			<addAll fromClass="me.nallar.patched.storage.PatchAnvilChunkLoader"/>
+		<class id="net.minecraft.world.chunk.storage.AnvilChunkLoader">
+			<replace class="me.nallar.patched.storage.ThreadedChunkLoader"/>
+		</class>
+		<class id="net.minecraft.world.chunk.storage.AnvilChunkLoaderPending">
+			<addAll fromClass="me.nallar.patched.storage.PatchAnvilChunkLoaderPending"/>
 		</class>
 		<class id="net.minecraft.world.chunk.Chunk">
 			<!-- The entity list could be accessed from multiple threads, as usual causes problems during iteration -->

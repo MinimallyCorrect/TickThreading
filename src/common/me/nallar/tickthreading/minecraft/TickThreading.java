@@ -150,7 +150,7 @@ public class TickThreading {
 		Property waitForEntityTickProperty = config.get(Configuration.CATEGORY_GENERAL, "waitForEntityTickCompletion", waitForEntityTickCompletion);
 		waitForEntityTickProperty.comment = "Whether we should wait until all Tile/Entity tick threads are finished before moving on with world tick. False = experimental, but may improve performance.";
 		Property chunkCacheSizeProperty = config.get(Configuration.CATEGORY_GENERAL, "chunkCacheSize", chunkCacheSize);
-		chunkCacheSizeProperty.comment = "Number of unloaded chunks to keep cached. Replacement for Forge's dormant chunk cache, which tends to break.";
+		chunkCacheSizeProperty.comment = "Number of unloaded chunks to keep cached. Replacement for Forge's dormant chunk cache, which tends to break. Minimum size of 100";
 		Property chunkGCIntervalProperty = config.get(Configuration.CATEGORY_GENERAL, "chunkGCInterval", chunkGCInterval);
 		chunkGCIntervalProperty.comment = "Interval between chunk garbage collections in ticks";
 		Property targetTPSProperty = config.get(Configuration.CATEGORY_GENERAL, "targetTPS", targetTPS);
@@ -177,7 +177,7 @@ public class TickThreading {
 		regionSize = regionSizeProperty.getInt(regionSize);
 		saveInterval = saveIntervalProperty.getInt(saveInterval);
 		deadLockTime = deadLockTimeProperty.getInt(deadLockTime);
-		chunkCacheSize = chunkCacheSizeProperty.getInt(chunkCacheSize);
+		chunkCacheSize = Math.max(100, chunkCacheSizeProperty.getInt(chunkCacheSize));
 		chunkGCInterval = chunkGCIntervalProperty.getInt(chunkGCInterval);
 		targetTPS = targetTPSProperty.getInt(targetTPS);
 		enableEntityTickThreading = enableEntityTickThreadingProperty.getBoolean(enableEntityTickThreading);
