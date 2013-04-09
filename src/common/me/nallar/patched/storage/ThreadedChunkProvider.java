@@ -210,7 +210,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			}
 		}
 		if (done > 0) {
-			Log.info("Processed unload of " + done + " chunks in unload queue");
+			Log.info("Processed unload of " + (done - 1) + " chunks in unload queue");
 		}
 	}
 
