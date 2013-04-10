@@ -67,7 +67,7 @@ public class TickThreading {
 	private HashSet<Integer> disabledFastMobSpawningDimensions = new HashSet<Integer>();
 	private boolean waitForEntityTickCompletion = true;
 	public int chunkCacheSize = 2000;
-	public int chunkGCInterval = 600;
+	public int chunkGCInterval = 1200;
 	private int targetTPS = 20;
 	public boolean concurrentNetworkTicks = false;
 	public boolean antiCheatKick = false;
