@@ -198,14 +198,14 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		{
 			QueuedUnload queuedUnload;
 			while ((queuedUnload = unloadStage1.peek()) != null && queuedUnload.ticks <= queueThreshold && ++done <= 200) {
-				long chunkHash = queuedUnload.key;
+				long key = queuedUnload.key;
 				synchronized (unloadingChunks) {
 					if (!unloadStage1.remove(queuedUnload)) {
 						continue;
 					}
 				}
-				if (!finalizeUnload(chunkHash)) {
-					Log.warning("Couldn'nt unload " + chunkHash);
+				if (!finalizeUnload(key)) {
+					Log.fine("Couldn'nt unload " + key + " - probably already unloaded.");
 				}
 			}
 		}
@@ -378,7 +378,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				chunk = (Chunk) loadingChunks.getValueByKey(key);
 				if (chunk == null) {
 					if (finalizeUnload(key)) {
-						Log.fine("Reloaded chunk at " + x + ',' + z + " before queued unload was processed.");
+						Log.fine("Reloaded chunk at " + key + ": " + x + ',' + z + " before queued unload was processed.");
 					}
 					chunk = regenerate ? null : safeLoadChunk(x, z);
 					if (chunk != null && (chunk.xPosition != x || chunk.zPosition != z)) {
