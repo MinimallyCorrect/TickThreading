@@ -86,7 +86,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	public final Set<Long> chunksToUnload = unloadStage0;
 	public final List<Chunk> loadedChunks;
 	public final IChunkLoader currentChunkLoader;
-	@SuppressWarnings ("UnusedDeclaration")
 	public boolean loadChunkOnProvideRequest;
 
 	public ThreadedChunkProvider(WorldServer world, IChunkLoader loader, IChunkProvider generator) {
@@ -289,8 +288,8 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			return chunk;
 		}
 
-		if (loadChunkIfNotFound || worldGenInProgress.get() == Boolean.TRUE) {
-			return getChunkAt(x, z, generateChunkIfNotFound, false, null);
+		if (loadChunkIfNotFound || loadChunkOnProvideRequest || worldGenInProgress.get() == Boolean.TRUE) {
+			return getChunkAt(x, z, generateChunkIfNotFound || loadChunkOnProvideRequest, false, null);
 		}
 
 		return defaultEmptyChunk;
