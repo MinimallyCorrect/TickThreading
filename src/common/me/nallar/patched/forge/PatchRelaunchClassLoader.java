@@ -182,7 +182,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 		}
 	}
 
-	private byte[] getReplacementClassBytes(String file) {
+	private byte[] getReplacementClassBytes(String classFile) {
 		try {
 			Map<String, byte[]> replacedClasses = PatchRelaunchClassLoader.replacedClasses;
 			if (replacedClasses == null) {
@@ -194,8 +194,13 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 							loadPatchedClasses(url_, replacedClasses);
 						}
 						if (patchedModsFolder.isDirectory()) {
-							for (File file_ : patchedModsFolder.listFiles()) {
-								loadPatchedClasses(file_.toURI().toURL(), replacedClasses);
+							File modsFolder = new File(minecraftdir, "mods");
+							for (File file : patchedModsFolder.listFiles()) {
+								if (!new File(modsFolder, file.getName()).exists()) {
+									log(Level.INFO, null, "Skipping jar " + file + " which is not in the mods folder.");
+									continue;
+								}
+								loadPatchedClasses(file.toURI().toURL(), replacedClasses);
 							}
 						}
 						PatchRelaunchClassLoader.replacedClasses = replacedClasses;
@@ -205,13 +210,13 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 			if (replacedClasses == null) {
 				return null;
 			}
-			byte[] data = replacedClasses.get(file);
+			byte[] data = replacedClasses.get(classFile);
 			if (data != null) {
 				usedPatchedClasses++;
 			}
 			return data;
 		} catch (Throwable t) {
-			log(Level.SEVERE, t, "Exception getting patched class for " + file);
+			log(Level.SEVERE, t, "Exception getting patched class for " + classFile);
 		}
 		return null;
 	}
