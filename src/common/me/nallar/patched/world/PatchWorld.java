@@ -96,7 +96,7 @@ public abstract class PatchWorld extends World {
 
 	@Override
 	public int getBlockId(int x, int y, int z) {
-		if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000 && y > 0 && y < 256) {
+		if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000 && y >= 0 && y < 256) {
 			try {
 				return getChunkFromChunkCoords(x >> 4, z >> 4).getBlockID(x & 15, y, z & 15);
 			} catch (Throwable t) {
@@ -109,7 +109,7 @@ public abstract class PatchWorld extends World {
 	@Override
 	@Declare
 	public int getBlockIdWithoutLoad(int x, int y, int z) {
-		if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000 && y > 0 && y < 256) {
+		if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000 && y >= 0 && y < 256) {
 			try {
 				Chunk chunk = ((ChunkProviderServer) chunkProvider).getChunkIfExists(x >> 4, z >> 4);
 				return chunk == null ? -1 : chunk.getBlockID(x & 15, y, z & 15);
