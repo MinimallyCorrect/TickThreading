@@ -43,32 +43,17 @@ import net.minecraftforge.event.world.WorldEvent;
 @Mod (modid = "TickThreading", name = "TickThreading", version = "@MOD_VERSION@")
 @NetworkMod (clientSideRequired = false, serverSideRequired = false)
 public class TickThreading {
-	private final Runtime runtime = Runtime.getRuntime();
 	private static final int loadedEntityFieldIndex = 0;
 	private static final int loadedTileEntityFieldIndex = 2;
-	private int tickThreads = 0;
-	private boolean enableEntityTickThreading = true;
-	private boolean enableTileEntityTickThreading = true;
-	private int regionSize = 16;
-	private boolean variableTickRate = true;
-	public boolean exitOnDeadlock = false;
-	final Map<World, TickManager> managers = new WeakHashMap<World, TickManager>();
-	private DeadLockDetector deadLockDetector = null;
 	public static TickThreading instance;
+	final Map<World, TickManager> managers = new WeakHashMap<World, TickManager>();
+	private final Runtime runtime = Runtime.getRuntime();
+	public boolean exitOnDeadlock = false;
 	public boolean enableChunkTickThreading = true;
 	public boolean enableWorldTickThreading = true;
 	public boolean requireOpForTicksCommand = true;
 	public boolean requireOpForProfileCommand = true;
 	public boolean shouldLoadSpawn = false;
-	public int saveInterval = 1800;
-	public int deadLockTime = 45;
-	public boolean aggressiveTicks = true;
-	public boolean enableFastMobSpawning = false;
-	private HashSet<Integer> disabledFastMobSpawningDimensions = new HashSet<Integer>();
-	private boolean waitForEntityTickCompletion = true;
-	public int chunkCacheSize = 2000;
-	public int chunkGCInterval = 1200;
-	private int targetTPS = 20;
 	public boolean concurrentNetworkTicks = false;
 	public boolean antiCheatKick = false;
 	public boolean antiCheatNotify = true;
@@ -78,6 +63,18 @@ public class TickThreading {
 	public boolean requireOpForDumpCommand = true;
 	public boolean loadChunkOnProvideRequest = true;
 	public boolean generateChunkOnProvideRequest = false;
+	public boolean enableFastMobSpawning = false;
+	public int saveInterval = 1800;
+	public int deadLockTime = 45;
+	public int chunkCacheSize = 2000;
+	public int chunkGCInterval = 1200;
+	private int tickThreads = 0;
+	private int regionSize = 16;
+	private boolean variableTickRate = true;
+	private DeadLockDetector deadLockDetector;
+	private HashSet<Integer> disabledFastMobSpawningDimensions = new HashSet<Integer>();
+	private boolean waitForEntityTickCompletion = true;
+	private int targetTPS = 20;
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load
@@ -107,10 +104,6 @@ public class TickThreading {
 		config.load();
 		Property tickThreadsProperty = config.get(Configuration.CATEGORY_GENERAL, "tickThreads", tickThreads);
 		tickThreadsProperty.comment = "number of threads to use to tick. 0 = automatic";
-		Property enableEntityTickThreadingProperty = config.get(Configuration.CATEGORY_GENERAL, "enableEntityTickThreading", enableEntityTickThreading);
-		enableEntityTickThreadingProperty.comment = "Whether entity ticks should be threaded";
-		Property enableTileEntityTickThreadingProperty = config.get(Configuration.CATEGORY_GENERAL, "enableTileEntityTickThreading", enableTileEntityTickThreading);
-		enableTileEntityTickThreadingProperty.comment = "Whether tile entity ticks should be threaded";
 		Property enableChunkTickThreadingProperty = config.get(Configuration.CATEGORY_GENERAL, "enableChunkTickThreading", enableChunkTickThreading);
 		enableChunkTickThreadingProperty.comment = "Whether chunk ticks should be threaded";
 		Property enableWorldTickThreadingProperty = config.get(Configuration.CATEGORY_GENERAL, "enableWorldTickThreading", enableWorldTickThreading);
@@ -139,8 +132,6 @@ public class TickThreading {
 		saveIntervalProperty.comment = "Time between auto-saves, in ticks.";
 		Property deadLockTimeProperty = config.get(Configuration.CATEGORY_GENERAL, "deadLockTime", deadLockTime);
 		deadLockTimeProperty.comment = "The time(seconds) of being frozen which will trigger the DeadLockDetector.";
-		Property aggressiveTicksProperty = config.get(Configuration.CATEGORY_GENERAL, "aggressiveTicks", aggressiveTicks);
-		aggressiveTicksProperty.comment = "If false, will use Spigot tick time algorithm which may lead to lower idle load, but worse TPS if ticks are spiking.";
 		Property shouldLoadSpawnProperty = config.get(Configuration.CATEGORY_GENERAL, "shouldLoadSpawn", shouldLoadSpawn);
 		shouldLoadSpawnProperty.comment = "Whether chunks within 200 blocks of world spawn points should always be loaded.";
 		Property enableFastMobSpawningProperty = config.get(Configuration.CATEGORY_GENERAL, "enableFastMobSpawning", enableFastMobSpawning);
@@ -180,8 +171,6 @@ public class TickThreading {
 		chunkCacheSize = Math.max(100, chunkCacheSizeProperty.getInt(chunkCacheSize));
 		chunkGCInterval = chunkGCIntervalProperty.getInt(chunkGCInterval);
 		targetTPS = targetTPSProperty.getInt(targetTPS);
-		enableEntityTickThreading = enableEntityTickThreadingProperty.getBoolean(enableEntityTickThreading);
-		enableTileEntityTickThreading = enableTileEntityTickThreadingProperty.getBoolean(enableTileEntityTickThreading);
 		variableTickRate = variableTickRateProperty.getBoolean(variableTickRate);
 		exitOnDeadlock = exitOnDeadlockProperty.getBoolean(exitOnDeadlock);
 		enableChunkTickThreading = enableChunkTickThreadingProperty.getBoolean(enableChunkTickThreading);
@@ -190,7 +179,6 @@ public class TickThreading {
 		requireOpForTicksCommand = requireOpForTicksCommandProperty.getBoolean(requireOpForTicksCommand);
 		requireOpForProfileCommand = requireOpForProfileCommandProperty.getBoolean(requireOpForProfileCommand);
 		requireOpForDumpCommand = requireOpForDumpCommandProperty.getBoolean(requireOpForDumpCommand);
-		aggressiveTicks = aggressiveTicksProperty.getBoolean(aggressiveTicks);
 		shouldLoadSpawn = shouldLoadSpawnProperty.getBoolean(shouldLoadSpawn);
 		waitForEntityTickCompletion = waitForEntityTickProperty.getBoolean(waitForEntityTickCompletion);
 		concurrentNetworkTicks = concurrentNetworkTicksProperty.getBoolean(concurrentNetworkTicks);
@@ -230,14 +218,10 @@ public class TickThreading {
 		TickManager manager = new TickManager(event.world, regionSize, getThreadCount(), waitForEntityTickCompletion);
 		manager.setVariableTickRate(variableTickRate);
 		try {
-			if (enableTileEntityTickThreading) {
-				Field loadedTileEntityField = FieldUtil.getFields(World.class, List.class)[loadedTileEntityFieldIndex];
-				new LoadedTileEntityList<TileEntity>(event.world, loadedTileEntityField, manager);
-			}
-			if (enableEntityTickThreading) {
-				Field loadedEntityField = FieldUtil.getFields(World.class, List.class)[loadedEntityFieldIndex];
-				new LoadedEntityList<TileEntity>(event.world, loadedEntityField, manager);
-			}
+			Field loadedTileEntityField = FieldUtil.getFields(World.class, List.class)[loadedTileEntityFieldIndex];
+			new LoadedTileEntityList<TileEntity>(event.world, loadedTileEntityField, manager);
+			Field loadedEntityField = FieldUtil.getFields(World.class, List.class)[loadedEntityFieldIndex];
+			new LoadedEntityList<TileEntity>(event.world, loadedEntityField, manager);
 			Log.fine("Threading initialised for world " + Log.name(event.world));
 			managers.put(event.world, manager);
 		} catch (Exception e) {
@@ -255,19 +239,15 @@ public class TickThreading {
 			if (tickManager != null) {
 				tickManager.unload();
 			}
-			if (enableTileEntityTickThreading) {
-				Field loadedTileEntityField = FieldUtil.getFields(World.class, List.class)[loadedTileEntityFieldIndex];
-				Object loadedTileEntityList = loadedTileEntityField.get(event.world);
-				if (!(loadedTileEntityList instanceof EntityList)) {
-					Log.severe("Looks like another mod broke TT's replacement tile entity list in world: " + Log.name(event.world));
-				}
+			Field loadedTileEntityField = FieldUtil.getFields(World.class, List.class)[loadedTileEntityFieldIndex];
+			Object loadedTileEntityList = loadedTileEntityField.get(event.world);
+			if (!(loadedTileEntityList instanceof EntityList)) {
+				Log.severe("Looks like another mod broke TT's replacement tile entity list in world: " + Log.name(event.world));
 			}
-			if (enableEntityTickThreading) {
-				Field loadedEntityField = FieldUtil.getFields(World.class, List.class)[loadedEntityFieldIndex];
-				Object loadedEntityList = loadedEntityField.get(event.world);
-				if (!(loadedEntityList instanceof EntityList)) {
-					Log.severe("Looks like another mod broke TT's replacement entity list in world: " + Log.name(event.world));
-				}
+			Field loadedEntityField = FieldUtil.getFields(World.class, List.class)[loadedEntityFieldIndex];
+			Object loadedEntityList = loadedEntityField.get(event.world);
+			if (!(loadedEntityList instanceof EntityList)) {
+				Log.severe("Looks like another mod broke TT's replacement entity list in world: " + Log.name(event.world));
 			}
 		} catch (Exception e) {
 			Log.severe("Probable memory leak, failed to unload threading for world " + Log.name(event.world), e);

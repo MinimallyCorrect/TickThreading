@@ -158,7 +158,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				while (this.serverRunning) {
 					long curTime = System.nanoTime();
 					long wait = TARGET_TICK_TIME - (curTime - lastTick);
-					if (wait > 0 && (currentMaxTPS > TARGET_TPS || !TickThreading.instance.aggressiveTicks)) {
+					if (wait > 0 && currentMaxTPS > TARGET_TPS) {
 						Thread.sleep(wait / 1000000);
 						continue;
 					}
