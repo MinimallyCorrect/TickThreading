@@ -2,6 +2,7 @@ package me.nallar.tickthreading.patcher;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -11,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.common.base.Splitter;
+import com.sun.org.apache.regexp.internal.RE;
 
 import javassist.CannotCompileException;
 import javassist.ClassMap;
@@ -31,6 +33,8 @@ import javassist.bytecode.CodeAttribute;
 import javassist.bytecode.CodeIterator;
 import javassist.bytecode.ConstPool;
 import javassist.bytecode.Descriptor;
+import javassist.bytecode.MethodInfo;
+import javassist.bytecode.Mnemonic;
 import javassist.bytecode.Opcode;
 import javassist.expr.Cast;
 import javassist.expr.ConstructorCall;
@@ -469,6 +473,33 @@ public class Patches {
 		CtMethod newMethod = new CtMethod(classRegistry.getClass(return_), name, parameterList.toArray(new CtClass[parameterList.size()]), ctClass);
 		newMethod.setBody('{' + code + '}');
 		ctClass.addMethod(newMethod);
+	}
+
+	@Patch (
+			requiredAttributes = "opcode"
+	)
+	public void removeUntilOpcode(CtBehavior ctBehavior, Map<String, String> attributes) throws BadBytecode {
+		int opcode = Arrays.asList(Mnemonic.OPCODE).indexOf(attributes.get("opcode").toLowerCase());
+		String removeIndexString = attributes.get("index");
+		int removeIndex = removeIndexString == null ? -1 : Integer.parseInt(removeIndexString);
+		int currentIndex = 0;
+		Log.info("Removing until " + attributes.get("opcode") + ':' + opcode + " at " + removeIndex);
+		CtClass ctClass = ctBehavior.getDeclaringClass();
+		MethodInfo methodInfo = ctBehavior.getMethodInfo2();
+		CodeAttribute codeAttribute = methodInfo.getCodeAttribute();
+		if (codeAttribute != null) {
+			CodeIterator iterator = codeAttribute.iterator();
+			while (iterator.hasNext()) {
+				int index = iterator.next();
+				int op = iterator.byteAt(index);
+				if (op == opcode && (removeIndex == -1 || removeIndex == ++currentIndex)) {
+					for (int i = 0; i <= index; i++) {
+						iterator.writeByte(Opcode.NOP, i);
+					}
+				}
+			}
+			methodInfo.rebuildStackMapIf6(ctClass.getClassPool(), ctClass.getClassFile2());
+		}
 	}
 
 	@Patch (

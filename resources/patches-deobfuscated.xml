@@ -363,9 +363,13 @@
 		<class id="net.minecraftforge.common.DimensionManager" env="mcpc">
 			<replaceMethod code="{
 				org.bukkit.Bukkit.getServer().getPluginManager().callEvent(new org.bukkit.event.world.WorldUnloadEvent($1.getWorld()));
+				java.lang.reflect.Field field = org.bukkit.Bukkit.getServer().getClass().getDeclaredField(&quot;worlds&quot;);
+				field.setAccessible(true);
+				((java.util.Map) field.get(org.bukkit.Bukkit.getServer())).values().remove($1.getWorld());
 			}
 			">fireBukkitWorldUnload
 			</replaceMethod>
+			<removeUntilOpcode opcode="return" index="1">initDimension</removeUntilOpcode>
 		</class>
 		<class id="net.minecraftforge.common.ForgeChunkManager">
 			<addAll fromClass="me.nallar.patched.forge.PatchForgeChunkManager"/>
