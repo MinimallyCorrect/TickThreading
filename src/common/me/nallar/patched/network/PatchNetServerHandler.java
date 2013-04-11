@@ -57,7 +57,7 @@ public abstract class PatchNetServerHandler extends NetServerHandler {
 		float rotationYaw = playerEntity.rotationYaw;
 		float rotationPitch = playerEntity.rotationPitch;
 		double x = tpPosX;
-		double y = tpPosY;
+		double y = playerEntity.posY;
 		double z = tpPosZ;
 		this.lastPosX = x;
 		this.lastPosY = y;

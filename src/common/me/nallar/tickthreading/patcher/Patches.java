@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.common.base.Splitter;
-import com.sun.org.apache.regexp.internal.RE;
 
 import javassist.CannotCompileException;
 import javassist.ClassMap;
