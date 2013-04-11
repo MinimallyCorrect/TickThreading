@@ -13,6 +13,8 @@ import net.minecraft.world.World;
 
 public abstract class PatchEntity extends Entity {
 	@Declare
+	public static boolean logSetDead_;
+	@Declare
 	public Boolean isForced_;
 	@Declare
 	public me.nallar.tickthreading.minecraft.tickregion.EntityTickRegion tickRegion_;
