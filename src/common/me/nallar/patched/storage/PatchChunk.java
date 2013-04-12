@@ -46,6 +46,11 @@ public abstract class PatchChunk extends Chunk {
 	}
 
 	@Override
+	public boolean needsSaving(boolean force) {
+		return (force || isModified) || (hasEntities && (lastSaveTime + 6000 < worldObj.getTotalWorldTime()));
+	}
+
+	@Override
 	public String toString() {
 		return "chunk at " + xPosition + ',' + zPosition;
 	}
@@ -164,6 +169,7 @@ public abstract class PatchChunk extends Chunk {
 	@SuppressWarnings ("FieldRepeatedlyAccessedInMethod") // Patcher makes x/zPosition and worldObj final
 	@Override
 	public void addEntity(Entity par1Entity) {
+		isModified = true;
 		int entityChunkX = MathHelper.floor_double(par1Entity.posX / 16.0D);
 		int entityChunkZ = MathHelper.floor_double(par1Entity.posZ / 16.0D);
 
