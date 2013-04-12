@@ -152,7 +152,7 @@
 			<lock field="entityListWriteLock">onChunkLoad,onChunkUnload,removeEntityAtIndex,addEntity</lock>
 			<lock field="entityListReadLock">getEntitiesWithinAABBForEntity,getEntitiesOfTypeWithinAAAB</lock>
 			<replaceInitializer field="chunkTileEntityMap" class="java.util.concurrent.ConcurrentHashMap"/>
-			<insertBefore code="isModified = true;">removeEntityAtIndex</insertBefore>
+			<insertBefore code="^field:Chunk/isModified^ = true;">removeEntityAtIndex</insertBefore>
 		</class>
 		<class id="net.minecraft.util.Vec3Pool">
 			<!-- This prevents entities in multiple threads using the same Vec3 for collisions. -->
@@ -426,6 +426,7 @@
 	<factorization>
 		<class id="factorization.common.TileEntityWrathLamp">
 			<threadLocal field="toVisit" type="java.util.HashSet" threadLocalField="javassist.is.faulty.ThreadLocals.factorizationFindLightAirParentToVisit"/>
+			<replaceMethodCall code="$_ = $0.getChunkIfExists($$);" method="^class:World^.^method:World/getChunkFromChunkCoords^">findLightAirParent</replaceMethodCall>
 		</class>
 		<class id="factorization.api.Charge">
 			<newField field="staticLock" class="java.lang.Object" static=""/>
