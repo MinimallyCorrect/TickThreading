@@ -22,6 +22,7 @@ import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.LongHashMap;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.MinecraftException;
 import net.minecraft.world.NextTickListEntry;
@@ -40,6 +41,7 @@ import net.minecraftforge.event.world.ChunkDataEvent;
 @FakeExtend
 public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IThreadedFileIO, IChunkLoader {
 	private final java.util.LinkedHashMap<ChunkCoordIntPair, AnvilChunkLoaderPending> pendingSaves = new java.util.LinkedHashMap<ChunkCoordIntPair, AnvilChunkLoaderPending>(); // Spigot
+	private final LongHashMap inProgressSaves = new LongHashMap();
 	private final Object syncLockObject = new Object();
 	public final File chunkSaveLocation;
 	private final Cache<Long, NBTTagCompound> chunkCache;
@@ -73,10 +75,15 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 			AnvilChunkLoaderPending pendingchunktosave = pendingSaves.get(chunkcoordintpair);
 
 			if (pendingchunktosave == null) {
-				long cacheHash = hash(x, z);
-				nbttagcompound = chunkCache.getIfPresent(cacheHash);
+				long hash = hash(x, z);
+				nbttagcompound = (NBTTagCompound) inProgressSaves.remove(hash);
+				if (nbttagcompound == null) {
+					nbttagcompound = chunkCache.getIfPresent(hash);
+				} else {
+					Log.warning("Loading chunk " + hash + ": " + x + ',' + z + " while saving is in progress.");
+				}
 				if (nbttagcompound != null) {
-					chunkCache.invalidate(cacheHash);
+					chunkCache.invalidate(hash);
 				}
 			} else {
 				nbttagcompound = pendingchunktosave.nbtTags;
@@ -178,6 +185,7 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 	public boolean writeNextIO() {
 		AnvilChunkLoaderPending anvilchunkloaderpending;
 
+		long hash;
 		synchronized (this.syncLockObject) {
 			if (this.pendingSaves.isEmpty()) {
 				return false;
@@ -185,9 +193,11 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 
 			anvilchunkloaderpending = this.pendingSaves.values().iterator().next();
 			this.pendingSaves.remove(anvilchunkloaderpending.chunkCoordinate);
+			hash = hash(anvilchunkloaderpending.chunkCoordinate.chunkXPos, anvilchunkloaderpending.chunkCoordinate.chunkZPos);
 			if (anvilchunkloaderpending.unloading) {
-				chunkCache.put(hash(anvilchunkloaderpending.chunkCoordinate.chunkXPos, anvilchunkloaderpending.chunkCoordinate.chunkZPos), anvilchunkloaderpending.nbtTags);
+				chunkCache.put(hash, anvilchunkloaderpending.nbtTags);
 			}
+			inProgressSaves.add(hash, anvilchunkloaderpending.nbtTags);
 		}
 
 		try {
@@ -195,6 +205,8 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 		} catch (Exception exception) {
 			exception.printStackTrace();
 		}
+
+		inProgressSaves.remove(hash);
 
 		return true;
 	}
