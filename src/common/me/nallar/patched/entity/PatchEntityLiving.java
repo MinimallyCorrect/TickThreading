@@ -272,6 +272,9 @@ public abstract class PatchEntityLiving extends EntityLiving {
 						ItemStack var8 = this.getCurrentItemOrArmor(var6);
 
 						if (var8 != null) {
+							if ((Object) this instanceof EntityPlayerMP) {
+								continue;
+							}
 							if (var6 == 0) {
 								if (itemStack.getItem() instanceof ItemSword && !(var8.getItem() instanceof ItemSword)) {
 									var14 = true;
