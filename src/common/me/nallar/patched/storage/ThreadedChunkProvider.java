@@ -214,7 +214,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	private boolean finalizeUnload(long key) {
 		Chunk chunk;
 		synchronized (unloadingChunks) {
-			chunk = (Chunk) unloadingChunks.getValueByKey(key);
+			chunk = (Chunk) unloadingChunks.remove(key);
 		}
 		if (chunk == null || !chunk.unloading) {
 			return false;
@@ -234,9 +234,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		safeSaveExtraChunkData(chunk);
 		if (notInUnload) {
 			inUnload.set(false);
-		}
-		synchronized (unloadingChunks) {
-			unloadingChunks.remove(key);
 		}
 		return true;
 	}
@@ -575,7 +572,12 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 				if (chunk.unloading) {
 					if (saveAll) {
-						chunk.alreadySavedAfterUnload = true;
+						synchronized (chunk) {
+							if (chunk.alreadySavedAfterUnload) {
+								continue;
+							}
+							chunk.alreadySavedAfterUnload = true;
+						}
 					} else {
 						continue;
 					}
