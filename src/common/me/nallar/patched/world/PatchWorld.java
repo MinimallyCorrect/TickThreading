@@ -713,7 +713,7 @@ public abstract class PatchWorld extends World {
 				((LoadedTileEntityList) loadedTileEntityList).manager.batchRemoveTileEntities(tileEntityRemovalSet);
 			} else {
 				if (!warnedWrongList && loadedTileEntityList.getClass() != ArrayList.class) {
-					Log.severe("TickThrading's replacement loaded tile entity list has been replaced by one from another mod!\n" +
+					Log.severe("TickThreading's replacement loaded tile entity list has been replaced by one from another mod!\n" +
 							"Class: " + loadedTileEntityList.getClass() + ", toString(): " + loadedTileEntityList);
 					warnedWrongList = true;
 				}
