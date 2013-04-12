@@ -80,7 +80,7 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 				if (nbttagcompound == null) {
 					nbttagcompound = chunkCache.getIfPresent(hash);
 				} else {
-					Log.warning("Loading chunk " + hash + ": " + x + ',' + z + " while saving is in progress.");
+					Log.fine("Loading chunk " + hash + ": " + x + ',' + z + " while saving is in progress.");
 				}
 				if (nbttagcompound != null) {
 					chunkCache.invalidate(hash);
