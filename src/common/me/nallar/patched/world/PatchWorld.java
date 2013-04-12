@@ -762,6 +762,21 @@ public abstract class PatchWorld extends World {
 	}
 
 	@Override
+	public boolean isBlockProvidingPowerTo(int par1, int par2, int par3, int par4)
+	{
+		int id = this.getBlockIdWithoutLoad(par1, par2, par3);
+		return id > 0 && Block.blocksList[id].isProvidingStrongPower(this, par1, par2, par3, par4);
+	}
+
+	@Override
+	public boolean isBlockIndirectlyProvidingPowerTo(int x, int y, int z, int direction)
+	{
+		int id = this.getBlockIdWithoutLoad(x, y, z);
+		Block block = Block.blocksList[id];
+		return id > 0 && block != null && ((block.isBlockNormalCube(this, x, y, z) && block.isProvidingStrongPower(this, x, y, z, direction)) || block.isProvidingWeakPower(this, x, y, z, direction));
+	}
+
+	@Override
 	@Declare
 	public Chunk getChunkIfExists(int x, int z) {
 		return ((ChunkProviderServer) chunkProvider).getChunkIfExists(x, z);
