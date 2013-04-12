@@ -158,7 +158,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	public void func_82740_a(int x, int y, int z, int blockID, int timeOffset, int par6) {
 		NextTickListEntry nextTickListEntry = new NextTickListEntry(x, y, z, blockID);
 		boolean isForced = getPersistentChunks().containsKey(new ChunkCoordIntPair(nextTickListEntry.xCoord >> 4, nextTickListEntry.zCoord >> 4));
-		byte range = isForced ? (byte) 0 : 8;
+		byte range = isForced ? (byte) 1 : 8;
 
 		if (this.scheduledUpdatesAreImmediate && blockID > 0) {
 			if (Block.blocksList[blockID].func_82506_l()) {
@@ -225,7 +225,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		ImmutableSetMultimap<ChunkCoordIntPair, ForgeChunkManager.Ticket> persistentChunks = getPersistentChunks();
 		for (NextTickListEntry var4 : runningTickListEntries) {
 			boolean isForced = persistentChunks.containsKey(new ChunkCoordIntPair(var4.xCoord >> 4, var4.zCoord >> 4));
-			byte range = isForced ? (byte) 0 : 8;
+			byte range = isForced ? (byte) 1 : 8;
 
 			if (this.checkChunksExist(var4.xCoord - range, var4.yCoord - range, var4.zCoord - range, var4.xCoord + range, var4.yCoord + range, var4.zCoord + range)) {
 				int blockID = this.getBlockIdWithoutLoad(var4.xCoord, var4.yCoord, var4.zCoord);

@@ -72,6 +72,9 @@
 			<public field="ambientTickCountdown"/>
 			<replaceInitializer field="playerEntities" code="new java.util.concurrent.CopyOnWriteArrayList();"/>
 		</class>
+		<class id="net.minecraft.world.ChunkCache">
+			<replaceMethodCall code="$_ = $0.getChunkIfExists($$);" method="^class:World^.^method:World/getChunkFromChunkCoords^"/>
+		</class>
 		<class id="net.minecraft.world.NextTickListEntry">
 			<newField static="" field="nextEntryID_" class="java.util.concurrent.atomic.AtomicLong"/>
 			<insertAfter field="tickEntryID" code="this.$field = this.nextEntryID_.getAndIncrement();"/>
