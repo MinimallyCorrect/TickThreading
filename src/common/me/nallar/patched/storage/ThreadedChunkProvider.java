@@ -604,7 +604,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			safeSaveChunk(chunk);
 			chunk.isModified = false;
 
-			if (++savedChunks == 24 && !saveAll) {
+			if (++savedChunks == 64 && !saveAll) {
 				return false;
 			}
 		}

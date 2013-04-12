@@ -25,6 +25,7 @@ import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
 import me.nallar.tickthreading.util.FakeServerThread;
 import me.nallar.tickthreading.util.PatchUtil;
+import me.nallar.unsafe.UnsafeUtil;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -35,6 +36,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.gui.IUpdatePlayerListBox;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.ReportedException;
+import net.minecraft.world.MinecraftException;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.Configuration;
@@ -256,8 +258,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			currentlySaving = true;
 			try {
 				theProfiler.startSection("save");
-				this.serverConfigManager.saveAllPlayerData();
-				this.saveAllWorlds(true);
+				this.partialSave();
 				theProfiler.endSection();
 			} finally {
 				currentlySaving = false;
@@ -412,6 +413,32 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	@Declare
 	public static double getNetworkTargetTPS() {
 		return NETWORK_TPS;
+	}
+
+	@Override
+	@Declare
+	public void partialSave() {
+		if (this.isServerRunning() && !currentlySaving) {
+			currentlySaving = true;
+			try {
+				this.serverConfigManager.saveAllPlayerData();
+				if (worlds == null) {
+					for (WorldServer world : this.worldServers) {
+						world.saveAllChunks(false, null);
+					}
+				} else {
+					for (WorldServer world : worlds) {
+						world.saveAllChunks(false, null);
+					}
+				}
+			} catch (MinecraftException e) {
+				throw UnsafeUtil.throwIgnoreChecked(e);
+			} finally {
+				currentlySaving = false;
+			}
+		} else {
+			Log.severe("Server is already saving or crashed while saving - not attempting to save.");
+		}
 	}
 
 	@Override
