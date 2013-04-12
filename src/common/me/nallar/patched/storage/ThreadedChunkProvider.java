@@ -80,7 +80,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	private final ThreadLocal<Boolean> worldGenInProgress;
 	private boolean loadedPersistentChunks = false;
 	private int unloadTicks = 0;
-	private int overloadCount = 0;
+	private int overloadCount = -5;
 	private Chunk lastChunk;
 	// Mojang compatiblity fields.
 	public final IChunkProvider currentChunkProvider;
