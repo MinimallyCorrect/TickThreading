@@ -226,7 +226,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 				while (var37.hasNext()) {
 					ChunkCoordIntPair var36 = var37.next();
 
-					if (!eligibleChunksForSpawning.get(var36)) {
+					if (par0WorldServer.theChunkProviderServer.chunkExists(var36.chunkXPos, var36.chunkZPos) && !eligibleChunksForSpawning.get(var36)) {
 						ChunkPosition var38 = getRandomSpawningPointInChunk(par0WorldServer, var36.chunkXPos, var36.chunkZPos);
 						int var13 = var38.x;
 						int var14 = var38.y;
