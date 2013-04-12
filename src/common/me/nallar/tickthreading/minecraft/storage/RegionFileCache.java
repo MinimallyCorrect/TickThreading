@@ -1,5 +1,6 @@
 package me.nallar.tickthreading.minecraft.storage;
 
+import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -75,7 +76,7 @@ public class RegionFileCache {
 	}
 
 	public DataOutputStream getChunkOutputStream(int x, int z) {
-		return get(x >> 5, z >> 5).getChunkDataOutputStream(x & 31, z & 31);
+		return new DataOutputStream(new BufferedOutputStream(get(x >> 5, z >> 5).getChunkDataOutputStream(x & 31, z & 31)));
 	}
 
 	public DataInputStream getChunkInputStream(int x, int z) {
