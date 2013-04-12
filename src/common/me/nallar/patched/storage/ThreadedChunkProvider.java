@@ -80,6 +80,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	private final ThreadLocal<Boolean> worldGenInProgress;
 	private boolean loadedPersistentChunks = false;
 	private int unloadTicks = 0;
+	private int overloadCount = 0;
 	private Chunk lastChunk;
 	// Mojang compatiblity fields.
 	public final IChunkProvider currentChunkProvider;
@@ -377,7 +378,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				chunk = (Chunk) loadingChunks.getValueByKey(key);
 				if (chunk == null) {
 					if (finalizeUnload(key)) {
-						Log.warning("Reloaded chunk at " + key + ": " + x + ',' + z + " before queued unload was processed.");
+						Log.warning("Reloaded chunk at " + key + ": " + x + ',' + z + " before queued unload was processed.", new Throwable());
 					}
 					chunk = regenerate ? null : safeLoadChunk(x, z);
 					if (chunk != null && (chunk.xPosition != x || chunk.zPosition != z)) {
@@ -604,11 +605,15 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			safeSaveChunk(chunk);
 			chunk.isModified = false;
 
-			if (++savedChunks == 48 && !saveAll) {
-				Log.warning("Save queue overloaded in " + Log.name(world) + " consider decreasing saveInterval. Only saved " + savedChunks + " out of " + chunksToSave.size());
+			if (++savedChunks == 128 && !saveAll) {
+				if ((overloadCount += 2) > 5) {
+					Log.warning("Save queue overloaded in " + Log.name(world) + " consider decreasing saveInterval. Only saved " + savedChunks + " out of " + chunksToSave.size());
+				}
 				return false;
 			}
 		}
+
+		overloadCount--;
 
 		if (saveAll) {
 			handleUnloadQueue(Long.MAX_VALUE);
