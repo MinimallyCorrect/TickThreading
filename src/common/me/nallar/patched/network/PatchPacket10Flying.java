@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 import javassist.is.faulty.Timings;
+import me.nallar.tickthreading.Log;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.NetServerHandler;
 import net.minecraft.network.packet.NetHandler;
@@ -108,7 +109,11 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 				while (var11.hasNext()) {
 					Chunk var10 = (Chunk) var11.next();
 					entityPlayerMP.getServerForPlayer().getEntityTracker().func_85172_a(entityPlayerMP, var10);
-					MinecraftForge.EVENT_BUS.post(new ChunkWatchEvent.Watch(var10.getChunkCoordIntPair(), entityPlayerMP));
+					try {
+						MinecraftForge.EVENT_BUS.post(new ChunkWatchEvent.Watch(var10.getChunkCoordIntPair(), entityPlayerMP));
+					} catch (Throwable t) {
+						Log.severe("A mod failed to handle a ChunkWatch event", t);
+					}
 				}
 			}
 			if (timings) {
