@@ -261,7 +261,8 @@ public abstract class PatchEntityLiving extends EntityLiving {
 
 					// This isn't actually redundant, because patcher.
 					//noinspection RedundantCast
-					if (!((Object) this instanceof EntityPlayerMP) && (!(itemStack.getItem() instanceof ItemArmor)) || entityItem.delayBeforeCanPickup > 8) {
+					boolean isPlayer = (Object) this instanceof EntityPlayerMP;
+					if (!isPlayer && (!(itemStack.getItem() instanceof ItemArmor)) || entityItem.delayBeforeCanPickup > 8) {
 						continue;
 					}
 
@@ -272,7 +273,7 @@ public abstract class PatchEntityLiving extends EntityLiving {
 						ItemStack var8 = this.getCurrentItemOrArmor(var6);
 
 						if (var8 != null) {
-							if ((Object) this instanceof EntityPlayerMP) {
+							if (isPlayer) {
 								continue;
 							}
 							if (var6 == 0) {
