@@ -165,10 +165,9 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 		synchronized (this.syncLockObject) {
 			AnvilChunkLoaderPending pending = new AnvilChunkLoaderPending(par1ChunkCoordIntPair, par2NBTTagCompound);
 			pending.unloading = unloading;
-			if (this.pendingSaves.put(par1ChunkCoordIntPair, pending) != null) {
-				return;
+			if (this.pendingSaves.put(par1ChunkCoordIntPair, pending) == null) {
+				ThreadedFileIOBase.threadedIOInstance.queueIO(this);
 			}
-			ThreadedFileIOBase.threadedIOInstance.queueIO(this);
 		}
 	}
 
@@ -186,7 +185,9 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 
 			anvilchunkloaderpending = this.pendingSaves.values().iterator().next();
 			this.pendingSaves.remove(anvilchunkloaderpending.chunkCoordinate);
-			chunkCache.put(hash(anvilchunkloaderpending.chunkCoordinate.chunkXPos, anvilchunkloaderpending.chunkCoordinate.chunkZPos), anvilchunkloaderpending.nbtTags);
+			if (anvilchunkloaderpending.unloading) {
+				chunkCache.put(hash(anvilchunkloaderpending.chunkCoordinate.chunkXPos, anvilchunkloaderpending.chunkCoordinate.chunkZPos), anvilchunkloaderpending.nbtTags);
+			}
 		}
 
 		try {
