@@ -377,7 +377,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				chunk = (Chunk) loadingChunks.getValueByKey(key);
 				if (chunk == null) {
 					if (finalizeUnload(key)) {
-						Log.fine("Reloaded chunk at " + key + ": " + x + ',' + z + " before queued unload was processed.");
+						Log.warning("Reloaded chunk at " + key + ": " + x + ',' + z + " before queued unload was processed.");
 					}
 					chunk = regenerate ? null : safeLoadChunk(x, z);
 					if (chunk != null && (chunk.xPosition != x || chunk.zPosition != z)) {
