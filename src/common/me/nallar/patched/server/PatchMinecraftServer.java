@@ -252,17 +252,9 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		this.updateTimeLightAndEntities();
 
 		if (this.tickCounter % TickThreading.instance.saveInterval == 0) {
-			if (currentlySaving) {
-				throw new IllegalStateException("Already saving!");
-			}
-			currentlySaving = true;
-			try {
-				theProfiler.startSection("save");
-				this.partialSave();
-				theProfiler.endSection();
-			} finally {
-				currentlySaving = false;
-			}
+			theProfiler.startSection("save");
+			this.partialSave();
+			theProfiler.endSection();
 		}
 
 		theProfiler.startSection("tallying");
@@ -418,7 +410,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	@Override
 	@Declare
 	public void partialSave() {
-		if (this.isServerRunning() && !currentlySaving) {
+		if (!currentlySaving) {
 			currentlySaving = true;
 			try {
 				this.serverConfigManager.saveAllPlayerData();
