@@ -589,6 +589,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				}
 
 				if (chunk.needsSaving(saveAll)) {
+					chunk.isModified = false;
 					chunksToSave.add(chunk);
 				}
 			}
@@ -610,7 +611,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			}
 
 			safeSaveChunk(chunk);
-			chunk.isModified = false;
 
 			if (++savedChunks == 256 && !saveAll) {
 				if ((overloadCount += 2) > 5) {
