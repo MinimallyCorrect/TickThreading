@@ -439,7 +439,7 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 		regionFileCache.close();
 	}
 
-	private static long hash(int x, int y) {
-		return (((long) x) << 32) | (y & 0xffffffffL);
+	private static long hash(int x, int z) {
+		return (((long) x) << 32) | (z & 0xffffffffL);
 	}
 }
