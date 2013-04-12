@@ -768,6 +768,12 @@ public abstract class PatchWorld extends World {
 	}
 
 	@Override
+	@Declare
+	public Chunk getChunkFromBlockCoordsIfExists(int x, int z) {
+		return this.getChunkIfExists(x >> 4, z >> 4);
+	}
+
+	@Override
 	public void markTileEntityForDespawn(TileEntity tileEntity) {
 		tileEntityRemovalSet.add(tileEntity);
 	}

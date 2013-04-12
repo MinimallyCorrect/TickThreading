@@ -426,7 +426,7 @@
 	<factorization>
 		<class id="factorization.common.TileEntityWrathLamp">
 			<threadLocal field="toVisit" type="java.util.HashSet" threadLocalField="javassist.is.faulty.ThreadLocals.factorizationFindLightAirParentToVisit"/>
-			<replaceMethodCall code="$_ = $0.getChunkIfExists($$);" method="^class:World^.^method:World/getChunkFromChunkCoords^">findLightAirParent</replaceMethodCall>
+			<replaceMethodCall code="$_ = $0.getChunkFromBlockCoordsIfExists($$);" method="^class:World^.^method:World/getChunkFromBlockCoords^">findLightAirParent</replaceMethodCall>
 		</class>
 		<class id="factorization.api.Charge">
 			<newField field="staticLock" class="java.lang.Object" static=""/>
