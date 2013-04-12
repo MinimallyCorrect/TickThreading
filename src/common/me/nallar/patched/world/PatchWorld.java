@@ -770,8 +770,11 @@ public abstract class PatchWorld extends World {
 	@Override
 	public boolean isBlockIndirectlyProvidingPowerTo(int x, int y, int z, int direction) {
 		int id = this.getBlockIdWithoutLoad(x, y, z);
+		if (id < 1) {
+			return false;
+		}
 		Block block = Block.blocksList[id];
-		return id > 0 && block != null && ((block.isBlockNormalCube(this, x, y, z) && block.isProvidingStrongPower(this, x, y, z, direction)) || block.isProvidingWeakPower(this, x, y, z, direction));
+		return block != null && ((block.isBlockNormalCube(this, x, y, z) && block.isProvidingStrongPower(this, x, y, z, direction)) || block.isProvidingWeakPower(this, x, y, z, direction));
 	}
 
 	@Override
