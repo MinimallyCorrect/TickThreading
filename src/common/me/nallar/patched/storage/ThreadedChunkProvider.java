@@ -193,11 +193,15 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	}
 
 	private void handleUnloadQueue(long queueThreshold) {
+		handleUnloadQueue(queueThreshold, false);
+	}
+
+	private void handleUnloadQueue(long queueThreshold, boolean full) {
 		int done = 0;
 		// Handle unloading stage 1
 		{
 			QueuedUnload queuedUnload;
-			while ((queuedUnload = unloadStage1.peek()) != null && queuedUnload.ticks <= queueThreshold && ++done <= 200) {
+			while ((queuedUnload = unloadStage1.peek()) != null && queuedUnload.ticks <= queueThreshold && (full || ++done <= 200)) {
 				long key = queuedUnload.key;
 				synchronized (unloadingChunks) {
 					if (!unloadStage1.remove(queuedUnload)) {
@@ -221,6 +225,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		}
 		synchronized (chunk) {
 			if (chunk.alreadySavedAfterUnload) {
+				Log.severe("Chunk save may have failed for " + key + ": " + (int) key + ',' + (int) (key >> 32));
 				return false;
 			}
 			chunk.alreadySavedAfterUnload = true;
@@ -618,7 +623,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		overloadCount--;
 
 		if (saveAll) {
-			handleUnloadQueue(Long.MAX_VALUE);
+			handleUnloadQueue(Long.MAX_VALUE, true);
 
 			if (loader != null) {
 				loader.saveExtraData();
