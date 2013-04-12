@@ -150,6 +150,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 					lastChunk = null;
 				}
 				chunk.onChunkUnload();
+				chunk.pendingBlockUpdates = world.getPendingBlockUpdates(chunk, false);
 				loadedChunks.remove(chunk);
 				chunks.remove(key);
 				chunk.unloading = true;

@@ -26,6 +26,8 @@ import net.minecraftforge.event.world.ChunkEvent;
 @SuppressWarnings ("unchecked")
 public abstract class PatchChunk extends Chunk {
 	@Declare
+	public List pendingBlockUpdates_;
+	@Declare
 	public boolean unloading_;
 	@Declare
 	public boolean alreadySavedAfterUnload_;
