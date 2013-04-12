@@ -363,6 +363,7 @@
 		<class id="net.minecraftforge.common.DimensionManager">
 			<addAll fromClass="me.nallar.patched.forge.PatchDimensionManager"/>
 			<synchronize field="unloadQueue">unloadWorld</synchronize>
+			<synchronize>initDimension</synchronize>
 		</class>
 		<class id="net.minecraftforge.common.DimensionManager" env="mcpc">
 			<replaceMethod code="{
