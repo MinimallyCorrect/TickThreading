@@ -45,6 +45,8 @@ import net.minecraftforge.common.ForgeChunkManager;
 
 @SuppressWarnings ("unchecked") // Can't make the code in WorldServer checked. Yet. // TODO: Add type parameters via prepatcher?
 public abstract class PatchWorldServer extends WorldServer implements Runnable {
+	public long ticksPerAnimalSpawns;
+	public long ticksPerMonsterSpawns;
 	private Iterator chunkCoordIterator;
 	private ThreadManager threadManager;
 	private ThreadLocal<Random> randoms;
@@ -58,6 +60,12 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	}
 
 	public void construct() {
+		if (ticksPerAnimalSpawns == 0) {
+			ticksPerAnimalSpawns = 1;
+		}
+		if (ticksPerMonsterSpawns == 0) {
+			ticksPerMonsterSpawns = 1;
+		}
 		randoms = new ThreadLocalRandom();
 		threadManager = new ThreadManager(TickThreading.instance.getThreadCount(), "Chunk Updates for " + Log.name(this));
 		try {
@@ -272,9 +280,9 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 
 		if (hasPlayers && this.getGameRules().getGameRuleBooleanValue("doMobSpawning")) {
 			if (TickThreading.instance.shouldFastSpawn(this)) {
-				SpawnerAnimals.spawnMobsQuickly(this, this.spawnHostileMobs, this.spawnPeacefulMobs, worldInfo.getWorldTotalTime() % 400L == 0L);
+				SpawnerAnimals.spawnMobsQuickly(this, spawnHostileMobs && (ticksPerMonsterSpawns != 0 && tickCount % ticksPerMonsterSpawns == 0L), spawnPeacefulMobs && (ticksPerAnimalSpawns != 0 && tickCount % ticksPerAnimalSpawns == 0L), worldInfo.getWorldTotalTime() % 400L == 0L);
 			} else {
-				SpawnerAnimals.findChunksForSpawning(this, this.spawnHostileMobs, this.spawnPeacefulMobs, worldInfo.getWorldTotalTime() % 400L == 0L);
+				SpawnerAnimals.findChunksForSpawning(this, spawnHostileMobs && (ticksPerMonsterSpawns != 0 && tickCount % ticksPerMonsterSpawns == 0L), spawnPeacefulMobs && (ticksPerAnimalSpawns != 0 && tickCount % ticksPerAnimalSpawns == 0L), worldInfo.getWorldTotalTime() % 400L == 0L);
 			}
 		}
 
