@@ -180,7 +180,6 @@
 		</class>
 		<class id="net.minecraft.entity.Entity">
 			<addAll fromClass="me.nallar.patched.entity.PatchEntity"/>
-			<insertBefore code="if (logSetDead) { Thread.dumpStack(); }">setDead</insertBefore>
 		</class>
 		<class id="net.minecraft.nbt.CompressedStreamTools">
 			<addAll fromClass="me.nallar.patched.nbt.PatchCompressedStreamTools"/>

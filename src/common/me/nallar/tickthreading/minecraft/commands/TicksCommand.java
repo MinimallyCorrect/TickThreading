@@ -29,7 +29,6 @@ public class TicksCommand extends Command {
 		boolean entities = false;
 		try {
 			if (!arguments.isEmpty() && "e".equals(arguments.get(0))) {
-				Entity.logSetDead = !Entity.logSetDead;
 				entities = true;
 				arguments.remove(0);
 			}
