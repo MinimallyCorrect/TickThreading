@@ -151,6 +151,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				if (lastChunk == chunk) {
 					lastChunk = null;
 				}
+				Log.info("Unloaded chunk " + chunk);
 				chunk.onChunkUnload();
 				chunk.pendingBlockUpdates = world.getPendingBlockUpdates(chunk, false);
 				loadedChunks.remove(chunk);
@@ -167,7 +168,8 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			}
 		}
 
-		handleUnloadQueue(ticks, true);
+		//handleUnloadQueue(ticks, true);
+		handleUnloadQueue(ticks - 3);
 
 		if (this.unloadTicks++ > 1200 && world.provider.dimensionId != 0 && TickThreading.instance.allowWorldUnloading
 				&& loadedChunks.isEmpty() && ForgeChunkManager.getPersistentChunksFor(world).isEmpty()
@@ -219,27 +221,38 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	private boolean finalizeUnload(long key) {
 		Chunk chunk;
 		synchronized (unloadingChunks) {
-			chunk = (Chunk) unloadingChunks.remove(key);
+			chunk = (Chunk) unloadingChunks.getValueByKey(key);
 		}
-		if (chunk == null || !chunk.unloading) {
+		if (chunk == null) {
 			return false;
 		}
-		synchronized (chunk) {
-			if (chunk.alreadySavedAfterUnload) {
-				Log.severe("Chunk save may have failed for " + key + ": " + (int) key + ',' + (int) (key >> 32));
+		try {
+			if (!chunk.unloading) {
 				return false;
 			}
-			chunk.alreadySavedAfterUnload = true;
-		}
-		boolean notInUnload = !inUnload.get();
-		if (notInUnload) {
-			inUnload.set(true);
-		}
-		chunk.isChunkLoaded = false;
-		safeSaveChunk(chunk);
-		safeSaveExtraChunkData(chunk);
-		if (notInUnload) {
-			inUnload.set(false);
+			synchronized (chunk) {
+				if (chunk.alreadySavedAfterUnload) {
+					Log.severe("Chunk save may have failed for " + key + ": " + (int) key + ',' + (int) (key >> 32));
+					return false;
+				}
+				chunk.alreadySavedAfterUnload = true;
+			}
+			boolean notInUnload = !inUnload.get();
+			if (notInUnload) {
+				inUnload.set(true);
+			}
+			Log.info("Finalizing chunk " + chunk);
+			chunk.isChunkLoaded = false;
+			safeSaveChunk(chunk);
+			safeSaveExtraChunkData(chunk);
+			Log.info("Finalized chunk " + chunk);
+			if (notInUnload) {
+				inUnload.set(false);
+			}
+		} finally {
+			if (unloadingChunks.remove(key) != chunk) {
+				Log.severe("While unloading " + chunk + " it was replaced/removed from the unloadingChunks map.");
+			}
 		}
 		return true;
 	}
@@ -365,6 +378,14 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				return chunk;
 			}
 			return defaultEmptyChunk;
+		} else if (inUnload.get() == Boolean.TRUE) {
+			chunk = (Chunk) unloadingChunks.getValueByKey(key);
+			if (chunk == null) {
+				Log.severe("Failed to get currently unloading chunk at " + x + ',' + z + " from unloading chunks map.", new IllegalStateException());
+				return null;
+			} else {
+				return chunk;
+			}
 		}
 
 		final AtomicInteger lock = getLock(key);
@@ -468,6 +489,8 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		chunk.onChunkLoad();
 		fireBukkitLoadEvent(chunk, wasGenerated);
 		chunkLoadLocks.remove(key);
+
+		Log.info("Loaded chunk " + chunk);
 
 		return chunk;
 	}

@@ -76,11 +76,11 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 
 			if (pendingchunktosave == null) {
 				long hash = hash(x, z);
-				nbttagcompound = (NBTTagCompound) inProgressSaves.remove(hash);
+				nbttagcompound = (NBTTagCompound) inProgressSaves.getValueByKey(hash);
 				if (nbttagcompound == null) {
 					nbttagcompound = chunkCache.getIfPresent(hash);
 				} else {
-					Log.fine("Loading chunk " + hash + ": " + x + ',' + z + " while saving is in progress.");
+					Log.info("Loading chunk " + hash + ": " + x + ',' + z + " while saving is in progress.");
 				}
 				if (nbttagcompound != null) {
 					chunkCache.invalidate(hash);
@@ -89,6 +89,8 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 				nbttagcompound = pendingchunktosave.nbtTags;
 			}
 		}
+
+		Log.info("Loading chunk at " + x + ',' + z + " from " + System.identityHashCode(nbttagcompound));
 
 		if (nbttagcompound == null) {
 			DataInputStream dataInputStream = regionFileCache.getChunkInputStream(x, z);
@@ -163,6 +165,7 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 			this.writeChunkToNBT(par2Chunk, par1World, nbttagcompound1);
 			MinecraftForge.EVENT_BUS.post(new ChunkDataEvent.Save(par2Chunk, nbttagcompound));
 			this.addToSaveQueue(par2Chunk.getChunkCoordIntPair(), nbttagcompound, par2Chunk.alreadySavedAfterUnload || par2Chunk.unloading || !par2Chunk.isChunkLoaded);
+			Log.info("Saved chunk at " + par2Chunk.xPosition + ',' + par2Chunk.zPosition + " to " + System.identityHashCode(nbttagcompound));
 		} catch (Exception exception) {
 			exception.printStackTrace();
 		}
