@@ -539,6 +539,8 @@
 		</class>
 		<class id="codechicken.chunkloader.ChunkLoaderManager">
 			<disable>cleanChunks</disable>
+			<replaceMethodCall code="$_ = $0.getTEForceLoad($$);" method="^class:World^.^method:World/getBlockTileEntity^">revive(^class:World^)V</replaceMethodCall>
+			<synchronize>revive(^class:World^)V</synchronize>
 		</class>
 		<class id="codechicken.chunkloader.CommandChunkLoaders">
 			<synchronize field="codechicken.chunkloader.ChunkLoaderEventHandler.staticLock">handleCommand</synchronize>
