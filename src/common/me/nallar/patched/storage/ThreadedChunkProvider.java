@@ -211,9 +211,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 						continue;
 					}
 				}
-				if (!finalizeUnload(key)) {
-					Log.fine("Couldn'nt unload " + key + " - probably already unloaded.");
-				}
+				finalizeUnload(key);
 			}
 		}
 	}
@@ -382,9 +380,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				}
 				chunk = (Chunk) loadingChunks.getValueByKey(key);
 				if (chunk == null) {
-					if (finalizeUnload(key)) {
-						Log.fine("Reloaded chunk at " + key + ": " + x + ',' + z + " before queued unload was processed.");
-					}
+					finalizeUnload(key);
 					chunk = regenerate ? null : safeLoadChunk(x, z);
 					if (chunk != null && (chunk.xPosition != x || chunk.zPosition != z)) {
 						Log.severe("Chunk at " + chunk.xPosition + ',' + chunk.zPosition + " was stored at " + x + ',' + z + "\nResetting this chunk.");
