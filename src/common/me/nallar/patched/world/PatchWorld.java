@@ -774,7 +774,7 @@ public abstract class PatchWorld extends World {
 			return false;
 		}
 		Block block = Block.blocksList[id];
-		return block != null && ((block.isBlockNormalCube(this, x, y, z) && block.isProvidingStrongPower(this, x, y, z, direction)) || block.isProvidingWeakPower(this, x, y, z, direction));
+		return block != null && ((block.isBlockNormalCube(this, x, y, z) && this.isBlockGettingPowered(x, y, z)) || block.isProvidingWeakPower(this, x, y, z, direction));
 	}
 
 	@Override
