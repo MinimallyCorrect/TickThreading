@@ -4,6 +4,9 @@
 		<class id="net.minecraft.world.SpawnerAnimals" env="forge">
 			<addAll fromClass="me.nallar.patched.PatchSpawnerAnimalsForge"/>
 		</class>
+		<class id="net.minecraft.world.SpawnerAnimals" env="mcpc">
+			<synchronize>findChunksForSpawning</synchronize>
+		</class>
 		<class id="net.minecraft.world.SpawnerAnimals">
 			<addAll fromClass="me.nallar.patched.PatchSpawnerAnimals"/>
 			<profile>findChunksForSpawning</profile>
