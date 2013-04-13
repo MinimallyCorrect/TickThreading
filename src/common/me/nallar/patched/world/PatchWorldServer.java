@@ -271,7 +271,11 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		profiler.startSection("mobSpawner");
 
 		if (hasPlayers && this.getGameRules().getGameRuleBooleanValue("doMobSpawning")) {
-			SpawnerAnimals.findChunksForSpawning(this, this.spawnHostileMobs, this.spawnPeacefulMobs, worldInfo.getWorldTotalTime() % 400L == 0L);
+			if (TickThreading.instance.shouldFastSpawn(this)) {
+				SpawnerAnimals.spawnMobsQuickly(this, this.spawnHostileMobs, this.spawnPeacefulMobs, worldInfo.getWorldTotalTime() % 400L == 0L);
+			} else {
+				SpawnerAnimals.findChunksForSpawning(this, this.spawnHostileMobs, this.spawnPeacefulMobs, worldInfo.getWorldTotalTime() % 400L == 0L);
+			}
 		}
 
 		profiler.endStartSection("chunkSource");
