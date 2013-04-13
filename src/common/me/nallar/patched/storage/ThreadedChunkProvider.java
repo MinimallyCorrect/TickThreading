@@ -167,7 +167,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			}
 		}
 
-		handleUnloadQueue(ticks - 3);
+		handleUnloadQueue(ticks, true);
 
 		if (this.unloadTicks++ > 1200 && world.provider.dimensionId != 0 && TickThreading.instance.allowWorldUnloading
 				&& loadedChunks.isEmpty() && ForgeChunkManager.getPersistentChunksFor(world).isEmpty()
