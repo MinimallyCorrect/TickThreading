@@ -124,7 +124,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 			log(Level.WARNING, null, "Adding " + url.toString().replace("%", "%%") + " to classpath when it appears to be in the patchedMods directory");
 		}
 		if (sources.contains(url)) {
-			log(Level.WARNING, null, "Attempted to add " + url.toString().replace("%", "%%") + " to classpath twice");
+			log(Level.FINE, null, "Attempted to add " + url.toString().replace("%", "%%") + " to classpath twice");
 			return;
 		}
 		ucp.addURL(url);
