@@ -27,6 +27,7 @@ import me.nallar.tickthreading.util.concurrent.NativeMutex;
 import me.nallar.unsafe.UnsafeUtil;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.management.PlayerManager;
 import net.minecraft.util.IProgressUpdate;
 import net.minecraft.util.LongHashMap;
 import net.minecraft.world.ChunkCoordIntPair;
@@ -126,6 +127,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		// Handle unload requests
 		if (ticks % 3 == 0 && !world.canNotSave && !unloadStage0.isEmpty()) {
 			ImmutableSetMultimap<ChunkCoordIntPair, ForgeChunkManager.Ticket> persistentChunks = world.getPersistentChunks();
+			PlayerManager playerManager = world.getPlayerManager();
 			ChunkCoordIntPair chunkCoordIntPair = new ChunkCoordIntPair(0, 0);
 			NonBlockingHashMapLong.IteratorLong i$ = unloadStage0.iteratorLong();
 			while (i$.hasNext()) {
@@ -139,7 +141,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				int z = (int) (key >> 32);
 				chunkCoordIntPair.chunkXPos = x;
 				chunkCoordIntPair.chunkZPos = z;
-				if (persistentChunks.containsKey(chunkCoordIntPair) || unloadingChunks.containsItem(key)) {
+				if (persistentChunks.containsKey(chunkCoordIntPair) || unloadingChunks.containsItem(key) || playerManager.getOrCreateChunkWatcher(x, z, false) != null) {
 					continue;
 				}
 				Chunk chunk = (Chunk) chunks.getValueByKey(key);
