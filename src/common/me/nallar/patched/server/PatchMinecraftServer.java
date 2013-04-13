@@ -320,7 +320,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 		currentWorld.set(0);
 
-		boolean concurrentTicking = tickCounter >= 100 && !profiler.profilingEnabled && TickThreading.instance.enableWorldTickThreading;
+		boolean concurrentTicking = tickCounter >= 100 && !profiler.profilingEnabled;
 
 		if (concurrentTicking) {
 			int count = threadManager.size();

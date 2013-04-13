@@ -314,7 +314,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 
 	@Override
 	protected void tickBlocksAndAmbiance() {
-		boolean concurrentTicks = TickThreading.instance.enableChunkTickThreading && !mcServer.theProfiler.profilingEnabled;
+		boolean concurrentTicks = !mcServer.theProfiler.profilingEnabled;
 
 		if (concurrentTicks) {
 			threadManager.waitForCompletion();
