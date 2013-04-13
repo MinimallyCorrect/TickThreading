@@ -4,11 +4,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import me.nallar.tickthreading.Log;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.server.MinecraftServer;
 
 public abstract class Command extends CommandBase {
 	public static void sendChat(ICommandSender commandSender, String message) {
+		if (commandSender == MinecraftServer.getServer()) {
+			Log.info('\n' + message);
+			return;
+		}
 		while (message != null) {
 			int nlIndex = message.indexOf('\n');
 			String sent;
