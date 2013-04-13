@@ -239,8 +239,8 @@
 			<lock field="playerUpdateLock">createPlayerForUser,sendPacketToAllPlayers,sendPlayerInfoToAllPlayers</lock>
 			<lock field="playerUpdateLock">sendPacketToAllPlayersInDimension,getPlayerListAsString,getAllUsernames,getPlayerForUsername,findPlayers,sendToAllNearExcept</lock>
 			<lock field="playerUpdateLock">saveAllPlayerData,getPlayerList</lock>
-			<lockMethodCall method="add" field="playersUpdateLock">playerLoggedOut,playerLoggedIn,respawnPlayer</lockMethodCall>
-			<lockMethodCall method="remove" field="playersUpdateLock">playerLoggedOut,playerLoggedIn,respawnPlayer</lockMethodCall>
+			<replaceInitializer field="playerEntityList" code="new me.nallar.tickthreading.collections.LockArrayList();"/>
+			<insertAfter code="((me.nallar.tickthreading.collections.LockArrayList)^field:ServerConfigurationManager/playerEntityList^).lock = playersUpdateLock;"/>
 			<synchronize field="$1.loadedChunks">respawnPlayer</synchronize>
 			<synchronize field="$1.loadedChunks">transferPlayerToDimension(Lnet.minecraft.entity.player.EntityPlayerMP;ILnet.minecraft.world.Teleporter;)V</synchronize>
 			<synchronize field="$2.loadedChunks">initializeConnectionToPlayer</synchronize>
