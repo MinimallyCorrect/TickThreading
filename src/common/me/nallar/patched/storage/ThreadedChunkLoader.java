@@ -90,8 +90,6 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 			}
 		}
 
-		Log.info("Loading chunk at " + x + ',' + z + " from " + System.identityHashCode(nbttagcompound));
-
 		if (nbttagcompound == null) {
 			DataInputStream dataInputStream = regionFileCache.getChunkInputStream(x, z);
 
@@ -165,7 +163,6 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 			this.writeChunkToNBT(par2Chunk, par1World, nbttagcompound1);
 			MinecraftForge.EVENT_BUS.post(new ChunkDataEvent.Save(par2Chunk, nbttagcompound));
 			this.addToSaveQueue(par2Chunk.getChunkCoordIntPair(), nbttagcompound, par2Chunk.alreadySavedAfterUnload || par2Chunk.unloading || !par2Chunk.isChunkLoaded);
-			Log.info("Saved chunk at " + par2Chunk.xPosition + ',' + par2Chunk.zPosition + " to " + System.identityHashCode(nbttagcompound));
 		} catch (Exception exception) {
 			exception.printStackTrace();
 		}

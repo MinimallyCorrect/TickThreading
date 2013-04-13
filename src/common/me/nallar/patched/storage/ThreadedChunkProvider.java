@@ -151,7 +151,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				if (lastChunk == chunk) {
 					lastChunk = null;
 				}
-				Log.info("Unloaded chunk " + chunk);
 				chunk.onChunkUnload();
 				chunk.pendingBlockUpdates = world.getPendingBlockUpdates(chunk, false);
 				loadedChunks.remove(chunk);
@@ -241,11 +240,9 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			if (notInUnload) {
 				inUnload.set(true);
 			}
-			Log.info("Finalizing chunk " + chunk);
 			chunk.isChunkLoaded = false;
 			safeSaveChunk(chunk);
 			safeSaveExtraChunkData(chunk);
-			Log.info("Finalized chunk " + chunk);
 			if (notInUnload) {
 				inUnload.set(false);
 			}
@@ -489,8 +486,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		chunk.onChunkLoad();
 		fireBukkitLoadEvent(chunk, wasGenerated);
 		chunkLoadLocks.remove(key);
-
-		Log.info("Loaded chunk " + chunk);
 
 		return chunk;
 	}
