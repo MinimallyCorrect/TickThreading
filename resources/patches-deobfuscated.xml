@@ -542,8 +542,11 @@
 		</class>
 		<class id="codechicken.chunkloader.ChunkLoaderManager">
 			<disable>cleanChunks</disable>
+		</class>
+		<class id="codechicken.chunkloader.ChunkLoaderManager$ChunkLoaderOrganiser">
 			<replaceMethodCall code="$_ = $0.getTEForceLoad($$);" method="^class:World^.^method:World/getBlockTileEntity^">revive(^class:World^)V</replaceMethodCall>
 			<synchronize>revive(^class:World^)V</synchronize>
+			<replaceInitializer field="timedUnloadQueue" class="me.nallar.tickthreading.collections.CHashMap"/>
 		</class>
 		<class id="codechicken.chunkloader.CommandChunkLoaders">
 			<synchronize field="codechicken.chunkloader.ChunkLoaderEventHandler.staticLock">handleCommand</synchronize>
