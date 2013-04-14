@@ -18,7 +18,7 @@ It's commented quite well, and is hopefully understandable. If any of the descri
 Logging
 -----
 TickThreading stores its logs in the TickThreadingLogs directory, and will keep the previous 5 logs.
-Make sure to include relevant logs if you run into a problem.
+Make sure to include all relevant logs if you run into a problem.
 
 Source
 ------
@@ -40,6 +40,12 @@ Coding and Pull Request Formatting
 * Pull requests must be formatted properly.
 
 Please follow the above conventions if you want your pull requests accepted.
+
+Donations
+----------------------------------
+
+![QR Code](http://i.imgur.com/U2ftDFQ.png)
+[1BUjvwxxGH23Fkj7vdGtbrgLEF91u8npQu](bitcoin:1BUjvwxxGH23Fkj7vdGtbrgLEF91u8npQu)
 
 Contributors
 ----------------------------------
