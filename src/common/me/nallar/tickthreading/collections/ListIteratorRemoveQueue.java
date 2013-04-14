@@ -1,0 +1,100 @@
+package me.nallar.tickthreading.collections;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+@SuppressWarnings ("ConstantConditions")
+public class ListIteratorRemoveQueue<T> extends ConcurrentLinkedQueue<T> implements List<T> {
+	@Override
+	public Iterator<T> iterator() {
+		return new Iterator<T>() {
+			private T next;
+
+			@Override
+			public boolean hasNext() {
+				if (next != null) {
+					throw new IllegalStateException("iterator.remove() not called.");
+				}
+				next = ListIteratorRemoveQueue.this.poll();
+				return next != null;
+			}
+
+			@Override
+			public T next() {
+				if (next == null) {
+					throw new IllegalStateException("iterator.next() called without .hasNext()");
+				}
+				return next;
+			}
+
+			@Override
+			public void remove() {
+				next = null;
+			}
+		};
+	}
+
+	@Override
+	public boolean addAll(Collection<? extends T> c) {
+		return c == this || super.addAll(c);
+	}
+
+	@Override
+	public boolean addAll(int index, Collection c) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public T get(int index) {
+		if (index == 0) {
+			return this.peek();
+		}
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public T set(int index, Object element) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void add(int index, Object element) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public T remove(int index) {
+		if (index == 0) {
+			return this.poll();
+		}
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public int indexOf(Object o) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public int lastIndexOf(Object o) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public ListIterator<T> listIterator() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public ListIterator<T> listIterator(int index) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public List<T> subList(int fromIndex, int toIndex) {
+		throw new UnsupportedOperationException();
+	}
+}

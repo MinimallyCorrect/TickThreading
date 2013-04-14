@@ -690,11 +690,14 @@
 			<lock field="readLock">addConductor,cleanConductors,setNetwork,resetConductors,onOverCharge,getTotalResistance,refreshConductors</lock>
 		</class>
 	</universalElectricity>
-	<appeng>
+	<appliedEnergistics>
 		<class id="appeng.me.tile.TileController">
 			<synchronize>getCellArray</synchronize>
 		</class>
-	</appeng>
+		<class id="appeng.common.MEGridEvents">
+			<replaceInitializer field="requests" class="me.nallar.tickthreading.collections.ListIteratorRemoveQueue">^static^</replaceInitializer>
+		</class>
+	</appliedEnergistics>
 	<xyCraft>
 		<class id="soaryn.xycraft.machines.block.XyCraftWorldExtension">
 			<replaceInitializer field="multiBlocks" class="me.nallar.tickthreading.collections.CHashMap"/>

@@ -8,6 +8,7 @@ import java.util.LinkedList;
 public class ArrayListReplaceIterateTempListClear<T> extends ArrayList<T> {
 	private volatile boolean defer = false;
 	private final LinkedList<T> deferred = new LinkedList<T>();
+	private static final Iterator<T> emptyIterator = Collections.<T>emptyList().iterator();
 
 	@Override
 	public boolean add(T t) {
@@ -21,7 +22,7 @@ public class ArrayListReplaceIterateTempListClear<T> extends ArrayList<T> {
 	@Override
 	public synchronized Iterator<T> iterator() {
 		if (defer) {
-			return Collections.emptyIterator();
+			return emptyIterator;
 		}
 		defer = true;
 		return super.iterator();
