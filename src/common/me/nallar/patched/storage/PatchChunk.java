@@ -49,7 +49,7 @@ public abstract class PatchChunk extends Chunk {
 
 	@Override
 	public boolean needsSaving(boolean force) {
-		return (force || isModified) || (hasEntities && (lastSaveTime + 9000 < worldObj.getTotalWorldTime()));
+		return force || isModified || (hasEntities && (lastSaveTime + 9000 < worldObj.getTotalWorldTime()));
 	}
 
 	@Override

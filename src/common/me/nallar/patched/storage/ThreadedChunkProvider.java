@@ -81,7 +81,8 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	private final ThreadLocal<Boolean> worldGenInProgress;
 	private boolean loadedPersistentChunks = false;
 	private int unloadTicks = 0;
-	private int overloadCount = -5;
+	private int overloadCount = 0;
+	private int saveTicks = 0;
 	private Chunk lastChunk;
 	// Mojang compatiblity fields.
 	public final IChunkProvider currentChunkProvider;
@@ -593,27 +594,14 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	}
 
 	@Override
-	public boolean saveChunks(boolean saveAll, IProgressUpdate progressUpdate) {
+	public boolean saveChunks(boolean fullSaveRequired, IProgressUpdate progressUpdate) {
+		boolean saveAll = fullSaveRequired || saveTicks++ % 512 == 0;
 		int savedChunks = 0;
 
 		List<Chunk> chunksToSave = new ArrayList<Chunk>();
 		synchronized (loadedChunks) {
 			for (Chunk chunk : loadedChunks) {
-
-				if (chunk.unloading) {
-					if (saveAll) {
-						synchronized (chunk) {
-							if (chunk.alreadySavedAfterUnload) {
-								continue;
-							}
-							chunk.alreadySavedAfterUnload = true;
-						}
-					} else {
-						continue;
-					}
-				}
-
-				if (chunk.needsSaving(saveAll)) {
+				if (!chunk.unloading && chunk.needsSaving(saveAll)) {
 					chunk.isModified = false;
 					chunksToSave.add(chunk);
 				}
@@ -631,23 +619,25 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				continue;
 			}
 
-			if (saveAll) {
+			if (fullSaveRequired) {
 				safeSaveExtraChunkData(chunk);
 			}
 
 			safeSaveChunk(chunk);
 
-			if (++savedChunks == 384 && !saveAll) {
-				if ((overloadCount += 2) > 5) {
-					Log.warning("Save queue overloaded in " + Log.name(world) + " consider decreasing saveInterval. Only saved " + savedChunks + " out of " + chunksToSave.size());
+			if (++savedChunks == 256 && !saveAll) {
+				if ((++overloadCount) > 50) {
+					Log.warning("Partial save queue overloaded in " + Log.name(world) + ". You should decrease saveInterval. Only saved " + savedChunks + " out of " + chunksToSave.size());
 				}
 				return true;
 			}
 		}
 
-		overloadCount--;
+		if (overloadCount > 0) {
+			overloadCount--;
+		}
 
-		if (saveAll) {
+		if (fullSaveRequired) {
 			handleUnloadQueue(Long.MAX_VALUE, true);
 
 			if (loader != null) {

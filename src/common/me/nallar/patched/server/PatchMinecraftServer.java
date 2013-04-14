@@ -253,7 +253,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 		if (this.tickCounter % TickThreading.instance.saveInterval == 0) {
 			theProfiler.startSection("save");
-			this.partialSave();
+			this.serverConfigManager.saveAllPlayerData();;
 			theProfiler.endSection();
 		}
 
@@ -409,32 +409,6 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 	@Override
 	@Declare
-	public void partialSave() {
-		if (!currentlySaving) {
-			currentlySaving = true;
-			try {
-				this.serverConfigManager.saveAllPlayerData();
-				if (worlds == null) {
-					for (WorldServer world : this.worldServers) {
-						world.saveAllChunks(false, null);
-					}
-				} else {
-					for (WorldServer world : worlds) {
-						world.saveAllChunks(false, null);
-					}
-				}
-			} catch (MinecraftException e) {
-				throw UnsafeUtil.throwIgnoreChecked(e);
-			} finally {
-				currentlySaving = false;
-			}
-		} else {
-			Log.severe("Server is already saving or crashed while saving - not attempting to save.");
-		}
-	}
-
-	@Override
-	@Declare
 	public void doWorldTick() {
 		final Profiler profiler = this.theProfiler;
 		int i;
@@ -470,6 +444,17 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				profiler.endSection();
 				if (this.tickCounter % 102 == 0) {
 					exceptionCount.put(id, 0);
+				}
+				if (this.tickCounter % TickThreading.instance.saveInterval == 0) {
+					theProfiler.startSection("save");
+					try {
+						world.saveAllChunks(false, null);
+					} catch (MinecraftException e) {
+						throw UnsafeUtil.throwIgnoreChecked(e);
+					} finally {
+						currentlySaving = false;
+					}
+					theProfiler.endSection();
 				}
 				profiler.endSection();
 
