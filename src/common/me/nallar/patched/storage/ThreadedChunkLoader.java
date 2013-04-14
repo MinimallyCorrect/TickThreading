@@ -320,9 +320,6 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 
 		par3NBTTagCompound.setTag("TileEntities", nbttaglist2);
 		List list = par1Chunk.pendingBlockUpdates;
-		if (list == null) {
-			list = par2World.getPendingBlockUpdates(par1Chunk, false);
-		}
 
 		if (list != null) {
 			long k = par2World.getTotalWorldTime();
