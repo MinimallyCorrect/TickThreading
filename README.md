@@ -46,6 +46,7 @@ Donations
 
 ![QR Code](http://i.imgur.com/U2ftDFQ.png)
 [1BUjvwxxGH23Fkj7vdGtbrgLEF91u8npQu](bitcoin:1BUjvwxxGH23Fkj7vdGtbrgLEF91u8npQu)
+![](http://ansrv.com/png?s=http://blockexplorer.com/q/getreceivedbyaddress/1BUjvwxxGH23Fkj7vdGtbrgLEF91u8npQu&amp;c=000000&amp;b=FFFFFF&amp;size=5)
 
 Contributors
 ----------------------------------
