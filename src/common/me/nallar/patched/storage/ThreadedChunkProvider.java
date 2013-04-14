@@ -240,9 +240,16 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			if (notInUnload) {
 				inUnload.set(true);
 			}
+			boolean notWorldGen = !worldGenInProgress.get();
+			if (notWorldGen) {
+				worldGenInProgress.set(true);
+			}
 			chunk.isChunkLoaded = false;
 			safeSaveChunk(chunk);
 			safeSaveExtraChunkData(chunk);
+			if (notWorldGen) {
+				worldGenInProgress.set(false);
+			}
 			if (notInUnload) {
 				inUnload.set(false);
 			}
@@ -374,15 +381,16 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			if (chunk != null) {
 				return chunk;
 			}
-			return defaultEmptyChunk;
-		} else if (inUnload.get() == Boolean.TRUE) {
-			chunk = (Chunk) unloadingChunks.getValueByKey(key);
-			if (chunk == null) {
-				Log.severe("Failed to get currently unloading chunk at " + x + ',' + z + " from unloading chunks map.", new IllegalStateException());
-				return null;
-			} else {
-				return chunk;
+			if (inUnload.get() == Boolean.TRUE) {
+				chunk = (Chunk) unloadingChunks.getValueByKey(key);
+				if (chunk == null) {
+					Log.severe("Failed to get currently unloading chunk at " + x + ',' + z + " from unloading chunks map.", new IllegalStateException());
+					return null;
+				} else {
+					return chunk;
+				}
 			}
+			return defaultEmptyChunk;
 		}
 
 		final AtomicInteger lock = getLock(key);
