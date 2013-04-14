@@ -1,15 +1,16 @@
 package me.nallar.tickthreading.collections;
 
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-public class HashSetReplaceIterateTempListClear<T> extends HashSet<T> {
+public class ArrayListReplaceIterateTempListClear<T> extends ArrayList<T> {
 	private volatile boolean defer = false;
 	private final LinkedList<T> deferred = new LinkedList<T>();
 
 	@Override
-	public synchronized boolean add(T t) {
+	public boolean add(T t) {
 		if (defer) {
 			return !contains(t) && deferred.add(t);
 		} else {
@@ -20,7 +21,7 @@ public class HashSetReplaceIterateTempListClear<T> extends HashSet<T> {
 	@Override
 	public synchronized Iterator<T> iterator() {
 		if (defer) {
-			throw new IllegalStateException();
+			return Collections.emptyIterator();
 		}
 		defer = true;
 		return super.iterator();

@@ -25,6 +25,7 @@ import java.util.TreeMap;
 
 import javassist.CtBehavior;
 import javassist.CtClass;
+import javassist.CtConstructor;
 import javassist.NotFoundException;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.mappings.ClassDescription;
@@ -297,6 +298,13 @@ public class PatchManager {
 				return run(ctClass, attributes);
 			} else if (textContent.isEmpty()) {
 				run(ctClass.getConstructors()[0], attributes);
+			} else if ("^static^".equals(textContent)) {
+				CtConstructor ctBehavior = ctClass.getClassInitializer();
+				if (ctBehavior == null) {
+					Log.severe("No static initializer found patching " + ctClass.getName() + " with " + toString());
+				} else {
+					run(ctBehavior, attributes);
+				}
 			} else {
 				List<MethodDescription> methodDescriptions = MethodDescription.fromListString(ctClass.getName(), textContent);
 				Log.fine("Patching methods " + methodDescriptions.toString());
