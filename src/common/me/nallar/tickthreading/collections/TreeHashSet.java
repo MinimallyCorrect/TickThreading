@@ -6,8 +6,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
-import me.nallar.tickthreading.Log;
-
 public class TreeHashSet<T> extends TreeSet<T> {
 	private final Set internalHashSet = Collections.newSetFromMap(new ConcurrentHashMap());
 
