@@ -40,8 +40,8 @@ public final class ThreadManager {
 					}
 					runnable.run();
 				} catch (InterruptedException ignored) {
-				} catch (Exception e) {
-					Log.severe("Unhandled exception in worker thread " + Thread.currentThread().getName(), e);
+				} catch (Throwable t) {
+					Log.severe("Unhandled exception in worker thread " + Thread.currentThread().getName(), t);
 				}
 				if (waiting.decrementAndGet() == 0) {
 					endTime = System.nanoTime();
