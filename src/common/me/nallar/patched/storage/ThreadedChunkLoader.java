@@ -129,15 +129,15 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 				levelTag.setInteger("xPos", x);
 				levelTag.setInteger("zPos", z);
 			}
-			Chunk var5 = this.readChunkFromNBT(world, levelTag);
+			Chunk chunk = this.readChunkFromNBT(world, levelTag);
 
 			try {
-				MinecraftForge.EVENT_BUS.post(new ChunkDataEvent.Load(var5, chunkTagCompound));
+				MinecraftForge.EVENT_BUS.post(new ChunkDataEvent.Load(chunk, chunkTagCompound));
 			} catch (Throwable t) {
-				FMLLog.severe("A mod failed to handle a ChunkDataEvent.Load event", t);
+				FMLLog.severe("A mod failed to handle a ChunkDataEvent.Load event for " + x + ',' + z, t);
 			}
 
-			return var5;
+			return chunk;
 		}
 	}
 
@@ -146,9 +146,9 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 	}
 
 	@Override
-	public void saveChunk(World par1World, Chunk par2Chunk) {
+	public void saveChunk(World world, Chunk chunk) {
 		try {
-			par1World.checkSessionLock();
+			world.checkSessionLock();
 		} catch (MinecraftException ex) {
 			// MCPC+ disable this for now.
 			//ex.printStackTrace();
@@ -158,9 +158,13 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 			NBTTagCompound nbttagcompound = new NBTTagCompound();
 			NBTTagCompound nbttagcompound1 = new NBTTagCompound();
 			nbttagcompound.setTag("Level", nbttagcompound1);
-			this.writeChunkToNBT(par2Chunk, par1World, nbttagcompound1);
-			MinecraftForge.EVENT_BUS.post(new ChunkDataEvent.Save(par2Chunk, nbttagcompound));
-			this.addToSaveQueue(par2Chunk.getChunkCoordIntPair(), nbttagcompound, par2Chunk.alreadySavedAfterUnload || par2Chunk.unloading || !par2Chunk.isChunkLoaded);
+			this.writeChunkToNBT(chunk, world, nbttagcompound1);
+			try {
+				MinecraftForge.EVENT_BUS.post(new ChunkDataEvent.Save(chunk, nbttagcompound));
+			} catch (Throwable t) {
+				FMLLog.severe("A mod failed to handle a ChunkDataEvent.Save event for " + chunk.xPosition + ',' + chunk.zPosition, t);
+			}
+			this.addToSaveQueue(chunk.getChunkCoordIntPair(), nbttagcompound, chunk.alreadySavedAfterUnload || chunk.unloading || !chunk.isChunkLoaded);
 		} catch (Exception exception) {
 			exception.printStackTrace();
 		}
