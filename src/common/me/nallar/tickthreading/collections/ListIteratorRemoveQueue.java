@@ -15,10 +15,7 @@ public class ListIteratorRemoveQueue<T> extends ConcurrentLinkedQueue<T> impleme
 
 			@Override
 			public boolean hasNext() {
-				if (next != null) {
-					throw new IllegalStateException("iterator.remove() not called.");
-				}
-				next = ListIteratorRemoveQueue.this.poll();
+				next = ListIteratorRemoveQueue.this.peek();
 				return next != null;
 			}
 
@@ -32,13 +29,15 @@ public class ListIteratorRemoveQueue<T> extends ConcurrentLinkedQueue<T> impleme
 
 			@Override
 			public void remove() {
-				next = null;
+				if (ListIteratorRemoveQueue.this.poll() != next) {
+					throw new IllegalStateException("Already removed");
+				}
 			}
 		};
 	}
 
 	@Override
-	public boolean addAll(Collection<? extends T> c) {
+	public boolean addAll(Collection <? extends T> c) {
 		return c == this || super.addAll(c);
 	}
 
