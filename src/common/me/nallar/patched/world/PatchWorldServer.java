@@ -133,29 +133,26 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 
 	@Override
 	public List getPendingBlockUpdates(Chunk chunk, boolean remove) {
+		if (remove) {
+			throw new UnsupportedOperationException();
+		}
 		ArrayList<NextTickListEntry> var3 = null;
 		int minCX = chunk.xPosition << 4;
 		int maxCX = minCX + 16;
 		int minCZ = chunk.zPosition << 4;
 		int maxCZ = minCZ + 16;
-		TreeSet<NextTickListEntry> pendingTickListEntries = this.pendingTickListEntries;
-		synchronized (pendingTickListEntries) {
-			Iterator<NextTickListEntry> nextTickListEntryIterator = pendingTickListEntries.iterator();
+		TreeHashSet<NextTickListEntry> pendingTickListEntries = (TreeHashSet<NextTickListEntry>) this.pendingTickListEntries;
+		Iterator<NextTickListEntry> nextTickListEntryIterator = pendingTickListEntries.concurrentIterator();
 
-			while (nextTickListEntryIterator.hasNext()) {
-				NextTickListEntry var10 = nextTickListEntryIterator.next();
+		while (nextTickListEntryIterator.hasNext()) {
+			NextTickListEntry var10 = nextTickListEntryIterator.next();
 
-				if (var10.xCoord >= minCX && var10.xCoord < maxCX && var10.zCoord >= minCZ && var10.zCoord < maxCZ) {
-					if (remove) {
-						nextTickListEntryIterator.remove();
-					}
-
-					if (var3 == null) {
-						var3 = new ArrayList<NextTickListEntry>();
-					}
-
-					var3.add(var10);
+			if (var10.xCoord >= minCX && var10.xCoord < maxCX && var10.zCoord >= minCZ && var10.zCoord < maxCZ) {
+				if (var3 == null) {
+					var3 = new ArrayList<NextTickListEntry>();
 				}
+
+				var3.add(var10);
 			}
 		}
 

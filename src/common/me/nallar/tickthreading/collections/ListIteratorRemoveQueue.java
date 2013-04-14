@@ -37,7 +37,7 @@ public class ListIteratorRemoveQueue<T> extends ConcurrentLinkedQueue<T> impleme
 	}
 
 	@Override
-	public boolean addAll(Collection <? extends T> c) {
+	public boolean addAll(Collection<? extends T> c) {
 		return c == this || super.addAll(c);
 	}
 

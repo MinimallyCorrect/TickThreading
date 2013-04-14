@@ -1,11 +1,19 @@
 package me.nallar.tickthreading.collections;
 
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class TreeHashSet extends TreeSet {
-	private final Set internalHashSet = new HashSet();
+import me.nallar.tickthreading.Log;
+
+public class TreeHashSet<T> extends TreeSet<T> {
+	private final Set internalHashSet = Collections.newSetFromMap(new ConcurrentHashMap());
+
+	public Iterator concurrentIterator() {
+		return internalHashSet.iterator();
+	}
 
 	@Override
 	public boolean contains(Object o) {
@@ -13,9 +21,12 @@ public class TreeHashSet extends TreeSet {
 	}
 
 	@Override
-	public synchronized boolean add(Object o) {
+	public synchronized boolean add(T o) {
 		if (internalHashSet.add(o)) {
 			super.add(o);
+			if (size() > 5000 && size() % 64 == 0) {
+				Log.info("Spammy TickNextTickList updates", new Throwable());
+			}
 			return true;
 		}
 		return false;
