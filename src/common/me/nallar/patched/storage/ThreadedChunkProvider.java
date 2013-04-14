@@ -637,11 +637,10 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 			safeSaveChunk(chunk);
 
-			if (++savedChunks == 256 && !saveAll) {
+			if (++savedChunks == 384 && !saveAll) {
 				if ((overloadCount += 2) > 5) {
 					Log.warning("Save queue overloaded in " + Log.name(world) + " consider decreasing saveInterval. Only saved " + savedChunks + " out of " + chunksToSave.size());
 				}
-				return false;
 			}
 		}
 
