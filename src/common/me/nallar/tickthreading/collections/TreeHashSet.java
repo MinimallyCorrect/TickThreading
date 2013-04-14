@@ -24,9 +24,6 @@ public class TreeHashSet<T> extends TreeSet<T> {
 	public synchronized boolean add(T o) {
 		if (internalHashSet.add(o)) {
 			super.add(o);
-			if (size() > 5000 && size() % 64 == 0) {
-				Log.info("Spammy TickNextTickList updates", new Throwable());
-			}
 			return true;
 		}
 		return false;
