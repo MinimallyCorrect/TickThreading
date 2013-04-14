@@ -105,9 +105,7 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 			}
 		}
 
-		Chunk chunk = this.checkedReadChunkFromNBT(world, x, z, nbttagcompound);
-		loadEntities(chunk, nbttagcompound.getCompoundTag("Level"), world);
-		return chunk;
+		return this.checkedReadChunkFromNBT(world, x, z, nbttagcompound);
 	}
 
 	public Chunk loadChunk__Async_CB(World world, int x, int z) {
@@ -343,16 +341,16 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 	}
 
 	@Override
-	protected Chunk readChunkFromNBT(World par1World, NBTTagCompound par2NBTTagCompound) {
-		int i = par2NBTTagCompound.getInteger("xPos");
-		int j = par2NBTTagCompound.getInteger("zPos");
-		Chunk chunk = new Chunk(par1World, i, j);
-		chunk.heightMap = par2NBTTagCompound.getIntArray("HeightMap");
-		chunk.isTerrainPopulated = par2NBTTagCompound.getBoolean("TerrainPopulated");
-		NBTTagList nbttaglist = par2NBTTagCompound.getTagList("Sections");
+	protected Chunk readChunkFromNBT(World world, NBTTagCompound nbtTagCompound) {
+		int i = nbtTagCompound.getInteger("xPos");
+		int j = nbtTagCompound.getInteger("zPos");
+		Chunk chunk = new Chunk(world, i, j);
+		chunk.heightMap = nbtTagCompound.getIntArray("HeightMap");
+		chunk.isTerrainPopulated = nbtTagCompound.getBoolean("TerrainPopulated");
+		NBTTagList nbttaglist = nbtTagCompound.getTagList("Sections");
 		byte b0 = 16;
 		ExtendedBlockStorage[] aextendedblockstorage = new ExtendedBlockStorage[b0];
-		boolean flag = !par1World.provider.hasNoSky;
+		boolean flag = !world.provider.hasNoSky;
 
 		for (int k = 0; k < nbttaglist.tagCount(); ++k) {
 			NBTTagCompound nbttagcompound1 = (NBTTagCompound) nbttaglist.tagAt(k);
@@ -377,17 +375,11 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 
 		chunk.setStorageArrays(aextendedblockstorage);
 
-		if (par2NBTTagCompound.hasKey("Biomes")) {
-			chunk.setBiomeArray(par2NBTTagCompound.getByteArray("Biomes"));
+		if (nbtTagCompound.hasKey("Biomes")) {
+			chunk.setBiomeArray(nbtTagCompound.getByteArray("Biomes"));
 		}
 
-		// CraftBukkit start - End this method here and split off entity loading to another method
-		return chunk;
-	}
-
-	public static void loadEntities(Chunk chunk, NBTTagCompound nbttagcompound, World world) {
-		// CraftBukkit end
-		NBTTagList nbttaglist1 = nbttagcompound.getTagList("Entities");
+		NBTTagList nbttaglist1 = nbtTagCompound.getTagList("Entities");
 
 		if (nbttaglist1 != null) {
 			for (int l = 0; l < nbttaglist1.tagCount(); ++l) {
@@ -410,7 +402,7 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 			}
 		}
 
-		NBTTagList nbttaglist2 = nbttagcompound.getTagList("TileEntities");
+		NBTTagList nbttaglist2 = nbtTagCompound.getTagList("TileEntities");
 
 		if (nbttaglist2 != null) {
 			for (int i1 = 0; i1 < nbttaglist2.tagCount(); ++i1) {
@@ -423,8 +415,8 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 			}
 		}
 
-		if (nbttagcompound.hasKey("TileTicks")) {
-			NBTTagList nbttaglist3 = nbttagcompound.getTagList("TileTicks");
+		if (nbtTagCompound.hasKey("TileTicks")) {
+			NBTTagList nbttaglist3 = nbtTagCompound.getTagList("TileTicks");
 
 			if (nbttaglist3 != null) {
 				for (int j1 = 0; j1 < nbttaglist3.tagCount(); ++j1) {
@@ -433,6 +425,8 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 				}
 			}
 		}
+
+		return chunk;
 	}
 
 	@Override
