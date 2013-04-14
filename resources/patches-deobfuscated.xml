@@ -695,7 +695,7 @@
 			<synchronize>getCellArray</synchronize>
 		</class>
 		<class id="appeng.common.MEGridEvents">
-			<replaceInitializer field="requests" class="me.nallar.tickthreading.collections.ListIteratorRemoveQueue">^static^</replaceInitializer>
+			<replaceInitializer field="requests" class="me.nallar.tickthreading.collections.ConcurrentLinkedQueueList">^static^</replaceInitializer>
 		</class>
 	</appliedEnergistics>
 	<xyCraft>
