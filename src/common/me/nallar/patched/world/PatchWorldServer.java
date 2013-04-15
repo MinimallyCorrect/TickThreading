@@ -1,6 +1,7 @@
 package me.nallar.patched.world;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.HashSet;
@@ -89,6 +90,14 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		List<Chunk> loadedChunks = theChunkProviderServer.getLoadedChunks();
 		synchronized (loadedChunks) {
 			return loadedChunks.toArray();
+		}
+	}
+
+	@Override
+	@Declare
+	public List getEntities() {
+		synchronized (loadedEntityList) {
+			return Arrays.asList(loadedEntityList.toArray());
 		}
 	}
 
