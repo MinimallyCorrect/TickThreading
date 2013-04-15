@@ -328,7 +328,7 @@
 							} "
 							>getLoadedChunks
 			</replaceMethod>
-			<replaceFieldUsage field="loadedEntityList" readCode="$_ = world.getEntities();">getLivingEntities</replaceFieldUsage>
+			<replaceFieldUsage field="loadedEntityList" readCode="$_ = world.getEntities();">getLivingEntities,getEntities</replaceFieldUsage>
 			<replaceMethod
 							code=" {
 								return world.^field:WorldServer/theChunkProviderServer^.getChunkAt($1, $2, $3, null) != null;
