@@ -253,7 +253,8 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 		if (this.tickCounter % TickThreading.instance.saveInterval == 0) {
 			theProfiler.startSection("save");
-			this.serverConfigManager.saveAllPlayerData();;
+			this.serverConfigManager.saveAllPlayerData();
+			;
 			theProfiler.endSection();
 		}
 

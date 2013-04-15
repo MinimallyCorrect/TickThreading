@@ -487,7 +487,11 @@ public abstract class PatchWorld extends World {
 	public void addTileEntity(Collection tileEntities) {
 		List dest = scanningTileEntities ? addedTileEntityList : loadedTileEntityList;
 		for (TileEntity tileEntity : (Iterable<TileEntity>) tileEntities) {
-			tileEntity.validate();
+			try {
+				tileEntity.validate();
+			} catch (Throwable t) {
+				Log.severe("Tile Entity " + tileEntity + " failed to validate, it will be ignored.", t);
+			}
 			if (tileEntity.canUpdate()) {
 				dest.add(tileEntity);
 			}
