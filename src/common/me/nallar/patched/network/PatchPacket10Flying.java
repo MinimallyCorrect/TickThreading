@@ -75,7 +75,9 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 					int z = chunkCoordIntPair.chunkZPos;
 
 					Chunk chunk = entityPlayerMP.worldObj.getChunkFromChunkCoords(x, z);
-					chunks.add(chunk);
+					synchronized (chunk) {
+						chunks.add(chunk);
+					}
 					tileEntities.addAll(chunk.chunkTileEntityMap.values());
 				}
 			}

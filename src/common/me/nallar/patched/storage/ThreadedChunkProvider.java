@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableSetMultimap;
 
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.registry.GameRegistry;
+import me.nallar.exception.ConcurrencyError;
 import me.nallar.patched.annotation.FakeExtend;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.collections.NonBlockingLongSet;
@@ -594,11 +595,14 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	@Override
 	public void populate(IChunkProvider chunkProvider, int x, int z) {
+		if (!Thread.holdsLock(generateLock)) {
+			Log.severe("Attempted to populate chunk without locking generateLock", new ConcurrencyError("Caused by: incorrect external code"));
+		}
 		Chunk chunk = getChunkIfExists(x, z);
 		if (chunk == null) {
 			return;
 		}
-		synchronized (generateLock) {
+		synchronized (chunk) {
 			if (chunk.isTerrainPopulated) {
 				return;
 			}
