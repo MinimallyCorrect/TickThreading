@@ -35,9 +35,7 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 				nsh.tpPosX = Double.NaN;
 				nsh.setHasMoved();
 				nsh.tpPosY = -256;
-				synchronized (entityPlayerMP.loadedChunks) {
-					par1NetHandler.handleFlying(this);
-				}
+				par1NetHandler.handleFlying(this);
 				sendChunks(entityPlayerMP);
 			} else {
 				nsh.lastPZ = this.zPosition;

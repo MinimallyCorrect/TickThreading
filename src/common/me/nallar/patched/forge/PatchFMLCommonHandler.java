@@ -49,7 +49,7 @@ public abstract class PatchFMLCommonHandler extends FMLCommonHandler {
 			for (IScheduledTickHandler ticker : scheduledTicks) {
 				EnumSet<TickType> ticksToRun = ticker.ticks();
 				if (ticksToRun == null) {
-					ticksToRun = EnumSet.noneOf(TickType.class);
+					continue;
 				} else {
 					ticksToRun = EnumSet.copyOf(ticksToRun);
 				}
@@ -77,7 +77,7 @@ public abstract class PatchFMLCommonHandler extends FMLCommonHandler {
 			for (IScheduledTickHandler ticker : scheduledTicks) {
 				EnumSet<TickType> ticksToRun = ticker.ticks();
 				if (ticksToRun == null) {
-					ticksToRun = EnumSet.noneOf(TickType.class);
+					continue;
 				} else {
 					ticksToRun = EnumSet.copyOf(ticksToRun);
 				}
