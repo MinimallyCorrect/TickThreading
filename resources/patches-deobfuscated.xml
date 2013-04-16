@@ -362,7 +362,7 @@
 	</bukkit>
 	<spigot>
 		<class id="org.bukkit.craftbukkit.v1_4_R1.util.WatchdogThread">
-			<disable>doStart,run</disable>
+			<disable>run</disable>
 		</class>
 	</spigot>
 	<forge>
