@@ -19,7 +19,6 @@
 			<public field="mcServer"/>
 		</class>
 		<class id="net.minecraft.server.MinecraftServer" env="mcpc">
-			<replaceMethod code="org.bukkit.craftbukkit.v1_4_R1.util.WatchdogThread.tick();">spigotTick</replaceMethod>
 			<replaceMethod code="{
 					this.server.getScheduler().mainThreadHeartbeat(this.w);
 
@@ -361,6 +360,11 @@
 			<disable>processChunkGC</disable>
 		</class>
 	</bukkit>
+	<spigot>
+		<class id="org.bukkit.craftbukkit.v1_4_R1.util.WatchdogThread">
+			<disable>doStart</disable>
+		</class>
+	</spigot>
 	<forge>
 		<class id="net.minecraftforge.common.Configuration">
 			<addAll fromClass="me.nallar.patched.forge.PatchConfiguration"/>

@@ -297,7 +297,6 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				playersToCheckWorld.clear();
 			}
 		}
-		spigotTick();
 		theProfiler.endSection();
 		theProfiler.endSection();
 		tickTime = tickTime * 0.98f + ((this.tickTimeArray[this.tickCounter % 100] = System.nanoTime() - var1) * 0.02f);
@@ -361,10 +360,6 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	}
 
 	private void spigotTLETick() {
-		// Replaced in patcher
-	}
-
-	public void spigotTick() {
 		// Replaced in patcher
 	}
 
