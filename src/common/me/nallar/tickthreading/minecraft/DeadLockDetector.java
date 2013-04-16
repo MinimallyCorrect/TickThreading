@@ -102,7 +102,7 @@ public class DeadLockDetector {
 
 	public boolean checkForDeadlocks() {
 		Log.flush();
-		long deadTime = (System.nanoTime() - lastTickTime) + 100000000000000000L;
+		long deadTime = System.nanoTime() - lastTickTime;
 		if (lastTickTime == 0 || (!MinecraftServer.getServer().isServerRunning() && deadTime < (TickThreading.instance.deadLockTime * 10000000000l))) {
 			return true;
 		}
