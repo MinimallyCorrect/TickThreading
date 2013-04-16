@@ -21,10 +21,7 @@ public class LogFormatter extends Formatter {
 		formattedMessage.append(dateFormat.format(record.getMillis()));
 		Level level = record.getLevel();
 
-		String name = level.getLocalizedName();
-		if (name == null) {
-			name = level.getName();
-		}
+		String name = level.getName().toUpperCase();
 
 		formattedMessage.append(" [").append(name == null ? "" : name).append("] ");
 
