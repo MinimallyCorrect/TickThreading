@@ -163,7 +163,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	@Override
 	@Declare
 	public me.nallar.tickthreading.util.TableFormatter writePendingBlockUpdatesStats(me.nallar.tickthreading.util.TableFormatter tf) {
-		tf.sb.append(pendingTickListEntries.size()).append(" pending block updates");
+		tf.sb.append(pendingTickListEntries.size()).append(" pending block updates\n");
 		TreeHashSet<NextTickListEntry> pendingTickListEntries = (TreeHashSet<NextTickListEntry>) this.pendingTickListEntries;
 		Iterator<NextTickListEntry> nextTickListEntryIterator = pendingTickListEntries.concurrentIterator();
 		int[] blockFrequencies = new int[4096];
@@ -183,13 +183,14 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 			for (int j = 0; j < blockFrequencies.length; j++) {
 				int f = blockFrequencies[j];
 				if (f > longest) {
-					longestIndex = f;
-					blockFrequencies[j] = 0;
+					longestIndex = j;
+					longest = f;
 				}
 			}
 			if (longestIndex == -1) {
 				break;
 			}
+			blockFrequencies[longestIndex] = 0;
 			BlockInfo blockInfo = new BlockInfo(longestIndex, 0);
 			tf
 					.row(blockInfo.id + ':' + blockInfo.name)
