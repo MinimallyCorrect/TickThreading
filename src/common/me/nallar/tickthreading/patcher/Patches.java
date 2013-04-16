@@ -398,21 +398,23 @@ public class Patches {
 	@Patch (
 			requiredAttributes = "field"
 	)
-	public void replaceFieldUsage(CtBehavior ctBehavior, Map<String, String> attributes) throws CannotCompileException {
+	public void replaceFieldUsage(final CtBehavior ctBehavior, Map<String, String> attributes) throws CannotCompileException {
 		final String field = attributes.get("field");
 		final String readCode = attributes.get("readCode");
 		final String writeCode = attributes.get("writeCode");
+		final String clazz = attributes.get("class");
 		if (readCode == null && writeCode == null) {
 			throw new IllegalArgumentException("readCode or writeCode must be set");
 		}
 		ctBehavior.instrument(new ExprEditor() {
 			@Override
 			public void edit(FieldAccess fieldAccess) throws CannotCompileException {
-				if (fieldAccess.getFieldName().equals(field)) {
+				if (fieldAccess.getFieldName().equals(field) && (clazz == null || fieldAccess.getClassName().equals(clazz))) {
 					if (fieldAccess.isWriter() && writeCode != null) {
 						fieldAccess.replace(writeCode);
 					} else if (fieldAccess.isReader() && readCode != null) {
 						fieldAccess.replace(readCode);
+						Log.info("Replaced in " + ctBehavior + ' ' + fieldAccess.getFieldName() + " read with " + readCode);
 					}
 				}
 			}
