@@ -25,8 +25,10 @@ import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.IProgressUpdate;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.IWorldAccess;
+import net.minecraft.world.MinecraftException;
 import net.minecraft.world.NextTickListEntry;
 import net.minecraft.world.SpawnerAnimals;
 import net.minecraft.world.Teleporter;
@@ -43,6 +45,8 @@ import net.minecraft.world.storage.ISaveHandler;
 import net.minecraft.world.storage.WorldInfo;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.ForgeChunkManager;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.world.WorldEvent;
 
 @SuppressWarnings ("unchecked") // Can't make the code in WorldServer checked. Yet. // TODO: Add type parameters via prepatcher?
 public abstract class PatchWorldServer extends WorldServer implements Runnable {
@@ -113,6 +117,21 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 			}
 		}
 		threadManager.stop();
+	}
+
+	@Override
+	public void saveAllChunks(boolean par1, IProgressUpdate par2IProgressUpdate) throws MinecraftException {
+		if (this.chunkProvider.canSave()) {
+			synchronized (WorldEvent.Save.class) {
+				this.saveLevel();
+			}
+
+			this.chunkProvider.saveChunks(par1, par2IProgressUpdate);
+
+			synchronized (WorldEvent.Save.class) {
+				MinecraftForge.EVENT_BUS.post(new WorldEvent.Save(this));
+			}
+		}
 	}
 
 	@Override
