@@ -84,8 +84,8 @@ public class Log {
 
 	public static void setFileName(String name, final Level minimumLevel, Logger... loggers) {
 		logFolder.mkdir();
-		for (int i = numberOfLogFiles; i >= 0; i--) {
-			File currentFile = new File(logFolder, name + (i == 0 ? "" : "." + i) + ".log");
+		for (int i = numberOfLogFiles; i >= 1; i--) {
+			File currentFile = new File(logFolder, name + '.' + i + ".log");
 			if (currentFile.exists()) {
 				if (i == numberOfLogFiles) {
 					currentFile.delete();
@@ -94,7 +94,12 @@ public class Log {
 				}
 			}
 		}
-		final File saveFile = new File(logFolder, name + ".log");
+		// TODO: Remove after two recommended builds
+		File oldNamingFile = new File(logFolder, name + ".log");
+		if (oldNamingFile.exists()) {
+			oldNamingFile.renameTo(new File(logFolder, name + ".2.log"));
+		}
+		final File saveFile = new File(logFolder, name + ".1.log");
 		try {
 			RandomAccessFile randomAccessFile = new RandomAccessFile(saveFile, "rw");
 			try {
