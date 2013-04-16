@@ -126,7 +126,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	public void tick() {
 		int ticks = world.tickCount;
 		// Handle unload requests
-		if (ticks % 3 == 0 && !world.canNotSave && !unloadStage0.isEmpty()) {
+		if (ticks % 3 == 0 && !unloadStage0.isEmpty()) {
 			ImmutableSetMultimap<ChunkCoordIntPair, ForgeChunkManager.Ticket> persistentChunks = world.getPersistentChunks();
 			PlayerManager playerManager = world.getPlayerManager();
 			ChunkCoordIntPair chunkCoordIntPair = new ChunkCoordIntPair(0, 0);
