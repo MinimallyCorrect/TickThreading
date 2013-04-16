@@ -1,5 +1,6 @@
 package me.nallar.tickthreading.util;
 
+import java.io.File;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,6 +8,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import com.google.common.base.Function;
 
 import me.nallar.tickthreading.Log;
 
@@ -16,6 +19,14 @@ public enum CollectionsUtil {
 
 	public static List<String> split(String input) {
 		return split(input, defaultDelimiter);
+	}
+
+	public static List newList(List<?> input, Function<Object, ?> function) {
+		List<Object> newList = new ArrayList<Object>(input.size());
+		for (Object o : input) {
+			newList.add(function.apply(o));
+		}
+		return newList;
 	}
 
 	public static List<String> split(String input, String delimiter) {
@@ -44,7 +55,7 @@ public enum CollectionsUtil {
 		return (List<T>) objects;
 	}
 
-	public static String join(Iterable iterable) {
+	public static String join(Iterable<File> iterable) {
 		return join(iterable, defaultDelimiter);
 	}
 
@@ -61,7 +72,7 @@ public enum CollectionsUtil {
 		return stringBuilder.toString();
 	}
 
-	public static Collection<String> stringify(Iterable objects, Collection<String> strings) {
+	public static Collection<String> stringify(Iterable<?> objects, Collection<String> strings) {
 		for (Object o : objects) {
 			strings.add(o.toString());
 		}

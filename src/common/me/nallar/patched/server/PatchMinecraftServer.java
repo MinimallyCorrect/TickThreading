@@ -63,7 +63,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	@Declare
 	public static java.util.LinkedList playersToCheckWorld_;
 	@Declare
-	public boolean currentlySaving_;
+	public volatile boolean currentlySaving_;
 	@Declare
 	public static java.util.Set<net.minecraftforge.common.Configuration> toSaveConfigurationSet_;
 
@@ -476,8 +476,8 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 					c = 0;
 				}
 				c++;
-				if (TickThreading.instance.exitOnDeadlock && c >= 99) {
-					DeadLockDetector.sendChatSafely("The world " + Log.name(world) + " has become unstable, and the server will now restart.");
+				if (c >= 99) {
+					DeadLockDetector.sendChatSafely("The world " + Log.name(world) + " has become unstable, and the server will now stop.");
 					Log.severe(Log.name(world) + " has become unstable, stopping.");
 					this.initiateShutdown();
 				}
