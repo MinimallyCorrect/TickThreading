@@ -18,12 +18,6 @@ public abstract class PatchPlayerInstanceForge extends PlayerInstance {
 		super(par1PlayerManager, par2, par3);
 	}
 
-	@Override
-	@Declare
-	public ChunkCoordIntPair getLocation() {
-		return chunkLocation;
-	}
-
 	public static void staticConstruct() {
 		unloadSequence = new byte[]{0x78, (byte) 0x9C, 0x63, 0x64, 0x1C, (byte) 0xD9, 0x00, 0x00, (byte) 0x81, (byte) 0x80, 0x01, 0x01};
 	}

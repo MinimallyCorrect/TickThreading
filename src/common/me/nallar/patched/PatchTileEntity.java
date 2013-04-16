@@ -7,7 +7,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.WorldServer;
 
 public abstract class PatchTileEntity extends TileEntity {
-	// Two locks - x, z. No need for plus/minus, never both needed unless region size of 1 = not allowed + stupid
 	@Declare
 	public int lastTTX_;
 	@Declare
