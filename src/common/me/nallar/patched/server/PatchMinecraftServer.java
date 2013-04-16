@@ -424,7 +424,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				world.getWorldVec3Pool().clear();
 				profiler.endSection();
 
-				if (this.tickCounter % 30 == 0) {
+				if (world.tickCount % 30 == 0) {
 					profiler.startSection("timeSync");
 					this.serverConfigManager.sendPacketToAllPlayersInDimension(new Packet4UpdateTime(world.getTotalWorldTime(), world.getWorldTime()), world.provider.dimensionId);
 					profiler.endSection();
@@ -443,10 +443,10 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				profiler.startSection("tracker");
 				world.getEntityTracker().updateTrackedEntities();
 				profiler.endSection();
-				if (this.tickCounter % 102 == 0) {
+				if (world.tickCount % 102 == 0) {
 					exceptionCount.put(id, 0);
 				}
-				if (this.tickCounter % TickThreading.instance.saveInterval == 0) {
+				if (world.tickCount % TickThreading.instance.saveInterval == 0) {
 					theProfiler.startSection("save");
 					try {
 						world.saveAllChunks(false, null);
