@@ -193,7 +193,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		boolean isForced = getPersistentChunks().containsKey(new ChunkCoordIntPair(nextTickListEntry.xCoord >> 4, nextTickListEntry.zCoord >> 4));
 		byte range = isForced ? (byte) 1 : 8;
 
-		if (this.scheduledUpdatesAreImmediate && blockID > 0) {
+		if (worldGenInProgress.get() == Boolean.TRUE && blockID > 0) {
 			if (Block.blocksList[blockID].func_82506_l()) {
 				if (this.checkChunksExist(nextTickListEntry.xCoord - range, nextTickListEntry.yCoord - range, nextTickListEntry.zCoord - range, nextTickListEntry.xCoord + range, nextTickListEntry.yCoord + range, nextTickListEntry.zCoord + range)) {
 					int realBlockID = this.getBlockIdWithoutLoad(nextTickListEntry.xCoord, nextTickListEntry.yCoord, nextTickListEntry.zCoord);
