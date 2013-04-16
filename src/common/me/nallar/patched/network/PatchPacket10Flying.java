@@ -57,15 +57,6 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 		}
 	}
 
-	private static double allowedSpeedMultiplier(EntityPlayerMP entityPlayerMP) {
-		for (int i = 0; i < 4; i++) {
-			if (entityPlayerMP.inventory.armorItemInSlot(i) != null) {
-				return 2;
-			}
-		}
-		return 1;
-	}
-
 	public static void sendChunks(EntityPlayerMP entityPlayerMP) {
 		NetServerHandler netServerHandler = entityPlayerMP.playerNetServerHandler;
 		if (!entityPlayerMP.loadedChunks.isEmpty()) {
