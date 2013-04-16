@@ -19,6 +19,7 @@ import me.nallar.tickthreading.minecraft.DeadLockDetector;
 import me.nallar.tickthreading.minecraft.ThreadManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
+import me.nallar.tickthreading.util.BlockInfo;
 import me.nallar.tickthreading.util.contextaccess.ContextAccess;
 import net.minecraft.block.Block;
 import net.minecraft.entity.effect.EntityLightningBolt;
@@ -157,6 +158,45 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		}
 
 		this.createSpawnPosition(par1WorldSettings);
+	}
+
+	@Override
+	@Declare
+	public me.nallar.tickthreading.util.TableFormatter writePendingBlockUpdatesStats(me.nallar.tickthreading.util.TableFormatter tf) {
+		tf.sb.append(pendingTickListEntries.size()).append(" pending block updates");
+		TreeHashSet<NextTickListEntry> pendingTickListEntries = (TreeHashSet<NextTickListEntry>) this.pendingTickListEntries;
+		Iterator<NextTickListEntry> nextTickListEntryIterator = pendingTickListEntries.concurrentIterator();
+		int[] blockFrequencies = new int[4096];
+
+		while (nextTickListEntryIterator.hasNext()) {
+			NextTickListEntry tickListEntry = nextTickListEntryIterator.next();
+
+			int blockId = getBlockIdWithoutLoad(tickListEntry.xCoord, tickListEntry.yCoord, tickListEntry.zCoord);
+			blockFrequencies[blockId == -1 ? 0 : blockId]++;
+		}
+
+		tf
+				.heading("Block")
+				.heading("Count");
+		for (int i = 0; i < 10; i++) {
+			int longest = 0, longestIndex = -1;
+			for (int j = 0; j < blockFrequencies.length; j++) {
+				int f = blockFrequencies[j];
+				if (f > longest) {
+					longestIndex = f;
+					blockFrequencies[j] = 0;
+				}
+			}
+			if (longestIndex == -1) {
+				break;
+			}
+			BlockInfo blockInfo = new BlockInfo(longestIndex, 0);
+			tf
+					.row(blockInfo.id + ':' + blockInfo.name)
+					.row(longest);
+		}
+		tf.finishTable();
+		return tf;
 	}
 
 	@Override

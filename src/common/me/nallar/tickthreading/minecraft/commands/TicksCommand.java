@@ -8,6 +8,7 @@ import me.nallar.tickthreading.util.TableFormatter;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
 
 public class TicksCommand extends Command {
@@ -27,10 +28,14 @@ public class TicksCommand extends Command {
 	public void processCommand(ICommandSender commandSender, List<String> arguments) {
 		World world = DimensionManager.getWorld(0);
 		boolean entities = false;
+		boolean blockUpdates = false;
 		try {
-			if (!arguments.isEmpty() && "e".equals(arguments.get(0))) {
-				entities = true;
-				arguments.remove(0);
+			if (!arguments.isEmpty()) {
+				entities = "e".equals(arguments.get(0));
+				blockUpdates = "b".equals(arguments.get(0));
+				if (entities || blockUpdates) {
+					arguments.remove(0);
+				}
 			}
 			if (!arguments.isEmpty()) {
 				try {
@@ -51,6 +56,8 @@ public class TicksCommand extends Command {
 			tf.sb.append('\n');
 			tickManager.fixDiscrepancies(tf);
 			sendChat(commandSender, String.valueOf(tf));
+		} else if (blockUpdates) {
+			sendChat(commandSender, String.valueOf(((WorldServer) world).writePendingBlockUpdatesStats(new TableFormatter(commandSender))));
 		} else {
 			sendChat(commandSender, String.valueOf(TickThreading.instance.getManager(world).writeDetailedStats(new TableFormatter(commandSender))));
 		}

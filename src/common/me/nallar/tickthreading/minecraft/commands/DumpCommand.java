@@ -6,14 +6,11 @@ import java.util.List;
 import javassist.Modifier;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickThreading;
+import me.nallar.tickthreading.util.BlockInfo;
 import me.nallar.tickthreading.util.TableFormatter;
-import net.minecraft.block.Block;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 
@@ -63,17 +60,8 @@ public class DumpCommand extends Command {
 			sb.append("No block at ").append(Log.name(world)).append(" x,y,z").append(x).append(',').append(y).append(',').append(z).append('\n');
 		} else {
 			int metaData = world.getBlockMetadata(x, y, z);
-			Block type = Block.blocksList[blockId];
-			Item item = type == null ? null : Item.itemsList[blockId];
-			ItemStack itemType = item == null ? null : new ItemStack(blockId, 1, metaData);
-			String name = itemType == null ? (type == null ? "unknown" : type.translateBlockName()) : item.getItemNameIS(itemType);
-			String preTranslateName = "item." + name;
-			String localizedName = StatCollector.translateToLocal(preTranslateName);
-			//noinspection StringEquality
-			if (localizedName != null && localizedName != preTranslateName) {
-				name = localizedName;
-			}
-			sb.append(blockId).append(':').append(name).append(':').append(metaData).append('\n');
+			BlockInfo blockInfo = new BlockInfo(blockId, metaData);
+			sb.append(blockId).append(':').append(blockInfo.name).append(':').append(metaData).append('\n');
 		}
 		sb.append("World time: ").append(world.getWorldTime()).append('\n');
 		TileEntity toDump = world.getTEWithoutLoad(x, y, z);
