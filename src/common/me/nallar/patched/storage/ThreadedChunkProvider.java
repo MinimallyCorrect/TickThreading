@@ -236,23 +236,23 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 					return false;
 				}
 				chunk.alreadySavedAfterUnload = true;
-			}
-			boolean notInUnload = !inUnload.get();
-			if (notInUnload) {
-				inUnload.set(true);
-			}
-			boolean notWorldGen = !worldGenInProgress.get();
-			if (notWorldGen) {
-				worldGenInProgress.set(true);
-			}
-			chunk.isChunkLoaded = false;
-			safeSaveChunk(chunk);
-			safeSaveExtraChunkData(chunk);
-			if (notWorldGen) {
-				worldGenInProgress.set(false);
-			}
-			if (notInUnload) {
-				inUnload.set(false);
+				boolean notInUnload = !inUnload.get();
+				if (notInUnload) {
+					inUnload.set(true);
+				}
+				boolean notWorldGen = !worldGenInProgress.get();
+				if (notWorldGen) {
+					worldGenInProgress.set(true);
+				}
+				chunk.isChunkLoaded = false;
+				safeSaveChunk(chunk);
+				safeSaveExtraChunkData(chunk);
+				if (notWorldGen) {
+					worldGenInProgress.set(false);
+				}
+				if (notInUnload) {
+					inUnload.set(false);
+				}
 			}
 		} finally {
 			if (unloadingChunks.remove(key) != chunk) {
@@ -276,7 +276,8 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	@Override
 	public boolean chunkExists(int x, int z) {
-		return chunks.containsItem(key(x, z));
+		long key = key(x, z);
+		return chunks.containsItem(key) || (worldGenInProgress.get() == Boolean.TRUE && (loadingChunks.containsItem(key) || (inUnload.get() == Boolean.TRUE && unloadingChunks.containsItem(key))));
 	}
 
 	@Override
@@ -302,32 +303,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		}
 	}
 
-	@Override
-	public final Chunk provideChunk(int x, int z) {
-		Chunk chunk = getChunkIfExists(x, z);
-
-		if (chunk != null) {
-			return chunk;
-		}
-
-		if (loadChunkIfNotFound || loadChunkOnProvideRequest || worldGenInProgress.get() == Boolean.TRUE) {
-			return getChunkAt(x, z, generateChunkIfNotFound || loadChunkOnProvideRequest, false, null);
-		}
-
-		return defaultEmptyChunk;
-	}
-
-	@Override
-	public final Chunk loadChunk(int x, int z) {
-		return getChunkAt(x, z, true, false, null);
-	}
-
-	@Override
-	@Declare
-	public final Chunk getChunkAt(final int x, final int z, final Runnable runnable) {
-		return getChunkAt(x, z, true, false, runnable);
-	}
-
+	@Deprecated
 	public void unloadChunkImmediately(int x, int z, boolean save) {
 		long key = key(x, z);
 		finalizeUnload(key);
@@ -346,20 +322,64 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		chunks.remove(key);
 	}
 
+	@Deprecated
 	public Chunk regenerateChunk(int x, int z) {
 		unloadChunkImmediately(x, z, false);
-		return getChunkAt(x, z, true, true, null);
+		return getChunkAtInternal(x, z, true, true);
 	}
 
 	@Override
-	@SuppressWarnings ("ConstantConditions")
+	public final Chunk provideChunk(int x, int z) {
+		Chunk chunk = getChunkIfExists(x, z);
+
+		if (chunk != null) {
+			return chunk;
+		}
+
+		if (loadChunkIfNotFound || loadChunkOnProvideRequest || worldGenInProgress.get() == Boolean.TRUE) {
+			return getChunkAtInternal(x, z, generateChunkIfNotFound || loadChunkOnProvideRequest, false);
+		}
+
+		return defaultEmptyChunk;
+	}
+
+	@Override
+	public final Chunk loadChunk(int x, int z) {
+		return getChunkAt(x, z, true, false, null);
+	}
+
+	@Override
+	@Declare
+	public final Chunk getChunkAt(final int x, final int z, final Runnable runnable) {
+		return getChunkAt(x, z, true, false, runnable);
+	}
+
+	@Override
 	@Declare
 	public final Chunk getChunkAt(final int x, final int z, boolean allowGenerate, final Runnable runnable) {
 		return getChunkAt(x, z, allowGenerate, false, runnable);
 	}
 
 	@Override
-	@SuppressWarnings ("ConstantConditions")
+	@Declare
+	public final Chunk getChunkIfExists(int x, int z) {
+		Chunk chunk = lastChunk;
+		if (chunk != null && chunk.xPosition == x && chunk.zPosition == z) {
+			return chunk;
+		}
+		long key = key(x, z);
+		chunk = (Chunk) chunks.getValueByKey(key);
+		if (chunk == null && worldGenInProgress.get() == Boolean.TRUE) {
+			chunk = (Chunk) loadingChunks.getValueByKey(key);
+		}
+		if (chunk == null) {
+			return null;
+		}
+		lastChunk = chunk;
+		return chunk;
+	}
+
+	@Override
 	@Declare
 	public final Chunk getChunkAt(final int x, final int z, boolean allowGenerate, boolean regenerate, final Runnable runnable) {
 		Chunk chunk = getChunkIfExists(x, z);
@@ -372,11 +392,16 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		}
 
 		if (runnable != null) {
-			chunkLoadThreadPool.execute(new ChunkLoadRunnable(x, z, runnable, this));
+			chunkLoadThreadPool.execute(new ChunkLoadRunnable(x, z, allowGenerate, regenerate, runnable, this));
 			return null;
 		}
+		return getChunkAtInternal(x, z, allowGenerate, regenerate);
+	}
 
+	@SuppressWarnings ("ConstantConditions")
+	private Chunk getChunkAtInternal(final int x, final int z, boolean allowGenerate, boolean regenerate) {
 		long key = key(x, z);
+		Chunk chunk;
 		if (worldGenInProgress.get() == Boolean.TRUE) {
 			chunk = (Chunk) loadingChunks.getValueByKey(key);
 			if (chunk != null) {
@@ -475,10 +500,10 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 						chunk.threadUnsafeChunkLoad();
 
+						chunk.populateChunk(this, this, x, z);
+
 						chunks.add(key, chunk);
 						loadedChunks.add(chunk);
-
-						chunk.populateChunk(this, this, x, z);
 					} finally {
 						worldGenInProgress.set(Boolean.FALSE);
 					}
@@ -489,8 +514,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				loadingChunks.remove(key);
 			}
 		}
-
-		// TODO: Do initial mob spawning here - doing it while locked is stupid and can cause deadlocks with some bukkit plugins
 
 		chunk.onChunkLoad();
 		fireBukkitLoadEvent(chunk, wasGenerated);
@@ -677,21 +700,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	public void recreateStructures(int x, int z) {
 	}
 
-	@Override
-	@Declare
-	public final Chunk getChunkIfExists(int x, int z) {
-		Chunk chunk = lastChunk;
-		if (chunk != null && chunk.xPosition == x && chunk.zPosition == z) {
-			return chunk;
-		}
-		chunk = (Chunk) chunks.getValueByKey(key(x, z));
-		if (chunk == null) {
-			return null;
-		}
-		lastChunk = chunk;
-		return chunk;
-	}
-
 	private static long key(int x, int z) {
 		return (((long) z) << 32) | (x & 0xffffffffL);
 	}
@@ -701,10 +709,14 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		private final int z;
 		private final Runnable runnable;
 		private final ChunkProviderServer provider;
+		private final boolean allowGenerate;
+		private final boolean regenerate;
 
-		public ChunkLoadRunnable(int x, int z, Runnable runnable, ChunkProviderServer provider) {
+		public ChunkLoadRunnable(int x, int z, boolean allowGenerate, boolean regenerate, Runnable runnable, ChunkProviderServer provider) {
 			this.x = x;
 			this.z = z;
+			this.allowGenerate = allowGenerate;
+			this.regenerate = regenerate;
 			this.runnable = runnable;
 			this.provider = provider;
 		}
@@ -712,7 +724,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		@Override
 		public void run() {
 			try {
-				Chunk ch = provider.getChunkAt(x, z, null);
+				Chunk ch = provider.getChunkAt(x, z, allowGenerate, regenerate, null);
 				if (ch == null) {
 					FMLLog.warning("Failed to load chunk at " + x + ',' + z + " asynchronously.");
 				} else {
