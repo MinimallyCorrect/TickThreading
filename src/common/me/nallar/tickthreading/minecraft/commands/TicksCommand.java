@@ -46,15 +46,22 @@ public class TicksCommand extends Command {
 		} catch (Exception e) {
 			usage(commandSender);
 		}
-		String type = arguments.isEmpty() ? "t" : arguments.get(0);
+		String type = arguments.isEmpty() ? "t" : arguments.remove(0);
 		if ("r".equals(type)) {
 			EntityPlayerMP entityPlayerMP = (EntityPlayerMP) commandSender;
 			WorldServer worldServer = (WorldServer) entityPlayerMP.worldObj;
-			PlayerInstance playerInstance = worldServer.getPlayerManager().getOrCreateChunkWatcher(entityPlayerMP.chunkCoordX, entityPlayerMP.chunkCoordZ, false);
-			sendChat(commandSender, "Refreshed chunks at " + playerInstance);
-			if (playerInstance != null) {
-				playerInstance.forceUpdate();
+			int side = arguments.isEmpty() ? 1 : Integer.valueOf(arguments.get(0));
+			int count = 0;
+			for (int x = entityPlayerMP.chunkCoordX - side, eX = x + side + side; x < eX; x++) {
+				for (int z = entityPlayerMP.chunkCoordZ - side, eZ = z + side + side; z < eZ; z++) {
+					PlayerInstance playerInstance = worldServer.getPlayerManager().getOrCreateChunkWatcher(x, z, false);
+					if (playerInstance != null) {
+						count++;
+						playerInstance.forceUpdate();
+					}
+				}
 			}
+			sendChat(commandSender, "Refreshed " + count + " chunks");
 		} else if ("e".equals(type)) {
 			TableFormatter tf = new TableFormatter(commandSender);
 			TickManager tickManager = TickThreading.instance.getManager(world);

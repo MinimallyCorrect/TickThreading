@@ -26,7 +26,7 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 	@Override
 	@Declare
 	public void forceUpdate() {
-		this.sendToAllPlayersWatchingChunk(new Packet51MapChunk(myManager.getWorldServer().getChunkFromChunkCoords(this.chunkLocation.chunkXPos, this.chunkLocation.chunkZPos), true, this.field_73260_f));
+		this.sendToAllPlayersWatchingChunk(new Packet51MapChunk(myManager.getWorldServer().getChunkFromChunkCoords(this.chunkLocation.chunkXPos, this.chunkLocation.chunkZPos), true, Integer.MAX_VALUE));
 	}
 
 	public void construct() {
