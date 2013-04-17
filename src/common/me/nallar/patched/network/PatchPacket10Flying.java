@@ -58,13 +58,18 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 	public static void sendChunks(EntityPlayerMP entityPlayerMP) {
 		NetServerHandler netServerHandler = entityPlayerMP.playerNetServerHandler;
 		if (!entityPlayerMP.loadedChunks.isEmpty()) {
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+			}
 			long st = 0;
 			boolean timings = Timings.enabled;
 			if (timings) {
 				st = System.nanoTime();
 			}
-			ArrayList chunks = new ArrayList();
-			ArrayList tileEntities = new ArrayList();
+			ArrayList<ChunkCoordIntPair> unpopulatedChunks = new ArrayList<ChunkCoordIntPair>();
+			ArrayList<Chunk> chunks = new ArrayList<Chunk>(5);
+			ArrayList<TileEntity> tileEntities = new ArrayList<TileEntity>();
 			synchronized (entityPlayerMP.loadedChunks) {
 				ChunkCoordIntPair chunkCoordIntPair;
 
@@ -72,13 +77,22 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 					int x = chunkCoordIntPair.chunkXPos;
 					int z = chunkCoordIntPair.chunkZPos;
 
-					Chunk chunk = entityPlayerMP.worldObj.getChunkFromChunkCoords(x, z);
-					synchronized (chunk) {
-						chunks.add(chunk);
+					Chunk chunk = entityPlayerMP.worldObj.getChunkIfExists(x, z);
+					if (chunk == null) {
+						Log.warning("Null chunk at " + chunkCoordIntPair + " when trying to send chunks to " + entityPlayerMP);
+						continue;
 					}
+					synchronized (chunk) {
+						if (!chunk.isTerrainPopulated) {
+							unpopulatedChunks.add(chunkCoordIntPair);
+							continue;
+						}
+					}
+					chunks.add(chunk);
 					tileEntities.addAll(chunk.chunkTileEntityMap.values());
 				}
 			}
+			entityPlayerMP.loadedChunks.addAll(unpopulatedChunks);
 
 			if (!chunks.isEmpty()) {
 				netServerHandler.sendPacketToPlayer(new Packet56MapChunks(chunks));

@@ -604,6 +604,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		}
 		synchronized (chunk) {
 			if (chunk.isTerrainPopulated) {
+				Log.warning("Attempted to populate chunk " + x + ',' + z + " which is already populated.");
 				return;
 			}
 			if (generator != null) {

@@ -1,9 +1,11 @@
 package me.nallar.patched.world.tracking;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import me.nallar.tickthreading.patcher.Declare;
+import net.minecraft.network.packet.Packet51MapChunk;
 import net.minecraft.server.management.PlayerInstance;
 import net.minecraft.server.management.PlayerManager;
 import net.minecraft.tileentity.TileEntity;
@@ -14,6 +16,17 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 
 	public PatchPlayerInstance(PlayerManager par1PlayerManager, int par2, int par3) {
 		super(par1PlayerManager, par2, par3);
+	}
+
+	@Override
+	public String toString() {
+		return chunkLocation + " watched by " + Arrays.toString(playersInChunk.toArray());
+	}
+
+	@Override
+	@Declare
+	public void forceUpdate() {
+		this.sendToAllPlayersWatchingChunk(new Packet51MapChunk(myManager.getWorldServer().getChunkFromChunkCoords(this.chunkLocation.chunkXPos, this.chunkLocation.chunkZPos), true, this.field_73260_f));
 	}
 
 	public void construct() {

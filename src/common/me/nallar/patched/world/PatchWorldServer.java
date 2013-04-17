@@ -478,7 +478,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 			int xPos = cX * 16;
 			int zPos = cZ * 16;
 			Chunk chunk = chunkProviderServer.getChunkIfExists(cX, cZ);
-			if (chunk == null) {
+			if (chunk == null || !chunk.isTerrainPopulated || chunk.unloading) {
 				continue;
 			}
 			this.moodSoundAndLightCheck(xPos, zPos, chunk);
