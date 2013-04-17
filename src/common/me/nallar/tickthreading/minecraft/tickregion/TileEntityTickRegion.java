@@ -80,7 +80,7 @@ public class TileEntityTickRegion extends TickRegion {
 					tileEntitiesIterator.remove();
 					manager.add(tileEntity, false);
 					if (hashCode != 0) {
-						Log.severe("Inconsistent state, a tile entity is in the wrong TickRegion"
+						Log.fine("A tile entity is in the wrong TickRegion - was it moved by a player, or did something bug out?"
 								+ "\n entity: " + Log.toString(tileEntity) + " at x,y,z:" + xPos + ',' + tileEntity.yCoord + ',' + zPos
 								+ "\n Has hashcode: " + manager.getHashCode(tileEntity)
 								+ "\n Region: " + toString());
