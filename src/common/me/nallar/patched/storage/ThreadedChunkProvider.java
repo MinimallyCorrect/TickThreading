@@ -102,6 +102,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		loadChunkIfNotFound = TickThreading.instance.loadChunkOnProvideRequest;
 		generateChunkIfNotFound = TickThreading.instance.generateChunkOnProvideRequest;
 		worldGenInProgress = world.worldGenInProgress = new BooleanThreadLocal();
+		world.inImmediateBlockUpdate = new BooleanThreadLocal();
 	}
 
 	@Override

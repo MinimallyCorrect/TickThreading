@@ -59,6 +59,8 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	private ArrayList<NextTickListEntry> runningTickListEntries;
 	@Declare
 	public ThreadLocal<Boolean> worldGenInProgress_;
+	@Declare
+	public ThreadLocal<Boolean> inImmediateBlockUpdate_;
 	private HashSet<ChunkCoordIntPair> chunkTickSet;
 
 	public PatchWorldServer(MinecraftServer par1MinecraftServer, ISaveHandler par2ISaveHandler, String par3Str, int par4, WorldSettings par5WorldSettings, Profiler par6Profiler) {
@@ -234,13 +236,18 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		boolean isForced = getPersistentChunks().containsKey(new ChunkCoordIntPair(nextTickListEntry.xCoord >> 4, nextTickListEntry.zCoord >> 4));
 		byte range = isForced ? (byte) 1 : 8;
 
-		if (blockID > 0 && timeOffset <= 5 && worldGenInProgress.get() == Boolean.TRUE) {
+		if (blockID > 0 && timeOffset <= 20 && worldGenInProgress.get() == Boolean.TRUE && inImmediateBlockUpdate.get() == Boolean.FALSE) {
 			if (Block.blocksList[blockID].func_82506_l()) {
 				if (this.checkChunksExist(nextTickListEntry.xCoord - range, nextTickListEntry.yCoord - range, nextTickListEntry.zCoord - range, nextTickListEntry.xCoord + range, nextTickListEntry.yCoord + range, nextTickListEntry.zCoord + range)) {
 					int realBlockID = this.getBlockIdWithoutLoad(nextTickListEntry.xCoord, nextTickListEntry.yCoord, nextTickListEntry.zCoord);
 
 					if (realBlockID > 0 && realBlockID == nextTickListEntry.blockID) {
-						Block.blocksList[realBlockID].updateTick(this, nextTickListEntry.xCoord, nextTickListEntry.yCoord, nextTickListEntry.zCoord, this.rand);
+						inImmediateBlockUpdate.set(true);
+						try {
+							Block.blocksList[realBlockID].updateTick(this, nextTickListEntry.xCoord, nextTickListEntry.yCoord, nextTickListEntry.zCoord, this.rand);
+						} finally {
+							inImmediateBlockUpdate.set(false);
+						}
 					}
 				}
 
