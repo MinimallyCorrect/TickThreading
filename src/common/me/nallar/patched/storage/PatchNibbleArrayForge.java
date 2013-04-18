@@ -1,7 +1,6 @@
 package me.nallar.patched.storage;
 
 import me.nallar.tickthreading.patcher.Declare;
-import me.nallar.unsafe.UnsafeUtil;
 import net.minecraft.world.chunk.NibbleArray;
 
 public abstract class PatchNibbleArrayForge extends NibbleArray {
