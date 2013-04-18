@@ -442,7 +442,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 					}
 					if (chunk == null) {
 						loadingChunks.add(key, defaultEmptyChunk);
-						if (!allowGenerate) {
+						if (!allowGenerate || generator == null) {
 							return defaultEmptyChunk;
 						}
 					} else {
@@ -471,29 +471,30 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 					if (chunk != null) {
 						return chunk;
 					}
+					worldGenInProgress.set(Boolean.TRUE);
 					try {
-						worldGenInProgress.set(Boolean.TRUE);
 						chunk = (Chunk) loadingChunks.getValueByKey(key);
-						if (chunk == null || chunk == defaultEmptyChunk) {
-							if (generator == null) {
-								chunk = defaultEmptyChunk;
-							} else {
-								try {
-									chunk = generator.provideChunk(x, z);
-									wasGenerated = true;
-								} catch (Throwable t) {
-									Log.severe("Failed to generate a chunk in " + Log.name(world) + " at chunk coords " + x + ',' + z);
-									throw UnsafeUtil.throwIgnoreChecked(t);
+						if (chunk == null) {
+							Log.severe("Failed to load chunk " + chunk + " at " + x + ',' + z + " as it is missing from the loading chunks map.");
+							return defaultEmptyChunk;
+						}
+						if (chunk == defaultEmptyChunk) {
+							try {
+								chunk = generator.provideChunk(x, z);
+								if (chunk == null) {
+									Log.severe("Null chunk was generated for " + x + ',' + z + " by " + generator);
+									return defaultEmptyChunk;
 								}
+								chunk.isTerrainPopulated = false;
+								wasGenerated = true;
+							} catch (Throwable t) {
+								Log.severe("Failed to generate a chunk in " + Log.name(world) + " at chunk coords " + x + ',' + z);
+								throw UnsafeUtil.throwIgnoreChecked(t);
 							}
 						} else {
 							if (generator != null) {
 								generator.recreateStructures(x, z);
 							}
-						}
-
-						if (chunk == null) {
-							throw new IllegalStateException("Null chunk was provided for " + x + ',' + z);
 						}
 
 						if (!inLoadingMap) {
@@ -601,6 +602,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		}
 		Chunk chunk = getChunkIfExists(x, z);
 		if (chunk == null) {
+			Log.warning("Attempted to populate chunk which is not loaded at " + x + ',' + z, new Exception());
 			return;
 		}
 		synchronized (chunk) {
@@ -613,6 +615,10 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				GameRegistry.generateWorld(x, z, world, generator, chunkProvider);
 				chunk.setChunkModified();
 			}
+			if (chunk.isTerrainPopulated) {
+				Log.warning("Chunk " + chunk + " had its isTerrainPopulated field set to true incorrectly by external code while populating");
+			}
+			chunk.refreshExtendedBlockStorage();
 			chunk.isTerrainPopulated = true;
 		}
 	}

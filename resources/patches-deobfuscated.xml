@@ -51,6 +51,7 @@
 			<volatile field="chunkData"/>
 			<addAll fromClass="me.nallar.patched.network.PatchPacket51MapChunk"/>
 			<threadLocal field="temp" type="byte[]" threadLocalField="javassist.is.faulty.ThreadLocals.mapChunkTempByteArray">getMapChunkData</threadLocal>
+			<synchronize field="$1">getMapChunkData</synchronize>
 		</class>
 		<class id="net.minecraft.network.packet.Packet56MapChunks">
 			<volatile field="chunkDataBuffer"/>
@@ -158,6 +159,7 @@
 			<final field="zPosition"/>
 			<final field="entityLists"/>
 			<final field="worldObj"/>
+			<volatile field="isTerrainPopulated"/>
 			<lock field="entityListWriteLock">onChunkLoad,onChunkUnload,removeEntityAtIndex,addEntity</lock>
 			<lock field="entityListReadLock">getEntitiesWithinAABBForEntity,getEntitiesOfTypeWithinAAAB</lock>
 			<replaceInitializer field="chunkTileEntityMap" class="java.util.concurrent.ConcurrentHashMap"/>

@@ -19,6 +19,8 @@ import net.minecraft.world.ChunkPosition;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.NibbleArray;
+import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.world.ChunkEvent;
@@ -142,7 +144,9 @@ public abstract class PatchChunk extends Chunk {
 			this.worldObj.unloadEntities(entityList);
 		}
 
-		MinecraftForge.EVENT_BUS.post(new ChunkEvent.Unload(this));
+		synchronized (ChunkEvent.class) {
+			MinecraftForge.EVENT_BUS.post(new ChunkEvent.Unload(this));
+		}
 	}
 
 	@Override
@@ -165,7 +169,9 @@ public abstract class PatchChunk extends Chunk {
 			worldObj.addLoadedEntities(entityList);
 		}
 
-		MinecraftForge.EVENT_BUS.post(new ChunkEvent.Load(this));
+		synchronized (ChunkEvent.class) {
+			MinecraftForge.EVENT_BUS.post(new ChunkEvent.Load(this));
+		}
 	}
 
 	@SuppressWarnings ("FieldRepeatedlyAccessedInMethod") // Patcher makes x/zPosition and worldObj final
@@ -205,5 +211,20 @@ public abstract class PatchChunk extends Chunk {
 		par1Entity.chunkCoordY = var4;
 		par1Entity.chunkCoordZ = this.zPosition;
 		this.entityLists[var4].add(par1Entity);
+	}
+
+	@Override
+	@Declare
+	public void refreshExtendedBlockStorage() {
+		for (ExtendedBlockStorage extendedBlockStorage : this.storageArrays) {
+			byte[] blockLSBArray = extendedBlockStorage.getBlockLSBArray();
+			if (blockLSBArray != null) {
+				extendedBlockStorage.setBlockLSBArray(blockLSBArray.clone());
+			}
+			NibbleArray blockMSBArray = extendedBlockStorage.getBlockMSBArray();
+			if (blockMSBArray != null) {
+				extendedBlockStorage.setBlockMSBArray(blockMSBArray.clone_());
+			}
+		}
 	}
 }
