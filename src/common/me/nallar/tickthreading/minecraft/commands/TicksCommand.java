@@ -30,22 +30,22 @@ public class TicksCommand extends Command {
 		sendChat(commandSender, "Usage: /ticks [e/b/?] [dimensionid]");
 	}
 
+	private static World getWorld(ICommandSender commandSender, List<String> arguments) {
+		World world = DimensionManager.getWorld(0);
+		if (!arguments.isEmpty()) {
+			try {
+				world = DimensionManager.getWorld(Integer.valueOf(arguments.get(arguments.size() - 1)));
+				arguments.remove(arguments.size() - 1);
+			} catch (Exception ignored) {
+			}
+		} else if (commandSender instanceof Entity) {
+			world = ((Entity) commandSender).worldObj;
+		}
+		return world;
+	}
+
 	@Override
 	public void processCommand(ICommandSender commandSender, List<String> arguments) {
-		World world = DimensionManager.getWorld(0);
-		try {
-			if (!arguments.isEmpty()) {
-				try {
-					world = DimensionManager.getWorld(Integer.valueOf(arguments.get(arguments.size() - 1)));
-					arguments.remove(arguments.size() - 1);
-				} catch (Exception ignored) {
-				}
-			} else if (commandSender instanceof Entity) {
-				world = ((Entity) commandSender).worldObj;
-			}
-		} catch (Exception e) {
-			usage(commandSender);
-		}
 		String type = arguments.isEmpty() ? "t" : arguments.remove(0);
 		if ("r".equals(type)) {
 			EntityPlayerMP entityPlayerMP = (EntityPlayerMP) commandSender;
@@ -62,7 +62,15 @@ public class TicksCommand extends Command {
 				}
 			}
 			sendChat(commandSender, "Refreshed " + count + " chunks");
-		} else if ("e".equals(type)) {
+		}
+		World world;
+		try {
+			world = getWorld(commandSender, arguments);
+		} catch (Exception e) {
+			usage(commandSender);
+			return;
+		}
+		if ("e".equals(type)) {
 			TableFormatter tf = new TableFormatter(commandSender);
 			TickManager tickManager = TickThreading.instance.getManager(world);
 			tickManager.writeEntityStats(tf);

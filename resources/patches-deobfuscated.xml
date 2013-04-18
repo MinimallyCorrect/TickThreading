@@ -143,9 +143,6 @@
 		<class id="net.minecraft.world.chunk.NibbleArray" env="forge">
 			<addAll fromClass="me.nallar.patched.storage.PatchNibbleArrayForge"/>
 		</class>
-		<class id="net.minecraft.world.chunk.NibbleArray">
-			<addAll fromClass="me.nallar.patched.storage.PatchNibbleArray"/>
-		</class>
 		<class id="net.minecraft.world.chunk.storage.RegionFileCache">
 			<replaceMethod code="throw new UnsupportedOperationException();">createOrLoadRegionFile</replaceMethod>
 		</class>

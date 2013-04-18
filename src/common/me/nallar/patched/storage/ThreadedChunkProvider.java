@@ -503,8 +503,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 						chunk.threadUnsafeChunkLoad();
 
-						chunk.populateChunk(this, this, x, z);
-
 						chunks.add(key, chunk);
 						loadedChunks.add(chunk);
 					} finally {
@@ -518,6 +516,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			}
 		}
 
+		chunk.populateChunk(this, this, x, z);
 		chunk.onChunkLoad();
 		fireBukkitLoadEvent(chunk, wasGenerated);
 		chunkLoadLocks.remove(key);
@@ -618,7 +617,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			if (chunk.isTerrainPopulated) {
 				Log.warning("Chunk " + chunk + " had its isTerrainPopulated field set to true incorrectly by external code while populating");
 			}
-			chunk.refreshExtendedBlockStorage();
 			chunk.isTerrainPopulated = true;
 		}
 	}
