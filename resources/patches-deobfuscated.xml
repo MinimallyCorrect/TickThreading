@@ -141,6 +141,9 @@
 			<insertAfter field="chunksToUnload" code="$field = new org.bukkit.craftbukkit.v1_4_R1.util.LongHashSet();"/>
 		</class>
 		<class id="net.minecraft.world.chunk.NibbleArray" env="forge">
+			<addAll fromClass="me.nallar.patched.storage.PatchNibbleArrayForge"/>
+		</class>
+		<class id="net.minecraft.world.chunk.NibbleArray">
 			<addAll fromClass="me.nallar.patched.storage.PatchNibbleArray"/>
 		</class>
 		<class id="net.minecraft.world.chunk.storage.RegionFileCache">

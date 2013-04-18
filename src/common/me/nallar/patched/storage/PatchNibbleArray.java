@@ -11,12 +11,6 @@ public abstract class PatchNibbleArray extends NibbleArray {
 
 	@Override
 	@Declare
-	public byte[] getValueArray() {
-		return this.data;
-	}
-
-	@Override
-	@Declare
 	public NibbleArray clone_() {
 		NibbleArray cloned;
 		try {
