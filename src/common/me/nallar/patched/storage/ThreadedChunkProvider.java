@@ -516,7 +516,9 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			}
 		}
 
-		chunk.populateChunk(this, this, x, z);
+		synchronized (generateLock) {
+			chunk.populateChunk(this, this, x, z);
+		}
 		chunk.onChunkLoad();
 		fireBukkitLoadEvent(chunk, wasGenerated);
 		chunkLoadLocks.remove(key);
