@@ -58,7 +58,7 @@ public class TickThreading {
 	public boolean lockRegionBorders = true;
 	public boolean allowWorldUnloading = true;
 	public boolean requireOpForDumpCommand = true;
-	public boolean loadChunkOnProvideRequest = true;
+	public boolean loadChunkOnProvideRequest = false;
 	public boolean generateChunkOnProvideRequest = false;
 	public boolean enableFastMobSpawning = false;
 	public int saveInterval = 240;
