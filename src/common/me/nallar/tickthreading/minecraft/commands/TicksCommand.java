@@ -50,7 +50,7 @@ public class TicksCommand extends Command {
 		if ("r".equals(type)) {
 			EntityPlayerMP entityPlayerMP = (EntityPlayerMP) commandSender;
 			WorldServer worldServer = (WorldServer) entityPlayerMP.worldObj;
-			int side = arguments.isEmpty() ? 1 : Integer.valueOf(arguments.get(0));
+			int side = arguments.isEmpty() ? 2 : Integer.valueOf(arguments.get(0));
 			int count = 0;
 			for (int x = entityPlayerMP.chunkCoordX - side, eX = x + side + side; x < eX; x++) {
 				for (int z = entityPlayerMP.chunkCoordZ - side, eZ = z + side + side; z < eZ; z++) {
