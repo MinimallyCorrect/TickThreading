@@ -223,7 +223,7 @@ public abstract class PatchChunk extends Chunk {
 			}
 			NibbleArray blockMSBArray = extendedBlockStorage.getBlockMSBArray();
 			if (blockMSBArray != null) {
-				extendedBlockStorage.setBlockMSBArray(blockMSBArray.clone_());
+				extendedBlockStorage.setBlockMSBArray((NibbleArray) blockMSBArray.copy());
 			}
 		}
 	}

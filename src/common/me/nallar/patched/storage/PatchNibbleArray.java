@@ -1,7 +1,6 @@
 package me.nallar.patched.storage;
 
 import me.nallar.tickthreading.patcher.Declare;
-import me.nallar.unsafe.UnsafeUtil;
 import net.minecraft.world.chunk.NibbleArray;
 
 public abstract class PatchNibbleArray extends NibbleArray {
@@ -11,16 +10,8 @@ public abstract class PatchNibbleArray extends NibbleArray {
 
 	@Override
 	@Declare
-	public NibbleArray clone_() {
-		NibbleArray cloned;
-		try {
-			cloned = (NibbleArray) super.clone();
-		} catch (CloneNotSupportedException e) {
-			throw UnsafeUtil.throwIgnoreChecked(e);
-		}
-		if (data != null) {
-			cloned.data = data.clone();
-		}
-		return cloned;
+	public Object copy() {
+		byte[] newData = data == null ? null : data.clone();
+		return new NibbleArray(newData, this.depthBits);
 	}
 }
