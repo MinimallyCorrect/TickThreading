@@ -217,6 +217,9 @@ public abstract class PatchChunk extends Chunk {
 	@Declare
 	public void refreshExtendedBlockStorage() {
 		for (ExtendedBlockStorage extendedBlockStorage : this.storageArrays) {
+			if (extendedBlockStorage == null) {
+				continue;
+			}
 			byte[] blockLSBArray = extendedBlockStorage.getBlockLSBArray();
 			if (blockLSBArray != null) {
 				extendedBlockStorage.setBlockLSBArray(blockLSBArray.clone());
