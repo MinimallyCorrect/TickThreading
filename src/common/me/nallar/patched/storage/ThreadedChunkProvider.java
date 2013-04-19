@@ -255,6 +255,9 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				if (notInUnload) {
 					inUnload.set(false);
 				}
+				if (chunks.containsItem(key)) {
+					Log.severe("Failed to unload chunk " + key + ", it was reloaded during unloading");
+				}
 			}
 		} finally {
 			if (unloadingChunks.remove(key) != chunk) {
