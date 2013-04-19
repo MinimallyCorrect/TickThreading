@@ -729,9 +729,9 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		@Override
 		public void run() {
 			try {
-				Chunk ch = provider.getChunkAt(x, z, allowGenerate, regenerate, null);
-				if (ch == null) {
-					FMLLog.warning("Failed to load chunk at " + x + ',' + z + " asynchronously.");
+				Chunk chunk = provider.getChunkAt(x, z, allowGenerate, regenerate, null);
+				if (chunk == null || (allowGenerate && chunk instanceof EmptyChunk)) {
+					FMLLog.warning("Failed to load chunk at " + x + ',' + z + " asynchronously. Provided " + chunk);
 				} else {
 					runnable.run();
 				}
