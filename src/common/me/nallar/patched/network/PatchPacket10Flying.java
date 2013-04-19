@@ -77,7 +77,7 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 					int x = chunkCoordIntPair.chunkXPos;
 					int z = chunkCoordIntPair.chunkZPos;
 
-					Chunk chunk = entityPlayerMP.worldObj.getChunkIfExists(x, z);
+					Chunk chunk = entityPlayerMP.worldObj.getChunkProvider().loadChunk(x, z);
 					if (chunk == null) {
 						Log.warning("Null chunk at " + chunkCoordIntPair + " when trying to send chunks to " + entityPlayerMP);
 						continue;

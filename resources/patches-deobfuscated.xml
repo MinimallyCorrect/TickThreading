@@ -133,8 +133,8 @@
 			<replaceInitializer field="instance" code="null;"/>
 			<replaceMethod code="throw new UnsupportedOperationException();">tick</replaceMethod>
 			<disable>adjustPoolSize</disable>
-			<replaceMethod code="((^class:ChunkProviderServer^)$1.^method:World/getChunkProvider^()).getChunkAt($2, $3, null);">waitForChunkLoad</replaceMethod>
-			<replaceMethod code="$3.getChunkAt($4, $5, $6);">queueChunkLoad</replaceMethod>
+			<replaceMethod code="((^class:ChunkProviderServer^)$1.^method:World/getChunkProvider^()).getChunkAt($2, $3, true, false, null);">waitForChunkLoad</replaceMethod>
+			<replaceMethod code="$3.getChunkAt($4, $5, true, false, $6);">queueChunkLoad</replaceMethod>
 		</class>
 		<class id="net.minecraft.world.gen.ChunkProviderServer" env="mcpc">
 			<changeFieldType field="chunksToUnload" type="org.bukkit.craftbukkit.v1_4_R1.util.LongHashSet" remove="true"/>
