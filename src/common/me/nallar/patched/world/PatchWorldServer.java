@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ThreadLocalRandom;
 
 import com.google.common.collect.ImmutableSetMultimap;
 
@@ -22,6 +23,7 @@ import me.nallar.tickthreading.patcher.Declare;
 import me.nallar.tickthreading.util.BlockInfo;
 import me.nallar.tickthreading.util.contextaccess.ContextAccess;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockEventData;
 import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.profiler.Profiler;
@@ -89,6 +91,20 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 			//Spigot support
 			chunkTickSet = new HashSet<ChunkCoordIntPair>();
 		}
+	}
+
+	@Override
+	protected boolean onBlockEventReceived(BlockEventData blockEvent) {
+		int blockId = this.getBlockIdWithoutLoad(blockEvent.getX(), blockEvent.getY(), blockEvent.getZ());
+
+		if (blockId != -1 && blockId == blockEvent.getBlockID()) {
+			Block block = Block.blocksList[blockId];
+			if (block != null) {
+				block.onBlockEventReceived(this, blockEvent.getX(), blockEvent.getY(), blockEvent.getZ(), blockEvent.getEventID(), blockEvent.getEventParameter());
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
