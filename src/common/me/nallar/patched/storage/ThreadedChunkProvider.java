@@ -341,7 +341,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			return chunk;
 		}
 
-		if (loadChunkIfNotFound || loadChunkOnProvideRequest || worldGenInProgress.get() == Boolean.TRUE || world.getPersistentChunks().containsKey(new ChunkCoordIntPair(x, z))) {
+		if (loadChunkIfNotFound || loadChunkOnProvideRequest || worldGenInProgress.get() == Boolean.TRUE) {
 			return getChunkAtInternal(x, z, generateChunkIfNotFound || loadChunkOnProvideRequest, false);
 		}
 
