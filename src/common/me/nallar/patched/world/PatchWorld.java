@@ -131,6 +131,16 @@ public abstract class PatchWorld extends World {
 	}
 
 	@Override
+	@Declare
+	public int getBlockIdForceLoad(int x, int y, int z) {
+		if (y >= 256) {
+			return 0;
+		} else {
+			return chunkProvider.loadChunk(x >> 4, z >> 4).getBlockID(x & 15, y, z & 15);
+		}
+	}
+
+	@Override
 	public EntityPlayer getClosestPlayer(double x, double y, double z, double maxRange) {
 		double closestRange = Double.MAX_VALUE;
 		EntityPlayer target = null;

@@ -398,6 +398,8 @@
 		</class>
 		<class id="net.minecraftforge.common.ForgeChunkManager">
 			<addAll fromClass="me.nallar.patched.forge.PatchForgeChunkManager"/>
+			<insertAfter code="$1.world.^method:World/getChunkProvider^().^method:IChunkProvider/loadChunk^($2.^field:ChunkCoordIntPair/chunkXPos^, $2.^field:ChunkCoordIntPair/chunkZPos^);">forceChunk</insertAfter>
+			<synchronize>forceChunk,unforceChunk</synchronize>
 		</class>
 	</forge>
 	<forgeModLoader>
@@ -459,6 +461,12 @@
 			<synchronize>a(Ljava/lang/String;)V,b()V</synchronize>
 		</class>
 	</liteLoader>
+	<buildCraftFactory>
+		<class id="buildcraft.BuildCraftFactory$QuarryChunkloadCallback">
+			<replaceMethodCall code="$_ = $0.getTEForceLoad($$);" method="^class:World^.^method:World/getBlockTileEntity^">ticketsLoaded(Ljava.util.List;L^class:World^;)V</replaceMethodCall>
+			<replaceMethodCall code="$_ = $0.getBlockIdForceLoad($$);" method="^class:World^.^method:World/getBlockId^">ticketsLoaded(Ljava.util.List;L^class:World^;I)Ljava.util.List;</replaceMethodCall>
+		</class>
+	</buildCraftFactory>
 	<buildCraftTransport>
 		<class id="buildcraft.transport.TileGenericPipe">
 			<newField field="staticLock" class="java.lang.Object" static=""/>
