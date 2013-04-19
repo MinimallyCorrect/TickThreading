@@ -54,7 +54,7 @@ public abstract class PatchChunk extends Chunk {
 
 	@Override
 	public String toString() {
-		return "chunk at " + xPosition + ',' + zPosition;
+		return "chunk at " + xPosition + ',' + zPosition + " which is " + (unloading ? (alreadySavedAfterUnload ? "unloaded" : "unloading") : "loaded");
 	}
 
 	@SuppressWarnings ("FieldRepeatedlyAccessedInMethod") // Patcher makes entityLists final
@@ -133,6 +133,7 @@ public abstract class PatchChunk extends Chunk {
 	@SuppressWarnings ("FieldRepeatedlyAccessedInMethod") // Patcher makes worldObj final
 	@Override
 	public void onChunkUnload() {
+		isChunkLoaded = false;
 		Set<TileEntity> removalSet = worldObj.tileEntityRemovalSet;
 		for (TileEntity var2 : (Iterable<TileEntity>) this.chunkTileEntityMap.values()) {
 			removalSet.add(var2);

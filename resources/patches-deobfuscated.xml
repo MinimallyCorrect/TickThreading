@@ -398,7 +398,8 @@
 		</class>
 		<class id="net.minecraftforge.common.ForgeChunkManager">
 			<addAll fromClass="me.nallar.patched.forge.PatchForgeChunkManager"/>
-			<insertAfter code="$1.world.^method:World/getChunkProvider^().^method:IChunkProvider/loadChunk^($2.^field:ChunkCoordIntPair/chunkXPos^, $2.^field:ChunkCoordIntPair/chunkZPos^);">forceChunk</insertAfter>
+			<insertAfter code="$1.world.^method:World/getChunkProvider^().^method:IChunkProvider/loadChunk^($2.^field:ChunkCoordIntPair/chunkXPos^, $2.^field:ChunkCoordIntPair/chunkZPos^);">forceChunk
+			</insertAfter>
 			<synchronize>forceChunk,unforceChunk</synchronize>
 		</class>
 	</forge>
@@ -729,9 +730,11 @@
 	<xyCraft>
 		<class id="soaryn.xycraft.machines.block.XyCraftWorldExtension">
 			<replaceInitializer field="multiBlocks" class="me.nallar.tickthreading.collections.CHashMap"/>
-			<replaceInitializer field="deferredLoadSet" class="me.nallar.tickthreading.collections.HashSetReplaceIterateTempListClear"/>
+			<replaceInitializer field="deferredLoadSet" class="me.nallar.tickthreading.collections.HashSetReplaceIterateTempListNoClear"/>
 			<synchronize>defer,remMultiBlock</synchronize>
-			<replaceFieldUsage field="useTemp" writeCode="$1 = false;"/>
+			<replaceFieldUsage field="useTemp" writeCode="$1 = false;">updateDeffered</replaceFieldUsage>
+			<insertAfter code="deferredLoadSet.clear();">updateDeffered</insertAfter>
+			<replaceMethod code="synchronized (tempList) { return this.nextMultiBlockID++; }">getNextMultiBlockID</replaceMethod>
 		</class>
 	</xyCraft>
 	<denLib>

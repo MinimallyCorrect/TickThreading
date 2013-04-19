@@ -128,12 +128,16 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	public void tick() {
 		int ticks = world.tickCount;
 		// Handle unload requests
-		if (ticks % 3 == 0 && !unloadStage0.isEmpty()) {
+		if (!unloadStage0.isEmpty()) {
 			ImmutableSetMultimap<ChunkCoordIntPair, ForgeChunkManager.Ticket> persistentChunks = world.getPersistentChunks();
 			PlayerManager playerManager = world.getPlayerManager();
 			ChunkCoordIntPair chunkCoordIntPair = new ChunkCoordIntPair(0, 0);
 			NonBlockingHashMapLong.IteratorLong i$ = unloadStage0.iteratorLong();
+			int done = 0;
 			while (i$.hasNext()) {
+				if (done++ > 100) {
+					break;
+				}
 				long key = i$.nextLong();
 				i$.remove();
 				if (key == 0) {
@@ -154,11 +158,11 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				if (lastChunk == chunk) {
 					lastChunk = null;
 				}
+				chunk.unloading = true;
 				chunk.onChunkUnload();
 				chunk.pendingBlockUpdates = world.getPendingBlockUpdates(chunk, false);
 				loadedChunks.remove(chunk);
 				chunks.remove(key);
-				chunk.unloading = true;
 				synchronized (unloadingChunks) {
 					unloadingChunks.add(key, chunk);
 					unloadStage1.add(new QueuedUnload(key, ticks));
@@ -170,7 +174,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			}
 		}
 
-		//handleUnloadQueue(ticks, true);
 		handleUnloadQueue(ticks - 3);
 
 		if (this.unloadTicks++ > 1200 && world.provider.dimensionId != 0 && TickThreading.instance.allowWorldUnloading
@@ -246,7 +249,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				if (notWorldGen) {
 					worldGenInProgress.set(true);
 				}
-				chunk.isChunkLoaded = false;
 				safeSaveChunk(chunk);
 				safeSaveExtraChunkData(chunk);
 				if (notWorldGen) {

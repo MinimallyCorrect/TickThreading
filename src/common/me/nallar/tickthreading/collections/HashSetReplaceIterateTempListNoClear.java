@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-public class HashSetReplaceIterateTempListClear<T> extends HashSet<T> {
+public class HashSetReplaceIterateTempListNoClear<T> extends HashSet<T> {
 	private volatile boolean defer = false;
 	private final LinkedList<T> deferred = new LinkedList<T>();
 	private static final Iterator emptyIterator = Collections.emptyList().iterator();
@@ -41,7 +41,6 @@ public class HashSetReplaceIterateTempListClear<T> extends HashSet<T> {
 			noDefer.set(false);
 			return;
 		}
-		super.clear();
 		defer = false;
 		addAll(deferred);
 		deferred.clear();
