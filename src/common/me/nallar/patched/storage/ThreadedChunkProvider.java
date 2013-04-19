@@ -376,6 +376,9 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		chunk = (Chunk) chunks.getValueByKey(key);
 		if (chunk == null && worldGenInProgress.get() == Boolean.TRUE) {
 			chunk = (Chunk) loadingChunks.getValueByKey(key);
+			if (chunk == null && inUnload.get() == Boolean.TRUE) {
+				chunk = (Chunk) unloadingChunks.getValueByKey(key);
+			}
 		}
 		if (chunk == null) {
 			return null;
@@ -400,6 +403,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			chunkLoadThreadPool.execute(new ChunkLoadRunnable(x, z, allowGenerate, regenerate, runnable, this));
 			return null;
 		}
+
 		return getChunkAtInternal(x, z, allowGenerate, regenerate);
 	}
 
@@ -407,22 +411,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	private Chunk getChunkAtInternal(final int x, final int z, boolean allowGenerate, boolean regenerate) {
 		long key = key(x, z);
 		Chunk chunk;
-		if (worldGenInProgress.get() == Boolean.TRUE) {
-			chunk = (Chunk) loadingChunks.getValueByKey(key);
-			if (chunk != null) {
-				return chunk;
-			}
-			if (inUnload.get() == Boolean.TRUE) {
-				chunk = (Chunk) unloadingChunks.getValueByKey(key);
-				if (chunk == null) {
-					Log.severe("Failed to get currently unloading chunk at " + x + ',' + z + " from unloading chunks map.", new IllegalStateException());
-					return null;
-				} else {
-					return chunk;
-				}
-			}
-			return defaultEmptyChunk;
-		}
 
 		final AtomicInteger lock = getLock(key);
 		boolean wasGenerated = false;
