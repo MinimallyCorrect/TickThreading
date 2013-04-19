@@ -409,6 +409,10 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	@SuppressWarnings ("ConstantConditions")
 	private Chunk getChunkAtInternal(final int x, final int z, boolean allowGenerate, boolean regenerate) {
+		if (worldGenInProgress.get() == Boolean.TRUE || Thread.holdsLock(generateLock)) {
+			return defaultEmptyChunk;
+		}
+
 		long key = key(x, z);
 		Chunk chunk;
 
@@ -500,6 +504,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 						worldGenInProgress.set(Boolean.FALSE);
 					}
 				}
+				chunk.populateChunk(this, this, x, z);
 			}
 		} finally {
 			if (lock.decrementAndGet() == 0) {
@@ -507,9 +512,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			}
 		}
 
-		synchronized (generateLock) {
-			chunk.populateChunk(this, this, x, z);
-		}
 		chunk.onChunkLoad();
 		fireBukkitLoadEvent(chunk, wasGenerated);
 		chunkLoadLocks.remove(key);
