@@ -61,8 +61,6 @@ public class TickThreading {
 	public boolean lockRegionBorders = true;
 	public boolean allowWorldUnloading = true;
 	public boolean requireOpForDumpCommand = true;
-	public boolean loadChunkOnProvideRequest = false;
-	public boolean generateChunkOnProvideRequest = false;
 	public boolean enableFastMobSpawning = false;
 	public int saveInterval = 240;
 	public int deadLockTime = 45;
@@ -131,8 +129,6 @@ public class TickThreading {
 		antiCheatNotify = config.get(GENERAL, "antiCheatNotify", antiCheatNotify, "Whether to notify admins if TT anti-cheat detects cheating").getBoolean(antiCheatNotify);
 		cleanWorlds = config.get(GENERAL, "cleanWorlds", cleanWorlds, "Whether to clean worlds on unload - this should fix some memory leaks due to mods holding on to world objects").getBoolean(cleanWorlds);
 		allowWorldUnloading = config.get(GENERAL, "allowWorldUnloading", allowWorldUnloading, "Whether worlds should be allowed to unload.").getBoolean(allowWorldUnloading);
-		loadChunkOnProvideRequest = config.get(GENERAL, "loadChunkOnProvideRequest", loadChunkOnProvideRequest, "Whether to load chunks in ChunkProviderServer.provideChunk").getBoolean(loadChunkOnProvideRequest);
-		generateChunkOnProvideRequest = config.get(GENERAL, "generateChunkOnProvideRequest", generateChunkOnProvideRequest, "Whether to generate chunks in ChunkProviderServer.provideChunk").getBoolean(generateChunkOnProvideRequest);
 		lockRegionBorders = config.get(GENERAL, "lockRegionBorders", lockRegionBorders, "Whether to prevent blocks next to each other on region borders from ticking concurrently. false = faster but experimental").getBoolean(lockRegionBorders);
 		config.save();
 		int[] disabledDimensions = config.get(GENERAL, "disableFastMobSpawningDimensions", new int[]{-1}, "List of dimensions not to enable fast spawning in.").getIntList();

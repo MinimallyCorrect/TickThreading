@@ -77,8 +77,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	private final WorldServer world;
 	private final Chunk defaultEmptyChunk;
 	private final ThreadLocal<Boolean> inUnload = new BooleanThreadLocal();
-	private final boolean loadChunkIfNotFound;
-	private final boolean generateChunkIfNotFound;
 	private final ThreadLocal<Boolean> worldGenInProgress;
 	private boolean loadedPersistentChunks = false;
 	private int unloadTicks = 0;
@@ -99,8 +97,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		currentChunkLoader = this.loader = loader;
 		loadedChunks = Collections.synchronizedList(new ArrayList<Chunk>());
 		defaultEmptyChunk = new EmptyChunk(world, 0, 0);
-		loadChunkIfNotFound = TickThreading.instance.loadChunkOnProvideRequest;
-		generateChunkIfNotFound = TickThreading.instance.generateChunkOnProvideRequest;
 		worldGenInProgress = world.worldGenInProgress = new BooleanThreadLocal();
 		world.inImmediateBlockUpdate = new BooleanThreadLocal();
 	}
@@ -186,7 +182,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			ChunkGarbageCollector.garbageCollect(world);
 		}
 
-		if (!loadChunkIfNotFound && !loadedPersistentChunks && unloadTicks >= 5) {
+		if (!loadedPersistentChunks && unloadTicks >= 5) {
 			loadedPersistentChunks = true;
 			int loaded = 0;
 			int possible = world.getPersistentChunks().size();
@@ -343,8 +339,8 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			return chunk;
 		}
 
-		if (loadChunkIfNotFound || loadChunkOnProvideRequest || worldGenInProgress.get() == Boolean.TRUE) {
-			return getChunkAtInternal(x, z, generateChunkIfNotFound || loadChunkOnProvideRequest, false);
+		if (loadChunkOnProvideRequest) {
+			return getChunkAtInternal(x, z, true, false);
 		}
 
 		return defaultEmptyChunk;
@@ -611,6 +607,8 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				GameRegistry.generateWorld(x, z, world, generator, chunkProvider);
 				chunk.setChunkModified();
 			}
+			// It may have been modified in generator.populate/GameRegistry.generateWorld.
+			//noinspection ConstantConditions
 			if (chunk.isTerrainPopulated) {
 				Log.warning("Chunk " + chunk + " had its isTerrainPopulated field set to true incorrectly by external code while populating");
 			}
