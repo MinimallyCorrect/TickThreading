@@ -276,83 +276,90 @@ public abstract class PatchWorld extends World {
 	}
 
 	@Override
-	public void updateEntityWithOptionalForce(Entity par1Entity, boolean par2) {
-		int x = MathHelper.floor_double(par1Entity.posX);
-		int z = MathHelper.floor_double(par1Entity.posZ);
-
-		Boolean isForced = par1Entity.isForced;
-		if (isForced == null || forcedUpdateCount++ % 7 == 0) {
-			par1Entity.isForced = isForced = getPersistentChunks().containsKey(new ChunkCoordIntPair(x >> 4, z >> 4));
+	public void updateEntityWithOptionalForce(Entity entity, boolean notForced) {
+		int x = MathHelper.floor_double(entity.posX);
+		int z = MathHelper.floor_double(entity.posZ);
+		boolean periodicUpdate = forcedUpdateCount++ % 19 == 0;
+		Boolean isForced_ = entity.isForced;
+		if (isForced_ == null || periodicUpdate) {
+			entity.isForced = isForced_ = getPersistentChunks().containsKey(new ChunkCoordIntPair(x >> 4, z >> 4));
 		}
-		byte range = isForced ? (byte) 0 : 32;
-		boolean canUpdate = !par2 || this.checkChunksExist(x - range, 0, z - range, x + range, 0, z + range);
+		boolean isForced = isForced_;
+		Boolean canUpdate_ = entity.canUpdate;
+		if (canUpdate_ == null || periodicUpdate) {
+			byte range = isForced ? (byte) 0 : 48;
+			entity.canUpdate = canUpdate_ = !notForced || this.checkChunksExist(x - range, 0, z - range, x + range, 0, z + range);
+		} else if (canUpdate_) {
+			entity.canUpdate = canUpdate_ = !notForced || chunkExists(x >> 4, z >> 4);
+		}
+		boolean canUpdate = canUpdate_;
 		if (canUpdate) {
-			par1Entity.lastTickPosX = par1Entity.posX;
-			par1Entity.lastTickPosY = par1Entity.posY;
-			par1Entity.lastTickPosZ = par1Entity.posZ;
-			par1Entity.prevRotationYaw = par1Entity.rotationYaw;
-			par1Entity.prevRotationPitch = par1Entity.rotationPitch;
+			entity.lastTickPosX = entity.posX;
+			entity.lastTickPosY = entity.posY;
+			entity.lastTickPosZ = entity.posZ;
+			entity.prevRotationYaw = entity.rotationYaw;
+			entity.prevRotationPitch = entity.rotationPitch;
 
-			if (par2 && par1Entity.addedToChunk) {
-				if (par1Entity.ridingEntity != null) {
-					par1Entity.updateRidden();
+			if (notForced && entity.addedToChunk) {
+				if (entity.ridingEntity != null) {
+					entity.updateRidden();
 				} else {
-					++par1Entity.ticksExisted;
-					par1Entity.onUpdate();
+					++entity.ticksExisted;
+					entity.onUpdate();
 				}
 			}
 
 			this.theProfiler.startSection("chunkCheck");
 
-			if (Double.isNaN(par1Entity.posX) || Double.isInfinite(par1Entity.posX)) {
-				par1Entity.posX = par1Entity.lastTickPosX;
+			if (Double.isNaN(entity.posX) || Double.isInfinite(entity.posX)) {
+				entity.posX = entity.lastTickPosX;
 			}
 
-			if (Double.isNaN(par1Entity.posY) || Double.isInfinite(par1Entity.posY)) {
-				par1Entity.posY = par1Entity.lastTickPosY;
+			if (Double.isNaN(entity.posY) || Double.isInfinite(entity.posY)) {
+				entity.posY = entity.lastTickPosY;
 			}
 
-			if (Double.isNaN(par1Entity.posZ) || Double.isInfinite(par1Entity.posZ)) {
-				par1Entity.posZ = par1Entity.lastTickPosZ;
+			if (Double.isNaN(entity.posZ) || Double.isInfinite(entity.posZ)) {
+				entity.posZ = entity.lastTickPosZ;
 			}
 
-			if (Double.isNaN((double) par1Entity.rotationPitch) || Double.isInfinite((double) par1Entity.rotationPitch)) {
-				par1Entity.rotationPitch = par1Entity.prevRotationPitch;
+			if (Double.isNaN((double) entity.rotationPitch) || Double.isInfinite((double) entity.rotationPitch)) {
+				entity.rotationPitch = entity.prevRotationPitch;
 			}
 
-			if (Double.isNaN((double) par1Entity.rotationYaw) || Double.isInfinite((double) par1Entity.rotationYaw)) {
-				par1Entity.rotationYaw = par1Entity.prevRotationYaw;
+			if (Double.isNaN((double) entity.rotationYaw) || Double.isInfinite((double) entity.rotationYaw)) {
+				entity.rotationYaw = entity.prevRotationYaw;
 			}
 
-			int var6 = MathHelper.floor_double(par1Entity.posX / 16.0D);
-			int var7 = MathHelper.floor_double(par1Entity.posY / 16.0D);
-			int var8 = MathHelper.floor_double(par1Entity.posZ / 16.0D);
+			int cX = MathHelper.floor_double(entity.posX / 16.0D);
+			int cY = MathHelper.floor_double(entity.posY / 16.0D);
+			int cZ = MathHelper.floor_double(entity.posZ / 16.0D);
 
-			if (!par1Entity.addedToChunk || par1Entity.chunkCoordX != var6 || par1Entity.chunkCoordY != var7 || par1Entity.chunkCoordZ != var8) {
-				if (par1Entity.addedToChunk) {
-					Chunk chunk = getChunkIfExists(par1Entity.chunkCoordX, par1Entity.chunkCoordZ);
+			if (!entity.addedToChunk || entity.chunkCoordX != cX || entity.chunkCoordY != cY || entity.chunkCoordZ != cZ) {
+				if (entity.addedToChunk) {
+					Chunk chunk = getChunkIfExists(entity.chunkCoordX, entity.chunkCoordZ);
 					if (chunk != null) {
-						chunk.removeEntityAtIndex(par1Entity, par1Entity.chunkCoordY);
+						chunk.removeEntityAtIndex(entity, entity.chunkCoordY);
 					}
 				}
 
-				Chunk chunk = getChunkIfExists(var6, var8);
+				Chunk chunk = getChunkIfExists(cX, cZ);
 				if (chunk != null) {
-					par1Entity.addedToChunk = true;
-					chunk.addEntity(par1Entity);
+					entity.addedToChunk = true;
+					chunk.addEntity(entity);
 				} else {
-					par1Entity.addedToChunk = false;
+					entity.addedToChunk = false;
 				}
 			}
 
 			this.theProfiler.endSection();
 
-			if (par2 && par1Entity.addedToChunk && par1Entity.riddenByEntity != null) {
-				if (!par1Entity.riddenByEntity.isDead && par1Entity.riddenByEntity.ridingEntity == par1Entity) {
-					this.updateEntity(par1Entity.riddenByEntity);
+			if (notForced && entity.addedToChunk && entity.riddenByEntity != null) {
+				if (!entity.riddenByEntity.isDead && entity.riddenByEntity.ridingEntity == entity) {
+					this.updateEntity(entity.riddenByEntity);
 				} else {
-					par1Entity.riddenByEntity.ridingEntity = null;
-					par1Entity.riddenByEntity = null;
+					entity.riddenByEntity.ridingEntity = null;
+					entity.riddenByEntity = null;
 				}
 			}
 		}

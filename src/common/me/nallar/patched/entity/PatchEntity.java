@@ -15,6 +15,8 @@ public abstract class PatchEntity extends Entity {
 	@Declare
 	public Boolean isForced_;
 	@Declare
+	public Boolean canUpdate_;
+	@Declare
 	public me.nallar.tickthreading.minecraft.tickregion.EntityTickRegion tickRegion_;
 	@Declare
 	public int collisionSkipCounter_;
