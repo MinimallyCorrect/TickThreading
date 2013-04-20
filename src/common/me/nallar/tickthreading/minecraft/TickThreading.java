@@ -47,6 +47,9 @@ public class TickThreading {
 	public static TickThreading instance;
 	final Map<World, TickManager> managers = new WeakHashMap<World, TickManager>();
 	private final Runtime runtime = Runtime.getRuntime();
+	public String messageDeadlockDetected = "The server appears to have frozen and will restart soon if it does not recover. :(";
+	public String messageDeadlockRecovered = "The server has recovered and will not need to restart. :)";
+	public String messageDeadlockSavingExiting = "The server is saving the world and restarting - be right back!";
 	public boolean exitOnDeadlock = false;
 	public boolean requireOpForTicksCommand = true;
 	public boolean requireOpForProfileCommand = true;
@@ -105,6 +108,9 @@ public class TickThreading {
 		TPSCommand.name = config.get(GENERAL, "tpsCommandName", TPSCommand.name, "Name of the command to be used for TPS reports.").value;
 		ProfileCommand.name = config.get(GENERAL, "profileCommandName", ProfileCommand.name, "Name of the command to be used for profiling reports.").value;
 		DumpCommand.name = config.get(GENERAL, "dumpCommandName", DumpCommand.name, "Name of the command to be used for profiling reports.").value;
+		messageDeadlockDetected = config.get(GENERAL, "messageDeadlockDetected", messageDeadlockDetected, "The message to be displayed if a deadlock is detected. (Only sent if exitOnDeadlock is on)").value;
+		messageDeadlockRecovered = config.get(GENERAL, "messageDeadlockDetected", messageDeadlockRecovered, "The message to be displayed if the server recovers from an apparent deadlock. (Only sent if exitOnDeadlock is on)").value;
+		messageDeadlockSavingExiting = config.get(GENERAL, "messageDeadlockDetected", messageDeadlockSavingExiting, "The message to be displayed when the server attempts to save and stop after a deadlock. (Only sent if exitOnDeadlock is on)").value;
 		tickThreads = config.get(GENERAL, "tickThreads", tickThreads, "number of threads to use to tick. 0 = automatic").getInt(tickThreads);
 		regionSize = config.get(GENERAL, "regionSize", regionSize, "width/length of tick regions, specified in blocks.").getInt(regionSize);
 		saveInterval = config.get(GENERAL, "saveInterval", saveInterval, "Time between auto-saves, in ticks.").getInt(saveInterval);

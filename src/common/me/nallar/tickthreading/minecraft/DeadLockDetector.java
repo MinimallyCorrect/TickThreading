@@ -109,10 +109,10 @@ public class DeadLockDetector {
 		if (TickThreading.instance.exitOnDeadlock) {
 			if (sentWarningRecently && deadTime < 10000000000l) {
 				sentWarningRecently = false;
-				sendChatSafely(ChatFormat.GREEN + "The server has recovered and will not need to restart. :)");
+				sendChatSafely(ChatFormat.GREEN + TickThreading.instance.messageDeadlockRecovered);
 			} else if (deadTime > 10000000000l && !sentWarningRecently) {
 				sentWarningRecently = true;
-				sendChatSafely(String.valueOf(ChatFormat.RED) + ChatFormat.BOLD + "The server appears to have frozen on '" + lastJob + "' and will restart soon if it does not recover. :(");
+				sendChatSafely(String.valueOf(ChatFormat.RED) + ChatFormat.BOLD + TickThreading.instance.messageDeadlockDetected);
 				return true;
 			}
 		}
@@ -120,7 +120,7 @@ public class DeadLockDetector {
 			return true;
 		}
 		if (TickThreading.instance.exitOnDeadlock) {
-			sendChatSafely(ChatFormat.RED + "The server is saving the world and restarting - be right back!");
+			sendChatSafely(ChatFormat.RED + TickThreading.instance.messageDeadlockSavingExiting);
 		}
 		final MinecraftServer minecraftServer = MinecraftServer.getServer();
 		if (minecraftServer.currentlySaving) {
