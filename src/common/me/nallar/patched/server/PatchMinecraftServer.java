@@ -5,11 +5,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
@@ -58,6 +58,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	private static double networkTPS = 0;
 	private Map<Integer, Integer> exceptionCount;
 	private boolean tickNetworkInMainThread;
+	private Map<String, long[]> worldTickLengths;
 	@Declare
 	public List<WorldServer> worlds_;
 	@Declare
@@ -71,6 +72,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		currentlySaving = false;
 		tickNetworkInMainThread = true;
 		exceptionCount = new HashMap<Integer, Integer>();
+		worldTickLengths = new ConcurrentHashMap<String, long[]>();
 	}
 
 	public static void staticConstruct() {
@@ -93,6 +95,11 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			securityManager.checkExit(1);
 		}
 		this.serverRunning = false;
+	}
+
+	@Declare
+	public long[] getTickTimes(WorldServer w) {
+		return worldTickLengths.get(w.getName());
 	}
 
 	@Declare
@@ -412,6 +419,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			long var2 = System.nanoTime();
 
 			WorldServer world = DimensionManager.getWorld(id);
+			String name = world.getName();
 			try {
 				profiler.startSection(world.getWorldInfo().getWorldName());
 				profiler.startSection("pools");
@@ -457,13 +465,10 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				}
 				profiler.endSection();
 
-				if (worldTickTimes == null) {
-					//noinspection UseOfObsoleteCollectionType
-					worldTickTimes = new Hashtable<Integer, long[]>();
-				}
-				long[] tickTimes = worldTickTimes.get(id);
+				long[] tickTimes = worldTickLengths.get(name);
 				if (tickTimes == null) {
 					tickTimes = new long[100];
+					worldTickLengths.put(name, tickTimes);
 					worldTickTimes.put(id, tickTimes);
 				}
 				tickTimes[this.tickCounter % 100] = System.nanoTime() - var2;

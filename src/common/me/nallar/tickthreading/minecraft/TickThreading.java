@@ -33,6 +33,7 @@ import net.minecraft.network.packet.PacketCount;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.Configuration;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.ForgeSubscribe;
@@ -160,8 +161,9 @@ public class TickThreading {
 	public void onWorldLoad(WorldEvent.Load event) {
 		if (event.world.isRemote) {
 			Log.severe("World " + Log.name(event.world) + " seems to be a client world", new Throwable());
+			return;
 		}
-		TickManager manager = new TickManager(event.world, regionSize, getThreadCount(), waitForEntityTickCompletion);
+		TickManager manager = new TickManager((WorldServer) event.world, regionSize, getThreadCount(), waitForEntityTickCompletion);
 		manager.setVariableTickRate(variableTickRate);
 		try {
 			Field loadedTileEntityField = FieldUtil.getFields(World.class, List.class)[loadedTileEntityFieldIndex];

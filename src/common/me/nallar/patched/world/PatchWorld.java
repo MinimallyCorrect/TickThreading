@@ -53,6 +53,7 @@ public abstract class PatchWorld extends World {
 	@Declare
 	public int tickCount_;
 	private boolean warnedWrongList;
+	private String cachedName;
 
 	public void construct() {
 		tickCount = rand.nextInt(240); // So when different worlds do every N tick actions,
@@ -69,10 +70,15 @@ public abstract class PatchWorld extends World {
 	@Override
 	@Declare
 	public String getName() {
-		String name = worldInfo.getWorldName();
-		if (name.startsWith("world_")) {
-			return name.substring(6);
+		String name = cachedName;
+		if (name != null) {
+			return name;
 		}
+		name = worldInfo.getWorldName();
+		if (name.startsWith("world_")) {
+			name = name.substring(6);
+		}
+		cachedName = (name + '/' + provider.dimensionId + (isRemote ? "-r" : ""));
 		return name;
 	}
 

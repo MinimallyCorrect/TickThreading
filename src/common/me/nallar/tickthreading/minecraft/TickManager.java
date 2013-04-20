@@ -40,7 +40,7 @@ public final class TickManager {
 	private int shuffleCount;
 	private final boolean waitForCompletion;
 	public final EntityTickProfiler entityTickProfiler = new EntityTickProfiler();
-	public final World world;
+	public final WorldServer world;
 	public final ArrayList<TileEntity> tileEntityList = new ArrayList<TileEntity>();
 	public final ArrayList<Entity> entityList = new ArrayList<Entity>();
 	public Object tileEntityLock = new Object();
@@ -52,7 +52,7 @@ public final class TickManager {
 	private final Map<Class<?>, Integer> entityClassToCountMap = new HashMap<Class<?>, Integer>();
 	private final boolean lock = TickThreading.instance.lockRegionBorders;
 
-	public TickManager(World world, int regionSize, int threads, boolean waitForCompletion) {
+	public TickManager(WorldServer world, int regionSize, int threads, boolean waitForCompletion) {
 		this.waitForCompletion = waitForCompletion;
 		threadManager = new ThreadManager(threads, "Entities in " + Log.name(world));
 		this.world = world;
@@ -465,7 +465,7 @@ public final class TickManager {
 		long timeTotal = 0;
 		double time = Double.NaN;
 		try {
-			long[] tickTimes = MinecraftServer.getServer().worldTickTimes.get(world.provider.dimensionId);
+			long[] tickTimes = MinecraftServer.getServer().getTickTimes(world);
 			for (long tick : tickTimes) {
 				timeTotal += tick;
 			}
@@ -480,7 +480,7 @@ public final class TickManager {
 				.row(Math.min(1000000000 / time, MinecraftServer.getTargetTPS()))
 				.row(String.valueOf(entityList.size()))
 				.row(String.valueOf(tileEntityList.size()))
-				.row(world instanceof WorldServer ? String.valueOf(((WorldServer) world).theChunkProviderServer.getLoadedChunkCount()) : "0")
+				.row(String.valueOf(world.theChunkProviderServer.getLoadedChunkCount()))
 				.row(TableFormatter.formatDoubleWithPrecision((time * 100f) / MinecraftServer.getTargetTickTime(), 3) + '%');
 	}
 
