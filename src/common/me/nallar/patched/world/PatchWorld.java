@@ -284,7 +284,7 @@ public abstract class PatchWorld extends World {
 		if (isForced == null || forcedUpdateCount++ % 7 == 0) {
 			par1Entity.isForced = isForced = getPersistentChunks().containsKey(new ChunkCoordIntPair(x >> 4, z >> 4));
 		}
-		byte range = isForced ? (byte) 1 : 32;
+		byte range = isForced ? (byte) 0 : 32;
 		boolean canUpdate = !par2 || this.checkChunksExist(x - range, 0, z - range, x + range, 0, z + range);
 		if (canUpdate) {
 			par1Entity.lastTickPosX = par1Entity.posX;
