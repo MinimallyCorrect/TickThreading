@@ -297,7 +297,9 @@ public class PatchManager {
 			} else if (isClassPatch || (!emptyConstructor && textContent.isEmpty())) {
 				return run(ctClass, attributes);
 			} else if (textContent.isEmpty()) {
-				run(ctClass.getConstructors()[0], attributes);
+				for (CtConstructor ctConstructor : ctClass.getDeclaredConstructors()) {
+					run(ctConstructor, attributes);
+				}
 			} else if ("^static^".equals(textContent)) {
 				CtConstructor ctBehavior = ctClass.getClassInitializer();
 				if (ctBehavior == null) {

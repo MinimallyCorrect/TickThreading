@@ -637,12 +637,12 @@
 	<portalGun>
 		<class id="portalgun.common.core.TickHandlerServer">
 			<synchronize field="$1.e">worldTick</synchronize>
-			<replaceInitializer field="grabMap" class="java.util.concurrent.ConcurrentHashMap"/>
-			<replaceInitializer field="portals" class="java.util.concurrent.ConcurrentHashMap"/>
-			<replaceInitializer field="moonPortals" class="java.util.concurrent.ConcurrentHashMap"/>
-			<replaceInitializer field="potatosProgression" class="java.util.concurrent.ConcurrentHashMap"/>
-			<replaceInitializer field="lastSeenEntity" class="java.util.concurrent.ConcurrentHashMap"/>
-			<replaceInitializer field="hasFallen" class="java.util.concurrent.ConcurrentHashMap"/>
+			<replaceInitializer field="grabMap" class="me.nallar.tickthreading.collections.CHashMap"/>
+			<replaceInitializer field="portals" class="me.nallar.tickthreading.collections.CHashMap"/>
+			<replaceInitializer field="moonPortals" class="me.nallar.tickthreading.collections.CHashMap"/>
+			<replaceInitializer field="potatosProgression" class="me.nallar.tickthreading.collections.CHashMap"/>
+			<replaceInitializer field="lastSeenEntity" class="me.nallar.tickthreading.collections.CHashMap"/>
+			<replaceInitializer field="hasFallen" class="me.nallar.tickthreading.collections.CHashMap"/>
 		</class>
 	</portalGun>
 	<portalGun>
@@ -685,6 +685,9 @@
 		</class>
 	</MFFS>
 	<thaumcraft>
+		<class id="thaumcraft.api.ObjectTags">
+			<replaceInitializer field="tags" class="me.nallar.tickthreading.collections.CHashMap"/>
+		</class>
 		<class id="thaumcraft.common.AuraManager">
 			<synchronize>registerAuraNode</synchronize>
 		</class>
