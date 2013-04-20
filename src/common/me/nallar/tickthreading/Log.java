@@ -219,7 +219,7 @@ public class Log {
 		if (world.provider == null) {
 			return "Broken world with ID " + MinecraftServer.getServer().getId((WorldServer) world);
 		}
-		return world.provider.getDimensionName() + '/' + world.provider.dimensionId + (world.isRemote ? "-r" : "");
+		return world.getName() + '/' + world.provider.dimensionId + (world.isRemote ? "-r" : "");
 	}
 
 	public static String toString(Object o) {

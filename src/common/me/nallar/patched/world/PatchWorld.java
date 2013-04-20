@@ -67,6 +67,16 @@ public abstract class PatchWorld extends World {
 	}
 
 	@Override
+	@Declare
+	public String getName() {
+		String name = worldInfo.getWorldName();
+		if (name.startsWith("world_")) {
+			return name.substring(6);
+		}
+		return name;
+	}
+
+	@Override
 	public boolean isBlockNormalCube(int x, int y, int z) {
 		int id = getBlockIdWithoutLoad(x, y, z);
 		if (id == -1) {

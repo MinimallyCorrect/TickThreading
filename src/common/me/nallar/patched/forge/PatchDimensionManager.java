@@ -50,11 +50,7 @@ public abstract class PatchDimensionManager extends DimensionManager {
 						setWorld(id, null);
 						List<WorldServer> worlds = MinecraftServer.getServer().worlds;
 						if (worlds != null) {
-							for (int i = 0; i < worlds.size(); i++) {
-								if (worlds.get(i).provider.dimensionId == id) {
-									worlds.remove(i);
-								}
-							}
+							worlds.remove(w);
 						}
 						if (TickThreading.instance.cleanWorlds) {
 							UnsafeUtil.clean(w);
