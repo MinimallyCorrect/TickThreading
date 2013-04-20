@@ -112,7 +112,7 @@ public enum LocationUtil {
 		// Minecraft and forge aren't necessarily in the same place
 		File minecraftJar = locationOf(net.minecraft.util.Tuple.class);
 		if (!minecraftJar.equals(forgeJar)) {
-			jarLocations.add(forgeJar.getParentFile());
+			jarLocations.add(forgeJar);
 		}
 		jarLocations.add(minecraftJar);
 		jarLocations.add(getCoreModsDirectory());
