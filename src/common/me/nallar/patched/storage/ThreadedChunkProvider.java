@@ -604,8 +604,8 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			}
 			if (generator != null) {
 				generator.populate(chunkProvider, x, z);
-				GameRegistry.generateWorld(x, z, world, generator, chunkProvider);
 				fireBukkitPopulateEvent(chunk);
+				GameRegistry.generateWorld(x, z, world, generator, chunkProvider);
 				chunk.setChunkModified();
 			}
 			// It may have been modified in generator.populate/GameRegistry.generateWorld.
