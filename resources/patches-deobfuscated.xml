@@ -637,6 +637,21 @@
 	<portalGun>
 		<class id="portalgun.common.core.TickHandlerServer">
 			<synchronize field="$1.e">worldTick</synchronize>
+			<replaceInitializer field="grabMap" class="java.util.concurrent.ConcurrentHashMap"/>
+			<replaceInitializer field="portals" class="java.util.concurrent.ConcurrentHashMap"/>
+			<replaceInitializer field="moonPortals" class="java.util.concurrent.ConcurrentHashMap"/>
+			<replaceInitializer field="potatosProgression" class="java.util.concurrent.ConcurrentHashMap"/>
+			<replaceInitializer field="lastSeenEntity" class="java.util.concurrent.ConcurrentHashMap"/>
+			<replaceInitializer field="hasFallen" class="java.util.concurrent.ConcurrentHashMap"/>
+		</class>
+	</portalGun>
+	<portalGun>
+		<class id="gravigun.common.core.TickHandlerServer">
+			<synchronize field="$1.i">worldTick</synchronize>
+			<replaceInitializer field="grabMap" class="java.util.concurrent.ConcurrentHashMap"/>
+			<replaceInitializer field="tossedEntities" class="java.util.concurrent.ConcurrentHashMap"/>
+			<replaceInitializer field="tosser" class="java.util.concurrent.ConcurrentHashMap"/>
+			<replaceInitializer field="chargedThrow" class="java.util.concurrent.ConcurrentHashMap"/>
 		</class>
 	</portalGun>
 	<twilightForest>
