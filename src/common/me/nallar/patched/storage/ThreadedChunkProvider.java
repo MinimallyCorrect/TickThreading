@@ -196,7 +196,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				}
 				possible++;
 			}
-			if (possible > 0) {
+			if (loaded > 0) {
 				Log.info("Loaded " + loaded + '/' + possible + " persistent chunks in " + Log.name(world));
 			}
 		}
