@@ -839,4 +839,42 @@ public abstract class PatchWorld extends World {
 	public void markTileEntityForDespawn(TileEntity tileEntity) {
 		tileEntityRemovalSet.add(tileEntity);
 	}
+
+	@Override
+	@Declare
+	public void setBlockTileEntityWithoutValidate(int x, int y, int z, TileEntity tileEntity) {
+		if (tileEntity == null || tileEntity.isInvalid()) {
+			return;
+		}
+
+		if (tileEntity.canUpdate()) {
+			(scanningTileEntities ? addedTileEntityList : loadedTileEntityList).add(tileEntity);
+		}
+
+		Chunk chunk = getChunkFromChunkCoords(x >> 4, z >> 4);
+		if (chunk != null) {
+			chunk.setChunkBlockTileEntityWithoutValidate(x & 15, y, z & 15, tileEntity);
+		}
+	}
+
+	@Override
+	@Declare
+	public boolean setBlockAndMetadataWithUpdateWithoutValidate(int x, int y, int z, int id, int meta, boolean update) {
+		if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000 && y >= 0 && y < 256) {
+			Chunk chunk = this.getChunkFromChunkCoords(x >> 4, z >> 4);
+			if (!chunk.setBlockIDWithMetadataWithoutValidate(x & 15, y, z & 15, id, meta)) {
+				return false;
+			}
+			this.theProfiler.startSection("checkLight");
+			this.updateAllLightTypes(x, y, z);
+			this.theProfiler.endSection();
+
+			if (update) {
+				this.markBlockForUpdate(x, y, z);
+			}
+
+			return true;
+		}
+		return false;
+	}
 }

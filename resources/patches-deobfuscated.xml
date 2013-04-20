@@ -542,6 +542,11 @@
 		</class>
 	</redPowerCore>
 	<redPowerMechanical>
+		<class id="com.eloraam.redpower.machine.TileMotor">
+			<replaceFieldUsage class="^class:World^" field="^field:World/isRemote^" writeCode="{ }"/>
+			<replaceMethodCall newMethod="setBlockAndMetadataWithUpdateWithoutValidate" method="^class:World^.^method:World/setBlockAndMetadataWithUpdate^">dropFrame</replaceMethodCall>
+			<replaceMethodCall newMethod="setBlockTileEntityWithoutValidate" method="^class:World^.^method:World/setBlockTileEntity^">pickFrame</replaceMethodCall>
+		</class>
 		<class id="com.eloraam.redpower.machine.TileTranspose">
 			<synchronize field="buffer">drainBuffer</synchronize>
 		</class>

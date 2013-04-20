@@ -19,6 +19,7 @@ import net.minecraft.world.ChunkPosition;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.world.ChunkEvent;
@@ -210,5 +211,109 @@ public abstract class PatchChunk extends Chunk {
 		par1Entity.chunkCoordY = var4;
 		par1Entity.chunkCoordZ = this.zPosition;
 		this.entityLists[var4].add(par1Entity);
+	}
+
+	@Override
+	@Declare
+	public void setChunkBlockTileEntityWithoutValidate(int x, int y, int z, TileEntity tileEntity) {
+		ChunkPosition var5 = new ChunkPosition(x, y, z);
+		tileEntity.worldObj = worldObj;
+		tileEntity.xCoord = this.xPosition * 16 + x;
+		tileEntity.yCoord = y;
+		tileEntity.zCoord = this.zPosition * 16 + z;
+
+		Block block = Block.blocksList[getBlockID(x, y, z)];
+		if (block != null && block.hasTileEntity(getBlockMetadata(x, y, z))) {
+			this.chunkTileEntityMap.put(var5, tileEntity);
+		}
+	}
+
+	@Override
+	@Declare
+	public boolean setBlockIDWithMetadataWithoutValidate(int x, int y, int z, int id, int meta) {
+		int xzIndex = z << 4 | x;
+
+		if (y >= this.precipitationHeightMap[xzIndex] - 1) {
+			this.precipitationHeightMap[xzIndex] = -999;
+		}
+
+		int var7 = this.heightMap[xzIndex];
+		int var8 = this.getBlockID(x, y, z);
+		int var9 = this.getBlockMetadata(x, y, z);
+
+		if (var8 == id && var9 == meta) {
+			return false;
+		} else {
+			if (y >> 4 >= storageArrays.length || y >> 4 < 0) {
+				return false;
+			}
+
+			ExtendedBlockStorage var10 = this.storageArrays[y >> 4];
+			boolean var11 = false;
+
+			if (var10 == null) {
+				if (id == 0) {
+					return false;
+				}
+
+				var10 = this.storageArrays[y >> 4] = new ExtendedBlockStorage(y >> 4 << 4, !this.worldObj.provider.hasNoSky);
+				var11 = y >= var7;
+			}
+
+			int var12 = this.xPosition * 16 + x;
+			int var13 = this.zPosition * 16 + z;
+
+			var10.setExtBlockID(x, y & 15, z, id);
+
+			if (var8 != 0) {
+				if (Block.blocksList[var8] != null && Block.blocksList[var8].hasTileEntity(var9)) {
+					TileEntity te = worldObj.getBlockTileEntity(var12, y, var13);
+					if (te != null && te.shouldRefresh(var8, id, var9, meta, worldObj, var12, y, var13)) {
+						this.worldObj.removeBlockTileEntity(var12, y, var13);
+					}
+				}
+			}
+
+			if (var10.getExtBlockID(x, y & 15, z) != id) {
+				return false;
+			} else {
+				var10.setExtBlockMetadata(x, y & 15, z, meta);
+
+				if (var11) {
+					this.generateSkylightMap();
+				} else {
+					if (getBlockLightOpacity(x, y, z) > 0) {
+						if (y >= var7) {
+							this.relightBlock(x, y + 1, z);
+						}
+					} else if (y == var7 - 1) {
+						this.relightBlock(x, y, z);
+					}
+
+					this.propagateSkylightOcclusion(x, z);
+				}
+
+				TileEntity var14;
+
+				if (id != 0) {
+					if (Block.blocksList[id] != null && Block.blocksList[id].hasTileEntity(meta)) {
+						var14 = this.getChunkBlockTileEntity(x, y, z);
+
+						if (var14 == null) {
+							var14 = Block.blocksList[id].createTileEntity(this.worldObj, meta);
+							this.worldObj.setBlockTileEntity(var12, y, var13, var14);
+						}
+
+						if (var14 != null) {
+							var14.updateContainingBlockInfo();
+							var14.blockMetadata = meta;
+						}
+					}
+				}
+
+				this.isModified = true;
+				return true;
+			}
+		}
 	}
 }

@@ -442,7 +442,12 @@ public class Patches {
 
 		final String method = method_;
 		final String className = className_;
-		final String code = attributes.get("code");
+		final String newMethod = attributes.get("newMethod");
+		String code_ = attributes.get("code");
+		if (code_ == null) {
+			code_ = "$_ = $0." + newMethod + "($$);";
+		}
+		final String code = code_;
 		final int index = Integer.valueOf(index_);
 
 		ctBehavior.instrument(new ExprEditor() {
@@ -451,6 +456,14 @@ public class Patches {
 			@Override
 			public void edit(MethodCall methodCall) throws CannotCompileException {
 				if ((className == null || methodCall.getClassName().equals(className)) && (method.isEmpty() || methodCall.getMethodName().equals(method)) && (index == -1 || currentIndex++ == index)) {
+					if (newMethod != null) {
+						try {
+							CtMethod oldMethod = methodCall.getMethod();
+							oldMethod.getDeclaringClass().getDeclaredMethod(newMethod, oldMethod.getParameterTypes());
+						} catch (NotFoundException e) {
+							return;
+						}
+					}
 					Log.info("Replaced " + methodCall + " in " + ctBehavior);
 					methodCall.replace(code);
 				}
@@ -626,7 +639,7 @@ public class Patches {
 			public void edit(FieldAccess e) throws CannotCompileException {
 				if (e.getFieldName().equals(field)) {
 					if (e.isReader()) {
-						e.replace("{ $_ = ((Boolean) " + threadLocalField + ".get()).booleanValue();");
+						e.replace("{ $_ = ((Boolean) " + threadLocalField + ".get()).booleanValue(); }");
 					} else if (e.isWriter()) {
 						e.replace("{ " + threadLocalField + ".set(Boolean.valueOf($1)); }");
 					}
