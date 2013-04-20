@@ -42,6 +42,7 @@ import org.cliffc.high_scale_lib.NonBlockingHashMapLong;
 @SuppressWarnings ("unchecked")
 public abstract class PatchWorld extends World {
 	private int forcedUpdateCount;
+	public ThreadLocal<Boolean> inPlaceEvent;
 	@Declare
 	public org.cliffc.high_scale_lib.NonBlockingHashMapLong<Integer> redstoneBurnoutMap_;
 	@Declare

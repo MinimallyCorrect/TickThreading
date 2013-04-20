@@ -316,6 +316,20 @@
 		<class id="net.minecraft.entity.ai.EntityAITasks">
 			<synchronize>addTask,func_85156_a,onUpdateTasks,func_75775_b</synchronize>
 		</class>
+		<class id="net.minecraft.block.Block" env="mcpc">
+			<threadLocalBoolean field="callingPlaceEvent" threadLocalField="$0.inPlaceEvent"/>
+		</class>
+		<class id="net.minecraft.world.World" env="mcpc">
+			<insertBefore code="inPlaceEvent = new me.nallar.tickthreading.util.BooleanThreadLocal();"/>
+			<final field="callingPlaceEvent"/>
+			<threadLocalBoolean field="callingPlaceEvent" threadLocalField="$0.inPlaceEvent"/>
+		</class>
+		<class id="net.minecraft.world.chunk.Chunk" env="mcpc">
+			<threadLocalBoolean field="callingPlaceEvent" threadLocalField="$0.inPlaceEvent"/>
+		</class>
+		<class id="net.minecraft.item.ItemBlock" env="mcpc">
+			<threadLocalBoolean field="callingPlaceEvent" threadLocalField="$0.inPlaceEvent"/>
+		</class>
 	</minecraftCommon>
 	<bukkit>
 		<class id="org.bukkit.plugin.SimplePluginManager">
@@ -506,9 +520,7 @@
 			<threadLocal field="blockUpdates" type="java.util.HashSet" threadLocalField="javassist.is.faulty.ThreadLocals.redPowerBlockUpdateSet"/>
 			<threadLocal field="powerSearchTest" type="java.util.HashSet" threadLocalField="javassist.is.faulty.ThreadLocals.redPowerPowerSearchTest"/>
 			<threadLocal field="powerSearch" type="java.util.LinkedList" threadLocalField="javassist.is.faulty.ThreadLocals.redPowerPowerSearch"/>
-			<!-- Still broken - crashes JVM!
-			<threadLocal field="searching" type="boolean" setExpression="java.lang.Boolean.valueOf($1)" threadLocalField="javassist.is.faulty.ThreadLocals.redPowerIsSearching"/>
-			-->
+			<threadLocalBoolean field="searching" threadLocalField="javassist.is.faulty.ThreadLocals.redPowerIsSearching"/>
 		</class>
 		<class id="com.eloraam.redpower.core.TileExtended">
 			<replaceMethod code="this.sendTile();">updateBlock</replaceMethod>

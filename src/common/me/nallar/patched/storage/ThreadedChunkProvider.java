@@ -22,6 +22,7 @@ import me.nallar.tickthreading.collections.NonBlockingLongSet;
 import me.nallar.tickthreading.minecraft.ChunkGarbageCollector;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
+import me.nallar.tickthreading.util.BooleanThreadLocal;
 import me.nallar.tickthreading.util.DoNothingRunnable;
 import me.nallar.tickthreading.util.ServerThreadFactory;
 import me.nallar.tickthreading.util.concurrent.NativeMutex;
@@ -739,13 +740,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			} catch (Throwable t) {
 				FMLLog.log(Level.SEVERE, t, "Exception loading chunk asynchronously.");
 			}
-		}
-	}
-
-	public static class BooleanThreadLocal extends ThreadLocal<Boolean> {
-		@Override
-		public Boolean initialValue() {
-			return false;
 		}
 	}
 }
