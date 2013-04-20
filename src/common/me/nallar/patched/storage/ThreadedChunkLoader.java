@@ -132,7 +132,7 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 			try {
 				MinecraftForge.EVENT_BUS.post(new ChunkDataEvent.Load(chunk, chunkTagCompound));
 			} catch (Throwable t) {
-				FMLLog.severe("A mod failed to handle a ChunkDataEvent.Load event for " + x + ',' + z, t);
+				FMLLog.log(Level.SEVERE, t, "A mod failed to handle a ChunkDataEvent.Load event for " + x + ',' + z);
 			}
 
 			return chunk;
@@ -160,7 +160,7 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 			try {
 				MinecraftForge.EVENT_BUS.post(new ChunkDataEvent.Save(chunk, nbttagcompound));
 			} catch (Throwable t) {
-				FMLLog.severe("A mod failed to handle a ChunkDataEvent.Save event for " + chunk.xPosition + ',' + chunk.zPosition, t);
+				FMLLog.log(Level.SEVERE, t, "A mod failed to handle a ChunkDataEvent.Save event for " + chunk.xPosition + ',' + chunk.zPosition);
 			}
 			this.addToSaveQueue(chunk.getChunkCoordIntPair(), nbttagcompound, chunk.alreadySavedAfterUnload || chunk.unloading || !chunk.isChunkLoaded);
 		} catch (Exception exception) {
