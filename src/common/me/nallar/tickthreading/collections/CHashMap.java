@@ -48,7 +48,7 @@ public class CHashMap<K, V> extends HashMap<K, V> {
 
 	@Override
 	public V get(Object key) {
-		return hashMap.get(key);
+		return key == null ? null : hashMap.get(key);
 	}
 
 	@Override
