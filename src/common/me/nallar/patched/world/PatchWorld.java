@@ -21,6 +21,7 @@ import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityTracker;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
@@ -609,7 +610,11 @@ public abstract class PatchWorld extends World {
 
 	@Override
 	public void unloadEntities(List entitiesToUnload) {
-		this.unloadedEntitySet.addAll(entitiesToUnload);
+		for (Entity entity : (Iterable<Entity>) entitiesToUnload) {
+			if (!(entity instanceof EntityPlayerMP)) {
+				unloadedEntitySet.add(entity);
+			}
+		}
 	}
 
 	@Override
