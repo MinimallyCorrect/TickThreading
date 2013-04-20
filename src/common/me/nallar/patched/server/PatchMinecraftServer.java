@@ -422,6 +422,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			String name = world.getName();
 			if (world.provider.dimensionId != id) {
 				Log.warning("World " + world.getName() + "'s dimensionId was set incorrectly, changing from " + world.provider.dimensionId + " to " + id);
+				world.provider.dimensionId = id;
 			}
 			try {
 				profiler.startSection(world.getWorldInfo().getWorldName());
