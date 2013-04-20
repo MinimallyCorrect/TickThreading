@@ -421,9 +421,7 @@ public class Patches {
 		});
 	}
 
-	@Patch (
-			requiredAttributes = "code"
-	)
+	@Patch
 	public void replaceMethodCall(final CtBehavior ctBehavior, Map<String, String> attributes) throws CannotCompileException {
 		String method_ = attributes.get("method");
 		if (method_ == null) {
