@@ -62,6 +62,7 @@ public class TicksCommand extends Command {
 				}
 			}
 			sendChat(commandSender, "Refreshed " + count + " chunks");
+			return;
 		}
 		World world;
 		try {
