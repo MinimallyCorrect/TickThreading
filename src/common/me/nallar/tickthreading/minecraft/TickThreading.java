@@ -156,6 +156,9 @@ public class TickThreading {
 
 	@ForgeSubscribe
 	public void onWorldLoad(WorldEvent.Load event) {
+		if (event.world.isRemote) {
+			Log.severe("World " + Log.name(event.world) + " seems to be a client world", new Throwable());
+		}
 		TickManager manager = new TickManager(event.world, regionSize, getThreadCount(), waitForEntityTickCompletion);
 		manager.setVariableTickRate(variableTickRate);
 		try {
