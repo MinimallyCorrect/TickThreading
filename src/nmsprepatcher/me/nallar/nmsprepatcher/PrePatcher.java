@@ -107,13 +107,7 @@ public class PrePatcher {
 				source.append(var).append(";\n");
 			}
 			source.append("\n}");
-			Matcher packageMatcher = packageVariablePattern.matcher(source);
-			StringBuffer sb = new StringBuffer();
-			while (packageMatcher.find()) {
-				packageMatcher.appendReplacement(sb, "\n    public " + packageMatcher.group(1) + ';');
-			}
-			packageMatcher.appendTail(sb);
-			sourceString = sb.toString();
+			sourceString = source.toString();
 			// TODO: Fix package -> public properly later.
 			sourceString = sourceString.replace("\nfinal ", " ");
 			sourceString = sourceString.replace(" final ", " ");
@@ -125,8 +119,14 @@ public class PrePatcher {
 			Matcher privateMatcher = privatePattern.matcher(sourceString);
 			sourceString = privateMatcher.replaceAll("$1protected");
 			sourceString = sourceString.replace("protected void save(", "public void save(");
+			Matcher packageMatcher = packageVariablePattern.matcher(sourceString);
+			StringBuffer sb = new StringBuffer();
+			while (packageMatcher.find()) {
+				packageMatcher.appendReplacement(sb, "\n    public " + packageMatcher.group(1) + ';');
+			}
+			packageMatcher.appendTail(sb);
 			try {
-				writeFile(sourceFile, sourceString);
+				writeFile(sourceFile, sb.toString());
 			} catch (IOException e) {
 				log.log(Level.SEVERE, "Failed to save " + sourceFile, e);
 			}
