@@ -76,6 +76,7 @@
 			<final field="provider"/>
 			<final field="theProfiler"/>
 			<final field="playerEntities"/>
+			<final field="isRemote"/>
 			<public field="ambientTickCountdown"/>
 			<replaceInitializer field="playerEntities" code="new java.util.concurrent.CopyOnWriteArrayList();"/>
 		</class>
