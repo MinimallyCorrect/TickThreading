@@ -347,6 +347,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		final int tickCount = ++this.tickCount;
 		final boolean hasPlayers = !playerEntities.isEmpty();
 		this.updateWeather();
+		updateEntityTick = 0;
 		if (this.difficultySetting < 3 && this.getWorldInfo().isHardcoreModeEnabled()) {
 			this.difficultySetting = 3;
 		}

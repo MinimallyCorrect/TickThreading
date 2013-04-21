@@ -36,6 +36,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.Configuration;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.EventPriority;
 import net.minecraftforge.event.ForgeSubscribe;
 import net.minecraftforge.event.world.WorldEvent;
 
@@ -170,8 +171,10 @@ public class TickThreading {
 			new LoadedTileEntityList<TileEntity>(event.world, loadedTileEntityField, manager);
 			Field loadedEntityField = FieldUtil.getFields(World.class, List.class)[loadedEntityFieldIndex];
 			new LoadedEntityList<TileEntity>(event.world, loadedEntityField, manager);
-			Log.fine("Threading initialised for world " + Log.name(event.world));
-			managers.put(event.world, manager);
+			Log.info("Threading initialised for world " + Log.name(event.world));
+			if (managers.put(event.world, manager) != null) {
+				Log.severe("World load fired twice for world " + event.world.getName());
+			}
 		} catch (Exception e) {
 			Log.severe("Failed to initialise threading for world " + Log.name(event.world), e);
 		}
@@ -184,7 +187,9 @@ public class TickThreading {
 	public void onWorldUnload(WorldEvent.Unload event) {
 		try {
 			TickManager tickManager = managers.remove(event.world);
-			if (tickManager != null) {
+			if (tickManager == null) {
+				Log.severe("World unload fired twice for world " + event.world.getName());
+			} else {
 				tickManager.unload();
 			}
 			Field loadedTileEntityField = FieldUtil.getFields(World.class, List.class)[loadedTileEntityFieldIndex];

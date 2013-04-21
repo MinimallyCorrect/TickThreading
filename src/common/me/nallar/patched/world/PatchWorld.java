@@ -12,6 +12,8 @@ import com.google.common.collect.ImmutableSetMultimap;
 import javassist.is.faulty.ThreadLocals;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.collections.ForcedChunksRedirectMap;
+import me.nallar.tickthreading.minecraft.TickManager;
+import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.minecraft.entitylist.EntityList;
 import me.nallar.tickthreading.minecraft.entitylist.LoadedTileEntityList;
 import me.nallar.tickthreading.patcher.Declare;
@@ -57,7 +59,7 @@ public abstract class PatchWorld extends World {
 	public int tickCount_;
 	private boolean warnedWrongList;
 	@Declare
-	public Integer dimension_;
+	public int dimensionId_;
 	private String cachedName;
 
 	public void construct() {
@@ -66,6 +68,9 @@ public abstract class PatchWorld extends World {
 		tileEntityRemovalSet = new HashSet<TileEntity>();
 		unloadedEntitySet = new HashSet<Entity>();
 		redstoneBurnoutMap = new NonBlockingHashMapLong<Integer>();
+		if (dimensionId == 0) {
+			dimensionId = provider.dimensionId;
+		}
 	}
 
 	public PatchWorld(ISaveHandler par1ISaveHandler, String par2Str, WorldProvider par3WorldProvider, WorldSettings par4WorldSettings, Profiler par5Profiler) {
@@ -74,9 +79,19 @@ public abstract class PatchWorld extends World {
 
 	@Override
 	@Declare
+	public void setDimension(int dimensionId) {
+		this.dimensionId = dimensionId;
+		cachedName = null;
+		Log.info("Set dimension ID for " + this.getName());
+		if (TickThreading.instance.getManager(this) != null) {
+			Log.severe("Set corrected dimension too late!");
+		}
+	}
+
+	@Override
+	@Declare
 	public int getDimension() {
-		Integer dimension = this.dimension;
-		return dimension == null ? provider.dimensionId : dimension;
+		return dimensionId;
 	}
 
 	@Override
@@ -90,7 +105,7 @@ public abstract class PatchWorld extends World {
 		if (name.startsWith("world_")) {
 			name = name.substring(6);
 		}
-		cachedName = (name + '/' + getDimension() + (isRemote ? "-r" : ""));
+		cachedName = name = (name + '/' + getDimension() + (isRemote ? "-r" : ""));
 		return name;
 	}
 

@@ -407,6 +407,7 @@
 			<addAll fromClass="me.nallar.patched.forge.PatchDimensionManager"/>
 			<synchronize field="unloadQueue">unloadWorld</synchronize>
 			<synchronize>initDimension</synchronize>
+			<insertAfter code="if ($2 != null) { $2.setDimension($1); }">setWorld</insertAfter>
 		</class>
 		<class id="net.minecraftforge.common.DimensionManager" env="mcpc">
 			<replaceMethod code="{
@@ -615,6 +616,9 @@
 		</class>
 		<class id="codechicken.xycraftcopy.core.world.WorldExtensionManager$WorldExtensionEventHandler">
 			<synchronize>onChunkLoad,onChunkUnLoad,onChunkDataLoad,onChunkDataSave</synchronize>
+		</class>
+		<class id="codechicken.core.CommonUtils">
+			<replaceMethod code="return $1.dimensionId;">getDimension(L^class:World^;)I</replaceMethod>
 		</class>
 	</chickenChunks>
 	<wirelessRedstone>

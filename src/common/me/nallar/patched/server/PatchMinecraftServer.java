@@ -424,10 +424,8 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			long var2 = System.nanoTime();
 
 			WorldServer world = DimensionManager.getWorld(id);
+			world.dimensionId = id;
 			String name = world.getName();
-			if (world.dimension == null) {
-				world.dimension = id;
-			}
 			try {
 				profiler.startSection(world.getWorldInfo().getWorldName());
 				profiler.startSection("pools");
