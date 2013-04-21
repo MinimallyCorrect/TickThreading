@@ -395,7 +395,7 @@ public abstract class PatchChunk extends Chunk {
 				Block block = id > 0 ? Block.blocksList[id] : null;
 				if (block != null) {
 					// CraftBukkit - Don't place while processing the BlockPlaceEvent, unless it's a BlockContainer
-					if (!this.worldObj.isRemote && (block instanceof BlockContainer || worldObj.inPlaceEvent.get() == Boolean.FALSE)) {
+					if (!this.worldObj.isRemote && (block instanceof BlockContainer || (worldObj.inPlaceEvent == null || worldObj.inPlaceEvent.get() == Boolean.FALSE))) {
 						block.onBlockAdded(this.worldObj, wX, y, wZ);
 					}
 
