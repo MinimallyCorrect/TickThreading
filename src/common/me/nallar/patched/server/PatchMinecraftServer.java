@@ -464,7 +464,9 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 						if (world.saveTickCount++ % 20 == 0) {
 							world.saveAllChunks(false, null);
 						} else {
-							world.theChunkProviderServer.saveChunks(false, null);
+							if (world.theChunkProviderServer.canSave()) {
+								world.theChunkProviderServer.saveChunks(false, null);
+							}
 						}
 					} catch (MinecraftException e) {
 						throw UnsafeUtil.throwIgnoreChecked(e);
