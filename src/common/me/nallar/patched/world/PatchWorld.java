@@ -12,7 +12,6 @@ import com.google.common.collect.ImmutableSetMultimap;
 import javassist.is.faulty.ThreadLocals;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.collections.ForcedChunksRedirectMap;
-import me.nallar.tickthreading.minecraft.TickManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.minecraft.entitylist.EntityList;
 import me.nallar.tickthreading.minecraft.entitylist.LoadedTileEntityList;
