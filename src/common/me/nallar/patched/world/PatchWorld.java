@@ -71,6 +71,12 @@ public abstract class PatchWorld extends World {
 
 	@Override
 	@Declare
+	public int getDimension() {
+		return provider.dimensionId; // Replaced in patcher on MCPC+
+	}
+
+	@Override
+	@Declare
 	public String getName() {
 		String name = cachedName;
 		if (name != null) {
@@ -80,7 +86,7 @@ public abstract class PatchWorld extends World {
 		if (name.startsWith("world_")) {
 			name = name.substring(6);
 		}
-		cachedName = (name + '/' + provider.dimensionId + (isRemote ? "-r" : ""));
+		cachedName = (name + '/' + getDimension() + (isRemote ? "-r" : ""));
 		return name;
 	}
 

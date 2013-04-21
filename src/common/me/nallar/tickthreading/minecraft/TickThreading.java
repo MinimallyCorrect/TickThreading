@@ -211,7 +211,7 @@ public class TickThreading {
 	}
 
 	public boolean shouldFastSpawn(World world) {
-		return this.enableFastMobSpawning && !disabledFastMobSpawningDimensions.contains(world.provider.dimensionId);
+		return this.enableFastMobSpawning && !disabledFastMobSpawningDimensions.contains(world.getDimension());
 	}
 
 	public int getThreadCount() {
