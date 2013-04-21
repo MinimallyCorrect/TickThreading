@@ -11,6 +11,7 @@ import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.patcher.Declare;
 import me.nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockContainer;
 import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
@@ -307,6 +308,113 @@ public abstract class PatchChunk extends Chunk {
 						if (var14 != null) {
 							var14.updateContainingBlockInfo();
 							var14.blockMetadata = meta;
+						}
+					}
+				}
+
+				this.isModified = true;
+				return true;
+			}
+		}
+	}
+
+	public boolean setBlockIDWithMetadata(int x, int y, int z, int id, int meta) {
+		int horizontalIndex = z << 4 | x;
+
+		if (y >= this.precipitationHeightMap[horizontalIndex] - 1) {
+			this.precipitationHeightMap[horizontalIndex] = -999;
+		}
+
+		int height = this.heightMap[horizontalIndex];
+		int oldId = this.getBlockID(x, y, z);
+		int oldMeta = this.getBlockMetadata(x, y, z);
+
+		if (oldId == id && oldMeta == meta) {
+			return false;
+		} else if (id < 0 || (id != 0 && Block.blocksList[id] == null)) {
+			Log.warning("Tried to set invalid block ID " + id + ':' + meta, new Throwable());
+			return false;
+		} else {
+			if (y >> 4 >= storageArrays.length || y >> 4 < 0) {
+				return false;
+			}
+
+			ExtendedBlockStorage ebs = this.storageArrays[y >> 4];
+			boolean changedHeightMap = false;
+
+			if (ebs == null) {
+				if (id == 0) {
+					return false;
+				}
+
+				ebs = this.storageArrays[y >> 4] = new ExtendedBlockStorage(y >> 4 << 4, !this.worldObj.provider.hasNoSky);
+				changedHeightMap = y >= height;
+			}
+
+			int wX = this.xPosition * 16 + x;
+			int wZ = this.zPosition * 16 + z;
+			Block oldBlock = oldId > 0 ? Block.blocksList[oldId] : null;
+
+			if (oldBlock != null && !this.worldObj.isRemote) {
+				oldBlock.onSetBlockIDWithMetaData(this.worldObj, wX, y, wZ, oldMeta);
+			}
+
+			ebs.setExtBlockID(x, y & 15, z, id);
+
+			if (oldBlock != null) {
+				if (!this.worldObj.isRemote) {
+					oldBlock.breakBlock(this.worldObj, wX, y, wZ, oldId, oldMeta);
+				} else if (oldBlock.hasTileEntity(oldMeta)) {
+					TileEntity te = worldObj.getBlockTileEntity(wX, y, wZ);
+					if (te != null && te.shouldRefresh(oldId, id, oldMeta, meta, worldObj, wX, y, wZ)) {
+						this.worldObj.removeBlockTileEntity(wX, y, wZ);
+					}
+				}
+			}
+
+			if (ebs.getExtBlockID(x, y & 15, z) != id) {
+				return false;
+			} else {
+				ebs.setExtBlockMetadata(x, y & 15, z, meta);
+
+				if (changedHeightMap) {
+					this.generateSkylightMap();
+				} else {
+					if (getBlockLightOpacity(x, y, z) > 0) {
+						if (y >= height) {
+							this.relightBlock(x, y + 1, z);
+						}
+					} else if (y == height - 1) {
+						this.relightBlock(x, y, z);
+					}
+
+					this.propagateSkylightOcclusion(x, z);
+				}
+
+				Block block = id > 0 ? Block.blocksList[id] : null;
+				if (block != null) {
+					// CraftBukkit - Don't place while processing the BlockPlaceEvent, unless it's a BlockContainer
+					if (!this.worldObj.isRemote && (block instanceof BlockContainer || worldObj.inPlaceEvent.get() == Boolean.FALSE)) {
+						block.onBlockAdded(this.worldObj, wX, y, wZ);
+					}
+
+					if (block.hasTileEntity(meta)) {
+						// CraftBukkit start - don't create tile entity if placement failed
+						if (getBlockID(x, y, z) != id) {
+							return false;
+						}
+						//CraftBukkit end
+
+						TileEntity tileEntity = this.getChunkBlockTileEntity(x, y, z);
+
+						if (tileEntity == null) {
+							tileEntity = block.createTileEntity(this.worldObj, meta);
+							this.worldObj.setBlockTileEntity(wX, y, wZ, tileEntity);
+						}
+
+						if (tileEntity != null) {
+							tileEntity.updateContainingBlockInfo();
+							tileEntity.blockMetadata = meta;
 						}
 					}
 				}
