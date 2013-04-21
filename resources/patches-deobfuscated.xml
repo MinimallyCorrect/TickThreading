@@ -794,4 +794,10 @@
 			<insertBefore code="if (!Thread.holdsLock(icbm.api.RadarRegistry.class)) { throw new UnsupportedOperationException(&quot;Not threadsafe.&quot;); }">getEntities,getTileEntities</insertBefore>
 		</class>
 	</icbm>
+	<forestry>
+		<class id="forestry.apiculture.gadgets.TileAlvearyPlain">
+			<replaceInitializer field="modifiers" code="java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap());"/>
+			<replaceInitializer field="eventHandlers" code="java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap());"/>
+		</class>
+	</forestry>
 </mods>
