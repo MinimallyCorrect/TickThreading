@@ -62,6 +62,8 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	public ThreadLocal<Boolean> worldGenInProgress_;
 	@Declare
 	public ThreadLocal<Boolean> inImmediateBlockUpdate_;
+	@Declare
+	public int saveTickCount_;
 	private HashSet<ChunkCoordIntPair> chunkTickSet;
 
 	public PatchWorldServer(MinecraftServer par1MinecraftServer, ISaveHandler par2ISaveHandler, String par3Str, int par4, WorldSettings par5WorldSettings, Profiler par6Profiler) {

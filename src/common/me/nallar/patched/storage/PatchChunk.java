@@ -55,7 +55,7 @@ public abstract class PatchChunk extends Chunk {
 		if (isModified || (force && (hasEntities || hasTileEntities))) {
 			return true;
 		}
-		long nextSaveTime = lastSaveTime + 6000;
+		long nextSaveTime = lastSaveTime + 4000;
 		long time = worldObj.getTotalWorldTime();
 		return (hasEntities && nextSaveTime <= time) || (hasTileEntities && (nextSaveTime + 3000) < time);
 	}

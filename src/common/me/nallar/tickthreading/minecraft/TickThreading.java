@@ -63,7 +63,7 @@ public class TickThreading {
 	public boolean allowWorldUnloading = true;
 	public boolean requireOpForDumpCommand = true;
 	public boolean enableFastMobSpawning = false;
-	public int saveInterval = 240;
+	public int saveInterval = 180;
 	public int deadLockTime = 45;
 	public int chunkCacheSize = 2000;
 	public int chunkGCInterval = 1200;
