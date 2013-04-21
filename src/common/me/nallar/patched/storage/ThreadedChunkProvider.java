@@ -20,6 +20,7 @@ import me.nallar.patched.annotation.FakeExtend;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.collections.NonBlockingLongSet;
 import me.nallar.tickthreading.minecraft.ChunkGarbageCollector;
+import me.nallar.tickthreading.minecraft.DeadLockDetector;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
 import me.nallar.tickthreading.util.BooleanThreadLocal;
@@ -626,7 +627,14 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	@Override
 	public boolean saveChunks(boolean fullSaveRequired, IProgressUpdate progressUpdate) {
-		boolean saveAll = fullSaveRequired || saveTicks++ % 512 == 0;
+		boolean saveAll = fullSaveRequired;
+		if (saveTicks++ % 512 == 0) {
+			int loadedChunks = chunks.getNumHashElements();
+			if (loadedChunks > 4096) {
+				DeadLockDetector.sendChatSafely("Saving world " + world.getName() + " with " + loadedChunks + " chunks, expect a short lag spike.");
+			}
+			saveAll = true;
+		}
 		int savedChunks = 0;
 
 		List<Chunk> chunksToSave = new ArrayList<Chunk>();

@@ -428,10 +428,13 @@ public class Patches {
 			method_ = "";
 		}
 		String className_ = null;
-		int dotIndex = method_.indexOf('.');
+		int dotIndex = method_.lastIndexOf('.');
 		if (dotIndex != -1) {
 			className_ = method_.substring(0, dotIndex);
 			method_ = method_.substring(dotIndex + 1);
+		}
+		if ("self".equals(className_)) {
+			className_ = ctBehavior.getDeclaringClass().getName();
 		}
 		String index_ = attributes.get("index");
 		if (index_ == null) {
@@ -462,7 +465,7 @@ public class Patches {
 							return;
 						}
 					}
-					Log.info("Replaced " + methodCall + " in " + ctBehavior);
+					Log.info("Replaced call to " + methodCall.getClassName() + '/' + methodCall.getMethodName() + " in " + ctBehavior.getLongName());
 					methodCall.replace(code);
 				}
 			}
