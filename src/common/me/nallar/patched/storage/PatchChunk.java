@@ -318,6 +318,7 @@ public abstract class PatchChunk extends Chunk {
 		}
 	}
 
+	@Override
 	public boolean setBlockIDWithMetadata(int x, int y, int z, int id, int meta) {
 		int horizontalIndex = z << 4 | x;
 
