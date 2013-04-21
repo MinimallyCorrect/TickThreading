@@ -51,7 +51,13 @@ public abstract class PatchChunk extends Chunk {
 
 	@Override
 	public boolean needsSaving(boolean force) {
-		return force || isModified || (hasEntities && (lastSaveTime + 9000 < worldObj.getTotalWorldTime()));
+		boolean hasTileEntities = !chunkTileEntityMap.isEmpty();
+		if (isModified || (force && (hasEntities || hasTileEntities))) {
+			return true;
+		}
+		long nextSaveTime = lastSaveTime + 6000;
+		long time = worldObj.getTotalWorldTime();
+		return (hasEntities && nextSaveTime <= time) || (hasTileEntities && (nextSaveTime + 3000) < time);
 	}
 
 	@Override
@@ -178,7 +184,6 @@ public abstract class PatchChunk extends Chunk {
 	@SuppressWarnings ("FieldRepeatedlyAccessedInMethod") // Patcher makes x/zPosition and worldObj final
 	@Override
 	public void addEntity(Entity par1Entity) {
-		isModified = true;
 		int entityChunkX = MathHelper.floor_double(par1Entity.posX / 16.0D);
 		int entityChunkZ = MathHelper.floor_double(par1Entity.posZ / 16.0D);
 

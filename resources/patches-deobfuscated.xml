@@ -169,9 +169,9 @@
 			<lock field="entityListReadLock">getEntitiesWithinAABBForEntity,getEntitiesOfTypeWithinAAAB</lock>
 			<replaceInitializer field="chunkTileEntityMap" class="java.util.concurrent.ConcurrentHashMap"/>
 			<!--
-			Used to debug when mods are setting chunk.isModified when they shouldn't - for example, GregTech sets every chunk with a gregtech machien in as modified
+			Used to debug when mods are setting chunk.isModified when they shouldn't - for example, GregTech sets every chunk with a gregtech machine in as modified
 			every tick. :(
-			<replaceFieldUsage field="isModified" writeCode="$0.^field:Chunk/isModified^ = $1; Thread.dumpStack();" runAll="true"/>
+			<replaceFieldUsage field="isModified" writeCode="$0.^field:Chunk/isModified^ = $1; if ($1 == true) { Thread.dumpStack(); }" runAll="true"/>
 			-->
 		</class>
 		<class id="net.minecraft.util.Vec3Pool">
@@ -572,6 +572,9 @@
 			<replaceInitializer field="energySourceToEnergyPathMap" class="java.util.HashMap"/>
 			<replaceInitializer field="entityLivingToShockEnergyMap" class="java.util.HashMap"/>
 			<synchronize>addTileEntity,removeTileEntity,emitEnergyFrom,discover</synchronize>
+		</class>
+		<class id="ic2.core.block.wiring.TileEntityElectricBlock">
+			<replaceMethodCall method="self.^method:TileEntity/onInventoryChanged^" code="{ }">^method:TileEntity/updateEntity^</replaceMethodCall>
 		</class>
 	</industrialCraft>
 	<gregTech>

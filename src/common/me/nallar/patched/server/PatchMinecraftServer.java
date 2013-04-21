@@ -219,6 +219,11 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			}
 
 			if (!TickThreading.instance.exitOnDeadlock) {
+				try {
+					Thread.sleep(100L);
+				} catch (InterruptedException ignored) {
+				}
+				this.saveEverything();
 				this.finalTick(crashReport);
 			}
 		} finally {
