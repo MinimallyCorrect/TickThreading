@@ -4,33 +4,32 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
-import org.cliffc.high_scale_lib.NonBlockingHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Concurrent HashMap, which extends HashMap.
- * Necessary as NonBlockingHashMap does not, so it's
+ * Necessary as ConcurrentHashMap does not, so it's
  * much harder to replace usages of HashMap with it
  */
 @SuppressWarnings ("UnusedDeclaration")
 public class CHashMap<K, V> extends HashMap<K, V> {
 	private static final long serialVersionUID = 7249069246763182397L;
-	private final NonBlockingHashMap<K, V> hashMap;
+	private final ConcurrentHashMap<K, V> hashMap;
 
 	public CHashMap(int initialCapacity, float loadFactor) {
-		hashMap = new NonBlockingHashMap<K, V>(initialCapacity);
+		hashMap = new ConcurrentHashMap<K, V>(initialCapacity);
 	}
 
 	public CHashMap(int initialCapacity) {
-		hashMap = new NonBlockingHashMap<K, V>(initialCapacity);
+		hashMap = new ConcurrentHashMap<K, V>(initialCapacity);
 	}
 
 	public CHashMap() {
-		hashMap = new NonBlockingHashMap<K, V>();
+		hashMap = new ConcurrentHashMap<K, V>();
 	}
 
 	public CHashMap(Map<? extends K, ? extends V> m) {
-		hashMap = new NonBlockingHashMap<K, V>(m.size());
+		hashMap = new ConcurrentHashMap<K, V>(m.size());
 		for (Map.Entry<? extends K, ? extends V> entry : m.entrySet()) {
 			hashMap.put(entry.getKey(), entry.getValue());
 		}
