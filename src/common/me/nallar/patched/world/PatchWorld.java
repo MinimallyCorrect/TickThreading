@@ -56,6 +56,8 @@ public abstract class PatchWorld extends World {
 	@Declare
 	public int tickCount_;
 	private boolean warnedWrongList;
+	@Declare
+	public Integer dimension_;
 	private String cachedName;
 
 	public void construct() {
@@ -73,7 +75,8 @@ public abstract class PatchWorld extends World {
 	@Override
 	@Declare
 	public int getDimension() {
-		return provider.dimensionId; // Replaced in patcher on MCPC+
+		Integer dimension = this.dimension;
+		return dimension == null ? provider.dimensionId : dimension;
 	}
 
 	@Override

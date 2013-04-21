@@ -420,6 +420,9 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 			WorldServer world = DimensionManager.getWorld(id);
 			String name = world.getName();
+			if (world.dimension == null) {
+				world.dimension = id;
+			}
 			try {
 				profiler.startSection(world.getWorldInfo().getWorldName());
 				profiler.startSection("pools");

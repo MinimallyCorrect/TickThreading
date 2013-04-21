@@ -324,7 +324,6 @@
 			<insertBefore code="inPlaceEvent = new me.nallar.tickthreading.util.BooleanThreadLocal();"/>
 			<final field="callingPlaceEvent"/>
 			<threadLocalBoolean field="callingPlaceEvent" threadLocalField="$0.inPlaceEvent"/>
-			<replaceMethod code="return dimension;">getDimension</replaceMethod>
 		</class>
 		<class id="net.minecraft.world.chunk.Chunk" env="mcpc">
 			<threadLocalBoolean field="callingPlaceEvent" threadLocalField="$0.inPlaceEvent"/>
