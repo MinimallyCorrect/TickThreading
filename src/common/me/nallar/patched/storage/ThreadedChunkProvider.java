@@ -85,6 +85,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	private int overloadCount = 0;
 	private int saveTicks = 0;
 	private int maxChunksToSave = 384;
+	private int lastChunksSaved = -1;
 	private Chunk lastChunk;
 	// Mojang compatiblity fields.
 	public final IChunkProvider currentChunkProvider;
@@ -670,9 +671,12 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 					maxChunksToSave = (maxChunksToSave * 3) / 2;
 					overloadCount -= 2;
 				}
+				lastChunksSaved = savedChunks;
 				return true;
 			}
 		}
+
+		lastChunksSaved = savedChunks;
 
 		if (overloadCount > 0) {
 			overloadCount--;
@@ -696,7 +700,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	@Override
 	public String makeString() {
-		return "Loaded " + loadedChunks.size() + " Loading " + loadingChunks.getNumHashElements() + " Unload " + unloadStage0.size() + " UnloadSave " + unloadStage1.size() + " Locks " + chunkLoadLocks.size();
+		return "Loaded " + loadedChunks.size() + " Loading " + loadingChunks.getNumHashElements() + " Unload " + unloadStage0.size() + " UnloadSave " + unloadStage1.size() + " Locks " + chunkLoadLocks.size() + " PartialSave " + lastChunksSaved;
 	}
 
 	@Override
