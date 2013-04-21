@@ -105,6 +105,9 @@
 		<class id="net.minecraft.world.biome.BiomeCache">
 			<synchronize>getBiomeCacheBlock,cleanupCache</synchronize>
 		</class>
+		<class id="net.minecraft.world.gen.layer.IntCache">
+			<replace class="me.nallar.patched.storage.IntCache"/>
+		</class>
 		<class id="net.minecraft.world.gen.structure.MapGenStructure">
 			<replaceInitializer field="structureMap" code="new java.util.concurrent.ConcurrentHashMap();"/>
 		</class>
@@ -414,7 +417,9 @@
 		</class>
 		<class id="net.minecraftforge.common.ForgeChunkManager">
 			<addAll fromClass="me.nallar.patched.forge.PatchForgeChunkManager"/>
-			<insertAfter code="if ($1 != null &amp;&amp; $2 != null) { $1.world.^method:World/getChunkProvider^().^method:IChunkProvider/loadChunk^($2.^field:ChunkCoordIntPair/chunkXPos^, $2.^field:ChunkCoordIntPair/chunkZPos^); }">forceChunk
+			<insertAfter
+							code="if ($1 != null &amp;&amp; $2 != null) { $1.world.^method:World/getChunkProvider^().^method:IChunkProvider/loadChunk^($2.^field:ChunkCoordIntPair/chunkXPos^, $2.^field:ChunkCoordIntPair/chunkZPos^); }">
+				forceChunk
 			</insertAfter>
 			<synchronize>forceChunk,unforceChunk</synchronize>
 		</class>
