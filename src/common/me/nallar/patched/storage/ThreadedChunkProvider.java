@@ -83,6 +83,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	private int unloadTicks = 0;
 	private int overloadCount = 0;
 	private int saveTicks = 0;
+	private int maxChunksToSave = 256;
 	private Chunk lastChunk;
 	// Mojang compatiblity fields.
 	public final IChunkProvider currentChunkProvider;
@@ -655,9 +656,11 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 			safeSaveChunk(chunk);
 
-			if (++savedChunks == 256 && !saveAll) {
+			if (++savedChunks == maxChunksToSave && !saveAll) {
 				if ((++overloadCount) > 50) {
 					Log.warning("Partial save queue overloaded in " + Log.name(world) + ". You should decrease saveInterval. Only saved " + savedChunks + " out of " + chunksToSave.size());
+					maxChunksToSave = (maxChunksToSave * 3) / 2;
+					overloadCount -= 2;
 				}
 				return true;
 			}
