@@ -101,7 +101,7 @@ public abstract class PatchWorld extends World {
 			return name;
 		}
 		int dimensionId = getDimension();
-		if (dimensionId == provider.dimensionId && dimensionId <= 1) {
+		if (dimensionId == provider.dimensionId) {
 			name = provider.getDimensionName();
 		} else {
 			name = worldInfo.getWorldName();
