@@ -490,8 +490,8 @@
 	</liteLoader>
 	<buildCraftFactory>
 		<class id="buildcraft.BuildCraftFactory$QuarryChunkloadCallback">
-			<replaceMethodCall code="$_ = $0.getTEForceLoad($$);" method="^class:World^.^method:World/getBlockTileEntity^">ticketsLoaded(Ljava.util.List;L^class:World^;)V</replaceMethodCall>
-			<replaceMethodCall code="$_ = $0.getBlockIdForceLoad($$);" method="^class:World^.^method:World/getBlockId^">ticketsLoaded(Ljava.util.List;L^class:World^;I)Ljava.util.List;</replaceMethodCall>
+			<replaceMethodCall newMethod="getTEForceLoad" method="^class:World^.^method:World/getBlockTileEntity^">ticketsLoaded(Ljava.util.List;L^class:World^;)V</replaceMethodCall>
+			<replaceMethodCall newMethod="getBlockIdForceLoad" method="^class:World^.^method:World/getBlockId^">ticketsLoaded(Ljava.util.List;L^class:World^;I)Ljava.util.List;</replaceMethodCall>
 		</class>
 	</buildCraftFactory>
 	<buildCraftTransport>
@@ -814,4 +814,10 @@
 			<replaceInitializer field="eventHandlers" code="java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap());"/>
 		</class>
 	</forestry>
+	<railCraft>
+		<class id="railcraft.common.util.misc.ChunkManager">
+			<replaceMethodCall newMethod="getTEForceLoad" method="^class:World^.^method:World/getBlockTileEntity^">ticketsLoaded(Ljava.util.List;L^class:World^;)V,ticketsLoaded(Ljava.util.List;L^class:World^;I)Ljava.util.List;</replaceMethodCall>
+			<replaceMethodCall newMethod="getBlockIdForceLoad" method="^class:World^.^method:World/getBlockId^">ticketsLoaded(Ljava.util.List;L^class:World^;)V,ticketsLoaded(Ljava.util.List;L^class:World^;I)Ljava.util.List;</replaceMethodCall>
+		</class>
+	</railCraft>
 </mods>
