@@ -47,9 +47,12 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 	private final Cache<Long, NBTTagCompound> chunkCache;
 	public final RegionFileCache regionFileCache;
 
-	public ThreadedChunkLoader(File par1File) {
-		super(par1File);
-		this.chunkSaveLocation = par1File;
+	public ThreadedChunkLoader(File file) {
+		super(file);
+		this.chunkSaveLocation = file;
+		if (file == null) {
+			Log.severe("Null chunk save location set for ThreadedChunkLoader", new Throwable());
+		}
 		chunkCache = CacheBuilder.newBuilder().maximumSize(TickThreading.instance.chunkCacheSize).build();
 		regionFileCache = new RegionFileCache(chunkSaveLocation);
 	}

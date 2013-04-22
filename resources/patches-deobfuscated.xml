@@ -620,14 +620,15 @@
 		</class>
 		<class id="codechicken.core.CommonUtils">
 			<replaceMethod code="return $1.dimensionId;">getDimension(L^class:World^;)I</replaceMethod>
-			<replaceMethod code="
-			File basesave = getWorldBaseSaveLocation(world);
-			String innerSave = world.^field:World/provider^.getSaveFolder();
-			if (innerSave != null) {
-				return new File(basesave, innerSave);
-			}
+			<replaceMethod code="{
+				File basesave = getWorldBaseSaveLocation(world);
+				String innerSave = world.^field:World/provider^.getSaveFolder();
+				if (innerSave != null) {
+					return new File(basesave, innerSave);
+				}
 
-			return basesave;">getWorldSaveLocation(L^class:World^;I)Ljava.io.File;
+				return basesave;
+			}">getWorldSaveLocation(L^class:World^;I)Ljava.io.File;
 			</replaceMethod>
 		</class>
 	</chickenChunks>
