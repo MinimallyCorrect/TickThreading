@@ -100,11 +100,16 @@ public abstract class PatchWorld extends World {
 		if (name != null) {
 			return name;
 		}
-		name = worldInfo.getWorldName();
-		if (name.startsWith("world_")) {
-			name = name.substring(6);
+		int dimensionId = getDimension();
+		if (dimensionId == provider.dimensionId && dimensionId <= 1) {
+			name = provider.getDimensionName();
+		} else {
+			name = worldInfo.getWorldName();
+			if (name.startsWith("world_")) {
+				name = name.substring(6);
+			}
 		}
-		cachedName = name = (name + '/' + getDimension() + (isRemote ? "-r" : ""));
+		cachedName = name = (name + '/' + dimensionId + (isRemote ? "-r" : ""));
 		return name;
 	}
 
