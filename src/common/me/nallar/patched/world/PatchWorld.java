@@ -174,6 +174,12 @@ public abstract class PatchWorld extends World {
 
 	@Override
 	@Declare
+	public Chunk getChunkFromChunkCoordsForceLoad(int x, int z) {
+		return chunkProvider.loadChunk(x, z);
+	}
+
+	@Override
+	@Declare
 	public int getBlockIdForceLoad(int x, int y, int z) {
 		if (y >= 256) {
 			return 0;
