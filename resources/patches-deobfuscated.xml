@@ -720,6 +720,14 @@
 		<class id="chb.mods.mffs.common.item.ItemCardPowerLink">
 			<synchronize/>
 		</class>
+		<class id="chb.mods.mffs.common.ModularForceFieldSystem$MFFSChunkloadCallback">
+			<replaceMethodCall newMethod="getTEForceLoad" method="^class:World^.^method:World/getBlockTileEntity^">
+				ticketsLoaded(Ljava.util.List;L^class:World^;)V,ticketsLoaded(Ljava.util.List;L^class:World^;I)Ljava.util.List;
+			</replaceMethodCall>
+			<replaceMethodCall newMethod="getBlockIdForceLoad" method="^class:World^.^method:World/getBlockId^">
+				ticketsLoaded(Ljava.util.List;L^class:World^;)V,ticketsLoaded(Ljava.util.List;L^class:World^;I)Ljava.util.List;
+			</replaceMethodCall>
+		</class>
 	</MFFS>
 	<thaumcraft>
 		<class id="thaumcraft.api.ObjectTags">
@@ -817,8 +825,12 @@
 	</forestry>
 	<railCraft>
 		<class id="railcraft.common.util.misc.ChunkManager">
-			<replaceMethodCall newMethod="getTEForceLoad" method="^class:World^.^method:World/getBlockTileEntity^">ticketsLoaded(Ljava.util.List;L^class:World^;)V,ticketsLoaded(Ljava.util.List;L^class:World^;I)Ljava.util.List;</replaceMethodCall>
-			<replaceMethodCall newMethod="getBlockIdForceLoad" method="^class:World^.^method:World/getBlockId^">ticketsLoaded(Ljava.util.List;L^class:World^;)V,ticketsLoaded(Ljava.util.List;L^class:World^;I)Ljava.util.List;</replaceMethodCall>
+			<replaceMethodCall newMethod="getTEForceLoad" method="^class:World^.^method:World/getBlockTileEntity^">
+				ticketsLoaded(Ljava.util.List;L^class:World^;)V,ticketsLoaded(Ljava.util.List;L^class:World^;I)Ljava.util.List;
+			</replaceMethodCall>
+			<replaceMethodCall newMethod="getBlockIdForceLoad" method="^class:World^.^method:World/getBlockId^">
+				ticketsLoaded(Ljava.util.List;L^class:World^;)V,ticketsLoaded(Ljava.util.List;L^class:World^;I)Ljava.util.List;
+			</replaceMethodCall>
 		</class>
 	</railCraft>
 </mods>
