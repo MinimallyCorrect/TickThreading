@@ -35,6 +35,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.Configuration;
+import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.ForgeSubscribe;
 import net.minecraftforge.event.world.WorldEvent;
@@ -159,23 +160,27 @@ public class TickThreading {
 
 	@ForgeSubscribe
 	public void onWorldLoad(WorldEvent.Load event) {
-		if (event.world.isRemote) {
-			Log.severe("World " + Log.name(event.world) + " seems to be a client world", new Throwable());
+		World world = event.world;
+		if (world.isRemote) {
+			Log.severe("World " + Log.name(world) + " seems to be a client world", new Throwable());
 			return;
 		}
-		TickManager manager = new TickManager((WorldServer) event.world, regionSize, getThreadCount(), waitForEntityTickCompletion);
+		if (DimensionManager.getWorld(world.getDimension()) != world) {
+			Log.severe("World " + world.getName() + " was loaded with an incorrect dimension ID!", new Throwable());
+		}
+		TickManager manager = new TickManager((WorldServer) world, regionSize, getThreadCount(), waitForEntityTickCompletion);
 		manager.setVariableTickRate(variableTickRate);
 		try {
 			Field loadedTileEntityField = FieldUtil.getFields(World.class, List.class)[loadedTileEntityFieldIndex];
-			new LoadedTileEntityList<TileEntity>(event.world, loadedTileEntityField, manager);
+			new LoadedTileEntityList<TileEntity>(world, loadedTileEntityField, manager);
 			Field loadedEntityField = FieldUtil.getFields(World.class, List.class)[loadedEntityFieldIndex];
-			new LoadedEntityList<TileEntity>(event.world, loadedEntityField, manager);
-			Log.info("Threading initialised for world " + Log.name(event.world));
-			if (managers.put(event.world, manager) != null) {
-				Log.severe("World load fired twice for world " + event.world.getName());
+			new LoadedEntityList<TileEntity>(world, loadedEntityField, manager);
+			Log.info("Threading initialised for world " + Log.name(world));
+			if (managers.put(world, manager) != null) {
+				Log.severe("World load fired twice for world " + world.getName());
 			}
 		} catch (Exception e) {
-			Log.severe("Failed to initialise threading for world " + Log.name(event.world), e);
+			Log.severe("Failed to initialise threading for world " + Log.name(world), e);
 		}
 		if (deadLockDetector == null) {
 			deadLockDetector = new DeadLockDetector();
@@ -184,25 +189,26 @@ public class TickThreading {
 
 	@ForgeSubscribe
 	public void onWorldUnload(WorldEvent.Unload event) {
+		World world = event.world;
 		try {
-			TickManager tickManager = managers.remove(event.world);
+			TickManager tickManager = managers.remove(world);
 			if (tickManager == null) {
-				Log.severe("World unload fired twice for world " + event.world.getName());
+				Log.severe("World unload fired twice for world " + world.getName());
 			} else {
 				tickManager.unload();
 			}
 			Field loadedTileEntityField = FieldUtil.getFields(World.class, List.class)[loadedTileEntityFieldIndex];
-			Object loadedTileEntityList = loadedTileEntityField.get(event.world);
+			Object loadedTileEntityList = loadedTileEntityField.get(world);
 			if (!(loadedTileEntityList instanceof EntityList)) {
-				Log.severe("Looks like another mod broke TT's replacement tile entity list in world: " + Log.name(event.world));
+				Log.severe("Looks like another mod broke TT's replacement tile entity list in world: " + Log.name(world));
 			}
 			Field loadedEntityField = FieldUtil.getFields(World.class, List.class)[loadedEntityFieldIndex];
-			Object loadedEntityList = loadedEntityField.get(event.world);
+			Object loadedEntityList = loadedEntityField.get(world);
 			if (!(loadedEntityList instanceof EntityList)) {
-				Log.severe("Looks like another mod broke TT's replacement entity list in world: " + Log.name(event.world));
+				Log.severe("Looks like another mod broke TT's replacement entity list in world: " + Log.name(world));
 			}
 		} catch (Exception e) {
-			Log.severe("Probable memory leak, failed to unload threading for world " + Log.name(event.world), e);
+			Log.severe("Probable memory leak, failed to unload threading for world " + Log.name(world), e);
 		}
 	}
 
