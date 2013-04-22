@@ -60,6 +60,7 @@ public abstract class PatchWorld extends World {
 	@Declare
 	public int dimensionId_;
 	private String cachedName;
+	private boolean multiverseName;
 
 	public void construct() {
 		tickCount = rand.nextInt(240); // So when different worlds do every N tick actions,
@@ -80,6 +81,10 @@ public abstract class PatchWorld extends World {
 	@Declare
 	public void setDimension(int dimensionId) {
 		this.dimensionId = dimensionId;
+		if (provider.dimensionId != dimensionId) {
+			multiverseName = true;
+			provider.dimensionId = dimensionId;
+		}
 		cachedName = null;
 		Log.info("Set dimension ID for " + this.getName());
 		if (TickThreading.instance.getManager(this) != null) {
@@ -101,13 +106,13 @@ public abstract class PatchWorld extends World {
 			return name;
 		}
 		int dimensionId = getDimension();
-		if (dimensionId == provider.dimensionId) {
-			name = provider.getDimensionName();
-		} else {
+		if (multiverseName) {
 			name = worldInfo.getWorldName();
 			if (name.startsWith("world_")) {
 				name = name.substring(6);
 			}
+		} else {
+			name = provider.getDimensionName();
 		}
 		cachedName = name = (name + '/' + dimensionId + (isRemote ? "-r" : ""));
 		return name;
