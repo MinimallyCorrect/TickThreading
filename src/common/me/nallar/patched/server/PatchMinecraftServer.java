@@ -455,7 +455,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				profiler.startSection("tracker");
 				world.getEntityTracker().updateTrackedEntities();
 				profiler.endSection();
-				if (world.tickCount % 102 == 0) {
+				if (world.tickCount % 14 == 0) {
 					exceptionCount.put(id, 0);
 				}
 				if (world.tickCount % TickThreading.instance.saveInterval == 0) {
@@ -491,7 +491,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 					c = 0;
 				}
 				c++;
-				if (c >= 99) {
+				if (c >= 10) {
 					DeadLockDetector.sendChatSafely("The world " + Log.name(world) + " has become unstable, and the server will now stop.");
 					Log.severe(Log.name(world) + " has become unstable, stopping.");
 					this.initiateShutdown();

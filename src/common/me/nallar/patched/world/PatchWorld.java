@@ -36,6 +36,7 @@ import net.minecraft.world.WorldSettings;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.ChunkProviderServer;
 import net.minecraft.world.storage.ISaveHandler;
+import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.ForgeChunkManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
@@ -60,7 +61,10 @@ public abstract class PatchWorld extends World {
 	@Declare
 	public int dimensionId_;
 	private String cachedName;
-	private boolean multiverseName;
+	@Declare
+	public boolean multiverseWorld_;
+	@Declare
+	public int originalDimension_;
 
 	public void construct() {
 		tickCount = rand.nextInt(240); // So when different worlds do every N tick actions,
@@ -80,9 +84,16 @@ public abstract class PatchWorld extends World {
 	@Override
 	@Declare
 	public void setDimension(int dimensionId) {
+		WorldProvider provider = this.provider;
 		this.dimensionId = dimensionId;
 		if (provider.dimensionId != dimensionId) {
-			multiverseName = true;
+			try {
+				DimensionManager.registerDimension(dimensionId, provider.dimensionId);
+			} catch (Throwable t) {
+				Log.warning("Failed to register corrected dimension ID with DimensionManager", t);
+			}
+			originalDimension = provider.dimensionId;
+			multiverseWorld = true;
 			provider.dimensionId = dimensionId;
 		}
 		cachedName = null;
@@ -106,7 +117,7 @@ public abstract class PatchWorld extends World {
 			return name;
 		}
 		int dimensionId = getDimension();
-		if (multiverseName) {
+		if (multiverseWorld) {
 			name = worldInfo.getWorldName();
 			if (name.startsWith("world_")) {
 				name = name.substring(6);

@@ -950,7 +950,7 @@ public class Patches {
 		}
 		String exceptionType = attributes.get("type");
 		if (exceptionType == null) {
-			exceptionType = "java.lang.Exception";
+			exceptionType = "java.lang.Throwable";
 		}
 		Log.info("Ignoring " + exceptionType + " in " + ctMethod + ", returning with " + returnCode);
 		ctMethod.addCatch("{ " + returnCode + '}', classRegistry.getClass(exceptionType));

@@ -1,12 +1,22 @@
 package javassist.is.faulty;
 
+import com.google.common.hash.Hashing;
+
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.network.NetServerHandler;
+import net.minecraft.network.packet.Packet;
+import net.minecraft.network.packet.Packet1Login;
+import net.minecraft.network.packet.Packet9Respawn;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.ServerConfigurationManager;
+import net.minecraft.world.World;
+import net.minecraftforge.common.DimensionManager;
 
 public class Redirects {
+	private static final int FML_HASH = Hashing.murmur3_32().hashString("FML").asInt();
+
 	public static void notifyAdmins(String message) {
 		if (!TickThreading.instance.antiCheatNotify) {
 			return;
@@ -25,5 +35,26 @@ public class Redirects {
 		} finally {
 			serverConfigurationManager.playerUpdateLock.unlock();
 		}
+	}
+
+	public static boolean interceptPacket(Packet packet, NetServerHandler handler) {
+		if (packet instanceof Packet9Respawn) {
+			Packet9Respawn packet9Respawn = (Packet9Respawn) packet;
+			int dimension = packet9Respawn.respawnDimension;
+			World world = DimensionManager.getWorld(dimension);
+			if (world.multiverseWorld) {
+				packet9Respawn.respawnDimension = world.originalDimension;
+			}
+		} else if (packet instanceof Packet1Login) {
+			Packet1Login packet1Login = (Packet1Login) packet;
+			if (packet1Login.clientEntityId != FML_HASH) {
+				int dimension = packet1Login.dimension;
+				World world = DimensionManager.getWorld(dimension);
+				if (world.multiverseWorld) {
+					packet1Login.dimension = world.originalDimension;
+				}
+			}
+		}
+		return false;
 	}
 }

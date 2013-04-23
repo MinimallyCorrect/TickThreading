@@ -40,6 +40,7 @@
 												 code="{ javassist.is.faulty.Redirects.notifyAdmins($1); }"
 							>handleFlying
 			</replaceMethodCall>
+			<insertBefore code="if (javassist.is.faulty.Redirects.interceptPacket($1, this)) { return; }">sendPacketToPlayer</insertBefore>
 		</class>
 		<class id="net.minecraft.network.packet.Packet10Flying">
 			<addAll fromClass="me.nallar.patched.network.PatchPacket10Flying"/>
@@ -343,6 +344,11 @@
 		<class id="org.bukkit.plugin.SimplePluginManager">
 			<synchronize>subscribeToPermission,unsubscribeFromPermission,subscribeToDefaultPerms,unsubscribeFromDefaultPerms,getPermissionSubscriptions,getDefaultPermSubscriptions</synchronize>
 		</class>
+		<class id="org.bukkit.craftbukkit.v1_4_R1.CraftServer">
+			<replaceMethodCall method="registerDimension" code="{ }">createWorld(Lorg.bukkit.WorldCreator;)Lorg.bukkit.World;</replaceMethodCall>
+			<replaceMethodCall method="addMVDimension" code="{ }">createWorld(Lorg.bukkit.WorldCreator;)Lorg.bukkit.World;</replaceMethodCall>
+			<ignoreExceptions code="System.err.println(&quot;Loading world failed&quot; + $e); $e.printStackTrace(); throw new java.lang.Error($e);">createWorld(Lorg.bukkit.WorldCreator;)Lorg.bukkit.World;</ignoreExceptions>
+		</class>
 		<class id="org.bukkit.craftbukkit.v1_4_R1.CraftWorld">
 			<replaceMethod
 							code=" {
@@ -621,10 +627,10 @@
 		<class id="codechicken.core.CommonUtils">
 			<replaceMethod code="return $1.dimensionId;">getDimension(L^class:World^;)I</replaceMethod>
 			<replaceMethod code="{
-				File basesave = getWorldBaseSaveLocation(world);
-				String innerSave = world.^field:World/provider^.getSaveFolder();
+				java.io.File basesave = getWorldBaseSaveLocation($1);
+				String innerSave = $1.^field:World/provider^.getSaveFolder();
 				if (innerSave != null) {
-					return new File(basesave, innerSave);
+					return new java.io.File(basesave, innerSave);
 				}
 
 				return basesave;
