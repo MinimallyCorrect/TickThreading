@@ -24,6 +24,8 @@ public abstract class PatchNetServerHandler extends NetServerHandler {
 	public double tpPosX_;
 	@Declare
 	public double tpPosY_;
+	@Declare
+	public int clientDimension_;
 	private double tpPosZ;
 
 	public void construct() {

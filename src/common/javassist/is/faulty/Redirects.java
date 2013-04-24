@@ -1,13 +1,18 @@
 package javassist.is.faulty;
 
+import java.util.Arrays;
+
 import com.google.common.hash.Hashing;
 
+import cpw.mods.fml.common.network.Player;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.network.INetworkManager;
 import net.minecraft.network.NetServerHandler;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet1Login;
+import net.minecraft.network.packet.Packet250CustomPayload;
 import net.minecraft.network.packet.Packet9Respawn;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.ServerConfigurationManager;
@@ -43,7 +48,9 @@ public class Redirects {
 			int dimension = packet9Respawn.respawnDimension;
 			World world = DimensionManager.getWorld(dimension);
 			if (world.multiverseWorld) {
-				packet9Respawn.respawnDimension = world.originalDimension;
+				handler.clientDimension = packet9Respawn.respawnDimension = world.originalDimension;
+			} else {
+				handler.clientDimension = packet9Respawn.respawnDimension;
 			}
 		} else if (packet instanceof Packet1Login) {
 			Packet1Login packet1Login = (Packet1Login) packet;
@@ -51,10 +58,50 @@ public class Redirects {
 				int dimension = packet1Login.dimension;
 				World world = DimensionManager.getWorld(dimension);
 				if (world.multiverseWorld) {
-					packet1Login.dimension = world.originalDimension;
+					handler.clientDimension = packet1Login.dimension = world.originalDimension;
+				} else {
+					handler.clientDimension = packet1Login.dimension;
 				}
 			}
 		}
 		return false;
+	}
+
+	// announceBlockUpdate,initiateTileEntityEvent,initiateExplosionEffect
+	public static void interceptIC2Packet(Packet packet, Player player) {
+		if (player instanceof EntityPlayerMP) {
+			NetServerHandler netServerHandler = ((EntityPlayerMP) player).playerNetServerHandler;
+			Packet250CustomPayload packet250CustomPayload = (Packet250CustomPayload) packet;
+			byte[] data = packet250CustomPayload.data;
+			byte type = data[0];
+			switch (type) {
+				case 1:
+				case 3:
+				case 5:
+					setInt(data, 1, netServerHandler.clientDimension);
+					Log.info("Set dimension to " + netServerHandler.clientDimension + " for type " + type);
+					break;
+			}
+			netServerHandler.sendPacketToPlayer(packet);
+		}
+	}
+
+	public static void interceptIC2PacketIn(INetworkManager manager, Packet250CustomPayload packet, Player player) {
+		if (!(player instanceof EntityPlayerMP)) {
+			return;
+		}
+		int dimension = ((EntityPlayerMP) player).playerNetServerHandler.clientDimension;
+		byte[] data = packet.data;
+		byte type = data[0];
+		if (type == 0 || type == 3) {
+			setInt(data, 1, dimension);
+		}
+	}
+
+	private static void setInt(byte[] array, int index, int value) {
+		array[index++] = (byte) ((value >>> 24) & 0xFF);
+		array[index++] = (byte) ((value >>> 16) & 0xFF);
+		array[index++] = (byte) ((value >>> 8) & 0xFF);
+		array[index] = (byte) ((value) & 0xFF);
 	}
 }

@@ -347,7 +347,9 @@
 		<class id="org.bukkit.craftbukkit.v1_4_R1.CraftServer">
 			<replaceMethodCall method="registerDimension" code="{ }">createWorld(Lorg.bukkit.WorldCreator;)Lorg.bukkit.World;</replaceMethodCall>
 			<replaceMethodCall method="addMVDimension" code="{ }">createWorld(Lorg.bukkit.WorldCreator;)Lorg.bukkit.World;</replaceMethodCall>
-			<ignoreExceptions code="System.err.println(&quot;Loading world failed&quot; + $e); $e.printStackTrace(); throw new java.lang.Error($e);">createWorld(Lorg.bukkit.WorldCreator;)Lorg.bukkit.World;</ignoreExceptions>
+			<ignoreExceptions code="System.err.println(&quot;Loading world failed&quot; + $e); $e.printStackTrace(); throw new java.lang.Error($e);">
+				createWorld(Lorg.bukkit.WorldCreator;)Lorg.bukkit.World;
+			</ignoreExceptions>
 		</class>
 		<class id="org.bukkit.craftbukkit.v1_4_R1.CraftWorld">
 			<replaceMethod
@@ -583,6 +585,66 @@
 		</class>
 		<class id="ic2.core.block.wiring.TileEntityElectricBlock">
 			<replaceMethodCall method="self.^method:TileEntity/onInventoryChanged^" code="{ }">^method:TileEntity/updateEntity^</replaceMethodCall>
+		</class>
+		<class id="ic2.core.network.NetworkManager">
+			<replaceMethodCall method="cpw.mods.fml.common.network.PacketDispatcher.sendPacketToPlayer" code="javassist.is.faulty.Redirects.interceptIC2Packet($$);">
+				announceBlockUpdate,initiateTileEntityEvent,initiateExplosionEffect
+			</replaceMethodCall>
+			<insertBefore code="javassist.is.faulty.Redirects.interceptIC2PacketIn($1, $2, $3);">onPacketData</insertBefore>
+			<replaceMethod code="{
+      byte[] var10000;
+      try {
+         java.io.ByteArrayOutputStream e = new java.io.ByteArrayOutputStream();
+         e.write(0);
+         java.util.zip.GZIPOutputStream gzip = new java.util.zip.GZIPOutputStream(e);
+         java.io.DataOutputStream os = new java.io.DataOutputStream(gzip);
+         os.writeInt(((^class:EntityPlayerMP^) $2).^field:EntityPlayerMP/playerNetServerHandler^.clientDimension);
+         java.util.Iterator i$ = $1.iterator();
+
+         do {
+            ic2.core.network.NetworkManager$TileEntityField tef = (ic2.core.network.NetworkManager$TileEntityField)i$.next();
+            if (!tef.te.r() &amp;&amp; tef.te.k == $2.p &amp;&amp; (tef.target == null || tef.target == $2)) {
+               int distance = Math.min(Math.abs(tef.te.l - (int)$2.t), Math.abs(tef.te.n - (int)$2.v));
+               if (distance &lt;= net.minecraft.server.MinecraftServer.D().ad().a() + 16) {
+                  os.writeInt(tef.te.l);
+                  os.writeInt(tef.te.m);
+                  os.writeInt(tef.te.n);
+                  os.writeShort(tef.field.length());
+                  os.writeChars(tef.field);
+                  java.lang.reflect.Field field = null;
+
+                  try {
+                     Class e1 = tef.te.getClass();
+
+                     do {
+                        try {
+                           field = e1.getDeclaredField(tef.field);
+                        } catch (NoSuchFieldException var14) {
+                           e1 = e1.getSuperclass();
+                        }
+                     } while(field == null &amp;&amp; e1 != null);
+
+                     if (field == null) {
+                        throw new NoSuchFieldException(tef.field);
+                     }
+
+                     field.setAccessible(true);
+                     ic2.core.network.DataEncoder.encode(os, field.get(tef.te));
+                  } catch (Exception var15) {
+                     throw new RuntimeException(var15);
+                  }
+               }
+            }
+         } while (i$.hasNext());
+         os.close();
+         gzip.close();
+         var10000 = e.toByteArray();
+      } catch (java.io.IOException var16) {
+         throw new RuntimeException(var16);
+      }
+
+      return var10000;
+   }">getFieldData</replaceMethod>
 		</class>
 	</industrialCraft>
 	<gregTech>
