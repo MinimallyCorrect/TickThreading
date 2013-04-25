@@ -77,7 +77,6 @@ public class Redirects {
 				case 3:
 				case 5:
 					setInt(data, 1, netServerHandler.clientDimension);
-					Log.info("Set dimension to " + netServerHandler.clientDimension + " for type " + type);
 					break;
 			}
 			netServerHandler.sendPacketToPlayer(packet);
