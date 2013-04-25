@@ -1,7 +1,5 @@
 package javassist.is.faulty;
 
-import java.util.Arrays;
-
 import com.google.common.hash.Hashing;
 
 import cpw.mods.fml.common.network.Player;

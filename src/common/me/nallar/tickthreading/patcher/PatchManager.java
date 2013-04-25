@@ -283,7 +283,7 @@ public class PatchManager {
 				return null;
 			}
 			String textContent = patchElement.getTextContent().trim();
-			if (attributes.containsKey("runAll")) {
+			if ("^all^".equals(textContent)) {
 				List<CtBehavior> ctBehaviors = new ArrayList<CtBehavior>();
 				Collections.addAll(ctBehaviors, ctClass.getDeclaredMethods());
 				Collections.addAll(ctBehaviors, ctClass.getDeclaredConstructors());

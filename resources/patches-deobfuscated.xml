@@ -172,7 +172,7 @@
 			<!--
 			Used to debug when mods are setting chunk.isModified when they shouldn't - for example, GregTech sets every chunk with a gregtech machine in as modified
 			every tick. :(
-			<replaceFieldUsage field="isModified" writeCode="$0.^field:Chunk/isModified^ = $1; if ($1 == true) { Thread.dumpStack(); }" runAll="true"/>
+			<replaceFieldUsage field="isModified" writeCode="$0.^field:Chunk/isModified^ = $1; if ($1 == true) { Thread.dumpStack(); }">^all^</replaceFieldUsage>
 			-->
 		</class>
 		<class id="net.minecraft.util.Vec3Pool">
@@ -665,9 +665,12 @@
 		</class>
 		<class id="codechicken.chunkloader.ChunkLoaderManager">
 			<disable>cleanChunks</disable>
+			<replaceMethodCall newMethod="getTEForceLoad" method="^class:World^.^method:World/getBlockTileEntity^">^all^</replaceMethodCall>
+			<replaceMethodCall newMethod="getBlockIdForceLoad" method="^class:World^.^method:World/getBlockId^">^all^</replaceMethodCall>
 		</class>
 		<class id="codechicken.chunkloader.ChunkLoaderManager$ChunkLoaderOrganiser">
-			<replaceMethodCall code="$_ = $0.getTEForceLoad($$);" method="^class:World^.^method:World/getBlockTileEntity^">revive(^class:World^)V</replaceMethodCall>
+			<replaceMethodCall newMethod="getTEForceLoad" method="^class:World^.^method:World/getBlockTileEntity^">^all^</replaceMethodCall>
+			<replaceMethodCall newMethod="getBlockIdForceLoad" method="^class:World^.^method:World/getBlockId^">^all^</replaceMethodCall>
 			<synchronize>revive(^class:World^)V</synchronize>
 			<replaceInitializer field="timedUnloadQueue" class="me.nallar.tickthreading.collections.CHashMap"/>
 		</class>
