@@ -151,7 +151,6 @@ public class Patches {
 					try {
 						if (classRegistry.getClass(e.getClassName()).subtypeOf(ctField.getType())) {
 							lastNewExpr = e;
-							Log.fine(e + "," + e.getClassName());
 						}
 					} catch (NotFoundException ignored) {
 					}
@@ -162,7 +161,6 @@ public class Patches {
 					NewExpr myLastNewExpr = lastNewExpr;
 					lastNewExpr = null;
 					if (myLastNewExpr != null && e.getFieldName().equals(field)) {
-						Log.fine('(' + myLastNewExpr.getSignature() + ") " + myLastNewExpr.getClassName() + " at " + myLastNewExpr.getFileName() + ':' + myLastNewExpr.getLineNumber() + ':' + newPos);
 						newExprType.put(newPos, classSignatureToName(e.getSignature()));
 					}
 				}
@@ -205,9 +203,8 @@ public class Patches {
 					newPos++;
 					if (newExprType.containsKey(newPos)) {
 						String assignedType = newExprType.get(newPos);
-						Log.fine(assignedType + " at " + e.getFileName() + ':' + e.getLineNumber());
 						String block = "{$_=" + newInitialiser + '}';
-						Log.fine("Replaced with " + block);
+						Log.fine(assignedType + " at " + e.getFileName() + ':' + e.getLineNumber() + " replaced with " + block);
 						e.replace(block);
 						replaced.value++;
 					}
@@ -314,7 +311,7 @@ public class Patches {
 	)
 	public CtClass replace(CtClass clazz, Map<String, String> attributes) throws NotFoundException, CannotCompileException, BadBytecode {
 		String fromClass = attributes.get("class");
-		Log.info("Replacing " + clazz.getName() + " with " + fromClass);
+		Log.info("Replacing class " + clazz.getName() + " with " + fromClass);
 		String oldName = clazz.getName();
 		clazz.setName(oldName + "_old");
 		CtClass newClass = classRegistry.getClass(fromClass);
