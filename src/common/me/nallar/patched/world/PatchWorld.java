@@ -65,6 +65,8 @@ public abstract class PatchWorld extends World {
 	public boolean multiverseWorld_;
 	@Declare
 	public int originalDimension_;
+	@Declare
+	public boolean unloaded_;
 
 	public void construct() {
 		tickCount = rand.nextInt(240); // So when different worlds do every N tick actions,

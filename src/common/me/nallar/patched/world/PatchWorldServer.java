@@ -128,6 +128,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	@Override
 	@Declare
 	public void ttStop() {
+		unloaded = true;
 		IChunkLoader chunkLoader = theChunkProviderServer.currentChunkLoader;
 		if (chunkLoader instanceof AnvilChunkLoader) {
 			try {
