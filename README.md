@@ -8,7 +8,7 @@ TickThreading is licensed under the [N Open License, Version 1][License]
 
 Download
 -----
-Download the latest builds from [Jenkins].  
+Download the latest builds from [Jenkins].
 
 Compatibility with other mods
 -----

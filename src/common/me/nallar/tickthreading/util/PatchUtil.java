@@ -32,7 +32,7 @@ public enum PatchUtil {
 		ZipFile zipFile = new ZipFile(new File(CP));
 		try {
 			CP += File.pathSeparator + new File(LocationUtil.getServerDirectory(), "lib/guava-12.0.1.jar");
-			for (ZipEntry zipEntry : new EnumerableWrapper<ZipEntry>((Enumeration<ZipEntry>) zipFile.entries())) {
+			for (ZipEntry zipEntry : new IterableEnumerationWrapper<ZipEntry>((Enumeration<ZipEntry>) zipFile.entries())) {
 				if (zipEntry.getName().startsWith("patchrun/") && !(!zipEntry.getName().isEmpty() && zipEntry.getName().charAt(zipEntry.getName().length() - 1) == '/')) {
 					String data = new Scanner(zipFile.getInputStream(zipEntry), "UTF-8").useDelimiter("\\A").next();
 					data = data.replace("%JAVA%", java).replace("%CP%", CP).replace("%MS%", MS).replace("\r\n", "\n");

@@ -28,7 +28,7 @@ import javassist.NotFoundException;
 import javassist.bytecode.MethodInfo;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.util.CollectionsUtil;
-import me.nallar.tickthreading.util.EnumerableWrapper;
+import me.nallar.tickthreading.util.IterableEnumerationWrapper;
 import me.nallar.unsafe.UnsafeUtil;
 import net.minecraft.server.MinecraftServer;
 
@@ -274,7 +274,7 @@ public class ClassRegistry {
 		}
 		ZipFile zip = new ZipFile(file);
 		try {
-			for (ZipEntry zipEntry : new EnumerableWrapper<ZipEntry>((Enumeration<ZipEntry>) zip.entries())) {
+			for (ZipEntry zipEntry : new IterableEnumerationWrapper<ZipEntry>((Enumeration<ZipEntry>) zip.entries())) {
 				String name = zipEntry.getName();
 				if (name.equals(hashFileName)) {
 					ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -298,7 +298,7 @@ public class ClassRegistry {
 		} catch (Exception e) {
 			Log.severe("Javassist could not load " + file, e);
 		}
-		for (ZipEntry zipEntry : new EnumerableWrapper<ZipEntry>((Enumeration<ZipEntry>) zip.entries())) {
+		for (ZipEntry zipEntry : new IterableEnumerationWrapper<ZipEntry>((Enumeration<ZipEntry>) zip.entries())) {
 			String name = zipEntry.getName();
 			if (name.endsWith(".class")) {
 				String className = name.replace('/', '.').substring(0, name.lastIndexOf('.'));
