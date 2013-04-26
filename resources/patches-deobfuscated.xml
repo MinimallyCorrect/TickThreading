@@ -644,7 +644,8 @@
       }
 
       return var10000;
-   }">getFieldData</replaceMethod>
+   }">getFieldData
+			</replaceMethod>
 		</class>
 	</industrialCraft>
 	<gregTech>
@@ -808,6 +809,9 @@
 			<replaceMethodCall newMethod="getBlockIdForceLoad" method="^class:World^.^method:World/getBlockId^">
 				ticketsLoaded(Ljava.util.List;L^class:World^;)V,ticketsLoaded(Ljava.util.List;L^class:World^;I)Ljava.util.List;
 			</replaceMethodCall>
+		</class>
+		<class id="chb.mods.mffs.common.Linkgrid$Worldlinknet">
+			<replaceInitializer field="FieldFusion" class="java.util.concurrent.ConcurrentHashMap"/>
 		</class>
 	</MFFS>
 	<thaumcraft>
