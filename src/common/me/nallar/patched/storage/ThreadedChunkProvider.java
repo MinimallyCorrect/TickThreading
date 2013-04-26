@@ -81,6 +81,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	private final ThreadLocal<Boolean> inUnload = new BooleanThreadLocal();
 	private final ThreadLocal<Boolean> worldGenInProgress;
 	private boolean loadedPersistentChunks = false;
+	private boolean loadChunksInProvideChunk = true;
 	private int unloadTicks = 0;
 	private int overloadCount = 0;
 	private int saveTicks = 0;
@@ -92,6 +93,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	public final Set<Long> chunksToUnload = unloadStage0;
 	public final List<Chunk> loadedChunks;
 	public final IChunkLoader currentChunkLoader;
+	@SuppressWarnings ("UnusedDeclaration")
 	public boolean loadChunkOnProvideRequest;
 
 	public ThreadedChunkProvider(WorldServer world, IChunkLoader loader, IChunkProvider generator) {
@@ -190,6 +192,10 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 		if (ticks % TickThreading.instance.chunkGCInterval == 0) {
 			ChunkGarbageCollector.garbageCollect(world);
+		}
+
+		if (unloadTicks == 100) {
+			loadChunksInProvideChunk = false;
 		}
 
 		if (!loadedPersistentChunks && unloadTicks >= 5) {
@@ -349,7 +355,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			return chunk;
 		}
 
-		if (loadChunkOnProvideRequest) {
+		if (loadChunksInProvideChunk) {
 			return getChunkAtInternal(x, z, true, false);
 		}
 
@@ -706,7 +712,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	@Override
 	public String makeString() {
-		return "Loaded " + loadedChunks.size() + " Loading " + loadingChunks.getNumHashElements() + " Unload " + unloadStage0.size() + " UnloadSave " + unloadStage1.size() + " Locks " + chunkLoadLocks.size() + " PartialSave " + lastChunksSaved;
+		return "Loaded " + loadedChunks.size() + " Loading " + loadingChunks.getNumHashElements() + " Unload " + unloadStage0.size() + " UnloadSave " + unloadStage1.size() + " Locks " + chunkLoadLocks.size() + " PartialSave " + lastChunksSaved + " LCOPR " + loadChunksInProvideChunk;
 	}
 
 	@Override
