@@ -107,6 +107,12 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	@Override
 	@Declare
+	public WorldServer getWorld() {
+		return world;
+	}
+
+	@Override
+	@Declare
 	public List<Chunk> getLoadedChunks() {
 		return loadedChunks;
 	}
@@ -746,9 +752,14 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		@Override
 		public void run() {
 			try {
+				WorldServer worldServer = provider.getWorld();
+				if (worldServer.unloaded) {
+					FMLLog.warning("Failed to load chunk at " + worldServer.getDimension() + ':' + x + ',' + z + " asynchronously. The world is no longer loaded.");
+					return;
+				}
 				Chunk chunk = provider.getChunkAt(x, z, allowGenerate, regenerate, null);
 				if (chunk == null || (allowGenerate && chunk instanceof EmptyChunk)) {
-					FMLLog.warning("Failed to load chunk at " + x + ',' + z + " asynchronously. Provided " + chunk);
+					FMLLog.warning("Failed to load chunk at " + Log.name(worldServer) + ':' + x + ',' + z + " asynchronously. Provided " + chunk);
 				} else {
 					runnable.run();
 				}
