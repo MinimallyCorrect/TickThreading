@@ -414,6 +414,9 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		}
 
 		if (runnable != null) {
+			if (world.unloaded) {
+				throw new IllegalStateException("Trying to load chunks in an unloaded world.");
+			}
 			chunkLoadThreadPool.execute(new ChunkLoadRunnable(x, z, allowGenerate, regenerate, runnable, this));
 			return null;
 		}
