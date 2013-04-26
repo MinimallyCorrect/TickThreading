@@ -6,6 +6,10 @@ Optionally, allows for automatically variable tick rate per tick region. (Normal
 Copyright &copy; 2012, nallar <rallan.pcl+tt@gmail.com>
 TickThreading is licensed under the [N Open License, Version 1][License]
 
+Download
+-----
+Download the latest builds from [Jenkins].  
+
 Compatibility with other mods
 -----
 [See the wiki.](https://github.com/nallar/TickThreading/wiki/Mod-Compatibility)
@@ -23,7 +27,6 @@ Make sure to include all relevant logs if you run into a problem.
 Source
 ------
 You're staring right at it! :P
-Download the latest builds from [Jenkins].  
 
 Compiling
 ---------
