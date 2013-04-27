@@ -311,7 +311,6 @@ public class Patches {
 	)
 	public CtClass replace(CtClass clazz, Map<String, String> attributes) throws NotFoundException, CannotCompileException, BadBytecode {
 		String fromClass = attributes.get("class");
-		Log.info("Replacing class " + clazz.getName() + " with " + fromClass);
 		String oldName = clazz.getName();
 		clazz.setName(oldName + "_old");
 		CtClass newClass = classRegistry.getClass(fromClass);
@@ -384,7 +383,6 @@ public class Patches {
 	}
 
 	private void replaceMethod(CtMethod oldMethod, CtMethod newMethod) throws CannotCompileException, BadBytecode {
-		Log.info("Replacing " + new MethodDescription(oldMethod).getMCPName() + " with " + new MethodDescription(newMethod).getMCPName());
 		ClassMap classMap = new ClassMap();
 		classMap.put(newMethod.getDeclaringClass().getName(), oldMethod.getDeclaringClass().getName());
 		oldMethod.setBody(newMethod, classMap);
@@ -529,7 +527,6 @@ public class Patches {
 			try {
 				ctClass.getDeclaredField(ctField.getName());
 			} catch (NotFoundException ignored) {
-				Log.info("Added " + ctField);
 				ctClass.addField(new CtField(ctField, ctClass));
 			}
 		}
@@ -558,10 +555,8 @@ public class Patches {
 			try {
 				CtMethod oldMethod = ctClass.getDeclaredMethod(newMethod.getName(), newMethod.getParameterTypes());
 				replaceMethod(oldMethod, newMethod);
-				Log.info("Replaced " + newMethod);
 			} catch (NotFoundException ignored) {
 				CtMethod added = CtNewMethod.copy(newMethod, ctClass, classMap);
-				Log.info("Adding " + added);
 				ctClass.addMethod(added);
 				replaceMethod(added, newMethod);
 				if (added.getName().startsWith("construct")) {

@@ -358,6 +358,9 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		if (loadChunksInProvideChunk) {
 			return getChunkAtInternal(x, z, true, false);
 		}
+		/* else {
+			Log.warning("Didn't load a chunk at " + x + ',' + z, new Throwable());
+		} */
 
 		return defaultEmptyChunk;
 	}

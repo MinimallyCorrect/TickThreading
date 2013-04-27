@@ -424,6 +424,10 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			long var2 = System.nanoTime();
 
 			WorldServer world = DimensionManager.getWorld(id);
+			WorldServer otherWorld = worldServerForDimension(id);
+			if (world != otherWorld) {
+				Log.severe("Mismatched worlds! " + world + " =/= " + otherWorld);
+			}
 			world.dimensionId = id;
 			String name = world.getName();
 			try {

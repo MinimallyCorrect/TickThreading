@@ -1,21 +1,19 @@
 package me.nallar.patched.network;
 
+import me.nallar.exception.ConcurrencyError;
 import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.INetworkManager;
 import net.minecraft.network.NetServerHandler;
 import net.minecraft.network.packet.Packet13PlayerLookMove;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.WorldServer;
 
 public abstract class PatchNetServerHandler extends NetServerHandler {
 	@Declare
 	public double averageSpeed_;
 	@Declare
 	public long lastMovement_;
-	@Declare
-	public double lastPX_;
-	@Declare
-	public double lastPZ_;
 	@Declare
 	public volatile int teleported_;
 	@Declare
@@ -36,36 +34,41 @@ public abstract class PatchNetServerHandler extends NetServerHandler {
 	@Override
 	@Declare
 	public void setHasMoved() {
-		this.hasMoved = true;
-	}
-
-	@Override
-	public synchronized void setPlayerLocation(double x, double y, double z, float rotationYaw, float rotationPitch) {
-		teleported = 20;
-		this.hasMoved = false;
-		this.lastPosX = tpPosX = x;
-		this.lastPosY = tpPosY = y;
-		this.lastPosZ = tpPosZ = z;
-		this.playerEntity.setPositionAndRotation(x, y, z, rotationYaw, rotationPitch);
-		this.sendPacketToPlayer(new Packet13PlayerLookMove(x, y + 1.6200000047683716D, y, z, rotationYaw, rotationPitch, false));
+		hasMoved = true;
 	}
 
 	@Override
 	@Declare
-	public void updatePositionAfterTP() {
+	public void handleTeleport(double x, double y, double z) {
+		if (!Thread.holdsLock(this)) {
+			throw new ConcurrencyError("Must synchronize for teleportation");
+		}
+		teleported = 20;
+		hasMoved = false;
+		lastPosX = tpPosX = x;
+		lastPosY = tpPosY = y;
+		lastPosZ = tpPosZ = z;
+		((WorldServer) playerEntity.worldObj).getPlayerManager().updateMountedMovingPlayer(playerEntity);
+	}
+
+	@Override
+	@Declare
+	public void updatePositionAfterTP(float yaw, float pitch) {
 		if (Double.isNaN(tpPosX)) {
 			return;
 		}
-		float rotationYaw = playerEntity.rotationYaw;
-		float rotationPitch = playerEntity.rotationPitch;
+		if (!Thread.holdsLock(this)) {
+			throw new ConcurrencyError("Must synchronize for teleportation");
+		}
 		double x = tpPosX;
 		double y = playerEntity.posY;
 		double z = tpPosZ;
-		this.lastPosX = x;
-		this.lastPosY = y;
-		this.lastPosZ = z;
-		this.playerEntity.setPositionAndRotation(x, y, z, rotationYaw, rotationPitch);
-		this.sendPacketToPlayer(new Packet13PlayerLookMove(x, y + 1.6200000047683716D, y, z, rotationYaw, rotationPitch, false));
+		lastPosX = x;
+		lastPosY = y;
+		lastPosZ = z;
+		playerEntity.setPositionAndRotation(x, y, z, yaw, pitch);
+		sendPacketToPlayer(new Packet13PlayerLookMove(x, y + 1.6200000047683716D, y, z, yaw, pitch, false));
+		((WorldServer) playerEntity.worldObj).getPlayerManager().updateMountedMovingPlayer(playerEntity);
 	}
 
 	public PatchNetServerHandler(MinecraftServer par1, INetworkManager par2, EntityPlayerMP par3) {

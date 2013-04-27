@@ -38,10 +38,8 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 				par1NetHandler.handleFlying(this);
 				sendChunks(entityPlayerMP);
 			} else {
-				nsh.lastPZ = this.zPosition;
-				nsh.lastPX = this.xPosition;
 				if (nsh.teleported <= 1 || (nsh.teleported < 10 && nsh.tpPosY > yPosition + 0.02)) {
-					nsh.updatePositionAfterTP();
+					nsh.updatePositionAfterTP(yaw, pitch);
 					((WorldServer) entityPlayerMP.worldObj).getPlayerManager().updateMountedMovingPlayer(entityPlayerMP);
 					if (nsh.teleported == 1) {
 						LinkedList<EntityPlayerMP> playersToCheckWorld = MinecraftServer.playersToCheckWorld;
