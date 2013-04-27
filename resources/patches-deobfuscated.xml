@@ -719,6 +719,9 @@
 		<class id="codechicken.wirelessredstone.core.RedstoneEtherServer">
 			<synchronize>tick</synchronize>
 		</class>
+		<class id="codechicken.wirelessredstone.core.RedstoneEtherFrequency">
+			<replaceMethodCall index="0" code="{}" method="println">updateReceiver</replaceMethodCall>
+		</class>
 	</wirelessRedstone>
 	<myTown>
 		<class id="ee.lutsu.alpha.mc.mytown.event.ProtectionEvents">
