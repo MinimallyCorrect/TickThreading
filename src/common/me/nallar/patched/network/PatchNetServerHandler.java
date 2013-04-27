@@ -1,6 +1,7 @@
 package me.nallar.patched.network;
 
 import me.nallar.exception.ConcurrencyError;
+import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.INetworkManager;

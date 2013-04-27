@@ -31,7 +31,7 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 		NetServerHandler nsh = (NetServerHandler) par1NetHandler;
 		synchronized (nsh) {
 			EntityPlayerMP entityPlayerMP = nsh.playerEntity;
-			if (!(nsh.teleported-- > 0 || nsh.tpPosY > yPosition + 0.02) || (yPosition == -999.0D && stance == -999.0D)) {
+			if (!(nsh.teleported-- > 0 || (nsh.teleported > -20 && (nsh.tpPosY > yPosition + 0.02) || (yPosition == -999.0D && stance == -999.0D)))) {
 				nsh.tpPosX = Double.NaN;
 				nsh.setHasMoved();
 				nsh.tpPosY = -256;
