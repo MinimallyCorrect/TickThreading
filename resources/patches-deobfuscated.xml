@@ -612,6 +612,7 @@
          java.io.DataOutputStream os = new java.io.DataOutputStream(gzip);
          os.writeInt(((^class:EntityPlayerMP^) $2).^field:EntityPlayerMP/playerNetServerHandler^.clientDimension);
          java.util.Iterator i$ = $1.iterator();
+         int done = 0;
 
          do {
             ic2.core.network.NetworkManager$TileEntityField tef = (ic2.core.network.NetworkManager$TileEntityField)i$.next();
@@ -634,7 +635,7 @@
                         } catch (NoSuchFieldException var14) {
                            e1 = e1.getSuperclass();
                         }
-                     } while(field == null &amp;&amp; e1 != null);
+                     } while(field == null &amp;&amp; e1 != Object.class);
 
                      if (field == null) {
                         throw new NoSuchFieldException(tef.field);
@@ -647,7 +648,7 @@
                   }
                }
             }
-         } while (i$.hasNext());
+         } while (i$.hasNext() &amp;&amp; done++ &lt; 10000);
          os.close();
          gzip.close();
          var10000 = e.toByteArray();
