@@ -36,7 +36,6 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 				nsh.setHasMoved();
 				nsh.tpPosY = -256;
 				par1NetHandler.handleFlying(this);
-				sendChunks(entityPlayerMP);
 			} else {
 				if (nsh.teleported <= 1 || (nsh.teleported < 10 && nsh.tpPosY > yPosition + 0.02)) {
 					nsh.updatePositionAfterTP(yaw, pitch);
@@ -48,8 +47,8 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 						}
 					}
 				}
-				sendChunks(entityPlayerMP);
 			}
+			sendChunks(entityPlayerMP);
 		}
 	}
 

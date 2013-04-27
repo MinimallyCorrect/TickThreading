@@ -48,7 +48,6 @@ public abstract class PatchNetServerHandler extends NetServerHandler {
 		lastPosX = tpPosX = x;
 		lastPosY = tpPosY = y;
 		lastPosZ = tpPosZ = z;
-		((WorldServer) playerEntity.worldObj).getPlayerManager().updateMountedMovingPlayer(playerEntity);
 	}
 
 	@Override
