@@ -47,6 +47,9 @@ public class MethodDescription {
 
 	@Override
 	public String toString() {
+		if (!name.isEmpty() && name.charAt(name.length() - 1) == '^') {
+			return name;
+		}
 		return name + getMCPName();
 	}
 
