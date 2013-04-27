@@ -267,10 +267,8 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 		if (name.startsWith("me.nallar.patched") && !name.contains("$")) {
 			throw UnsafeUtil.throwIgnoreChecked(new ClassNotFoundException("Don't load these classes, they will slow down access to the classes they patch as the JVM will have to lookup methods"));
 		}
-		if (basicClass == null) {
-			if (DEBUG_CLASSLOADING) {
-				FMLRelaunchLog.log(DEBUG_CLASSLOADING ? Level.WARNING : Level.FINE, "Could not find the class " + name + ". This is not necessarily an issue.");
-			}
+		if (basicClass == null && DEBUG_CLASSLOADING) {
+			FMLRelaunchLog.log(Level.WARNING, "Could not find the class " + name + ". This is not necessarily an issue.");
 		}
 		for (IClassTransformer transformer : transformers) {
 			try {
