@@ -316,8 +316,8 @@
 			<noFinal field="chunkZPos"/>
 		</class>
 		<class id="net.minecraft.world.Teleporter">
-			<replaceMethodCall newMethod="getTEForceLoad" method="^class:World^.^method:World/getBlockTileEntity^">^all^</replaceMethodCall>
-			<replaceMethodCall newMethod="getBlockIdForceLoad" method="^class:World^.^method:World/getBlockId^">^all^</replaceMethodCall>
+			<replaceMethodCall newMethod="getTEForceLoad" method="^class:WorldServer^.^method:World/getBlockTileEntity^">^all^</replaceMethodCall>
+			<replaceMethodCall newMethod="getBlockIdForceLoad" method="^class:WorldServer^.^method:World/getBlockId^">^all^</replaceMethodCall>
 		</class>
 		<class id="net.minecraft.crash.CrashReport">
 			<addAll fromClass="me.nallar.patched.server.PatchCrashReport"/>
