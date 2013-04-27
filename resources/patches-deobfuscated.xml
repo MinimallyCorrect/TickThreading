@@ -651,12 +651,10 @@
          } while (i$.hasNext() &amp;&amp; done++ &lt; 10000);
          os.close();
          gzip.close();
-         var10000 = e.toByteArray();
+         return e.toByteArray();
       } catch (java.io.IOException var16) {
          throw new RuntimeException(var16);
       }
-
-      return var10000;
    }">getFieldData
 			</replaceMethod>
 		</class>
