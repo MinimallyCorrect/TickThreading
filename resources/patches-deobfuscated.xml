@@ -763,8 +763,16 @@
 			<replaceInitializer field="lastSeenEntity" class="me.nallar.tickthreading.collections.CHashMap"/>
 			<replaceInitializer field="hasFallen" class="me.nallar.tickthreading.collections.CHashMap"/>
 		</class>
+		<class id="portalgun.common.core.ChunkLoadHandler">
+			<replaceMethodCall newMethod="getTEForceLoad" method="^class:World^.^method:World/getBlockTileEntity^">
+				ticketsLoaded(Ljava.util.List;L^class:World^;)V,ticketsLoaded(Ljava.util.List;L^class:World^;I)Ljava.util.List;
+			</replaceMethodCall>
+			<replaceMethodCall newMethod="getBlockIdForceLoad" method="^class:World^.^method:World/getBlockId^">
+				ticketsLoaded(Ljava.util.List;L^class:World^;)V,ticketsLoaded(Ljava.util.List;L^class:World^;I)Ljava.util.List;
+			</replaceMethodCall>
+		</class>
 	</portalGun>
-	<portalGun>
+	<graviGun>
 		<class id="gravigun.common.core.TickHandlerServer">
 			<synchronize field="$1.i">worldTick</synchronize>
 			<replaceInitializer field="grabMap" class="java.util.concurrent.ConcurrentHashMap"/>
@@ -772,7 +780,7 @@
 			<replaceInitializer field="tosser" class="java.util.concurrent.ConcurrentHashMap"/>
 			<replaceInitializer field="chargedThrow" class="java.util.concurrent.ConcurrentHashMap"/>
 		</class>
-	</portalGun>
+	</graviGun>
 	<twilightForest>
 		<class id="twilightforest.TFFeatureCache">
 			<synchronize>save</synchronize>
