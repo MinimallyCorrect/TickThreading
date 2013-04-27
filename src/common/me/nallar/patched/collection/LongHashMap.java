@@ -44,7 +44,10 @@ public abstract class LongHashMap extends net.minecraft.util.LongHashMap {
 			if (innerKey == EMPTY_KEY) {
 				return null;
 			} else if (innerKey == key) {
-				return values[index][i];
+				Object[] value = values[index];
+				if (value != null) {
+					return value[i];
+				}
 			}
 		}
 
@@ -52,7 +55,7 @@ public abstract class LongHashMap extends net.minecraft.util.LongHashMap {
 	}
 
 	@Override
-	public void add(long key, Object value) {
+	public synchronized void add(long key, Object value) {
 		int index = (int) (keyIndex(key) & (BUCKET_SIZE - 1));
 		long[] innerKeys = keys[index];
 		Object[] innerValues = values[index];
@@ -91,7 +94,7 @@ public abstract class LongHashMap extends net.minecraft.util.LongHashMap {
 	}
 
 	@Override
-	public Object remove(long key) {
+	public synchronized Object remove(long key) {
 		int index = (int) (keyIndex(key) & (BUCKET_SIZE - 1));
 		long[] inner = keys[index];
 		if (inner == null) {
