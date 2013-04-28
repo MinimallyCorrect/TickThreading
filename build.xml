@@ -38,6 +38,12 @@
 		</not>
 	</condition>
 
+	<path id="class.path">
+		<fileset dir="${mcp.dir}/lib">
+			<include name="**/*.jar"/>
+		</fileset>
+	</path>
+
 	<mkdir dir="${download.dir}"/>
 	<mkdir dir="${lib.dir}"/>
 	<mkdir dir="${build.dir}"/>
@@ -123,11 +129,6 @@
 	</target>
 
 	<target name="prepatch">
-		<path id="class.path">
-			<fileset dir="${mcp.dir}/lib">
-				<include name="**/*.jar"/>
-			</fileset>
-		</path>
 		<mkdir dir="${classes.dir}"/>
 		<javac includeantruntime="false" srcdir="${src.dir}/nmsprepatcher" destdir="${classes.dir}" debug="on" source="1.6">
 			<classpath>
@@ -217,9 +218,7 @@
 
 	</target>
 
-	<!-- Package the compiled files -->
-	<target name="package" depends="compile">
-
+	<target name="packageDependencies">
 		<unzip dest="${classes.dir}/" src="${lib.dir}/javassist.jar"/>
 		<unzip dest="${classes.dir}/" src="${lib.dir}/high-scale-lib.jar"/>
 		<delete file="${classes.dir}/net/minecraft/server/MinecraftServer.class"/>
@@ -231,8 +230,10 @@
 				<include name="*.class"/>
 			</fileset>
 		</delete>
+	</target>
 
-
+	<!-- Package the compiled files -->
+	<target name="package">
 
 		<java classname="me.nallar.tickthreading.patcher.PatchMain">
 			<classpath>
@@ -249,6 +250,6 @@
 	</target>
 
 	<!-- Default target to run -->
-	<target name="main" depends="package"/>
+	<target name="main" depends="compile,packageDependencies,package"/>
 
 </project>
