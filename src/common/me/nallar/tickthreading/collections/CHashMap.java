@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @SuppressWarnings ("UnusedDeclaration")
 public class CHashMap<K, V> extends HashMap<K, V> {
 	private static final long serialVersionUID = 7249069246763182397L;
-	private final ConcurrentHashMap<K, V> hashMap;
+	protected ConcurrentHashMap<K, V> hashMap;
 
 	public CHashMap(int initialCapacity, float loadFactor) {
 		hashMap = new ConcurrentHashMap<K, V>(initialCapacity);
@@ -30,9 +30,7 @@ public class CHashMap<K, V> extends HashMap<K, V> {
 
 	public CHashMap(Map<? extends K, ? extends V> m) {
 		hashMap = new ConcurrentHashMap<K, V>(m.size());
-		for (Map.Entry<? extends K, ? extends V> entry : m.entrySet()) {
-			hashMap.put(entry.getKey(), entry.getValue());
-		}
+		hashMap.putAll(m);
 	}
 
 	@Override
