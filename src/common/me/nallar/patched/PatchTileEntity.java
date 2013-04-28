@@ -3,11 +3,14 @@ package me.nallar.patched;
 import me.nallar.tickthreading.patcher.Declare;
 import me.nallar.tickthreading.util.concurrent.NativeMutex;
 import me.nallar.tickthreading.util.concurrent.NotReallyAMutex;
+import net.minecraft.inventory.ICrafting;
+import net.minecraft.inventory.IInvBasic;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.server.management.PlayerInstance;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.liquids.ILiquidTank;
+import net.minecraftforge.liquids.ITankContainer;
 
 public abstract class PatchTileEntity extends TileEntity {
 	@Declare
@@ -30,7 +33,7 @@ public abstract class PatchTileEntity extends TileEntity {
 	public java.util.concurrent.locks.Lock zPlusLock_;
 
 	public void construct() {
-		if (this instanceof IInventory || this instanceof ILiquidTank) {
+		if (this instanceof IInventory || this instanceof ILiquidTank || this instanceof ICrafting || this instanceof IInvBasic || this instanceof ITankContainer) {
 			thisLock = new NativeMutex();
 		} else {
 			thisLock = NotReallyAMutex.lock;
