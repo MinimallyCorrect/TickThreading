@@ -12,7 +12,6 @@ import net.minecraft.tileentity.TileEntity;
 
 public abstract class PatchPlayerInstance extends PlayerInstance {
 	private ConcurrentLinkedQueue<TileEntity> tilesToUpdate;
-	private static java.lang.reflect.Method getChunkWatcherWithPlayers;
 
 	public PatchPlayerInstance(PlayerManager par1PlayerManager, int par2, int par3) {
 		super(par1PlayerManager, par2, par3);
