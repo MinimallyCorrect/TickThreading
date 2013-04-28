@@ -477,8 +477,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			// Thread A is waiting for the lock on chunk B
 
 			// Lock the generation lock - ChunkProviderGenerate isn't threadsafe at all
-			// TODO: Possibly make ChunkProviderGenerate threadlocal? Would need many changes to
-			// structure code to get it to work properly.
 
 			synchronized (generateLock) {
 				synchronized (lock) {
