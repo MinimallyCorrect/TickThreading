@@ -952,4 +952,9 @@
 			</replaceMethodCall>
 		</class>
 	</railCraft>
+	<seasons>
+		<class id="WeatherPony.Seasons.Seasons_WorldData">
+			<insertAfter code="worldsettings = new java.util.concurrent.ConcurrentHashMap();"/>
+		</class>
+	</seasons>
 </mods>
