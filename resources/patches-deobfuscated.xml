@@ -835,6 +835,64 @@
 		<class id="chb.mods.mffs.common.Linkgrid$Worldlinknet">
 			<replaceInitializer field="FieldFusion" class="java.util.concurrent.ConcurrentHashMap"/>
 		</class>
+		<class id="chb.mods.mffs.common.tileentity.TileEntityProjector">
+			<replaceInitializer field="field_interior" code="java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap());"/>
+			<replaceInitializer field="field_def" code="java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap());"/>
+			<replaceMethod code="{
+				java.util.Set fieldDef = java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap());
+				java.util.Set fieldInterior = java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap());
+				if (hasValidTypeMod()) {
+					java.util.Set tField = new java.util.HashSet();
+					java.util.Set tFieldInt = new java.util.HashSet();
+					if ((get_type() instanceof chb.mods.mffs.common.modules.Module3DBase)) {
+						((chb.mods.mffs.common.modules.Module3DBase)get_type()).calculateField(this, tField, tFieldInt);
+					}
+					else {
+						get_type().calculateField(this, tField);
+					}
+
+					java.util.Iterator iterator = tField.iterator();
+					while (iterator.hasNext()) {
+						chb.mods.mffs.api.PointXYZ pnt = iterator.next();
+						if (pnt.Y + this.m &lt; 255) {
+							chb.mods.mffs.api.PointXYZ tp = new chb.mods.mffs.api.PointXYZ(pnt.X + this.l, pnt.Y + this.m, pnt.Z + this.n, this.k);
+
+							if (Forcefielddefine(tp, $1))
+							{
+								this.field_def.add(tp);
+							} else {
+								field_def = fieldDef;
+								field_interior = fieldInterior;
+								return false;
+							}
+						}
+					}
+					iterator = tFieldInt.iterator();
+					while (iterator.hasNext()) {
+						chb.mods.mffs.api.PointXYZ pnt = iterator.next();
+						if (pnt.Y + this.m &lt; 255) {
+							chb.mods.mffs.api.PointXYZ tp = new chb.mods.mffs.api.PointXYZ(pnt.X + this.l, pnt.Y + this.m, pnt.Z + this.n, this.k);
+
+							if (calculateBlock(tp)) {
+								this.field_interior.add(tp);
+							} else {
+								field_def = fieldDef;
+								field_interior = fieldInterior;
+								return false;
+							}
+						}
+
+					}
+					field_def = fieldDef;
+					field_interior = fieldInterior;
+					return true;
+				}
+				field_def = fieldDef;
+				field_interior = fieldInterior;
+				return false;
+			}">calculateField(Z)V
+			</replaceMethod>
+		</class>
 	</MFFS>
 	<thaumcraft>
 		<class id="thaumcraft.api.ObjectTags">
