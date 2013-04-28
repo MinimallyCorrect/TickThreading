@@ -70,7 +70,7 @@ public class EntityTickRegion extends TickRegion {
 					// Entities are supposed to move, of course this will happen!
 				}
 			} catch (Throwable throwable) {
-				Log.severe("Exception ticking entity " + entity + " in " + toString() + ':', throwable);
+				Log.severe("Exception ticking entity " + entity + " in " + toString() + '/' + Log.name(entity.worldObj) + ':', throwable);
 			}
 			if (profilingEnabled) {
 				entityTickProfiler.record(entity, System.nanoTime() - startTime);
