@@ -233,7 +233,7 @@
 	</target>
 
 	<!-- Package the compiled files -->
-	<target name="package">
+	<target name="package" depends="initialize-version">
 
 		<java classname="me.nallar.tickthreading.patcher.PatchMain">
 			<classpath>
@@ -245,7 +245,8 @@
 
 		<delete dir="${jar.dir}"/>
 		<mkdir dir="${jar.dir}"/>
-		<jar destfile="${jar.dir}/${ant.project.name}-${mc.version}-${project.version.full}.jar" basedir="${classes.dir}"/>
+		<jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${classes.dir}"/>
+		<copy file="${jar.dir}/${ant.project.name}.jar" tofile="${jar.dir}/${ant.project.name}-${mc.version}-${project.version.full}.jar"/>
 
 	</target>
 
