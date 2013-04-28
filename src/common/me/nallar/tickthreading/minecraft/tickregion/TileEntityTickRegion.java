@@ -99,9 +99,8 @@ public class TileEntityTickRegion extends TickRegion {
 					tileEntity.updateEntity();
 				}
 			} catch (Throwable throwable) {
-				Log.severe("Exception during tile entity tick"
-						+ "\nticking: " + Log.toString(tileEntity) + " at x,y,z:" + xPos + ',' + tileEntity.yCoord + ',' + zPos
-						+ "\nTick region: " + toString() + ':', throwable);
+				Log.severe("Exception ticking TileEntity " + Log.toString(tileEntity) + " at x,y,z:" + xPos + ',' + tileEntity.yCoord + ',' + zPos
+						+ "\n World: " + Log.name(tileEntity.worldObj), throwable);
 			} finally {
 				if (lockable && lock) {
 					if (xMinusLock != null) {
