@@ -3,7 +3,9 @@ package me.nallar.tickthreading.minecraft;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -47,7 +49,7 @@ public class TickThreading {
 	private static final int loadedEntityFieldIndex = 0;
 	private static final int loadedTileEntityFieldIndex = 2;
 	public static TickThreading instance;
-	final Map<World, TickManager> managers = new WeakHashMap<World, TickManager>();
+	final Map<World, TickManager> managers = new LinkedHashMap<World, TickManager>();
 	private final Runtime runtime = Runtime.getRuntime();
 	public String messageDeadlockDetected = "The server appears to have frozen and will restart soon if it does not recover. :(";
 	public String messageDeadlockRecovered = "The server has recovered and will not need to restart. :)";

@@ -32,6 +32,7 @@ public class TPSCommand extends Command {
 				.heading("Entities")
 				.heading("Tiles")
 				.heading("Chunks")
+				.heading("Players")
 				.heading("Load");
 		for (TickManager tickManager : TickThreading.instance.getManagers()) {
 			tickManager.writeStats(tf);
@@ -43,6 +44,7 @@ public class TPSCommand extends Command {
 					.row("")
 					.row("")
 					.row("")
+					.row("")
 					.row(TableFormatter.formatDoubleWithPrecision((MinecraftServer.getNetworkTickTime() * 100) / MinecraftServer.getNetworkTargetTickTime(), 3) + '%');
 		}
 		tf
@@ -51,6 +53,7 @@ public class TPSCommand extends Command {
 				.row("")
 				.row("")
 				.row("")
+				.row(MinecraftServer.getServerConfigurationManager(MinecraftServer.getServer()).getCurrentPlayerCount())
 				.row(TableFormatter.formatDoubleWithPrecision((MinecraftServer.getTickTime() * 100) / MinecraftServer.getTargetTickTime(), 3) + '%');
 		tf.finishTable();
 		sendChat(commandSender, tf.toString());

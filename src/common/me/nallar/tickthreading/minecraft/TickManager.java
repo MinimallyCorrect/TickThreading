@@ -480,6 +480,7 @@ public final class TickManager {
 				.row(String.valueOf(entityList.size()))
 				.row(String.valueOf(tileEntityList.size()))
 				.row(String.valueOf(world.theChunkProviderServer.getLoadedChunkCount()))
+				.row(world.playerEntities.size())
 				.row(TableFormatter.formatDoubleWithPrecision((time * 100f) / MinecraftServer.getTargetTickTime(), 3) + '%');
 	}
 
