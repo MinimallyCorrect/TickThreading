@@ -356,10 +356,6 @@
 		<class id="org.bukkit.plugin.SimplePluginManager">
 			<synchronize>subscribeToPermission,unsubscribeFromPermission,subscribeToDefaultPerms,unsubscribeFromDefaultPerms,getPermissionSubscriptions,getDefaultPermSubscriptions</synchronize>
 		</class>
-		<class id="org.bukkit.plugin.java.PluginClassLoader">
-			<replaceInitializer field="classes" class="me.nallar.tickthreading.collections.CHashMap"/>
-			<replaceInitializer field="jarMappings" class="me.nallar.tickthreading.collections.CHashMap"/>
-		</class>
 		<class id="org.bukkit.craftbukkit.v1_4_R1.CraftServer">
 			<replaceMethodCall method="registerDimension" code="{ }">createWorld(Lorg.bukkit.WorldCreator;)Lorg.bukkit.World;</replaceMethodCall>
 			<replaceMethodCall method="addMVDimension" code="{ }">createWorld(Lorg.bukkit.WorldCreator;)Lorg.bukkit.World;</replaceMethodCall>
