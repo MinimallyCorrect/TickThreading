@@ -21,6 +21,7 @@ import me.nallar.insecurity.InsecurityManager;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.DeadLockDetector;
 import me.nallar.tickthreading.minecraft.ThreadManager;
+import me.nallar.tickthreading.minecraft.TickManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
 import me.nallar.tickthreading.util.FakeServerThread;
@@ -41,6 +42,8 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.Configuration;
 import net.minecraftforge.common.DimensionManager;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.world.WorldEvent;
 
 public abstract class PatchMinecraftServer extends MinecraftServer {
 	public ThreadManager threadManager;
@@ -424,12 +427,13 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			long var2 = System.nanoTime();
 
 			WorldServer world = DimensionManager.getWorld(id);
-			WorldServer otherWorld = worldServerForDimension(id);
-			if (world != otherWorld) {
-				Log.severe("Mismatched worlds! " + world + " =/= " + otherWorld);
-			}
 			world.dimensionId = id;
 			String name = world.getName();
+			TickManager tickManager = TickThreading.instance.getManager(world);
+			if (tickManager == null) {
+				Log.severe("Not sent WorldEvent.Load for loaded world " + name + ", sending it now.");
+				MinecraftForge.EVENT_BUS.post(new WorldEvent.Load(world));
+			}
 			try {
 				profiler.startSection(world.getWorldInfo().getWorldName());
 				profiler.startSection("pools");
