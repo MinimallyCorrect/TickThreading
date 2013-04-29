@@ -13,6 +13,7 @@ import java.util.TreeMap;
 
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.collections.ConcurrentIterableArrayList;
+import me.nallar.tickthreading.minecraft.commands.TPSCommand;
 import me.nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
 import me.nallar.tickthreading.minecraft.tickregion.EntityTickRegion;
 import me.nallar.tickthreading.minecraft.tickregion.TickRegion;
@@ -460,7 +461,7 @@ public final class TickManager {
 		}
 	}
 
-	public void writeStats(TableFormatter tf) {
+	public void writeStats(TableFormatter tf, final TPSCommand.StatsHolder statsHolder) {
 		long timeTotal = 0;
 		double time = Double.NaN;
 		try {
@@ -474,14 +475,19 @@ public final class TickManager {
 			}
 		} catch (NullPointerException ignored) {
 		}
+		int entities = entityList.size();
+		statsHolder.entities += entities;
+		int tileEntities = tileEntityList.size();
+		statsHolder.tileEntities += tileEntities;
+		int chunks = world.theChunkProviderServer.getLoadedChunkCount();
+		statsHolder.chunks += chunks;
 		tf
 				.row(Log.name(world))
-				.row(Math.min(1000000000 / time, MinecraftServer.getTargetTPS()))
-				.row(String.valueOf(entityList.size()))
-				.row(String.valueOf(tileEntityList.size()))
-				.row(String.valueOf(world.theChunkProviderServer.getLoadedChunkCount()))
+				.row(entities)
+				.row(tileEntities)
+				.row(chunks)
 				.row(world.playerEntities.size())
-				.row(TableFormatter.formatDoubleWithPrecision((time * 100f) / MinecraftServer.getTargetTickTime(), 3) + '%');
+				.row(TableFormatter.formatDoubleWithPrecision((time * 100f) / MinecraftServer.getTargetTickTime(), 2) + '%');
 	}
 
 	public TableFormatter writeDetailedStats(TableFormatter tf) {
