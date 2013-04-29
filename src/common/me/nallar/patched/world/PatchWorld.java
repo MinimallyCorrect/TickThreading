@@ -161,6 +161,10 @@ public abstract class PatchWorld extends World {
 			// The next instanceof, somehow, seems to throw NPEs. I don't even. :(
 			// http://pastebin.com/zqDPsUjz
 			if (entity instanceof EntityPlayer) {
+				if (playerEntities == null) {
+					// The world has been unloaded and cleaned already, so we can't remove the player entity.
+					return;
+				}
 				this.playerEntities.remove(entity);
 				this.updateAllPlayersSleepingFlag();
 			}
