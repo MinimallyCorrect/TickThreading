@@ -71,6 +71,10 @@ public class EntityTickRegion extends TickRegion {
 				}
 			} catch (Throwable throwable) {
 				Log.severe("Exception ticking entity " + entity + " in " + toString() + '/' + Log.name(entity.worldObj) + ':', throwable);
+				if (entity.worldObj != world) {
+					Log.severe("Seems to be caused by an entity being in a broken state, set to an impossible/incorrect world. Killing this entity.");
+					entity.setDead();
+				}
 			}
 			if (profilingEnabled) {
 				entityTickProfiler.record(entity, System.nanoTime() - startTime);
