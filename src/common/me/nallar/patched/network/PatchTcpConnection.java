@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.logging.Level;
 
 import cpw.mods.fml.common.FMLLog;
+import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.network.TcpConnection;
 import net.minecraft.network.packet.IPacketHandler;
@@ -67,6 +68,9 @@ public abstract class PatchTcpConnection extends TcpConnection {
 
 	@Override
 	protected void onNetworkError(Exception e) {
+		if (e == null || e.toString() == null) {
+			Log.severe("onNetworkError with bad exception " + e, new Throwable());
+		}
 		if (e instanceof SocketException) {
 			this.networkShutdown("disconnected: " + e.getMessage(), e);
 		} else {
@@ -75,8 +79,8 @@ public abstract class PatchTcpConnection extends TcpConnection {
 				name = this.theNetHandler.getPlayer().getCommandSenderName();
 			} catch (Throwable ignored) {
 			}
-			FMLLog.log(Level.SEVERE, e, "Failed to handle packet from " + name);
-			this.networkShutdown("Internal error: " + e.getMessage(), e);
+			Log.severe("Failed to handle packet from " + name, e);
+			this.networkShutdown("Internal error: " + e, e);
 		}
 	}
 
