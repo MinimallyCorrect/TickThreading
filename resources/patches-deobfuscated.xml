@@ -564,6 +564,7 @@
 		</class>
 		<class id="com.eloraam.redpower.core.TubeFlow">
 			<replaceInitializer field="contents" class="me.nallar.tickthreading.collections.ConcurrentLinkedQueueList"/>
+			<replaceInitializer field="contents" class="me.nallar.tickthreading.collections.ConcurrentLinkedQueueList">readFromNBT</replaceInitializer>
 		</class>
 		<class id="com.eloraam.redpower.core.PipeLib">
 			<replaceMethodCall index="0" code="{ $_ = null; }" method="printf">registerForgeFluid</replaceMethodCall>
