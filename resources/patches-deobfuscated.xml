@@ -101,7 +101,6 @@
 			<addAll fromClass="me.nallar.patched.world.PatchWorldServer"/>
 			<profile>tickBlocksAndAmbiance</profile>
 			<profile>tick</profile>
-			<profile>saveAllChunks</profile>
 			<insertSuper>initialize</insertSuper>
 		</class>
 		<class id="net.minecraft.world.biome.BiomeDecorator">

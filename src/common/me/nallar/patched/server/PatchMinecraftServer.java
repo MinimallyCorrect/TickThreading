@@ -17,6 +17,7 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.relauncher.RelaunchClassLoader;
 import cpw.mods.fml.relauncher.Side;
+import javassist.is.faulty.Timings;
 import me.nallar.insecurity.InsecurityManager;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.DeadLockDetector;
@@ -469,12 +470,20 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				if (world.tickCount % TickThreading.instance.saveInterval == 0) {
 					theProfiler.startSection("save");
 					try {
+						long st = 0;
+						boolean enabled = Timings.enabled;
+						if (enabled) {
+							st = System.nanoTime();
+						}
 						if (world.saveTickCount++ % 20 == 0) {
 							world.saveAllChunks(false, null);
 						} else {
 							if (world.theChunkProviderServer.canSave()) {
 								world.theChunkProviderServer.saveChunks(false, null);
 							}
+						}
+						if (enabled) {
+							Timings.record("World/save", System.nanoTime() - st);
 						}
 					} catch (MinecraftException e) {
 						throw UnsafeUtil.throwIgnoreChecked(e);
