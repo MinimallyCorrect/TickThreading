@@ -20,7 +20,11 @@ import net.minecraft.world.WorldServer;
 
 @SuppressWarnings ({"UnusedDeclaration", "UseOfSystemOutOrSystemErr"})
 public class Log {
-	public static Logger LOGGER = Logger.getLogger("TickThreading");
+	public static final Logger LOGGER = Logger.getLogger("TickThreading");
+	public static final boolean debug = System.getProperty("tickthreading.debug") != null;
+	private static final Level DEBUG = new Level("DEBUG", Level.SEVERE.intValue(), null) {
+		// Inner class as constructors are protected.
+	};
 	private static Handler handler;
 	private static final int numberOfLogFiles = 5;
 	private static final File logFolder = new File("TickThreadingLogs");
@@ -152,6 +156,10 @@ public class Log {
 		handler.flush();
 	}
 
+	public static void debug(String msg) {
+		debug(msg, null);
+	}
+
 	public static void severe(String msg) {
 		LOGGER.severe(msg);
 	}
@@ -185,6 +193,16 @@ public class Log {
 			Reporter.report(t);
 		}
 		severe(msg, t);
+	}
+
+	public static void debug(String msg, Throwable t) {
+		if (debug) {
+			LOGGER.log(DEBUG, msg, t);
+		} else {
+			throw new Error("Logged debug message when not in debug mode.");
+			// To prevent people logging debug messages which will just be ignored, wasting resources constructing the message.
+			// (s/people/me being lazy/ :P)
+		}
 	}
 
 	public static void severe(String msg, Throwable t) {
