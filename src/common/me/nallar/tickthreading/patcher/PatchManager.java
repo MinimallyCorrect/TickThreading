@@ -26,6 +26,7 @@ import java.util.TreeMap;
 import javassist.CtBehavior;
 import javassist.CtClass;
 import javassist.CtConstructor;
+import javassist.CtMethod;
 import javassist.NotFoundException;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.mappings.ClassDescription;
@@ -311,7 +312,14 @@ public class PatchManager {
 				List<MethodDescription> methodDescriptions = MethodDescription.fromListString(ctClass.getName(), textContent);
 				Log.fine("Patching methods " + methodDescriptions.toString());
 				for (MethodDescription methodDescription : methodDescriptions) {
-					run(methodDescription.inClass(ctClass), attributes);
+					CtMethod ctMethod;
+					try {
+						ctMethod = methodDescription.inClass(ctClass);
+					} catch (Throwable t) {
+						Log.warning("", t);
+						continue;
+					}
+					run(ctMethod, attributes);
 				}
 			}
 			return null;

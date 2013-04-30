@@ -880,7 +880,9 @@ public class Patches {
 			emptyConstructor = false
 	)
 	public void synchronize(Object o, Map<String, String> attributes) throws CannotCompileException {
-		if (o instanceof CtMethod) {
+		if (o instanceof CtConstructor) {
+			return;
+		} else if (o instanceof CtMethod) {
 			synchronize((CtMethod) o, attributes.get("field"));
 		} else {
 			int synchronized_ = 0;
