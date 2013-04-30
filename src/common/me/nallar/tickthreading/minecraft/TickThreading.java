@@ -223,10 +223,12 @@ public class TickThreading {
 		if (event.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) {
 			EntityPlayer entityPlayer = event.entityPlayer;
 			ItemStack usedItem = entityPlayer.getCurrentEquippedItem();
-			Item usedItemType = usedItem.getItem();
-			if (usedItemType == Item.pocketSundial && (!requireOpForDumpCommand || entityPlayer.canCommandSenderUseCommand(4, "dump"))) {
-				Command.sendChat(entityPlayer, DumpCommand.dump(new TableFormatter(entityPlayer), entityPlayer.worldObj, event.x, event.y, event.z, 35).toString());
-				event.setCanceled(true);
+			if (usedItem != null) {
+				Item usedItemType = usedItem.getItem();
+				if (usedItemType == Item.pocketSundial && (!requireOpForDumpCommand || entityPlayer.canCommandSenderUseCommand(4, "dump"))) {
+					Command.sendChat(entityPlayer, DumpCommand.dump(new TableFormatter(entityPlayer), entityPlayer.worldObj, event.x, event.y, event.z, 35).toString());
+					event.setCanceled(true);
+				}
 			}
 		}
 	}
