@@ -45,10 +45,14 @@ public class Redirects {
 			Packet9Respawn packet9Respawn = (Packet9Respawn) packet;
 			int dimension = packet9Respawn.respawnDimension;
 			World world = DimensionManager.getWorld(dimension);
-			if (world.multiverseWorld) {
-				handler.clientDimension = packet9Respawn.respawnDimension = world.originalDimension;
+			if (world == null) {
+				Log.warning("Can't find respawn dimension " + dimension);
 			} else {
-				handler.clientDimension = packet9Respawn.respawnDimension;
+				if (world.multiverseWorld) {
+					handler.clientDimension = packet9Respawn.respawnDimension = world.originalDimension;
+				} else {
+					handler.clientDimension = packet9Respawn.respawnDimension;
+				}
 			}
 		} else if (packet instanceof Packet1Login) {
 			Packet1Login packet1Login = (Packet1Login) packet;
