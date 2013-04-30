@@ -17,6 +17,7 @@ import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.relauncher.RelaunchClassLoader;
 import javassist.is.faulty.Timings;
 import me.nallar.tickthreading.Log;
+import me.nallar.tickthreading.minecraft.commands.Command;
 import me.nallar.tickthreading.minecraft.commands.DumpCommand;
 import me.nallar.tickthreading.minecraft.commands.ProfileCommand;
 import me.nallar.tickthreading.minecraft.commands.TPSCommand;
@@ -27,8 +28,12 @@ import me.nallar.tickthreading.minecraft.entitylist.LoadedTileEntityList;
 import me.nallar.tickthreading.util.FieldUtil;
 import me.nallar.tickthreading.util.LocationUtil;
 import me.nallar.tickthreading.util.PatchUtil;
+import me.nallar.tickthreading.util.TableFormatter;
 import me.nallar.tickthreading.util.VersionUtil;
 import net.minecraft.command.ServerCommandManager;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.PacketCount;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
@@ -38,6 +43,7 @@ import net.minecraftforge.common.Configuration;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.ForgeSubscribe;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.WorldEvent;
 
 @SuppressWarnings ("WeakerAccess")
@@ -209,6 +215,19 @@ public class TickThreading {
 			}
 		} catch (Exception e) {
 			Log.severe("Probable memory leak, failed to unload threading for world " + Log.name(world), e);
+		}
+	}
+
+	@ForgeSubscribe
+	public void onPlayerInteract(PlayerInteractEvent event) {
+		if (event.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) {
+			EntityPlayer entityPlayer = event.entityPlayer;
+			ItemStack usedItem = entityPlayer.getCurrentEquippedItem();
+			Item usedItemType = usedItem.getItem();
+			if (usedItemType == Item.pocketSundial && (!requireOpForDumpCommand || entityPlayer.canCommandSenderUseCommand(4, "dump"))) {
+				Command.sendChat(entityPlayer, DumpCommand.dump(new TableFormatter(entityPlayer), entityPlayer.worldObj, event.x, event.y, event.z, 35).toString());
+				event.setCanceled(true);
+			}
 		}
 	}
 
