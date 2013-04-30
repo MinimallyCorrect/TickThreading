@@ -44,11 +44,11 @@
 		</class>
 		<class id="net.minecraft.network.NetServerHandler" env="mcpc">
 			<insertAfter code="handleTeleport($1.getX(), $1.getY(), $1.getZ());">teleport</insertAfter>
-			<synchronize>teleport</synchronize>
+			<synchronize field="$1.loadedChunks">teleport</synchronize>
 		</class>
 		<class id="net.minecraft.network.NetServerHandler" env="forge">
 			<insertAfter code="handleTeleport($1, $2, $3);">setPlayerLocation</insertAfter>
-			<synchronize>setPlayerLocation</synchronize>
+			<synchronize field="$1.loadedChunks">setPlayerLocation</synchronize>
 		</class>
 		<class id="net.minecraft.network.packet.Packet10Flying">
 			<addAll fromClass="me.nallar.patched.network.PatchPacket10Flying"/>

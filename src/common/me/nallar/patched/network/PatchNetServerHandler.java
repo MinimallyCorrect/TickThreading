@@ -40,7 +40,7 @@ public abstract class PatchNetServerHandler extends NetServerHandler {
 	@Override
 	@Declare
 	public void handleTeleport(double x, double y, double z) {
-		if (!Thread.holdsLock(this)) {
+		if (!Thread.holdsLock(playerEntity.loadedChunks)) {
 			throw new ConcurrencyError("Must synchronize for teleportation");
 		}
 		teleported = 20;
@@ -56,7 +56,7 @@ public abstract class PatchNetServerHandler extends NetServerHandler {
 		if (Double.isNaN(tpPosX)) {
 			return;
 		}
-		if (!Thread.holdsLock(this)) {
+		if (!Thread.holdsLock(playerEntity.loadedChunks)) {
 			throw new ConcurrencyError("Must synchronize for teleportation");
 		}
 		double x = tpPosX;
