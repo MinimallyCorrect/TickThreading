@@ -887,16 +887,16 @@
 	</universalElectricity>
 	<appliedEnergistics>
 		<class id="appeng.me.tile.TileController">
-			<synchronize>getCellArray</synchronize>
+			<synchronize>getCellArray,resetCache</synchronize>
 		</class>
 		<class id="appeng.me.tile.TileDrive">
-			<synchronize>getCellArray</synchronize>
+			<synchronize>getCellArray,resetCache</synchronize>
 		</class>
 		<class id="appeng.me.tile.TileChest">
-			<synchronize>getCellArray</synchronize>
+			<synchronize>getCellArray,resetCache</synchronize>
 		</class>
 		<class id="appeng.me.tile.TileStorageBus">
-			<synchronize>getCellArray</synchronize>
+			<synchronize>getCellArray,resetCache</synchronize>
 		</class>
 		<class id="appeng.common.MEGridEvents">
 			<replaceInitializer field="requests" class="me.nallar.tickthreading.collections.ConcurrentQueueList">^static^</replaceInitializer>
