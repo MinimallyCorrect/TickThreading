@@ -509,6 +509,11 @@
 			<synchronize>a(Ljava/lang/String;)V,b()V</synchronize>
 		</class>
 	</liteLoader>
+	<buildCraftEnergy>
+		<class id="buildcraft.energy.TileEngine">
+			<synchronize>createEngineIfNeeded</synchronize>
+		</class>
+	</buildCraftEnergy>
 	<buildCraftFactory>
 		<class id="buildcraft.BuildCraftFactory$QuarryChunkloadCallback">
 			<replaceMethodCall newMethod="getTEForceLoad" method="^class:World^.^method:World/getBlockTileEntity^">ticketsLoaded(Ljava.util.List;L^class:World^;)V</replaceMethodCall>
