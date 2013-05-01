@@ -512,6 +512,7 @@
 	<buildCraftEnergy>
 		<class id="buildcraft.energy.TileEngine">
 			<synchronize>createEngineIfNeeded</synchronize>
+			<insertBefore code="if ($1 &gt; 2 || $1 &lt; 0) { $1 = 0; }">newEngine</insertBefore>
 		</class>
 	</buildCraftEnergy>
 	<buildCraftFactory>
