@@ -8,12 +8,17 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.FMLLog;
+import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
+import cpw.mods.fml.common.network.IConnectionHandler;
 import cpw.mods.fml.common.network.NetworkMod;
+import cpw.mods.fml.common.network.NetworkRegistry;
+import cpw.mods.fml.common.network.Player;
 import cpw.mods.fml.relauncher.RelaunchClassLoader;
 import javassist.is.faulty.Timings;
 import me.nallar.tickthreading.Log;
@@ -34,6 +39,12 @@ import net.minecraft.command.ServerCommandManager;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.INetworkManager;
+import net.minecraft.network.NetLoginHandler;
+import net.minecraft.network.NetServerHandler;
+import net.minecraft.network.packet.NetHandler;
+import net.minecraft.network.packet.Packet1Login;
+import net.minecraft.network.packet.Packet3Chat;
 import net.minecraft.network.packet.PacketCount;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
@@ -77,6 +88,7 @@ public class TickThreading {
 	private int tickThreads = 0;
 	private int regionSize = 16;
 	private boolean variableTickRate = true;
+	private boolean appliedEnergisticsLoaded = false;
 	private DeadLockDetector deadLockDetector;
 	private HashSet<Integer> disabledFastMobSpawningDimensions = new HashSet<Integer>();
 	private boolean waitForEntityTickCompletion = true;
@@ -102,6 +114,8 @@ public class TickThreading {
 	@Mod.Init
 	public void init(FMLInitializationEvent event) {
 		MinecraftForge.EVENT_BUS.register(this);
+		appliedEnergisticsLoaded = Loader.isModLoaded("AppliedEnergistics");
+		NetworkRegistry.instance().registerConnectionHandler(new LoginWarningHandler());
 	}
 
 	@Mod.PreInit
@@ -266,6 +280,43 @@ public class TickThreading {
 			if (profiling) {
 				Timings.record("server/EntityTickWait", System.nanoTime() - sT);
 			}
+		}
+	}
+
+	private class LoginWarningHandler implements IConnectionHandler {
+		LoginWarningHandler() {
+		}
+
+		@Override
+		public void playerLoggedIn(final Player player, final NetHandler netHandler, final INetworkManager manager) {
+			if (netHandler instanceof NetServerHandler) {
+				NetServerHandler netServerHandler = (NetServerHandler) netHandler;
+				if (appliedEnergisticsLoaded) {
+					netServerHandler.sendPacketToPlayer(new Packet3Chat("You're using TickThreading with Applied Energistics. This is currently a bad idea, and you may lose items."));
+					netServerHandler.sendPacketToPlayer(new Packet3Chat("See https://github.com/nallar/TickThreading/issues/246"));
+				}
+			}
+		}
+
+		@Override
+		public String connectionReceived(final NetLoginHandler netHandler, final INetworkManager manager) {
+			return null;
+		}
+
+		@Override
+		public void connectionOpened(final NetHandler netClientHandler, final String server, final int port, final INetworkManager manager) {
+		}
+
+		@Override
+		public void connectionOpened(final NetHandler netClientHandler, final MinecraftServer server, final INetworkManager manager) {
+		}
+
+		@Override
+		public void connectionClosed(final INetworkManager manager) {
+		}
+
+		@Override
+		public void clientLoggedIn(final NetHandler clientHandler, final INetworkManager manager, final Packet1Login login) {
 		}
 	}
 }
