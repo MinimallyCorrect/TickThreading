@@ -165,7 +165,7 @@ public class TickThreading {
 	}
 
 	@ForgeSubscribe
-	public void onWorldLoad(WorldEvent.Load event) {
+	public synchronized void onWorldLoad(WorldEvent.Load event) {
 		World world = event.world;
 		if (world.isRemote) {
 			Log.severe("World " + Log.name(world) + " seems to be a client world", new Throwable());
@@ -173,6 +173,10 @@ public class TickThreading {
 		}
 		if (DimensionManager.getWorld(world.getDimension()) != world) {
 			Log.severe("World " + world.getName() + " was loaded with an incorrect dimension ID!", new Throwable());
+		}
+		if (managers.containsKey(world)) {
+			Log.severe("World " + world + "'s world load event was fired twice.", new Throwable());
+			return;
 		}
 		TickManager manager = new TickManager((WorldServer) world, regionSize, getThreadCount(), waitForEntityTickCompletion);
 		manager.setVariableTickRate(variableTickRate);

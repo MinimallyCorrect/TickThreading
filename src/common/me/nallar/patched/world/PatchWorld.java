@@ -99,7 +99,7 @@ public abstract class PatchWorld extends World {
 			provider.dimensionId = dimensionId;
 		}
 		cachedName = null;
-		Log.info("Set dimension ID for " + this.getName());
+		Log.fine("Set dimension ID for " + this.getName());
 		if (TickThreading.instance.getManager(this) != null) {
 			Log.severe("Set corrected dimension too late!");
 		}
