@@ -43,6 +43,9 @@ public abstract class PatchNetServerHandler extends NetServerHandler {
 		if (!Thread.holdsLock(this)) {
 			throw new ConcurrencyError("Must synchronize for teleportation");
 		}
+		if (teleported < 0 && playerEntity.getDistanceSq(x, y, z) < 1000) {
+			return;
+		}
 		teleported = 20;
 		hasMoved = false;
 		lastPosX = tpPosX = x;
