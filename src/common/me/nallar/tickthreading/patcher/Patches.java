@@ -120,27 +120,38 @@ public class Patches {
 	}
 
 	@Patch (
-			requiredAttributes = "field"
+			requiredAttributes = "field",
+			emptyConstructor = false
 	)
-	public void replaceInitializer(final CtClass ctClass, Map<String, String> attributes) throws CannotCompileException, NotFoundException {
+	public void replaceInitializer(final Object o, Map<String, String> attributes) throws CannotCompileException, NotFoundException {
 		final String field = attributes.get("field");
+		CtClass ctClass = o instanceof CtClass ? (CtClass) o : null;
+		CtBehavior ctBehavior = null;
+		if (ctClass == null) {
+			ctBehavior = (CtBehavior) o;
+			ctClass = ctBehavior.getDeclaringClass();
+		}
 		final CtField ctField = ctClass.getDeclaredField(field);
 		String code = attributes.get("code");
 		String clazz = attributes.get("class");
 		if (code == null && clazz == null) {
 			throw new NullPointerException("Must give code or class");
 		}
-		final String newInitialiser = code == null ? "new " + clazz + "();" : code;
+		final String newInitialiser = code == null ? "$_ = new " + clazz + "();" : code;
 		Set<CtBehavior> allBehaviours = new HashSet<CtBehavior>();
-		Collections.addAll(allBehaviours, ctClass.getDeclaredConstructors());
-		CtBehavior initialiser = ctClass.getClassInitializer();
-		if (initialiser != null) {
-			allBehaviours.add(initialiser);
+		if (ctBehavior == null) {
+			Collections.addAll(allBehaviours, ctClass.getDeclaredConstructors());
+			CtBehavior initialiser = ctClass.getClassInitializer();
+			if (initialiser != null) {
+				allBehaviours.add(initialiser);
+			}
+		} else {
+			allBehaviours.add(ctBehavior);
 		}
 		final IntHolder replaced = new IntHolder();
-		for (CtBehavior ctBehavior : allBehaviours) {
+		for (CtBehavior ctBehavior_ : allBehaviours) {
 			final Map<Integer, String> newExprType = new HashMap<Integer, String>();
-			ctBehavior.instrument(new ExprEditor() {
+			ctBehavior_.instrument(new ExprEditor() {
 				NewExpr lastNewExpr;
 				int newPos = 0;
 
@@ -195,7 +206,7 @@ public class Patches {
 					lastNewExpr = null;
 				}
 			});
-			ctBehavior.instrument(new ExprEditor() {
+			ctBehavior_.instrument(new ExprEditor() {
 				int newPos = 0;
 
 				@Override
@@ -203,7 +214,7 @@ public class Patches {
 					newPos++;
 					if (newExprType.containsKey(newPos)) {
 						String assignedType = newExprType.get(newPos);
-						String block = "{$_=" + newInitialiser + '}';
+						String block = '{' + newInitialiser + '}';
 						Log.fine(assignedType + " at " + e.getFileName() + ':' + e.getLineNumber() + " replaced with " + block);
 						e.replace(block);
 						replaced.value++;

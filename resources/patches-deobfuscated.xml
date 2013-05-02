@@ -87,7 +87,7 @@
 			<final field="playerEntities"/>
 			<final field="isRemote"/>
 			<public field="ambientTickCountdown"/>
-			<replaceInitializer field="playerEntities" code="new java.util.concurrent.CopyOnWriteArrayList();"/>
+			<replaceInitializer field="playerEntities" class="java.util.concurrent.CopyOnWriteArrayList"/>
 		</class>
 		<class id="net.minecraft.world.ChunkCache">
 			<replaceMethodCall code="$_ = $0.getChunkIfExists($$);" method="^class:World^.^method:World/getChunkFromChunkCoords^"/>
@@ -117,7 +117,7 @@
 			<replace class="me.nallar.patched.storage.IntCache"/>
 		</class>
 		<class id="net.minecraft.world.gen.structure.MapGenStructure">
-			<replaceInitializer field="structureMap" code="new java.util.concurrent.ConcurrentHashMap();"/>
+			<replaceInitializer field="structureMap" class="java.util.concurrent.ConcurrentHashMap"/>
 		</class>
 		<class id="net.minecraft.world.gen.ChunkProviderServer">
 			<replace class="me.nallar.patched.storage.ThreadedChunkProvider"/>
@@ -143,7 +143,7 @@
 			</replaceMethod>
 		</class>
 		<class id="org.bukkit.craftbukkit.v1_4_R1.chunkio.ChunkIOExecutor" env="mcpc">
-			<replaceInitializer field="instance" code="null;"/>
+			<replaceInitializer field="instance" code="$_ = null;"/>
 			<replaceMethod code="throw new UnsupportedOperationException();">tick</replaceMethod>
 			<disable>adjustPoolSize</disable>
 			<replaceMethod code="((^class:ChunkProviderServer^)$1.^method:World/getChunkProvider^()).getChunkAt($2, $3, true, false, null);">waitForChunkLoad</replaceMethod>
@@ -203,8 +203,8 @@
 			<synchronize field="loadedChunks">onUpdate</synchronize>
 			<addAll fromClass="me.nallar.patched.entity.PatchEntityPlayerMP"/>
 			<!-- Concurrent access during iteration = boom -->
-			<replaceInitializer field="destroyedItemsNetCache" code="new me.nallar.tickthreading.collections.ConcurrentQueueList();"/>
-			<replaceInitializer field="loadedChunks" code="new me.nallar.tickthreading.collections.ConcurrentQueueList();"/>
+			<replaceInitializer field="destroyedItemsNetCache" class="me.nallar.tickthreading.collections.ConcurrentQueueList"/>
+			<replaceInitializer field="loadedChunks" class="me.nallar.tickthreading.collections.ConcurrentQueueList"/>
 		</class>
 		<class id="net.minecraft.entity.Entity">
 			<addAll fromClass="me.nallar.patched.entity.PatchEntity"/>
@@ -214,7 +214,7 @@
 		</class>
 		<class id="net.minecraft.nbt.NBTTagCompound">
 			<addAll fromClass="me.nallar.patched.nbt.PatchNBTTagCompound"/>
-			<replaceInitializer field="tagMap" code="new java.util.concurrent.ConcurrentHashMap();"/>
+			<replaceInitializer field="tagMap" class="java.util.concurrent.ConcurrentHashMap"/>
 			<final field="tagMap"/>
 		</class>
 		<class id="net.minecraft.entity.Entity">
@@ -267,7 +267,7 @@
 			<lock field="playerUpdateLock">createPlayerForUser,sendPacketToAllPlayers,sendPlayerInfoToAllPlayers</lock>
 			<lock field="playerUpdateLock">sendPacketToAllPlayersInDimension,getPlayerListAsString,getAllUsernames,getPlayerForUsername,findPlayers,sendToAllNearExcept</lock>
 			<lock field="playerUpdateLock">saveAllPlayerData,getPlayerList</lock>
-			<replaceInitializer field="playerEntityList" code="new me.nallar.tickthreading.collections.LockArrayList();"/>
+			<replaceInitializer field="playerEntityList" class="me.nallar.tickthreading.collections.LockArrayList"/>
 			<insertAfter code="((me.nallar.tickthreading.collections.LockArrayList)^field:ServerConfigurationManager/playerEntityList^).lock = playersUpdateLock;"/>
 			<synchronize field="$1.loadedChunks">respawnPlayer</synchronize>
 			<synchronize field="$1.loadedChunks">transferPlayerToDimension(Lnet.minecraft.entity.player.EntityPlayerMP;ILnet.minecraft.world.Teleporter;)V</synchronize>
@@ -529,7 +529,7 @@
 		</class>
 		<class id="buildcraft.transport.PipeTransportItems">
 			<!-- TODO: Find a more suitable way of making this concurrent without making performRemoval slow -->
-			<replaceInitializer field="travelingEntities" code="new java.util.concurrent.ConcurrentHashMap();"/>
+			<replaceInitializer field="travelingEntities" class="java.util.concurrent.ConcurrentHashMap"/>
 		</class>
 		<class id="buildcraft.transport.PipeTransportPower">
 			<!-- TODO: Non-static lock, if possible -->
@@ -569,7 +569,8 @@
 		</class>
 		<class id="com.eloraam.redpower.core.TubeFlow">
 			<replaceInitializer field="contents" class="me.nallar.tickthreading.collections.ConcurrentLinkedQueueList"/>
-			<replaceInitializer field="contents" code="contents.clear();">readFromNBT</replaceInitializer>
+			<replaceInitializer field="contents" code="contents.clear(); $_ = null;">readFromNBT</replaceInitializer>
+			<replaceFieldUsage field="contents" writeCode="{ }">readFromNBT</replaceFieldUsage>
 			<final field="contents"/>
 		</class>
 		<class id="com.eloraam.redpower.core.PipeLib">
@@ -843,8 +844,8 @@
 		<class id="chb.mods.mffs.common.tileentity.TileEntityProjector">
 			<newField field="fieldInteriorMap" class="me.nallar.tickthreading.collections.CHashMapReplaceClear"/>
 			<newField field="fieldDefMap" class="me.nallar.tickthreading.collections.CHashMapReplaceClear"/>
-			<replaceInitializer field="field_interior" code="java.util.Collections.newSetFromMap(fieldInteriorMap);"/>
-			<replaceInitializer field="field_def" code="java.util.Collections.newSetFromMap(fieldDefMap);"/>
+			<replaceInitializer field="field_interior" code="$_ = java.util.Collections.newSetFromMap(fieldInteriorMap);"/>
+			<replaceInitializer field="field_def" code="$_ = java.util.Collections.newSetFromMap(fieldDefMap);"/>
 			<insertAfter code="{ fieldInteriorMap.done(); fieldDefMap.done(); }">calculateField(Z)V</insertAfter>
 			<synchronize>calculateField(Z)V</synchronize>
 		</class>
@@ -870,14 +871,14 @@
 			<newField field="readWriteLock" class="me.nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock"/>
 			<newField field="writeLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>
 			<newField field="readLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.readLock();"/>
-			<replaceInitializer field="electricityNetworks" code="new me.nallar.tickthreading.collections.LockArrayList();"/>
+			<replaceInitializer field="electricityNetworks" class="me.nallar.tickthreading.collections.LockArrayList"/>
 			<insertAfter code="((me.nallar.tickthreading.collections.LockArrayList)electricityNetworks).lock = writeLock;"/>
 			<lock field="readLock">unregister,cleanUpNetworks,resetConductors</lock>
 			<synchronize>mergeConnection,splitConnection,cleanUpNetworks</synchronize>
 			<insertBefore code="if (cleanNetworkCount++ % 15 != 0) { return; }">cleanUpNetworks</insertBefore>
 		</class>
 		<class id="universalelectricity.core.electricity.ElectricityConnections">
-			<replaceInitializer field="connectors" code="new me.nallar.tickthreading.collections.CHashMap();"/>
+			<replaceInitializer field="connectors" class="me.nallar.tickthreading.collections.CHashMap"/>
 		</class>
 		<class id="universalelectricity.core.electricity.ElectricityNetwork">
 			<replaceMethodCall code="$_ = $0.getTEWithoutLoad($$);" method="^class:World^.^method:World/getBlockTileEntity^">getProduced,getRequestWithoutReduction</replaceMethodCall>
@@ -942,8 +943,8 @@
 	</icbm>
 	<forestry>
 		<class id="forestry.apiculture.gadgets.TileAlvearyPlain">
-			<replaceInitializer field="modifiers" code="java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap());"/>
-			<replaceInitializer field="eventHandlers" code="java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap());"/>
+			<replaceInitializer field="modifiers" code="$_ = java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap());"/>
+			<replaceInitializer field="eventHandlers" code="$_ = java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap());"/>
 		</class>
 	</forestry>
 	<railCraft>
