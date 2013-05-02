@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.Arrays;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -15,6 +16,7 @@ import cpw.mods.fml.common.FMLLog;
 import me.nallar.reporting.Reporter;
 import me.nallar.tickthreading.util.MappingUtil;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.gui.GuiLogOutputHandler;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 
@@ -38,6 +40,15 @@ public class Log {
 			LOGGER.setParent(parent);
 			LOGGER.setUseParentHandlers(true);
 			setFileName("tickthreading", Level.INFO, LOGGER);
+			Logger minecraftLogger = Logger.getLogger("Minecraft");
+			for (Handler handler : minecraftLogger.getHandlers()) {
+				if (handler instanceof GuiLogOutputHandler) {
+					if (!Arrays.asList(parent.getHandlers()).contains(handler)) {
+						parent.addHandler(handler);
+						break;
+					}
+				}
+			}
 		} catch (NoClassDefFoundError ignored) {
 			// Not running under forge
 			LOGGER.setUseParentHandlers(false);
