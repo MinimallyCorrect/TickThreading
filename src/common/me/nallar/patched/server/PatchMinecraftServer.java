@@ -18,6 +18,7 @@ import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.relauncher.RelaunchClassLoader;
 import cpw.mods.fml.relauncher.Side;
 import javassist.is.faulty.Timings;
+import me.nallar.exception.ConcurrencyError;
 import me.nallar.insecurity.InsecurityManager;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.DeadLockDetector;
@@ -141,6 +142,8 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 	@Override
 	public void run() {
+		//noinspection ThrowableInstanceNeverThrown
+		new ConcurrencyError("Just loading some exception classes.");
 		toSaveConfigurationSet = new HashSet<Configuration>();
 		FMLLog.info("Loaded " + RelaunchClassLoader.patchedClasses + " patched classes, cl: " + this.getClass().getClassLoader());
 		try {
