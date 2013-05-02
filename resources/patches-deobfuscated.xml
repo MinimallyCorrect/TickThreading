@@ -846,8 +846,8 @@
 			<newField field="fieldDefMap" class="me.nallar.tickthreading.collections.CHashMapReplaceClear"/>
 			<replaceInitializer field="field_interior" code="$_ = java.util.Collections.newSetFromMap(fieldInteriorMap);"/>
 			<replaceInitializer field="field_def" code="$_ = java.util.Collections.newSetFromMap(fieldDefMap);"/>
-			<insertAfter code="{ fieldInteriorMap.done(); fieldDefMap.done(); }">calculateField(Z)V</insertAfter>
-			<synchronize>calculateField(Z)V</synchronize>
+			<insertAfter code="{ fieldInteriorMap.done(); fieldDefMap.done(); }">calculateField(Z)Z</insertAfter>
+			<synchronize>calculateField(Z)Z</synchronize>
 		</class>
 	</MFFS>
 	<thaumcraft>
