@@ -671,6 +671,7 @@
 		<class id="codechicken.chunkloader.ChunkLoaderEventHandler">
 			<newField field="staticLock" class="java.lang.Object" static=""/>
 			<synchronize field="staticLock">tickEnd,onPlayerLogout,onWorldLoad,onWorldUnload,onChunkForce,onChunkUnForce</synchronize>
+			<replaceMethod code="return java.util.EnumSet.of(cpw.mods.fml.common.TickType.SERVER, cpw.mods.fml.common.TickType.WORLD);">ticks</replaceMethod>
 		</class>
 		<class id="codechicken.chunkloader.PlayerChunkViewerManager">
 			<synchronize field="$1.b.g">calculateChunkChanges</synchronize>
