@@ -686,7 +686,7 @@
 			<replaceMethodCall newMethod="getTEForceLoad" method="^class:World^.^method:World/getBlockTileEntity^">^all^</replaceMethodCall>
 			<replaceMethodCall newMethod="getBlockIdForceLoad" method="^class:World^.^method:World/getBlockId^">^all^</replaceMethodCall>
 			<synchronize>revive(^class:World^)V</synchronize>
-			<replaceInitializer field="timedUnloadQueue" class="me.nallar.tickthreading.collections.CHashMap"/>
+			<replaceInitializer field="timedUnloadQueue" class="me.nallar.tickthreading.collections.LinkedTimedHashMapQueue"/>
 		</class>
 		<class id="codechicken.chunkloader.CommandChunkLoaders">
 			<synchronize field="codechicken.chunkloader.ChunkLoaderEventHandler.staticLock">handleCommand</synchronize>
