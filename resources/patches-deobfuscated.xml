@@ -569,7 +569,8 @@
 		</class>
 		<class id="com.eloraam.redpower.core.TubeFlow">
 			<replaceInitializer field="contents" class="me.nallar.tickthreading.collections.ConcurrentLinkedQueueList"/>
-			<replaceInitializer field="contents" class="me.nallar.tickthreading.collections.ConcurrentLinkedQueueList">readFromNBT</replaceInitializer>
+			<replaceInitializer field="contents" code="contents.clear();">readFromNBT</replaceInitializer>
+			<final field="contents"/>
 		</class>
 		<class id="com.eloraam.redpower.core.PipeLib">
 			<replaceMethodCall index="0" code="{ $_ = null; }" method="printf">registerForgeFluid</replaceMethodCall>
@@ -717,6 +718,7 @@
 	<wirelessRedstone>
 		<class id="codechicken.wirelessredstone.core.RedstoneEther">
 			<replaceInitializer field="playerJammedMap" class="me.nallar.tickthreading.collections.CHashMap"/>
+			<final field="playerJammedMap"/>
 		</class>
 		<class id="codechicken.wirelessredstone.core.RedstoneEtherServer">
 			<synchronize>tick</synchronize>
