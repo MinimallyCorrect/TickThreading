@@ -442,7 +442,7 @@
 		</class>
 		<class id="net.minecraftforge.common.ForgeChunkManager">
 			<addAll fromClass="me.nallar.patched.forge.PatchForgeChunkManager"/>
-			<synchronize>forceChunk,unforceChunk</synchronize>
+			<synchronize>unforceChunk</synchronize>
 			<insertAfter
 							code="if ($1 != null &amp;&amp; $2 != null) { $1.world.^method:World/getChunkProvider^().^method:IChunkProvider/loadChunk^($2.^field:ChunkCoordIntPair/chunkXPos^, $2.^field:ChunkCoordIntPair/chunkZPos^); }">
 				forceChunk

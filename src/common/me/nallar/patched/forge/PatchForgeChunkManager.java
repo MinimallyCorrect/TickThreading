@@ -2,12 +2,15 @@ package me.nallar.patched.forge;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.LinkedHashSet;
 import java.util.logging.Level;
 
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Multimap;
 
 import cpw.mods.fml.common.FMLLog;
+import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.collections.ForcedChunksRedirectMap;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.CompressedStreamTools;
@@ -18,14 +21,50 @@ import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.ForgeChunkManager;
+import net.minecraftforge.common.MinecraftForge;
 
 public abstract class PatchForgeChunkManager extends ForgeChunkManager {
-	public static void staticConstruct() {
+	private static Field requestedChunksField;
+
+	public static void staticConstruct() throws NoSuchFieldException {
 		forcedChunks = new ForcedChunksRedirectMap();
+		requestedChunksField = Ticket.class.getDeclaredField("requestedChunks");
+		requestedChunksField.setAccessible(true);
 	}
 
 	public static ImmutableSetMultimap<ChunkCoordIntPair, Ticket> getPersistentChunksFor(World world) {
 		return world.forcedChunks;
+	}
+
+	public static void forceChunk(Ticket ticket, ChunkCoordIntPair chunk) {
+		if (ticket == null || chunk == null) {
+			return;
+		}
+		if (ticket.getType() == Type.ENTITY && ticket.getEntity() == null) {
+			throw new RuntimeException("Attempted to use an entity ticket to force a chunk, without an entity");
+		}
+		if (ticket.isPlayerTicket() ? !playerTickets.containsValue(ticket) : !tickets.get(ticket.world).containsEntry(ticket.getModId(), ticket)) {
+			FMLLog.severe("The mod %s attempted to force load a chunk with an invalid ticket. This is not permitted.", ticket.getModId());
+			return;
+		}
+		LinkedHashSet<ChunkCoordIntPair> requestedChunks;
+		try {
+			requestedChunks = (LinkedHashSet<ChunkCoordIntPair>) requestedChunksField.get(ticket);
+		} catch (IllegalAccessException e) {
+			Log.severe("Failed to get requestedChunks", e);
+			return;
+		}
+		requestedChunks.add(chunk);
+		MinecraftForge.EVENT_BUS.post(new ForceChunkEvent(ticket, chunk));
+
+		synchronized (ForgeChunkManager.class) {
+			ImmutableSetMultimap<ChunkCoordIntPair, Ticket> newMap = ImmutableSetMultimap.<ChunkCoordIntPair, Ticket>builder().putAll(forcedChunks.get(ticket.world)).put(chunk, ticket).build();
+			forcedChunks.put(ticket.world, newMap);
+		}
+		if (ticket.getChunkListDepth() > 0 && requestedChunks.size() > ticket.getChunkListDepth()) {
+			ChunkCoordIntPair removed = requestedChunks.iterator().next();
+			unforceChunk(ticket, removed);
+		}
 	}
 
 	static void saveWorld(World world) {
