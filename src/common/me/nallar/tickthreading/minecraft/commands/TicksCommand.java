@@ -27,7 +27,7 @@ public class TicksCommand extends Command {
 	}
 
 	private void usage(ICommandSender commandSender) {
-		sendChat(commandSender, "Usage: /ticks [e/b/?] [dimensionid]");
+		sendChat(commandSender, "Usage: /ticks [e/b/r [radius]/?] [dimensionid]");
 	}
 
 	private static World getWorld(ICommandSender commandSender, List<String> arguments) {
