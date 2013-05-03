@@ -131,6 +131,14 @@ public class Patches {
 			ctBehavior = (CtBehavior) o;
 			ctClass = ctBehavior.getDeclaringClass();
 		}
+		String ctFieldClass = attributes.get("fieldClass");
+		if (ctFieldClass != null) {
+			if (ctClass == o) {
+				Log.info("Must set methods to run on if using fieldClass.");
+				return;
+			}
+			ctClass = classRegistry.getClass(ctFieldClass);
+		}
 		final CtField ctField = ctClass.getDeclaredField(field);
 		String code = attributes.get("code");
 		String clazz = attributes.get("class");

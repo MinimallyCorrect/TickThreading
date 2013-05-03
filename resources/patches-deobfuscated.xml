@@ -663,10 +663,13 @@
 	<gregTech>
 		<class id="gregtechmod.GT_Mod">
 			<synchronize>readIDSUData,writeIDSUData</synchronize>
-			<replaceInitializer field="sEnergyList" class="me.nallar.tickthreading.collections.CHashMap">readIDSUData</replaceInitializer>
+			<replaceInitializer fieldClass="gregtechmod.common.tileentities.GT_TileEntity_IDSU" field="sEnergyList" class="me.nallar.tickthreading.collections.CHashMap">readIDSUData</replaceInitializer>
 		</class>
 		<class id="gregtechmod.common.tileentities.GT_TileEntityMetaID_Machine">
 			<replaceMethodCall method="self.^method:TileEntity/onInventoryChanged^" code="{ }">^method:TileEntity/updateEntity^</replaceMethodCall>
+		</class>
+		<class id="gregtechmod.common.tileentities.GT_TileEntity_IDSU">
+			<replaceMethodCall method="remove" code="{ $_ = null; }">setEnergyVar</replaceMethodCall>
 		</class>
 	</gregTech>
 	<chickenChunks>
