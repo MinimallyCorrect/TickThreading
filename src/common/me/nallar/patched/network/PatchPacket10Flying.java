@@ -9,6 +9,7 @@ import me.nallar.tickthreading.Log;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.NetServerHandler;
 import net.minecraft.network.TcpConnection;
+import net.minecraft.network.TcpReaderThread;
 import net.minecraft.network.packet.NetHandler;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet10Flying;
@@ -20,7 +21,6 @@ import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.ChunkWatchEvent;
-import sun.rmi.transport.tcp.TCPConnection;
 
 public abstract class PatchPacket10Flying extends Packet10Flying {
 	@Override
@@ -32,25 +32,37 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 	public void processPacket(NetHandler par1NetHandler) {
 		NetServerHandler nsh = (NetServerHandler) par1NetHandler;
 		EntityPlayerMP entityPlayerMP = nsh.playerEntity;
-		if (entityPlayerMP.ridingEntity != null && Thread.currentThread() instanceof TcpReaderThread) {
-			TcpConnection tcpConnection = (TcpConnection) nsh.netManager;
-			tcpConnection.addReadPacket(this);
+		boolean mainThreadProcess = false;
+		if (entityPlayerMP.ridingEntity != null) {
+			if (Thread.currentThread() instanceof TcpReaderThread) {
+				TcpConnection tcpConnection = (TcpConnection) nsh.netManager;
+				tcpConnection.addReadPacket(this);
+				return;
+			} else {
+				mainThreadProcess = true;
+			}
 		}
 		synchronized (nsh) {
-			if (!(nsh.teleported-- > 0 || (nsh.teleported > -20 && ((nsh.tpPosY > yPosition + 0.02) || (yPosition == -999.0D && stance == -999.0D))))) {
+			int teleported = nsh.teleported--;
+			boolean recentlyTeleported = teleported > -1;
+			if (recentlyTeleported && mainThreadProcess) {
+				recentlyTeleported = false;
+				nsh.teleported = -21;
+			}
+			if (recentlyTeleported || (teleported > -20 && ((nsh.tpPosY > yPosition + 0.02) || (yPosition == -999.0D && stance == -999.0D)))) {
 				nsh.tpPosX = Double.NaN;
 				nsh.setHasMoved();
 				nsh.tpPosY = -256;
 				par1NetHandler.handleFlying(this);
 			} else if (nsh.teleported <= 1) {
-					nsh.updatePositionAfterTP(yaw, pitch);
-					((WorldServer) entityPlayerMP.worldObj).getPlayerManager().updateMountedMovingPlayer(entityPlayerMP);
-					if (nsh.teleported == 1) {
-						LinkedList<EntityPlayerMP> playersToCheckWorld = MinecraftServer.playersToCheckWorld;
-						synchronized (playersToCheckWorld) {
-							playersToCheckWorld.add(entityPlayerMP);
-						}
+				nsh.updatePositionAfterTP(yaw, pitch);
+				((WorldServer) entityPlayerMP.worldObj).getPlayerManager().updateMountedMovingPlayer(entityPlayerMP);
+				if (nsh.teleported == 1) {
+					LinkedList<EntityPlayerMP> playersToCheckWorld = MinecraftServer.playersToCheckWorld;
+					synchronized (playersToCheckWorld) {
+						playersToCheckWorld.add(entityPlayerMP);
 					}
+				}
 			}
 			sendChunks(entityPlayerMP);
 		}
