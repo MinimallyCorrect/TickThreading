@@ -80,6 +80,7 @@ public class TickThreading {
 	public boolean allowWorldUnloading = true;
 	public boolean requireOpForDumpCommand = true;
 	public boolean enableFastMobSpawning = false;
+	public boolean enableBugWarningMessage = true;
 	public int saveInterval = 180;
 	public int deadLockTime = 45;
 	public int chunkCacheSize = 2000;
@@ -113,6 +114,9 @@ public class TickThreading {
 	@Mod.Init
 	public void init(FMLInitializationEvent event) {
 		MinecraftForge.EVENT_BUS.register(this);
+		if (!enableBugWarningMessage) {
+			return;
+		}
 		appliedEnergisticsLoaded = Loader.isModLoaded("AppliedEnergistics");
 		NetworkRegistry.instance().registerConnectionHandler(new LoginWarningHandler());
 	}
@@ -151,6 +155,7 @@ public class TickThreading {
 		cleanWorlds = config.get(GENERAL, "cleanWorlds", cleanWorlds, "Whether to clean worlds on unload - this should fix some memory leaks due to mods holding on to world objects").getBoolean(cleanWorlds);
 		allowWorldUnloading = config.get(GENERAL, "allowWorldUnloading", allowWorldUnloading, "Whether worlds should be allowed to unload.").getBoolean(allowWorldUnloading);
 		lockRegionBorders = config.get(GENERAL, "lockRegionBorders", lockRegionBorders, "Whether to prevent blocks next to each other on region borders from ticking concurrently. false = faster but experimental").getBoolean(lockRegionBorders);
+		enableBugWarningMessage = config.get(GENERAL, "enableBugWarningMessage", enableBugWarningMessage, "Whether to enable warning if there are severe known compatibility issues with the current TT build you are using and your installed mods. Highly recommend leaving this enabled, if you disable it chances are you'll get users experiencing these issues annoying mod authors, which I really don't want to happen.").getBoolean(enableBugWarningMessage);
 		config.save();
 		int[] disabledDimensions = config.get(GENERAL, "disableFastMobSpawningDimensions", new int[]{-1}, "List of dimensions not to enable fast spawning in.").getIntList();
 		disabledFastMobSpawningDimensions = new HashSet<Integer>(disabledDimensions.length);
