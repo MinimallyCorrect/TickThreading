@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 import me.nallar.tickthreading.Log;
@@ -20,6 +22,10 @@ public abstract class PatchTcpConnection extends TcpConnection {
 		super(par1Socket, par2Str, par3NetHandler);
 	}
 
+	public void construct() {
+		readPackets = Collections.synchronizedList(new LinkedList());
+	}
+
 	private boolean callPacketOut(Packet p) {
 		for (IPacketHandler handler : getPacketHandlers()) {
 			if (!handler.onOutgoingPacket(theNetHandler, p.getPacketId(), p)) {
@@ -28,6 +34,12 @@ public abstract class PatchTcpConnection extends TcpConnection {
 		}
 
 		return true;
+	}
+
+	@Override
+	@Declare
+	public void addReadPacket(Packet packet) {
+		this.readPackets.add(packet);
 	}
 
 	@Override

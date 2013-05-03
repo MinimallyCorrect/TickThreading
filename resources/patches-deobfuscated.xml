@@ -332,7 +332,7 @@
 			<addAll fromClass="me.nallar.patched.network.PatchTcpConnection"/>
 		</class>
 		<class id="net.minecraft.network.TcpReaderThread">
-			<replace class="me.nallar.patched.network.PatchTcpReaderThread"/>
+			<replace class="me.nallar.patched.network.ReplaceTcpReaderThread"/>
 		</class>
 		<class id="net.minecraft.entity.ai.EntityAITasks">
 			<synchronize>addTask,func_85156_a,onUpdateTasks,func_75775_b</synchronize>

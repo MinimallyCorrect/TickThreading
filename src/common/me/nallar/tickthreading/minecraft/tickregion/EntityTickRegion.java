@@ -35,12 +35,13 @@ public class EntityTickRegion extends TickRegion {
 			}
 			Entity entity = entitiesIterator.next();
 			try {
-				if (entity.ridingEntity != null) {
-					if (!entity.ridingEntity.isDead && entity.ridingEntity.riddenByEntity == entity) {
+				Entity ridingEntity = entity.ridingEntity;
+				if (ridingEntity != null) {
+					if (!ridingEntity.isDead && ridingEntity.riddenByEntity == entity) {
 						continue;
 					}
 
-					entity.ridingEntity.riddenByEntity = null;
+					ridingEntity.riddenByEntity = null;
 					entity.ridingEntity = null;
 				}
 

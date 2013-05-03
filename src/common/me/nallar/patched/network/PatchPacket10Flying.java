@@ -8,6 +8,7 @@ import javassist.is.faulty.Timings;
 import me.nallar.tickthreading.Log;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.NetServerHandler;
+import net.minecraft.network.TcpConnection;
 import net.minecraft.network.packet.NetHandler;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet10Flying;
@@ -19,6 +20,7 @@ import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.ChunkWatchEvent;
+import sun.rmi.transport.tcp.TCPConnection;
 
 public abstract class PatchPacket10Flying extends Packet10Flying {
 	@Override
@@ -29,15 +31,18 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 	@Override
 	public void processPacket(NetHandler par1NetHandler) {
 		NetServerHandler nsh = (NetServerHandler) par1NetHandler;
+		EntityPlayerMP entityPlayerMP = nsh.playerEntity;
+		if (entityPlayerMP.ridingEntity != null && Thread.currentThread() instanceof TcpReaderThread) {
+			TcpConnection tcpConnection = (TcpConnection) nsh.netManager;
+			tcpConnection.addReadPacket(this);
+		}
 		synchronized (nsh) {
-			EntityPlayerMP entityPlayerMP = nsh.playerEntity;
 			if (!(nsh.teleported-- > 0 || (nsh.teleported > -20 && ((nsh.tpPosY > yPosition + 0.02) || (yPosition == -999.0D && stance == -999.0D))))) {
 				nsh.tpPosX = Double.NaN;
 				nsh.setHasMoved();
 				nsh.tpPosY = -256;
 				par1NetHandler.handleFlying(this);
-			} else {
-				if (nsh.teleported <= 1 || (nsh.teleported < 10 && nsh.tpPosY > yPosition + 0.02)) {
+			} else if (nsh.teleported <= 1) {
 					nsh.updatePositionAfterTP(yaw, pitch);
 					((WorldServer) entityPlayerMP.worldObj).getPlayerManager().updateMountedMovingPlayer(entityPlayerMP);
 					if (nsh.teleported == 1) {
@@ -46,7 +51,6 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 							playersToCheckWorld.add(entityPlayerMP);
 						}
 					}
-				}
 			}
 			sendChunks(entityPlayerMP);
 		}
