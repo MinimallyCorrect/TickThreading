@@ -4,12 +4,13 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
+import java.util.Collection;
 import java.util.List;
 
 import me.nallar.tickthreading.Log;
+import me.nallar.tickthreading.collections.ConcurrentQueueList;
 import me.nallar.tickthreading.patcher.Declare;
+import me.nallar.tickthreading.util.ReflectUtil;
 import net.minecraft.network.TcpConnection;
 import net.minecraft.network.packet.IPacketHandler;
 import net.minecraft.network.packet.NetHandler;
@@ -23,7 +24,11 @@ public abstract class PatchTcpConnection extends TcpConnection {
 	}
 
 	public void construct() {
-		readPackets = Collections.synchronizedList(new LinkedList());
+		try {
+			readPackets = new ConcurrentQueueList();
+		} catch (NoSuchFieldError ignored) {
+			// Already using sane collection in MCPC+.
+		}
 	}
 
 	private boolean callPacketOut(Packet p) {
@@ -39,7 +44,25 @@ public abstract class PatchTcpConnection extends TcpConnection {
 	@Override
 	@Declare
 	public void addReadPacket(Packet packet) {
-		this.readPackets.add(packet);
+		getReadPackets().add(packet);
+	}
+
+	private Collection<Packet> actualReadPackets;
+
+	private Collection<Packet> getReadPackets() {
+		if (actualReadPackets != null) {
+			return actualReadPackets;
+		}
+		try {
+			return actualReadPackets = readPackets;
+		} catch (NoSuchFieldError e) {
+			try {
+				return actualReadPackets = (Collection <Packet>) ReflectUtil.getField(TcpConnection.class, "o").get(this); // TODO: Implement reflection obfuscation
+			} catch (IllegalAccessException e1) {
+				Log.severe("Failed to get readPackets collection", e1);
+			}
+		}
+		throw new Error("Failed to get readPackets collection");
 	}
 
 	@Override
