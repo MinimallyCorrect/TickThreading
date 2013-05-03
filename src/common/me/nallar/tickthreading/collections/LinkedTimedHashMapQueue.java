@@ -9,8 +9,6 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
-import me.nallar.tickthreading.Log;
-
 public class LinkedTimedHashMapQueue<K> extends HashMap<K, Integer> {
 	int ticks = Integer.MIN_VALUE;
 	private final Map<K, Integer> map;

@@ -663,6 +663,7 @@
 	<gregTech>
 		<class id="gregtechmod.GT_Mod">
 			<synchronize>readIDSUData,writeIDSUData</synchronize>
+			<replaceInitializer field="sEnergyList" class="me.nallar.tickthreading.collections.CHashMap">readIDSUData</replaceInitializer>
 		</class>
 		<class id="gregtechmod.common.tileentities.GT_TileEntityMetaID_Machine">
 			<replaceMethodCall method="self.^method:TileEntity/onInventoryChanged^" code="{ }">^method:TileEntity/updateEntity^</replaceMethodCall>
