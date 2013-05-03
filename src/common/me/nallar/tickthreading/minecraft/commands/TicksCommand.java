@@ -48,7 +48,11 @@ public class TicksCommand extends Command {
 	public void processCommand(ICommandSender commandSender, List<String> arguments) {
 		String type = arguments.isEmpty() ? "t" : arguments.remove(0);
 		if ("r".equals(type)) {
-			EntityPlayerMP entityPlayerMP = (EntityPlayerMP) commandSender;
+			try {
+				EntityPlayerMP entityPlayerMP = (EntityPlayerMP) commandSender;
+			} catch (ClassCastException e) {
+				sendChat(commandSender, "/ticks r can only be used in game.");
+			}
 			WorldServer worldServer = (WorldServer) entityPlayerMP.worldObj;
 			int side = arguments.isEmpty() ? 2 : Integer.valueOf(arguments.get(0));
 			int count = 0;
