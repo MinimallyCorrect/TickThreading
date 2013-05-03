@@ -900,6 +900,9 @@
 		</class>
 	</universalElectricity>
 	<appliedEnergistics>
+		<class id="appeng.me.Platform">
+			<synchronize>getSharedTagCompound</synchronize>
+		</class>
 		<class id="appeng.me.tile.TileController">
 			<synchronize>getCellArray,resetCache</synchronize>
 		</class>
@@ -910,7 +913,7 @@
 			<synchronize>getCellArray,resetCache</synchronize>
 		</class>
 		<class id="appeng.me.tile.TileStorageBus">
-			<synchronize>getCellArray,resetCache</synchronize>
+			<synchronize>getCellArray,resetCache,getSharedTagCompound</synchronize>
 		</class>
 		<class id="appeng.me.MEInventoryArray">
 			<synchronize>^all^</synchronize>
