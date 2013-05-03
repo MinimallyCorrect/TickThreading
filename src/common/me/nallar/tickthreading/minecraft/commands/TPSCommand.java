@@ -73,7 +73,7 @@ public class TPSCommand extends Command {
 		StringBuilder sb = new StringBuilder();
 		sb
 				.append(' ')
-				.append(tps)
+				.append(TableFormatter.formatDoubleWithPrecision(tps, 2))
 				.append(" TPS [ ")
 				.append(withColour ? getColourForDifference(difference, targetTPS) : "")
 				.append(Strings.repeat("#", charsFirst))
