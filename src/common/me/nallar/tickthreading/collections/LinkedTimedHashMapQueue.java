@@ -25,7 +25,6 @@ public class LinkedTimedHashMapQueue<K> extends HashMap<K, Integer> {
 	}
 
 	public LinkedTimedHashMapQueue() {
-		Log.severe("C", new Throwable());
 		map = Collections.synchronizedMap(new LinkedHashMap<K, Integer>());
 	}
 
