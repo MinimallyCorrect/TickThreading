@@ -44,12 +44,12 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 		}
 		synchronized (nsh) {
 			int teleported = nsh.teleported--;
-			boolean recentlyTeleported = teleported > -1;
-			if (recentlyTeleported && mainThreadProcess) {
-				recentlyTeleported = false;
+			boolean finishedTeleporting = teleported < 0;
+			if (finishedTeleporting && mainThreadProcess) {
+				finishedTeleporting = false;
 				nsh.teleported = -21;
 			}
-			if (recentlyTeleported || (teleported > -20 && ((nsh.tpPosY > yPosition + 0.02) || (yPosition == -999.0D && stance == -999.0D)))) {
+			if ((yPosition == -999.0D && stance == -999.0D) || (finishedTeleporting && (teleported < -20 || (nsh.tpPosY < yPosition + 0.02)))) {
 				nsh.tpPosX = Double.NaN;
 				nsh.setHasMoved();
 				nsh.tpPosY = -256;

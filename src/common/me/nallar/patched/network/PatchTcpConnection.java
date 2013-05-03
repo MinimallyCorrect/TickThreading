@@ -57,7 +57,7 @@ public abstract class PatchTcpConnection extends TcpConnection {
 			return actualReadPackets = readPackets;
 		} catch (NoSuchFieldError e) {
 			try {
-				return actualReadPackets = (Collection <Packet>) ReflectUtil.getField(TcpConnection.class, "o").get(this); // TODO: Implement reflection obfuscation
+				return actualReadPackets = (Collection<Packet>) ReflectUtil.getField(TcpConnection.class, "o").get(this); // TODO: Implement reflection obfuscation
 			} catch (IllegalAccessException e1) {
 				Log.severe("Failed to get readPackets collection", e1);
 			}
