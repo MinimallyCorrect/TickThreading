@@ -140,18 +140,18 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 	private void loadPatchedClasses(URL url_, Map<String, byte[]> replacedClasses) {
 		String url = url_.toString();
 		if (replacedClasses == null) {
-			log(Level.WARNING, null, "Not loading patched classes in " + url + ", replacedClasses was not set.");
+			log(Level.WARNING, null, "Not loading patched classes in " + url.replace("%", "%%") + ", replacedClasses was not set.");
 			return;
 		}
 		File patchedModFile;
 		try {
 			patchedModFile = new File(patchedModsFolder, url.substring(url.lastIndexOf('/') + 1, url.length()));
 			if (!patchedURLs.add(patchedModFile.getAbsolutePath())) {
-				log(Level.WARNING, null, "Not loading patched classes in " + url + ", replacedClasses was not set.");
+				log(Level.WARNING, null, "Not loading patched classes in " + url.replace("%", "%%") + ", already patched.");
 				return;
 			}
 		} catch (Exception e) {
-			log(Level.SEVERE, e, "Failed to add patched classes in URL " + url);
+			log(Level.SEVERE, e, "Failed to add patched classes in URL " + url.replace("%", "%%"));
 			return;
 		}
 		try {
@@ -204,6 +204,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 									log(Level.INFO, null, "Skipping jar " + file + " which is not in the mods folder.");
 									continue;
 								}
+								log(Level.INFO, null, "Loading from jar " + file.toString().replace("%", "%%") + " in the patchedMods folder.");
 								loadPatchedClasses(file.toURI().toURL(), replacedClasses);
 							}
 						}
