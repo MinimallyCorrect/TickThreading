@@ -149,6 +149,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 				return;
 			}
 		} catch (Exception e) {
+			log(Level.SEVERE, e, "Failed to add patched classes in URL " + url);
 			return;
 		}
 		try {
@@ -172,7 +173,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 						replacedClasses.put(name, contents);
 					}
 					RelaunchClassLoader.patchedClasses += patchedClasses;
-					log(Level.INFO, null, "Loaded " + patchedClasses + " patched classes for " + patchedModFile.getName() + ". " + alreadyLoadedPatchedClasses + " classes not loaded, as already loaded from another patchedMods file.");
+					log(Level.INFO, null, "Loaded " + patchedClasses + " patched classes for " + patchedModFile.getName() + ". " + (alreadyLoadedPatchedClasses == 0 ? "" : alreadyLoadedPatchedClasses + " classes not loaded, as already loaded from another patchedMods file."));
 				} finally {
 					zipFile.close();
 				}
