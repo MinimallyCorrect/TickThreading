@@ -5,12 +5,14 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.text.Normalizer;
 import java.util.Arrays;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import cpw.mods.fml.common.FMLLog;
 import me.nallar.reporting.Reporter;
@@ -30,6 +32,28 @@ public class Log {
 	private static Handler handler;
 	private static final int numberOfLogFiles = 5;
 	private static final File logFolder = new File("TickThreadingLogs");
+	private static Handler wrappedHandler;
+	private static final Handler handlerWrapper = new Handler() {
+		Pattern pattern = Pattern.compile("\\P{Print}");
+
+		@Override
+		public void publish(final LogRecord record) {
+			String initialMessage = record.getMessage();
+			String sanitizedMessage = java.text.Normalizer.normalize(initialMessage, Normalizer.Form.NFC).replace("\r\n", "\n");
+			sanitizedMessage = pattern.matcher(sanitizedMessage).replaceAll("");
+			record.setMessage(sanitizedMessage);
+			wrappedHandler.publish(record);
+			record.setMessage(initialMessage);
+		}
+
+		@Override
+		public void flush() {
+		}
+
+		@Override
+		public void close() throws SecurityException {
+		}
+	};
 
 	static {
 		try {
@@ -43,8 +67,9 @@ public class Log {
 			Logger minecraftLogger = Logger.getLogger("Minecraft");
 			for (Handler handler : minecraftLogger.getHandlers()) {
 				if (handler instanceof GuiLogOutputHandler) {
-					if (!Arrays.asList(parent.getHandlers()).contains(handler)) {
-						parent.addHandler(handler);
+					if (!Arrays.asList(parent.getHandlers()).contains(handlerWrapper)) {
+						wrappedHandler = handler;
+						parent.addHandler(handlerWrapper);
 						break;
 					}
 				}
