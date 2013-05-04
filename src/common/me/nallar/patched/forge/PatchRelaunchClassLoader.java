@@ -138,14 +138,16 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 	}
 
 	private void loadPatchedClasses(URL url_, Map<String, byte[]> replacedClasses) {
+		String url = url_.toString();
 		if (replacedClasses == null) {
+			log(Level.WARNING, null, "Not loading patched classes in " + url + ", replacedClasses was not set.");
 			return;
 		}
-		String url = url_.toString();
 		File patchedModFile;
 		try {
 			patchedModFile = new File(patchedModsFolder, url.substring(url.lastIndexOf('/') + 1, url.length()));
 			if (!patchedURLs.add(patchedModFile.getAbsolutePath())) {
+				log(Level.WARNING, null, "Not loading patched classes in " + url + ", replacedClasses was not set.");
 				return;
 			}
 		} catch (Exception e) {
@@ -196,6 +198,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 						}
 						if (patchedModsFolder.isDirectory()) {
 							File modsFolder = new File(minecraftdir, "mods");
+							log(Level.INFO, null, "Loading patched mod classes from " + patchedModsFolder);
 							for (File file : patchedModsFolder.listFiles()) {
 								if (!new File(modsFolder, file.getName()).exists()) {
 									log(Level.INFO, null, "Skipping jar " + file + " which is not in the mods folder.");
