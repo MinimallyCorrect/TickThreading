@@ -902,6 +902,8 @@
 	<appliedEnergistics>
 		<class id="appeng.me.Platform">
 			<synchronize>getSharedTagCompound</synchronize>
+			<synchronize field="$2">addStackToList</synchronize>
+			<synchronize field="$1">addStackToList</synchronize>
 		</class>
 		<class id="appeng.me.tile.TileController">
 			<synchronize>getCellArray,resetCache</synchronize>
