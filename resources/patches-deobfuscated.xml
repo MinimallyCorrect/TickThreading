@@ -903,6 +903,9 @@
 		</class>
 	</universalElectricity>
 	<appliedEnergistics>
+		<class id="appeng.me.CellInventory">
+			<synchronize>^all^</synchronize>
+		</class>
 		<class id="appeng.me.Platform">
 			<synchronize>getSharedTagCompound</synchronize>
 			<synchronize field="$2">addStackToList</synchronize>
