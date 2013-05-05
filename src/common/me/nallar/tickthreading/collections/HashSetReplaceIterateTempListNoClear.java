@@ -5,16 +5,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import me.nallar.tickthreading.util.BooleanThreadLocal;
+
 public class HashSetReplaceIterateTempListNoClear<T> extends HashSet<T> {
 	private volatile boolean defer = false;
 	private final LinkedList<T> deferred = new LinkedList<T>();
 	private static final Iterator emptyIterator = Collections.emptyList().iterator();
-	private final ThreadLocal<Boolean> noDefer = new ThreadLocal<Boolean>() {
-		@Override
-		public Boolean initialValue() {
-			return false;
-		}
-	};
+	private final BooleanThreadLocal noDefer = new BooleanThreadLocal();
 
 	@Override
 	public synchronized boolean add(T t) {

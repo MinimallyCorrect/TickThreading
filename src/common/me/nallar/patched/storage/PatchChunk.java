@@ -62,7 +62,7 @@ public abstract class PatchChunk extends Chunk {
 
 	@Override
 	public String toString() {
-		return "chunk at " + xPosition + ',' + zPosition + " which is " + (unloading ? (alreadySavedAfterUnload ? "unloaded" : "unloading") : "loaded");
+		return "chunk at " + xPosition + ',' + zPosition + " which is " + (unloading ? (alreadySavedAfterUnload ? "unloaded" : "unloading") : "loaded") + " and " + (isTerrainPopulated ? "" : "un") + "populated";
 	}
 
 	@SuppressWarnings ("FieldRepeatedlyAccessedInMethod") // Patcher makes entityLists final

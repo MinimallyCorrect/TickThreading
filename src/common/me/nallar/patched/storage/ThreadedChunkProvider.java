@@ -78,8 +78,8 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	private final IChunkLoader loader;
 	private final WorldServer world;
 	private final Chunk defaultEmptyChunk;
-	private final ThreadLocal<Boolean> inUnload = new BooleanThreadLocal();
-	private final ThreadLocal<Boolean> worldGenInProgress;
+	private final BooleanThreadLocal inUnload = new BooleanThreadLocal();
+	private final BooleanThreadLocal worldGenInProgress;
 	private boolean loadedPersistentChunks = false;
 	private boolean loadChunksInProvideChunk = true;
 	private int unloadTicks = 0;
@@ -103,7 +103,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		currentChunkLoader = this.loader = loader;
 		loadedChunks = Collections.synchronizedList(new ArrayList<Chunk>());
 		defaultEmptyChunk = new EmptyChunk(world, 0, 0);
-		worldGenInProgress = world.worldGenInProgress = new BooleanThreadLocal();
+		world.worldGenInProgress = worldGenInProgress = new BooleanThreadLocal();
 		world.inImmediateBlockUpdate = new BooleanThreadLocal();
 	}
 
@@ -297,6 +297,22 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	public boolean chunkExists(int x, int z) {
 		long key = key(x, z);
 		return chunks.containsItem(key) || (worldGenInProgress.get() == Boolean.TRUE && (loadingChunks.containsItem(key) || (inUnload.get() == Boolean.TRUE && unloadingChunks.containsItem(key))));
+	}
+
+	@Override
+	@Declare
+	public boolean chunksExist(int minX, int minZ, int maxX, int maxZ) {
+		boolean worldGenInProgress = this.worldGenInProgress.get() == Boolean.TRUE;
+		boolean inUnload = worldGenInProgress && this.inUnload.get() == Boolean.TRUE;
+		for (int x = minX; x <= maxX; ++x) {
+			for (int z = minZ; z <= maxZ; ++z) {
+				long key = key(x, z);
+				if (!(chunks.containsItem(key) || (worldGenInProgress && (loadingChunks.containsItem(key) || (inUnload && unloadingChunks.containsItem(key)))))) {
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 
 	@Override
@@ -522,7 +538,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 						worldGenInProgress.set(Boolean.FALSE);
 					}
 				}
-				chunk.populateChunk(this, this, x, z);
+				tryPopulateChunks(chunk);
 			}
 		} finally {
 			if (lock.decrementAndGet() == 0) {
@@ -535,6 +551,36 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		chunkLoadLocks.remove(key);
 
 		return chunk;
+	}
+
+	private Chunk getChunkFastUnsafe(int x, int z) {
+		return (Chunk) chunks.getValueByKey(key(x, z));
+	}
+
+	private void tryPopulateChunks(Chunk centerChunk) {
+		int cX = centerChunk.xPosition;
+		int cZ = centerChunk.zPosition;
+		for (int x = cX - 1; x <= cX + 1; x++) {
+			for (int z = cZ - 1; z <= cZ + 1; z++) {
+				Chunk chunk = getChunkFastUnsafe(x, z);
+				if (chunk != null && !chunk.unloading && !chunk.isTerrainPopulated && checkChunksExistLoadedNormally(x - 1, z - 1, x - 1, z + 1)) {
+					populate(chunk);
+				}
+			}
+		}
+	}
+
+	public boolean checkChunksExistLoadedNormally(int minX, int minZ, int maxX, int maxZ) {
+		for (int x = minX; x <= maxX; ++x) {
+			for (int z = minZ; z <= maxZ; ++z) {
+				Chunk chunk = getChunkFastUnsafe(x, z);
+				if (chunk == null || chunk.unloading) {
+					return false;
+				}
+			}
+		}
+
+		return true;
 	}
 
 	private AtomicInteger getLock(long key) {
@@ -607,28 +653,29 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		}
 	}
 
+	@Deprecated
 	@Override
 	public void populate(IChunkProvider chunkProvider, int x, int z) {
+		throw new UnsupportedOperationException("Unused, inefficient parameter choice.");
+	}
+
+	private void populate(Chunk chunk) {
 		if (!Thread.holdsLock(generateLock)) {
 			Log.severe("Attempted to populate chunk without locking generateLock", new ConcurrencyError("Caused by: incorrect external code"));
 		}
-		Chunk chunk = getChunkIfExists(x, z);
-		if (chunk == null) {
-			Log.warning("Attempted to populate chunk which is not loaded at " + x + ',' + z, new Exception());
-			return;
-		}
 		synchronized (chunk) {
+			int x = chunk.xPosition;
+			int z = chunk.zPosition;
 			if (chunk.isTerrainPopulated) {
 				Log.warning("Attempted to populate chunk " + x + ',' + z + " which is already populated.");
 				return;
 			}
 			if (generator != null) {
-				generator.populate(chunkProvider, x, z);
+				generator.populate(this, x, z);
 				fireBukkitPopulateEvent(chunk);
-				GameRegistry.generateWorld(x, z, world, generator, chunkProvider);
-				chunk.setChunkModified();
+				GameRegistry.generateWorld(x, z, world, generator, this);
+				chunk.setChunkModified(); // It may have been modified in generator.populate/GameRegistry.generateWorld.
 			}
-			// It may have been modified in generator.populate/GameRegistry.generateWorld.
 			//noinspection ConstantConditions
 			if (chunk.isTerrainPopulated) {
 				Log.warning("Chunk " + chunk + " had its isTerrainPopulated field set to true incorrectly by external code while populating");

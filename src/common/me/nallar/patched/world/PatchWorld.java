@@ -652,24 +652,7 @@ public abstract class PatchWorld extends World {
 
 	@Override
 	public boolean checkChunksExist(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
-		if (minY > 255 || maxY < 0) {
-			return false;
-		}
-
-		minX >>= 4;
-		minZ >>= 4;
-		maxX >>= 4;
-		maxZ >>= 4;
-
-		for (int x = minX; x <= maxX; ++x) {
-			for (int z = minZ; z <= maxZ; ++z) {
-				if (!chunkProvider.chunkExists(x, z)) {
-					return false;
-				}
-			}
-		}
-
-		return true;
+		return minY <= 255 && maxY >= 0 && ((ChunkProviderServer) chunkProvider).chunksExist(minX >> 4, minZ >> 4, maxX >> 4, maxZ >> 4);
 	}
 
 	@Override

@@ -59,9 +59,9 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	private ThreadLocal<Random> randoms;
 	private ArrayList<NextTickListEntry> runningTickListEntries;
 	@Declare
-	public ThreadLocal<Boolean> worldGenInProgress_;
+	public me.nallar.tickthreading.util.BooleanThreadLocal worldGenInProgress_;
 	@Declare
-	public ThreadLocal<Boolean> inImmediateBlockUpdate_;
+	public me.nallar.tickthreading.util.BooleanThreadLocal inImmediateBlockUpdate_;
 	@Declare
 	public int saveTickCount_;
 	private HashSet<ChunkCoordIntPair> chunkTickSet;
