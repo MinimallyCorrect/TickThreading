@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Enumeration;
@@ -42,9 +43,9 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 	private Set<String> patchedURLs;
 	private ThreadLocal<byte[]> buffer;
 
-	private static void log(Level level, Throwable t, String message) {
+	private static void log(Level level, Throwable t, String message, Object... data) {
 		try {
-			FMLRelaunchLog.log(level, t, message);
+			FMLRelaunchLog.log(level, t, message, data);
 		} catch (Throwable t_) {
 			t_.printStackTrace(err);
 		}
@@ -138,7 +139,13 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 	}
 
 	private void loadPatchedClasses(URL url_, Map<String, byte[]> replacedClasses) {
-		String url = url_.toString();
+		String url;
+		try {
+			url = url_.toURI().getPath();
+		} catch (URISyntaxException e) {
+			log(Level.SEVERE, e, "Not loading classes from %s, malformed URL.", url_.toString());
+			return;
+		}
 		if (replacedClasses == null) {
 			log(Level.WARNING, null, "Not loading patched classes in " + url.replace("%", "%%") + ", replacedClasses was not set.");
 			return;
@@ -147,11 +154,10 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 		try {
 			patchedModFile = new File(patchedModsFolder, url.substring(url.lastIndexOf('/') + 1, url.length()));
 			if (!patchedURLs.add(patchedModFile.getAbsolutePath())) {
-				log(Level.WARNING, null, "Not loading patched classes in " + url.replace("%", "%%") + ", already patched.");
 				return;
 			}
 		} catch (Exception e) {
-			log(Level.SEVERE, e, "Failed to add patched classes in URL " + url.replace("%", "%%"));
+			log(Level.SEVERE, e, "Failed to add patched classes in URL %s", url);
 			return;
 		}
 		try {
