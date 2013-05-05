@@ -19,6 +19,7 @@ import net.minecraft.world.SpawnerAnimals;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.SpawnListEntry;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.event.Event;
 import net.minecraftforge.event.ForgeEventFactory;
 
@@ -31,6 +32,35 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 	private static final int farRange = 5;
 	private static final int spawnVariance = 6;
 	private static final int clumping = 4;
+	private static int surfaceChance;
+	private static int gapChance;
+
+	private static int getPseudoRandomHeightValue(int wX, int wZ, WorldServer worldServer, boolean surface, int gapChance) {
+		Chunk chunk = worldServer.getChunkIfExists(wX >> 4, wZ >> 4);
+		int x = wX & 15;
+		int z = wZ & 15;
+		int height = chunk.getHeightValue(x, z);
+		if (surface) {
+			return height;
+		}
+		boolean inGap = false;
+		int lastGap = 0;
+		for (int y = 1; y < height; y++) {
+			int blockId = chunk.getBlockID(x, y, z);
+			if (blockId == 0) {
+				if (!inGap) {
+					inGap = true;
+					if (gapChance++ % 3 == 0) {
+						return y;
+					}
+					lastGap = y;
+				}
+			} else {
+				inGap = false;
+			}
+		}
+		return lastGap == 0 ? height : lastGap;
+	}
 
 	@Declare
 	public static int spawnMobsQuickly(WorldServer worldServer, boolean peaceful, boolean hostile, boolean animal) {
@@ -48,7 +78,8 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 			profiler.endSection();
 			return 0;
 		}
-		float mobMultiplier = entityMultiplier * (worldServer.isDaytime() ? 1 : 2);
+		boolean dayTime = worldServer.isDaytime();
+		float mobMultiplier = entityMultiplier * (dayTime ? 1 : 2);
 		Map<EnumCreatureType, Integer> requiredSpawns = new EnumMap<EnumCreatureType, Integer>(EnumCreatureType.class);
 		for (EnumCreatureType creatureType : EnumCreatureType.values()) {
 			int count = (int) ((creatureType.getPeacefulCreature() ? entityMultiplier : mobMultiplier) * creatureType.getMaxNumberOfCreature());
@@ -112,7 +143,9 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 			int z = (int) hash;
 			int sX = x * 16 + worldServer.rand.nextInt(16);
 			int sZ = z * 16 + worldServer.rand.nextInt(16);
-			int sY = worldServer.getHeightValue(sX, sZ);
+			boolean surface = !creatureType.getPeacefulCreature() || (dayTime ? surfaceChance++ % 5 != 0 : surfaceChance++ % 5 == 0);
+			int gap = gapChance++;
+			int sY = getPseudoRandomHeightValue(sX, sZ, worldServer, surface, gap);
 			if (creatureType == EnumCreatureType.waterCreature) {
 				String biomeName = worldServer.getBiomeGenForCoords(sX, sZ).biomeName;
 				if (!"Ocean".equals(biomeName) && !"River".equals(biomeName)) {
@@ -121,7 +154,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 				sY -= 2;
 			}
 			if (worldServer.getBlockMaterial(sX, sY, sZ) == creatureType.getCreatureMaterial()) {
-				for (int i = 0; i < 6; i++) {
+				for (int i = 0; i < ((clumping * 3) / 2); i++) {
 					int ssX = sX + (worldServer.rand.nextInt(spawnVariance) - spawnVariance / 2);
 					int ssZ = sZ + (worldServer.rand.nextInt(spawnVariance) - spawnVariance / 2);
 					int ssY;
@@ -131,7 +164,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 					} else if (creatureType == EnumCreatureType.ambient) {
 						ssY = worldServer.rand.nextInt(63) + 1;
 					} else {
-						ssY = worldServer.getHeightValue(ssX, ssZ);
+						ssY = getPseudoRandomHeightValue(ssX, ssZ, worldServer, surface, gap);
 						if (!worldServer.getBlockMaterial(ssX, ssY - 1, ssZ).isOpaque() ||
 								!Block.blocksList[worldServer.getBlockId(ssX, ssY - 1, ssZ)].canCreatureSpawn(creatureType, worldServer, ssX, ssY - 1, ssZ)) {
 							continue;

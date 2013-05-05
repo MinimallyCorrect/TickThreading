@@ -79,7 +79,7 @@ public class TickThreading {
 	public boolean lockRegionBorders = true;
 	public boolean allowWorldUnloading = true;
 	public boolean requireOpForDumpCommand = true;
-	public boolean enableFastMobSpawning = false;
+	public boolean enableFastMobSpawning = true;
 	public boolean enableBugWarningMessage = true;
 	public int saveInterval = 180;
 	public int deadLockTime = 45;
