@@ -9,6 +9,8 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
+import me.nallar.tickthreading.Log;
+
 public class LinkedTimedHashMapQueue<K> extends HashMap<K, Integer> {
 	int ticks = Integer.MIN_VALUE;
 	private final Map<K, Integer> map;
@@ -53,6 +55,9 @@ public class LinkedTimedHashMapQueue<K> extends HashMap<K, Integer> {
 
 	@Override
 	public Integer put(K key, Integer value) {
+		if (value > 200) {
+			Log.warning("Set time too high: " + value, new Throwable());
+		}
 		return map.put(key, value + ticks);
 	}
 
