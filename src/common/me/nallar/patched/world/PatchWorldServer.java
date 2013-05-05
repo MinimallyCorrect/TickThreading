@@ -62,6 +62,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	public me.nallar.tickthreading.util.BooleanThreadLocal inImmediateBlockUpdate_;
 	@Declare
 	public int saveTickCount_;
+	private int chunkTickWait;
 	private HashSet<ChunkCoordIntPair> chunkTickSet;
 
 	public PatchWorldServer(MinecraftServer par1MinecraftServer, ISaveHandler par2ISaveHandler, String par3Str, int par4, WorldSettings par5WorldSettings, Profiler par6Profiler) {
@@ -413,6 +414,12 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		boolean concurrentTicks = !mcServer.theProfiler.profilingEnabled;
 
 		if (concurrentTicks) {
+			if (threadManager.isWaiting()) {
+				if (++chunkTickWait <= 3) {
+					return;
+				}
+			}
+			chunkTickWait = 0;
 			threadManager.waitForCompletion();
 		}
 
