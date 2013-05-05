@@ -278,7 +278,7 @@
 			<synchronize field="$1.playerNetServerHandler">transferPlayerToDimension(Lnet.minecraft.entity.player.EntityPlayerMP;ILnet.minecraft.world.Teleporter;)V</synchronize>
 		</class>
 		<class id="net.minecraft.server.management.ServerConfigurationManager" env="forge">
-			<addAll fromClass="me.nallar.patched.server.PatchServerConfigurationManager"/>
+			<addAll fromClass="me.nallar.patched.server.PatchServerConfigurationManagerForge"/>
 		</class>
 		<class id="net.minecraft.server.management.PlayerManager">
 			<newField field="readWriteLock" class="java.util.concurrent.locks.ReentrantReadWriteLock"/>
@@ -491,6 +491,9 @@
 			<addAll fromClass="me.nallar.patched.forge.PatchRelaunchClassLoader"/>
 			<synchronize>findClass</synchronize>
 		</class>
+		<class id="cpw.mods.fml.common.network.PacketDispatcher">
+			<addAll fromClass="me.nallar.patched.forge.PatchPacketDispatcher"/>
+		</class>
 		<class id="cpw.mods.fml.common.network.ModListResponsePacket">
 			<replaceMethodCall index="2" code="{ $_ = null; }" method="info">execute</replaceMethodCall>
 			<replaceMethodCall index="3" code="{ $_ = null; }" method="info">execute</replaceMethodCall>
@@ -537,6 +540,16 @@
 		<class id="buildcraft.transport.PipeTransportItems">
 			<!-- TODO: Find a more suitable way of making this concurrent without making performRemoval slow -->
 			<replaceInitializer field="travelingEntities" class="java.util.concurrent.ConcurrentHashMap"/>
+			<replaceInitializer field="toRemove" class="me.nallar.tickthreading.collections.SynchronizedSet"/>
+			<replaceMethod code="{
+				synchronized(toRemove) {
+					java.util.Iterator i = toRemove.iterator();
+					while (i.hasNext()) {
+						travelingEntities.remove(i.next());
+					}
+					toRemove.clear();
+				}
+			}">performRemoval</replaceMethod>
 		</class>
 		<class id="buildcraft.transport.PipeTransportPower">
 			<!-- TODO: Non-static lock, if possible -->

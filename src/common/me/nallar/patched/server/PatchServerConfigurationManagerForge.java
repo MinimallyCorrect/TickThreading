@@ -12,7 +12,7 @@ import net.minecraft.server.management.ServerConfigurationManager;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.WorldServer;
 
-public abstract class PatchServerConfigurationManager extends ServerConfigurationManager {
+public abstract class PatchServerConfigurationManagerForge extends ServerConfigurationManager {
 	@Declare
 	public java.util.concurrent.locks.Lock playerUpdateLock_;
 	@Declare
@@ -69,7 +69,7 @@ public abstract class PatchServerConfigurationManager extends ServerConfiguratio
 		}
 	}
 
-	public PatchServerConfigurationManager(MinecraftServer par1MinecraftServer) {
+	public PatchServerConfigurationManagerForge(MinecraftServer par1MinecraftServer) {
 		super(par1MinecraftServer);
 	}
 }
