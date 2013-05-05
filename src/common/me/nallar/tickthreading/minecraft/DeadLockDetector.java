@@ -164,6 +164,7 @@ public class DeadLockDetector {
 		new Thread() {
 			@Override
 			public void run() {
+				// We can't lock here, deadlock may be due to the playerEntityList lock.
 				int attempts = 5;
 				while (attempts-- > 0) {
 					try {
