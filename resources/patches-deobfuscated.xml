@@ -182,6 +182,10 @@
 			<replaceFieldUsage field="isModified" writeCode="$0.^field:Chunk/isModified^ = $1; if ($1 == true) { Thread.dumpStack(); }">^all^</replaceFieldUsage>
 			-->
 		</class>
+		<class id="net.minecraft.world.chunk.EmptyChunk">
+			<replaceMethod code="return 1;">getHeightValue</replaceMethod>
+			<replaceMethod code="if ($2 == 0) { return 7; } return 0;">getBlockId</replaceMethod>
+		</class>
 		<class id="net.minecraft.util.Vec3Pool">
 			<!-- This prevents entities in multiple threads using the same Vec3 for collisions. -->
 			<addAll fromClass="me.nallar.patched.PatchVec3Pool"/>
