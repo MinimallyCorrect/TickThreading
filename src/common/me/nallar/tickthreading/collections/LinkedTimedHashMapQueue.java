@@ -119,6 +119,9 @@ public class LinkedTimedHashMapQueue<K> extends HashMap<K, Integer> {
 				final LinkedList<Map.Entry<K, Integer>> list = new LinkedList<Map.Entry<K, Integer>>();
 				int ticks = LinkedTimedHashMapQueue.this.ticks++;
 				synchronized (map) {
+					if (map.size() > 2000) {
+						Log.severe("Too many items in map: " + map.size());
+					}
 					for (Map.Entry<K, Integer> entry : entrySet) {
 						if (entry.getValue() > ticks) {
 							break;
@@ -142,7 +145,9 @@ public class LinkedTimedHashMapQueue<K> extends HashMap<K, Integer> {
 
 					@Override
 					public void remove() {
-						map.remove(last.getKey());
+						if (map.remove(last.getKey()) == null) {
+							Log.warning("Failed to remove " + last.getKey());
+						}
 					}
 				};
 			}
