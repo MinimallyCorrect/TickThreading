@@ -33,11 +33,11 @@ public class TPSCommand extends Command {
 		tf.sb.append(VersionUtil.TTVersionString()).append('\n');
 		tf
 				.heading("")
-				.heading("Entities")
-				.heading("Tiles")
-				.heading("Chunks")
-				.heading("Players")
-				.heading("Load");
+				.heading("E")
+				.heading("TE")
+				.heading("C")
+				.heading("P")
+				.heading("L");
 		for (TickManager tickManager : TickThreading.instance.getManagers()) {
 			tickManager.writeStats(tf, statsHolder);
 		}
