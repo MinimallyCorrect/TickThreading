@@ -269,6 +269,9 @@ public class Patches {
 		int i = 0;
 
 		String deobf = attributes.get("deobf");
+		if (deobf == null) {
+			deobf = ctMethod.getDeclaringClass().getName() + '/' + ctMethod.getName();
+		}
 		String suffix = '_' + deobf.replace('/', '_').replace('.', '_') + "_p";
 		try {
 			//noinspection InfiniteLoopStatement
