@@ -222,9 +222,9 @@ public class TickThreading {
 			TickManager tickManager = managers.remove(world);
 			if (tickManager == null) {
 				Log.severe("World unload fired twice for world " + world.getName());
-			} else {
-				tickManager.unload();
+				return;
 			}
+			tickManager.unload();
 			Field loadedTileEntityField = FieldUtil.getFields(World.class, List.class)[loadedTileEntityFieldIndex];
 			Object loadedTileEntityList = loadedTileEntityField.get(world);
 			if (!(loadedTileEntityList instanceof EntityList)) {
@@ -237,6 +237,9 @@ public class TickThreading {
 			}
 		} catch (Exception e) {
 			Log.severe("Probable memory leak, failed to unload threading for world " + Log.name(world), e);
+		}
+		if (world instanceof WorldServer) {
+			((WorldServer) world).stopChunkTickThreads();
 		}
 	}
 

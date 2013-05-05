@@ -127,6 +127,12 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 
 	@Override
 	@Declare
+	public void stopChunkTickThreads() {
+		threadManager.stop();
+	}
+
+	@Override
+	@Declare
 	public void ttStop() {
 		unloaded = true;
 		IChunkLoader chunkLoader = theChunkProviderServer.currentChunkLoader;
@@ -137,7 +143,6 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 				//MCPC+ compatibility
 			}
 		}
-		threadManager.stop();
 	}
 
 	@Override
@@ -157,7 +162,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 
 	@Override
 	public void flush() {
-		DeadLockDetector.tick("Saving a world before unload", System.nanoTime() + 30000000000L);
+		DeadLockDetector.tick(System.nanoTime() + 30000000000L);
 		if (saveHandler != null) {
 			this.saveHandler.flush();
 

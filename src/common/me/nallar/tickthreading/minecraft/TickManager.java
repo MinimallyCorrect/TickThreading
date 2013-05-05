@@ -369,7 +369,7 @@ public final class TickManager {
 
 	public void doTick() {
 		boolean previousProfiling = world.theProfiler.profilingEnabled;
-		lastStartTime = DeadLockDetector.tick("TickManager.doTick: " + Log.name(world));
+		lastStartTime = System.nanoTime();
 		threadManager.waitForCompletion();
 		if (previousProfiling) {
 			world.theProfiler.profilingEnabled = false;

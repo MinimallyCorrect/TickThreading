@@ -240,7 +240,11 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			} catch (Throwable throwable) {
 				FMLLog.log(Level.SEVERE, throwable, "Exception while attempting to stop the server");
 			} finally {
-				this.systemExitNow();
+				try {
+					DeadLockDetector.checkForLeakedThreadManagers();
+				} finally {
+					this.systemExitNow();
+				}
 			}
 		}
 	}
@@ -252,7 +256,10 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 	@Override
 	public void tick() {
-		long var1 = System.nanoTime();
+		long startTime = System.nanoTime();
+
+		DeadLockDetector.tick(startTime);
+		Timings.tick();
 
 		if (this.startProfiling) {
 			this.startProfiling = false;
@@ -304,9 +311,8 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 					World world = entityPlayerMP.worldObj;
 					List<Entity> entityList = world.loadedEntityList;
 					synchronized (entityList) {
-						if (!entityList.contains(entityPlayerMP)) {
-							entityList.add(entityPlayerMP);
-						}
+						// No contains check, handled by TickManager, this list is an instance of LoadedEntityList.
+						entityList.add(entityPlayerMP);
 					}
 					if (!world.playerEntities.contains(entityPlayerMP)) {
 						world.playerEntities.add(entityPlayerMP);
@@ -317,7 +323,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		}
 		theProfiler.endSection();
 		theProfiler.endSection();
-		tickTime = tickTime * 0.98f + ((this.tickTimeArray[this.tickCounter % 100] = System.nanoTime() - var1) * 0.02f);
+		tickTime = tickTime * 0.98f + ((this.tickTimeArray[this.tickCounter % 100] = System.nanoTime() - startTime) * 0.02f);
 	}
 
 	@Override

@@ -8,10 +8,11 @@ import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
 import com.google.common.base.Function;
@@ -20,11 +21,6 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
 import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.ITickHandler;
-import cpw.mods.fml.common.TickType;
-import cpw.mods.fml.common.registry.TickRegistry;
-import cpw.mods.fml.relauncher.Side;
-import javassist.is.faulty.Timings;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.util.ChatFormat;
 import me.nallar.tickthreading.util.CollectionsUtil;
@@ -34,33 +30,8 @@ import net.minecraft.server.MinecraftServer;
 
 public class DeadLockDetector {
 	private boolean sentWarningRecently = false;
-	private static volatile String lastJob = "";
 	private static volatile long lastTickTime = 0;
-	private static final ITickHandler tickHandler = new ITickHandler() {
-		private final EnumSet<TickType> tickTypes = EnumSet.of(TickType.SERVER, TickType.CLIENT);
-
-		@Override
-		public void tickStart(EnumSet<TickType> type, Object... tickData) {
-			tick("Server tick start");
-			if (type.contains(TickType.SERVER)) {
-				Timings.tick();
-			}
-		}
-
-		@Override
-		public void tickEnd(EnumSet<TickType> type, Object... tickData) {
-		}
-
-		@Override
-		public EnumSet<TickType> ticks() {
-			return tickTypes;
-		}
-
-		@Override
-		public String getLabel() {
-			return "TickThreading Deadlock Detector";
-		}
-	};
+	public static Set<ThreadManager> threadManagers = Collections.newSetFromMap(new ConcurrentHashMap<ThreadManager, Boolean>());
 
 	public DeadLockDetector() {
 		Thread deadlockThread = new Thread(new Runnable() {
@@ -76,17 +47,10 @@ public class DeadLockDetector {
 		});
 		deadlockThread.setName("Deadlock Detector");
 		deadlockThread.start();
-		TickRegistry.registerTickHandler(tickHandler, Side.SERVER);
-		TickRegistry.registerTickHandler(tickHandler, Side.CLIENT);
 	}
 
-	public static synchronized long tick(String name) {
-		return tick(name, System.nanoTime());
-	}
-
-	public static synchronized long tick(String name, long time) {
-		lastJob = name;
-		return lastTickTime = time;
+	public static synchronized long tick(long nanoTime) {
+		return lastTickTime = nanoTime;
 	}
 
 	public static void sendChatSafely(final String message) {
@@ -110,7 +74,7 @@ public class DeadLockDetector {
 			if (sentWarningRecently && deadTime < 10000000000l) {
 				sentWarningRecently = false;
 				sendChatSafely(ChatFormat.GREEN + TickThreading.instance.messageDeadlockRecovered);
-			} else if (deadTime > 10000000000l && !sentWarningRecently) {
+			} else if (deadTime >= 10000000000l && !sentWarningRecently) {
 				sentWarningRecently = true;
 				sendChatSafely(String.valueOf(ChatFormat.RED) + ChatFormat.BOLD + TickThreading.instance.messageDeadlockDetected);
 				return true;
@@ -139,8 +103,14 @@ public class DeadLockDetector {
 		ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
 		sb
 				.append("The server appears to have deadlocked.")
-				.append("\nLast tick ").append(deadTime / 1000000000).append("s ago.")
-				.append("\nTicking: ").append(lastJob).append('\n');
+				.append("\nLast tick ").append(deadTime / 1000000000).append("s ago.");
+		String prefix = "\nWaiting ThreadManagers: ";
+		for (ThreadManager threadManager : threadManagers) {
+			if (threadManager.isWaiting()) {
+				sb.append(prefix).append(threadManager.getName());
+				prefix = ", ";
+			}
+		}
 		LoadingCache<String, List<ThreadInfo>> threads = CacheBuilder.newBuilder().build(new CacheLoader<String, List<ThreadInfo>>() {
 			@Override
 			public List<ThreadInfo> load(final String key) throws Exception {
@@ -228,8 +198,8 @@ public class DeadLockDetector {
 		try {
 			minecraftServer.stopServer();
 			FMLCommonHandler.instance().handleServerStopping(); // Try to get mods to save data - this may lock up, as we deadlocked.
-		} catch (Exception e) {
-			Log.severe("Error stopping server", e);
+		} catch (Throwable throwable) {
+			Log.severe("Error stopping server", throwable);
 		}
 		minecraftServer.saveEverything(); // Save again, in case they changed anything.
 		minecraftServer.initiateShutdown();
@@ -321,5 +291,20 @@ public class DeadLockDetector {
 		}
 		sb.append('\n');
 		return sb.toString();
+	}
+
+	public static void checkForLeakedThreadManagers() {
+		StringBuilder sb = new StringBuilder();
+		String prefix = "Leaked ThreadManagers: ";
+		for (ThreadManager threadManager : threadManagers) {
+			if (threadManager.isWaiting()) {
+				sb.append(prefix).append(threadManager.getName());
+				prefix = ", ";
+			}
+		}
+		//noinspection StringEquality
+		if (prefix == ", ") {
+			Log.severe(sb.toString());
+		}
 	}
 }

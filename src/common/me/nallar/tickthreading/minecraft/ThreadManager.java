@@ -63,7 +63,12 @@ public final class ThreadManager {
 
 	public ThreadManager(int threads, String name) {
 		namePrefix = name;
+		DeadLockDetector.threadManagers.add(this);
 		addThreads(threads);
+	}
+
+	public boolean isWaiting() {
+		return waiting.get() > 0;
 	}
 
 	public long waitForCompletion() {
@@ -135,7 +140,12 @@ public final class ThreadManager {
 	}
 
 	public void stop() {
+		DeadLockDetector.threadManagers.remove(this);
 		killThreads(workThreads.size());
+	}
+
+	public String getName() {
+		return namePrefix;
 	}
 
 	private static class KillRunnable implements Runnable {
