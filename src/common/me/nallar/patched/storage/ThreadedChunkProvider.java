@@ -562,7 +562,9 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		return chunk;
 	}
 
-	private Chunk getChunkFastUnsafe(int x, int z) {
+	@Override
+	@Declare
+	public Chunk getChunkFastUnsafe(int x, int z) {
 		return (Chunk) chunks.getValueByKey(key(x, z));
 	}
 

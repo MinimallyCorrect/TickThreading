@@ -500,12 +500,13 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 			int cX = chunkCoordIntPair.chunkXPos;
 			int cZ = chunkCoordIntPair.chunkZPos;
 
-			int xPos = cX * 16;
-			int zPos = cZ * 16;
-			Chunk chunk = chunkProviderServer.getChunkIfExists(cX, cZ);
+			Chunk chunk = chunkProviderServer.getChunkFastUnsafe(cX, cZ);
 			if (chunk == null || !chunk.isTerrainPopulated || chunk.partiallyUnloaded) {
 				continue;
 			}
+
+			int xPos = cX * 16;
+			int zPos = cZ * 16;
 			this.moodSoundAndLightCheck(xPos, zPos, chunk);
 			profiler.endStartSection("chunkTick"); // endStart as moodSoundAndLightCheck starts a section.
 			chunk.updateSkylight();
