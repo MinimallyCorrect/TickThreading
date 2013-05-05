@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
 
 import com.google.common.base.Function;
 import com.google.common.cache.CacheBuilder;
@@ -119,13 +118,9 @@ public class DeadLockDetector {
 		});
 		ThreadInfo[] t = threadMXBean.dumpAllThreads(true, true);
 		for (ThreadInfo thread : t) {
-			try {
-				String info = toString(thread, false);
-				if (info != null) {
-					threads.get(info).add(thread);
-				}
-			} catch (ExecutionException e) {
-				Log.severe("Well... this shouldn't happen...", e);
+			String info = toString(thread, false);
+			if (info != null) {
+				threads.getUnchecked(info).add(thread);
 			}
 		}
 		for (Map.Entry<String, List<ThreadInfo>> entry : threads.asMap().entrySet()) {
