@@ -30,7 +30,9 @@ public abstract class PatchChunk extends Chunk {
 	@Declare
 	public List pendingBlockUpdates_;
 	@Declare
-	public boolean unloading_;
+	public boolean queuedUnload_;
+	@Declare
+	public boolean partiallyUnloaded_;
 	@Declare
 	public boolean alreadySavedAfterUnload_;
 	public Lock entityListWriteLock;
@@ -62,7 +64,7 @@ public abstract class PatchChunk extends Chunk {
 
 	@Override
 	public String toString() {
-		return "chunk at " + xPosition + ',' + zPosition + " which is " + (unloading ? (alreadySavedAfterUnload ? "unloaded" : "unloading") : "loaded") + " and " + (isTerrainPopulated ? "" : "un") + "populated";
+		return "chunk at " + xPosition + ',' + zPosition + " which is " + (partiallyUnloaded ? (alreadySavedAfterUnload ? "unloaded" : "unloading") : "loaded") + " and " + (isTerrainPopulated ? "" : "un") + "populated";
 	}
 
 	@SuppressWarnings ("FieldRepeatedlyAccessedInMethod") // Patcher makes entityLists final

@@ -165,7 +165,7 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 			} catch (Throwable t) {
 				FMLLog.log(Level.SEVERE, t, "A mod failed to handle a ChunkDataEvent.Save event for " + chunk.xPosition + ',' + chunk.zPosition);
 			}
-			this.addToSaveQueue(chunk.getChunkCoordIntPair(), nbttagcompound, chunk.alreadySavedAfterUnload || chunk.unloading || !chunk.isChunkLoaded);
+			this.addToSaveQueue(chunk.getChunkCoordIntPair(), nbttagcompound, chunk.alreadySavedAfterUnload || chunk.partiallyUnloaded || !chunk.isChunkLoaded);
 		} catch (Exception exception) {
 			exception.printStackTrace();
 		}

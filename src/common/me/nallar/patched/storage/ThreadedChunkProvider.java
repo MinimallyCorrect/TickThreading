@@ -2,8 +2,10 @@ package me.nallar.patched.storage;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -18,7 +20,6 @@ import cpw.mods.fml.common.registry.GameRegistry;
 import me.nallar.exception.ConcurrencyError;
 import me.nallar.patched.annotation.FakeExtend;
 import me.nallar.tickthreading.Log;
-import me.nallar.tickthreading.collections.NonBlockingLongSet;
 import me.nallar.tickthreading.minecraft.ChunkGarbageCollector;
 import me.nallar.tickthreading.minecraft.DeadLockDetector;
 import me.nallar.tickthreading.minecraft.TickThreading;
@@ -72,7 +73,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	private final LongHashMap chunks = new LongHashMap();
 	private final LongHashMap loadingChunks = new LongHashMap();
 	private final LongHashMap unloadingChunks = new LongHashMap();
-	private final NonBlockingLongSet unloadStage0 = new NonBlockingLongSet();
+	private final Set<Long> unloadStage0 = Collections.newSetFromMap(new ConcurrentHashMap<Long, Boolean>());
 	private final ConcurrentLinkedQueue<QueuedUnload> unloadStage1 = new ConcurrentLinkedQueue<QueuedUnload>();
 	private final IChunkProvider generator; // Mojang shouldn't use the same interface for  :(
 	private final IChunkLoader loader;
@@ -140,33 +141,30 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			ImmutableSetMultimap<ChunkCoordIntPair, ForgeChunkManager.Ticket> persistentChunks = world.getPersistentChunks();
 			PlayerManager playerManager = world.getPlayerManager();
 			ChunkCoordIntPair chunkCoordIntPair = new ChunkCoordIntPair(0, 0);
-			NonBlockingHashMapLong.IteratorLong i$ = unloadStage0.iteratorLong();
+			Iterator<Long> i$ = unloadStage0.iterator();
 			int done = 0;
 			while (i$.hasNext()) {
 				if (done++ > 100) {
 					break;
 				}
-				long key = i$.nextLong();
+				long key = i$.next();
 				i$.remove();
-				if (key == 0) {
-					// Iterator can't remove 0 key for some reason.
-					unloadStage0.remove(0L);
-				}
 				int x = (int) key;
 				int z = (int) (key >> 32);
 				chunkCoordIntPair.chunkXPos = x;
 				chunkCoordIntPair.chunkZPos = z;
-				if (persistentChunks.containsKey(chunkCoordIntPair) || unloadingChunks.containsItem(key) || playerManager.getOrCreateChunkWatcher(x, z, false) != null) {
+				Chunk chunk = (Chunk) chunks.getValueByKey(key);
+				if (chunk == null || chunk.partiallyUnloaded) {
 					continue;
 				}
-				Chunk chunk = (Chunk) chunks.getValueByKey(key);
-				if (chunk == null || chunk.unloading || !fireBukkitUnloadEvent(chunk)) {
+				if (persistentChunks.containsKey(chunkCoordIntPair) || unloadingChunks.containsItem(key) || playerManager.getOrCreateChunkWatcher(x, z, false) != null || !fireBukkitUnloadEvent(chunk)) {
+					chunk.queuedUnload = false;
 					continue;
 				}
 				if (lastChunk == chunk) {
 					lastChunk = null;
 				}
-				chunk.unloading = true;
+				chunk.partiallyUnloaded = true;
 				chunk.onChunkUnload();
 				chunk.pendingBlockUpdates = world.getPendingBlockUpdates(chunk, false);
 				loadedChunks.remove(chunk);
@@ -244,7 +242,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			return false;
 		}
 		try {
-			if (!chunk.unloading) {
+			if (!chunk.partiallyUnloaded) {
 				return false;
 			}
 			synchronized (chunk) {
@@ -319,7 +317,15 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	@Declare
 	public boolean unloadChunk(int x, int z) {
 		long hash = key(x, z);
-		return chunks.containsItem(hash) && unloadStage0.add(hash);
+		Chunk chunk = (Chunk) chunks.getValueByKey(hash);
+		if (chunk == null) {
+			return false;
+		}
+		if (world.getPersistentChunks().keySet().contains(new ChunkCoordIntPair(x, z))) {
+			return false;
+		}
+		chunk.queuedUnload = true;
+		return unloadStage0.add(hash);
 	}
 
 	@Override
@@ -346,15 +352,18 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		if (chunk == null || !fireBukkitUnloadEvent(chunk)) {
 			return;
 		}
-		chunk.unloading = true;
-		chunk.onChunkUnload();
-		chunk.isChunkLoaded = false;
-		if (save || chunk.isModified) {
-			safeSaveChunk(chunk);
-			safeSaveExtraChunkData(chunk);
+		synchronized (chunk) {
+			chunk.queuedUnload = true;
+			chunk.partiallyUnloaded = true;
+			chunk.onChunkUnload();
+			chunk.isChunkLoaded = false;
+			if (save || chunk.isModified) {
+				safeSaveChunk(chunk);
+				safeSaveExtraChunkData(chunk);
+			}
+			loadedChunks.remove(chunk);
+			chunks.remove(key);
 		}
-		loadedChunks.remove(chunk);
-		chunks.remove(key);
 	}
 
 	@Deprecated
@@ -563,7 +572,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		for (int x = cX - 1; x <= cX + 1; x++) {
 			for (int z = cZ - 1; z <= cZ + 1; z++) {
 				Chunk chunk = getChunkFastUnsafe(x, z);
-				if (chunk != null && !chunk.unloading && !chunk.isTerrainPopulated && checkChunksExistLoadedNormally(x - 1, z - 1, x - 1, z + 1)) {
+				if (chunk != null && !chunk.partiallyUnloaded && !chunk.isTerrainPopulated && checkChunksExistLoadedNormally(x - 1, z - 1, x - 1, z + 1)) {
 					populate(chunk);
 				}
 			}
@@ -574,7 +583,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		for (int x = minX; x <= maxX; ++x) {
 			for (int z = minZ; z <= maxZ; ++z) {
 				Chunk chunk = getChunkFastUnsafe(x, z);
-				if (chunk == null || chunk.unloading) {
+				if (chunk == null || chunk.partiallyUnloaded) {
 					return false;
 				}
 			}
@@ -704,7 +713,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		List<Chunk> chunksToSave = new ArrayList<Chunk>();
 		synchronized (loadedChunks) {
 			for (Chunk chunk : loadedChunks) {
-				if (!chunk.unloading && chunk.needsSaving(saveAll)) {
+				if (!chunk.partiallyUnloaded && chunk.needsSaving(saveAll)) {
 					chunk.isModified = false;
 					chunksToSave.add(chunk);
 				}
@@ -712,7 +721,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		}
 
 		for (Chunk chunk : chunksToSave) {
-			if (chunk.unloading) {
+			if (chunk.partiallyUnloaded) {
 				continue;
 			}
 			if (chunks.getValueByKey(key(chunk.xPosition, chunk.zPosition)) != chunk) {

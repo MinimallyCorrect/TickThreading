@@ -40,6 +40,10 @@ public class ChunkGarbageCollector {
 			}
 		}
 
+		for (ChunkCoordIntPair chunkCoordIntPair : worldServer.getPersistentChunks().keySet()) {
+			chunksToUnload.remove(ChunkCoordIntPair.chunkXZ2Int(chunkCoordIntPair.chunkXPos, chunkCoordIntPair.chunkZPos));
+		}
+
 		Set<Long> chunksToUnload_ = chunkProvider.getChunksToUnloadSet();
 		synchronized (chunksToUnload_) {
 			chunksToUnload_.addAll(chunksToUnload);

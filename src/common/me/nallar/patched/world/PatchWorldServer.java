@@ -2,13 +2,11 @@ package me.nallar.patched.world;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 import java.util.TreeSet;
 
 import com.google.common.collect.ImmutableSetMultimap;
@@ -480,37 +478,32 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		final Profiler profiler = this.theProfiler;
 		final WorldProvider provider = this.provider;
 		int updateLCG = this.updateLCG;
-		Set<Long> chunksToUnloadSet;
-		try {
-			chunksToUnloadSet = chunkProviderServer.getChunksToUnloadSet();
-		} catch (NoSuchMethodError ignored) {
-			chunksToUnloadSet = Collections.emptySet();
-		}
 		// We use a random per thread - randoms are threadsafe, however it can result in some contention. See Random.nextInt - compareAndSet.
 		// This reduces contention -> slightly increased performance, woo! :P
 		while (true) {
-			ChunkCoordIntPair var4;
+			ChunkCoordIntPair chunkCoordIntPair;
 			synchronized (chunkCoordIterator) {
 				if (!chunkCoordIterator.hasNext()) {
 					break;
 				}
 				try {
-					var4 = chunkCoordIterator.next();
+					chunkCoordIntPair = chunkCoordIterator.next();
 				} catch (ConcurrentModificationException e) {
 					break;
 				}
 			}
 
-			int cX = var4.chunkXPos;
-			int cZ = var4.chunkZPos;
-			if ((tpsFactor < 1 && rand.nextFloat() > tpsFactor) || chunksToUnloadSet.contains(ChunkCoordIntPair.chunkXZ2Int(cX, cZ))) {
+			if (tpsFactor < 1 && rand.nextFloat() > tpsFactor) {
 				continue;
 			}
+
+			int cX = chunkCoordIntPair.chunkXPos;
+			int cZ = chunkCoordIntPair.chunkZPos;
 
 			int xPos = cX * 16;
 			int zPos = cZ * 16;
 			Chunk chunk = chunkProviderServer.getChunkIfExists(cX, cZ);
-			if (chunk == null || !chunk.isTerrainPopulated || chunk.unloading) {
+			if (chunk == null || !chunk.isTerrainPopulated || chunk.partiallyUnloaded) {
 				continue;
 			}
 			this.moodSoundAndLightCheck(xPos, zPos, chunk);
