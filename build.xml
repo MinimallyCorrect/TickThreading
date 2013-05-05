@@ -96,6 +96,7 @@
 		<artifact:dependencies filesetId="dependency.fileset"
 													 versionsId="dependency.versions">
 			<artifact:dependency groupId="org.javassist" artifactId="javassist" version="3.17.1-GA"/>
+			<artifact:dependency groupId="com.github.stephenc.high-scale-lib" artifactId="high-scale-lib" version="1.1.4"/>
 			<artifact:dependency groupId="junit" artifactId="junit" version="4.10"/>
 		</artifact:dependencies>
 		<copy todir="${lib.dir}">
@@ -219,6 +220,7 @@
 
 	<target name="packageDependencies">
 		<unzip dest="${classes.dir}/" src="${lib.dir}/javassist.jar"/>
+		<unzip dest="${classes.dir}/" src="${lib.dir}/high-scale-lib.jar"/>
 		<delete file="${classes.dir}/net/minecraft/server/MinecraftServer.class"/>
 		<delete dir="${classes.dir}/META-INF"/>
 		<delete dir="${classes.dir}/net/minecraftforge"/>
