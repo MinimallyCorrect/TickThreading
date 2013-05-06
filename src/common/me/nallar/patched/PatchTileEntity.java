@@ -44,6 +44,9 @@ public abstract class PatchTileEntity extends TileEntity {
 	@Declare
 	public void sendTileWithNotify() {
 		WorldServer worldServer = ((WorldServer) worldObj);
+		if (worldServer == null) {
+			return;
+		}
 		worldServer.notifyBlocksOfNeighborChange(xCoord, yCoord, zCoord, getBlockType().blockID);
 		PlayerInstance p = worldServer.getPlayerManager().getOrCreateChunkWatcher(xCoord >> 4, zCoord >> 4, false);
 		if (p != null) {
