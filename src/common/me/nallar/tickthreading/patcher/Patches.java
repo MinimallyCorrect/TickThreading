@@ -819,7 +819,7 @@ public class Patches {
 		if (field != null) {
 			code = code.replace("$field", field);
 		}
-		ctBehavior.insertAfter(code);
+		ctBehavior.insertAfter(code, attributes.containsKey("finally"));
 	}
 
 	@Patch
