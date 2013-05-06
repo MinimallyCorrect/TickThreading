@@ -44,10 +44,10 @@ public class ChunkGarbageCollector {
 			chunksToUnload.remove(ChunkCoordIntPair.chunkXZ2Int(chunkCoordIntPair.chunkXPos, chunkCoordIntPair.chunkZPos));
 		}
 
-		Set<Long> chunksToUnload_ = chunkProvider.getChunksToUnloadSet();
-		synchronized (chunksToUnload_) {
-			chunksToUnload_.addAll(chunksToUnload);
+		for (long chunk : chunksToUnload) {
+			chunkProvider.unloadChunkForce(chunk);
 		}
+
 		profiler.endSection();
 	}
 }

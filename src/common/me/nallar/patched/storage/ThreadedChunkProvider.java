@@ -154,7 +154,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				chunkCoordIntPair.chunkXPos = x;
 				chunkCoordIntPair.chunkZPos = z;
 				Chunk chunk = (Chunk) chunks.getValueByKey(key);
-				if (chunk == null || chunk.partiallyUnloaded) {
+				if (chunk == null || chunk.partiallyUnloaded || !chunk.queuedUnload) {
 					continue;
 				}
 				if (persistentChunks.containsKey(chunkCoordIntPair) || unloadingChunks.containsItem(key) || playerManager.getOrCreateChunkWatcher(x, z, false) != null || !fireBukkitUnloadEvent(chunk)) {
@@ -323,6 +323,17 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	}
 
 	@Override
+	@Declare
+	public void unloadChunkForce(long hash) {
+		if (unloadStage0.add(hash)) {
+			Chunk chunk = (Chunk) chunks.getValueByKey(hash);
+			if (chunk != null) {
+				chunk.queuedUnload = true;
+			}
+		}
+	}
+
+	@Override
 	public void unloadChunksIfNotNearSpawn(int x, int z) {
 		unloadChunk(x, z);
 	}
@@ -386,7 +397,9 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	@Override
 	public final Chunk loadChunk(int x, int z) {
-		return getChunkAt(x, z, true, false, null);
+		Chunk chunk = getChunkAt(x, z, true, false, null);
+		chunk.queuedUnload = false;
+		return chunk;
 	}
 
 	@Override
