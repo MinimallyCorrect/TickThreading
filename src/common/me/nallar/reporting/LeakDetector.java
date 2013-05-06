@@ -18,11 +18,10 @@ public class LeakDetector {
 		waitTime = waitTimeSeconds * 1000;
 	}
 
-	public void scheduleLeakCheck(Object o) {
-		scheduleLeakCheck(o, null);
-	}
-
-	public void scheduleLeakCheck(Object o, String oDescription_) {
+	public void scheduleLeakCheck(Object o, String oDescription_, boolean clean) {
+		if (clean) {
+			timer.schedule(new CleanerTask(o), Math.min(waitTime / 2, 60000));
+		}
 		final long id = UnsafeUtil.addressOf(o);
 		final String oDescription = (oDescription_ == null ? "" : oDescription_ + " : ") + o.getClass() + '@' + System.identityHashCode(o) + ':' + id;
 		scheduledObjects.put(id, new LeakCheckEntry(o, oDescription));
@@ -34,11 +33,23 @@ public class LeakDetector {
 				if (o == null) {
 					Log.info("Object " + leakCheckEntry.description + " has been removed normally. :)");
 				} else {
-					Log.warning("Memory leak detected. \"" + leakCheckEntry.description + "\" has not been garbage collected after " + waitTime + "ms." +
-							"\nApproximate leaked memory: " + UnsafeUtil.unsafeSizeOf(o) + " bytes");
+					Log.warning("Probable memory leak detected. \"" + leakCheckEntry.description + "\" has not been garbage collected after " + waitTime / 1000 + "s.");
 				}
 			}
 		}, waitTime);
+	}
+
+	private static class CleanerTask extends TimerTask {
+		final Object toClean;
+
+		CleanerTask(final Object toClean) {
+			this.toClean = toClean;
+		}
+
+		@Override
+		public void run() {
+			UnsafeUtil.clean(toClean);
+		}
 	}
 
 	private static class LeakCheckEntry {

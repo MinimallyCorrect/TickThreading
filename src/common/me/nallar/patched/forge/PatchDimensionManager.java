@@ -6,9 +6,7 @@ import java.util.logging.Level;
 
 import cpw.mods.fml.common.FMLLog;
 import me.nallar.tickthreading.Log;
-import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
-import me.nallar.unsafe.UnsafeUtil;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
@@ -51,9 +49,6 @@ public abstract class PatchDimensionManager extends DimensionManager {
 						List<WorldServer> worlds = MinecraftServer.getServer().worlds;
 						if (worlds != null) {
 							worlds.remove(w);
-						}
-						if (TickThreading.instance.cleanWorlds) {
-							UnsafeUtil.clean(w);
 						}
 					}
 				}

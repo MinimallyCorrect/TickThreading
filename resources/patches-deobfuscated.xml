@@ -333,6 +333,11 @@
 		<class id="net.minecraft.block.BlockRedstoneWire">
 			<synchronize>calculateCurrentChanges,updateAndPropagateCurrentStrength</synchronize>
 		</class>
+		<!-- TODO: Use this once it's possible to access method parameters while replacing a MethodCall expression
+		<class id="net.minecraft.block.BlockFlowing">
+			<replaceMethodCall code="if ($1.worldGenInProgress.get() == Boolean.FALSE) { $0.$proceed($$); }" method="callEvent">updateTick</replaceMethodCall>
+		</class>
+		-->
 		<class id="net.minecraft.network.TcpConnection">
 			<addAll fromClass="me.nallar.patched.network.PatchTcpConnection"/>
 		</class>
@@ -999,4 +1004,9 @@
 			<insertAfter code="worldsettings = new java.util.concurrent.ConcurrentHashMap();"/>
 		</class>
 	</seasons>
+	<customOreGen>
+		<class id="CustomOreGen.Server.ServerState">
+			<replaceMethod code="{ return $1.isChunkSavedPopulated($2, $3); }">isChunkSavedPopulated</replaceMethod>
+		</class>
+	</customOreGen>
 </mods>

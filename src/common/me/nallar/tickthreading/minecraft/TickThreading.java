@@ -94,7 +94,7 @@ public class TickThreading {
 	private HashSet<Integer> disabledFastMobSpawningDimensions = new HashSet<Integer>();
 	private boolean waitForEntityTickCompletion = true;
 	private int targetTPS = 20;
-	private final LeakDetector leakDetector = new LeakDetector(1800);
+	private final LeakDetector leakDetector = new LeakDetector(1200);
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load
@@ -242,7 +242,7 @@ public class TickThreading {
 		}
 		if (world instanceof WorldServer) {
 			((WorldServer) world).stopChunkTickThreads();
-			leakDetector.scheduleLeakCheck(world, world.getName());
+			leakDetector.scheduleLeakCheck(world, world.getName(), cleanWorlds);
 		}
 	}
 

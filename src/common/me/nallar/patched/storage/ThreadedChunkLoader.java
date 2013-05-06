@@ -3,6 +3,7 @@ package me.nallar.patched.storage;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -46,6 +47,20 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 	public final File chunkSaveLocation;
 	private final Cache<Long, NBTTagCompound> chunkCache;
 	public final RegionFileCache regionFileCache;
+
+	@Override
+	@Declare
+	public boolean isChunkSavedPopulated(int x, int z) {
+		DataInputStream dataInputStream = regionFileCache.getChunkInputStream(x, z);
+		try {
+			NBTTagCompound rootCompound = CompressedStreamTools.read(dataInputStream);
+			NBTTagCompound levelCompound = (NBTTagCompound) rootCompound.getTag("Level");
+			return levelCompound != null && levelCompound.getBoolean("TerrainPopulated");
+		} catch (IOException e) {
+			Log.severe("Failed to check if chunk " + x + ',' + z + " is populated.", e);
+			return false;
+		}
+	}
 
 	public ThreadedChunkLoader(File file) {
 		super(file);

@@ -34,6 +34,7 @@ import net.minecraft.world.WorldProvider;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.WorldSettings;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.storage.AnvilChunkLoader;
 import net.minecraft.world.gen.ChunkProviderServer;
 import net.minecraft.world.storage.ISaveHandler;
 import net.minecraftforge.common.DimensionManager;
@@ -923,5 +924,11 @@ public abstract class PatchWorld extends World {
 			return true;
 		}
 		return false;
+	}
+
+	@Override
+	@Declare
+	public boolean isChunkSavedPopulated(int x, int z) {
+		return ((AnvilChunkLoader) ((WorldServer) (Object) this).theChunkProviderServer.currentChunkLoader).isChunkSavedPopulated(x, z);
 	}
 }
