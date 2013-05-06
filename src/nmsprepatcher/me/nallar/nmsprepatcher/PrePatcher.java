@@ -89,6 +89,8 @@ public class PrePatcher {
 					ret = "false";
 				} else if ("void".equals(type)) {
 					ret = "";
+				} else if ("long".equals(type)) {
+					ret = "0L";
 				} else if ("int".equals(type)) {
 					ret = "0";
 				} else if ("float".equals(type)) {
