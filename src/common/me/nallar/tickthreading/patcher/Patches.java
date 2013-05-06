@@ -984,6 +984,40 @@ public class Patches {
 		ctMethod.addCatch("{ " + returnCode + '}', classRegistry.getClass(exceptionType));
 	}
 
+	@Patch
+	public void lockToSynchronized(CtBehavior ctBehavior, Map<String, String> attributes) throws BadBytecode {
+		CtClass ctClass = ctBehavior.getDeclaringClass();
+		MethodInfo methodInfo = ctBehavior.getMethodInfo();
+		CodeAttribute codeAttribute = methodInfo.getCodeAttribute();
+		CodeIterator iterator = codeAttribute.iterator();
+		ConstPool constPool = codeAttribute.getConstPool();
+		while (iterator.hasNext()) {
+			int pos = iterator.next();
+			int op = iterator.byteAt(pos);
+			if (op == Opcode.INVOKEINTERFACE) {
+				int mref = iterator.u16bitAt(pos + 1);
+				if (constPool.getInterfaceMethodrefClassName(mref).endsWith("Lock")) {
+					String name = constPool.getInterfaceMethodrefName(mref);
+					boolean remove = false;
+					if ("lock".equals(name)) {
+						remove = true;
+						iterator.writeByte(Opcode.MONITORENTER, pos);
+					} else if ("unlock".equals(name)) {
+						remove = true;
+						iterator.writeByte(Opcode.MONITOREXIT, pos);
+					}
+					if (remove) {
+						iterator.writeByte(Opcode.NOP, pos + 1);
+						iterator.writeByte(Opcode.NOP, pos + 2);
+						iterator.writeByte(Opcode.NOP, pos + 3);
+						iterator.writeByte(Opcode.NOP, pos + 4);
+					}
+				}
+			}
+		}
+		methodInfo.rebuildStackMapIf6(ctClass.getClassPool(), ctClass.getClassFile2());
+	}
+
 	private static String classSignatureToName(String signature) {
 		//noinspection HardcodedFileSeparator
 		return signature.substring(1, signature.length() - 1).replace("/", ".");

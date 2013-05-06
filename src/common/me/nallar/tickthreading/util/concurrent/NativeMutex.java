@@ -7,6 +7,7 @@ import java.util.concurrent.locks.Lock;
 import me.nallar.unsafe.UnsafeAccess;
 import sun.misc.Unsafe;
 
+// This class is manipulated by the patcher, MONITORENTER/EXIT instructions are used for performance reasons where possible.
 public final class NativeMutex implements Lock {
 	private static final Unsafe $ = UnsafeAccess.$;
 

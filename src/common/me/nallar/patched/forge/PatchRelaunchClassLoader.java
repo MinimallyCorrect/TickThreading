@@ -185,6 +185,8 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 				} finally {
 					zipFile.close();
 				}
+			} else {
+				log(Level.WARNING, null, "%s doesn't exist.", patchedModFile.toString());
 			}
 		} catch (Exception e) {
 			log(Level.SEVERE, e, "Failed to load patched classes for " + patchedModFile.getName());
@@ -207,10 +209,9 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 							log(Level.INFO, null, "Loading patched mod classes from " + patchedModsFolder);
 							for (File file : patchedModsFolder.listFiles()) {
 								if (!new File(modsFolder, file.getName()).exists()) {
-									log(Level.INFO, null, "Skipping jar " + file + " which is not in the mods folder.");
+									log(Level.INFO, null, "Skipping jar %s which is not in the mods folder.", file.toString());
 									continue;
 								}
-								log(Level.INFO, null, "Loading from jar " + file.toString().replace("%", "%%") + " in the patchedMods folder.");
 								loadPatchedClasses(file.toURI().toURL(), replacedClasses);
 							}
 						}

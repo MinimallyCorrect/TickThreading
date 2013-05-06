@@ -29,6 +29,7 @@ import javassist.bytecode.MethodInfo;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.util.CollectionsUtil;
 import me.nallar.tickthreading.util.IterableEnumerationWrapper;
+import me.nallar.tickthreading.util.LocationUtil;
 import me.nallar.unsafe.UnsafeUtil;
 import net.minecraft.server.MinecraftServer;
 
@@ -124,7 +125,7 @@ public class ClassRegistry {
 		int patchedClasses = 0;
 		try {
 			for (File zipFile : updatedFiles) {
-				if (zipFile == serverFile || !modsFolderName.equals(zipFile.getParentFile().getName())) {
+				if (zipFile == serverFile || (!zipFile.equals(LocationUtil.locationOf(PatchMain.class).getAbsoluteFile()) && !modsFolderName.equals(zipFile.getParentFile().getName()))) {
 					File backupFile = new File(backupDirectory, zipFile.getName());
 					if (backupFile.exists() && !backupFile.delete()) {
 						Log.warning("Failed to remove old backup");

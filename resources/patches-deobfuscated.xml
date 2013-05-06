@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <mods>
+	<tickthreading>
+		<class id="me.nallar.tickthreading.minecraft.tickregion.TileEntityTickRegion">
+			<lockToSynchronized>doTick</lockToSynchronized>
+		</class>
+	</tickthreading>
 	<minecraftCommon>
 		<class id="net.minecraft.world.SpawnerAnimals" env="forge">
 			<addAll fromClass="me.nallar.patched.PatchSpawnerAnimalsForge"/>

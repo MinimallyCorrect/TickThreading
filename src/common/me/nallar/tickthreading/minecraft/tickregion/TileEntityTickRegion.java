@@ -9,6 +9,7 @@ import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
+import me.nallar.tickthreading.util.concurrent.NotReallyAMutex;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
@@ -27,7 +28,6 @@ public class TileEntityTickRegion extends TickRegion {
 		final World world = this.world;
 		final boolean lockable = TickThreading.instance.lockRegionBorders;
 		final boolean profilingEnabled = manager.profilingEnabled || this.profilingEnabled;
-		boolean lock = false;
 		Lock thisLock = null;
 		Lock xPlusLock = null;
 		Lock xMinusLock = null;
@@ -41,6 +41,7 @@ public class TileEntityTickRegion extends TickRegion {
 				entityTickProfiler.tick();
 			}
 		}
+		Lock noLock = NotReallyAMutex.lock;
 		final Iterator<TileEntity> tileEntitiesIterator = tileEntitySet.iterator();
 		while (tileEntitiesIterator.hasNext()) {
 			if (profilingEnabled) {
@@ -55,25 +56,39 @@ public class TileEntityTickRegion extends TickRegion {
 						manager.lock(tileEntity);
 					}
 					thisLock = tileEntity.thisLock;
+					if (thisLock == noLock) {
+						thisLock = null;
+					}
 					xPlusLock = tileEntity.xPlusLock;
+					if (xPlusLock == noLock) {
+						xPlusLock = null;
+					}
 					zPlusLock = tileEntity.zPlusLock;
+					if (zPlusLock == noLock) {
+						zPlusLock = null;
+					}
 					zMinusLock = tileEntity.zMinusLock;
+					if (zMinusLock == noLock) {
+						zMinusLock = null;
+					}
 					xMinusLock = tileEntity.xMinusLock;
-					lock = xMinusLock != null || xPlusLock != null || zMinusLock != null || zPlusLock != null;
-					if (lock) {
-						if (xPlusLock != null) {
-							xPlusLock.lock();
-						}
-						if (zPlusLock != null) {
-							zPlusLock.lock();
-						}
+					if (xMinusLock == noLock) {
+						xMinusLock = null;
+					}
+					if (xPlusLock != null) {
+						xPlusLock.lock();
+					}
+					if (zPlusLock != null) {
+						zPlusLock.lock();
+					}
+					if (thisLock != null) {
 						thisLock.lock();
-						if (zMinusLock != null) {
-							zMinusLock.lock();
-						}
-						if (xMinusLock != null) {
-							xMinusLock.lock();
-						}
+					}
+					if (zMinusLock != null) {
+						zMinusLock.lock();
+					}
+					if (xMinusLock != null) {
+						xMinusLock.lock();
 					}
 				}
 				if (manager.getHashCode(xPos, zPos) != hashCode) {
@@ -102,14 +117,16 @@ public class TileEntityTickRegion extends TickRegion {
 				Log.severe("Exception ticking TileEntity " + Log.toString(tileEntity) + " at x,y,z:" + xPos + ',' + tileEntity.yCoord + ',' + zPos
 						+ "\n World: " + Log.name(tileEntity.worldObj), throwable);
 			} finally {
-				if (lockable && lock) {
+				if (lockable) {
 					if (xMinusLock != null) {
 						xMinusLock.unlock();
 					}
 					if (zMinusLock != null) {
 						zMinusLock.unlock();
 					}
-					thisLock.unlock();
+					if (thisLock != null) {
+						thisLock.unlock();
+					}
 					if (zPlusLock != null) {
 						zPlusLock.unlock();
 					}

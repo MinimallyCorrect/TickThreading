@@ -13,7 +13,6 @@ import javassist.NotFoundException;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.mappings.MCPMappings;
 import me.nallar.tickthreading.util.CollectionsUtil;
-import me.nallar.tickthreading.util.LocationUtil;
 import me.nallar.tickthreading.util.VersionUtil;
 import org.xml.sax.SAXException;
 
@@ -106,7 +105,6 @@ public class PatchMain {
 			Log.info("Patching in environment: " + patchManager.patchEnvironment);
 			patchManager.runPatches();
 			try {
-				classRegistry.updatedFiles.remove(LocationUtil.locationOf(PatchMain.class).getAbsoluteFile());
 				classRegistry.save(patchManager.backupDirectory);
 			} catch (IOException e) {
 				Log.severe("Failed to save patched classes", e);
