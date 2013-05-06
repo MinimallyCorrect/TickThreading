@@ -20,6 +20,7 @@ import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.network.Player;
 import cpw.mods.fml.relauncher.RelaunchClassLoader;
 import javassist.is.faulty.Timings;
+import me.nallar.reporting.LeakDetector;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.commands.Command;
 import me.nallar.tickthreading.minecraft.commands.DumpCommand;
@@ -93,6 +94,7 @@ public class TickThreading {
 	private HashSet<Integer> disabledFastMobSpawningDimensions = new HashSet<Integer>();
 	private boolean waitForEntityTickCompletion = true;
 	private int targetTPS = 20;
+	private final LeakDetector leakDetector = new LeakDetector(1800);
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load
@@ -240,6 +242,7 @@ public class TickThreading {
 		}
 		if (world instanceof WorldServer) {
 			((WorldServer) world).stopChunkTickThreads();
+			leakDetector.scheduleLeakCheck(world, world.getName());
 		}
 	}
 

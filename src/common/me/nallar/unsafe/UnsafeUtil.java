@@ -2,6 +2,11 @@ package me.nallar.unsafe;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 import javassist.Modifier;
 import me.nallar.tickthreading.Log;
@@ -76,6 +81,44 @@ public class UnsafeUtil {
 			sz += headerSize;
 			return sz;
 		}
+	}
+
+	private static final int NR_BITS = Integer.valueOf(System.getProperty("sun.arch.data.model"));
+	private static final int BYTE = 8;
+	private static final int WORD = NR_BITS / BYTE;
+	private static final int MIN_SIZE = 16;
+
+	public static long unsafeSizeOf(Object o) {
+		return unsafeSizeOf(o, Collections.newSetFromMap(new IdentityHashMap<Object, Boolean>()));
+	}
+
+	public static long unsafeSizeOf(Object o, Set<Object> searched) {
+		Class<?> cls = o.getClass();
+		List<Field> fields = new LinkedList<Field>();
+		do {
+			for (Field f : cls.getDeclaredFields()) {
+				if ((f.getModifiers() & Modifier.STATIC) != Modifier.STATIC) {
+					fields.add(f);
+				}
+			}
+			cls = cls.getSuperclass();
+		} while (cls != Object.class);
+
+		long maxOffset = 0;
+		long innerSize = 0;
+		for (Field f : fields) {
+			long offset = $.objectFieldOffset(f);
+			if (offset > maxOffset) {
+				maxOffset = offset;
+			}
+			if (!f.getType().isPrimitive()) {
+				Object in = $.getObject(o, offset);
+				if (in != null && searched.add(in)) {
+					innerSize += unsafeSizeOf(in, searched);
+				}
+			}
+		}
+		return (((int) maxOffset / WORD) + 1) * WORD + innerSize;
 	}
 
 	public static long sizeOf(Object o) {

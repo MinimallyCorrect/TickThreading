@@ -355,6 +355,21 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				threadManager.run(tickRunnable);
 			}
 		} else {
+			// Gregtech leaks the first world which is ticked. If we tick overworld first, no leak. Only applies to first tick on server start.
+			Integer[] dimensionIdsToTickOrdered = new Integer[dimensionIdsToTick.length];
+			int i = 0;
+			for (int d : dimensionIdsToTick) {
+				if (d == 0) {
+					dimensionIdsToTickOrdered[i++] = 0;
+					break;
+				}
+			}
+			for (int d : dimensionIdsToTick) {
+				if (d != 0) {
+					dimensionIdsToTickOrdered[i++] = d;
+				}
+			}
+			this.dimensionIdsToTick = dimensionIdsToTickOrdered;
 			doWorldTick();
 		}
 

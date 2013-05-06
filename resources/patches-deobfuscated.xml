@@ -459,6 +459,9 @@
 		</class>
 	</forge>
 	<forgeModLoader>
+		<class id="cpw.mods.fml.common.event.FMLInterModComms$IMCMessage">
+			<insertAfter code="if (key.toLowerCase().contains(&quot;security&quot;)) { Thread.dumpStack(); } "/>
+		</class>
 		<class id="cpw.mods.fml.common.registry.GameRegistry">
 			<addAll fromClass="me.nallar.patched.forge.PatchGameRegistry"/>
 		</class>
