@@ -251,14 +251,8 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 					return false;
 				}
 				chunk.alreadySavedAfterUnload = true;
-				boolean notInUnload = !inUnload.get();
-				if (notInUnload) {
-					inUnload.set(true);
-				}
-				boolean notWorldGen = !worldGenInProgress.get();
-				if (notWorldGen) {
-					worldGenInProgress.set(true);
-				}
+				boolean notInUnload = !inUnload.getAndSet(true);
+				boolean notWorldGen = !worldGenInProgress.getAndSet(true);
 				safeSaveChunk(chunk);
 				safeSaveExtraChunkData(chunk);
 				if (notWorldGen) {

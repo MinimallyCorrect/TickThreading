@@ -20,8 +20,7 @@ public class CHashMapReplaceClear<K, V> extends CHashMap<K, V> {
 
 	@Override
 	public void clear() {
-		inReplace.set(true);
-		if (replaceMap != null) {
+		if (inReplace.getAndSet(true) != Boolean.FALSE || replaceMap != null) {
 			throw new ConcurrencyError("Already replacing");
 		}
 		replaceMap = new ConcurrentHashMap<K, V>();

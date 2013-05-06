@@ -1,6 +1,6 @@
 package me.nallar.tickthreading.util;
 
-import me.nallar.tickthreading.util.concurrent.SpinLockMutex;
+import me.nallar.tickthreading.Log;
 import me.nallar.unsafe.UnsafeAccess;
 import sun.misc.Unsafe;
 
@@ -11,11 +11,11 @@ import sun.misc.Unsafe;
  * ThreadLocal.get(), assuming the variable is normally false in all threads.
  */
 public class BooleanThreadLocal extends ThreadLocal<Boolean> {
-	private static final Unsafe $ = UnsafeAccess.$;
-	private static final long index = $.objectFieldOffset(SpinLockMutex.class.getFields()[0]);
-	// Unsafe magics.
 	@SuppressWarnings ({"FieldCanBeLocal", "FieldMayBeFinal"})
 	private int count = 0;
+	private static final Unsafe $ = UnsafeAccess.$;
+	private static final long index = $.objectFieldOffset(ReflectUtil.getField(BooleanThreadLocal.class, "count"));
+	// Unsafe magics.
 
 	@Override
 	public Boolean initialValue() {
@@ -24,9 +24,15 @@ public class BooleanThreadLocal extends ThreadLocal<Boolean> {
 
 	/**
 	 * @param value Must be Boolean.TRUE or Boolean.FALSE. No new Boolean(true/false)!
+	 * Must always set back to false before the thread stops, else performance will be worse.
+	 * Not going to break anything, but bad for performance.
 	 */
 	@Override
 	public void set(Boolean value) {
+		if (value == get()) {
+			Log.severe("Pointless repeat set on threadlocal", new Throwable());
+			return;
+		}
 		super.set(value);
 		if (value == Boolean.TRUE) {
 			do {
@@ -36,7 +42,7 @@ public class BooleanThreadLocal extends ThreadLocal<Boolean> {
 					return;
 				}
 			} while (true);
-		} else {
+		} else if (value == Boolean.FALSE) {
 			do {
 				int old = $.getIntVolatile(this, index);
 				int next = old - 1;
@@ -44,6 +50,40 @@ public class BooleanThreadLocal extends ThreadLocal<Boolean> {
 					return;
 				}
 			} while (true);
+		} else {
+			throw new Error("Must use Boolean.TRUE/FALSE.");
+		}
+	}
+
+	/**
+	 * @param value Must be Boolean.TRUE or Boolean.FALSE. No new Boolean(true/false)!
+	 * Must always set back to false before the thread stops, else performance will be worse.
+	 * Not going to break anything, but bad for performance.
+	 */
+	public Boolean getAndSet(Boolean value) {
+		Boolean oldValue = get();
+		if (value == oldValue) {
+			return oldValue;
+		}
+		super.set(value);
+		if (value == Boolean.TRUE) {
+			do {
+				int old = $.getIntVolatile(this, index);
+				int next = old + 1;
+				if ($.compareAndSwapInt(this, index, old, next)) {
+					return oldValue;
+				}
+			} while (true);
+		} else if (value == Boolean.FALSE) {
+			do {
+				int old = $.getIntVolatile(this, index);
+				int next = old - 1;
+				if ($.compareAndSwapInt(this, index, old, next)) {
+					return oldValue;
+				}
+			} while (true);
+		} else {
+			throw new Error("Must use Boolean.TRUE/FALSE.");
 		}
 	}
 

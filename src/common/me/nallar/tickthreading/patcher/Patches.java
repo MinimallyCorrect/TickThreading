@@ -649,6 +649,18 @@ public class Patches {
 		final String field = attributes.get("field");
 		final String threadLocalField = attributes.get("threadLocalField");
 		Log.info(field + " -> " + threadLocalField);
+		for (CtConstructor ctConstructor : ctClass.getDeclaredConstructors()) {
+			ctConstructor.instrument(new ExprEditor() {
+				@Override
+				public void edit(FieldAccess e) throws CannotCompileException {
+					if (e.getFieldName().equals(field)) {
+						if (e.isWriter()) {
+							e.replace("{ }");
+						}
+					}
+				}
+			});
+		}
 		ctClass.instrument(new ExprEditor() {
 			@Override
 			public void edit(FieldAccess e) throws CannotCompileException {
