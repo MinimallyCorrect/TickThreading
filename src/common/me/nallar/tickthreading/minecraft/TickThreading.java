@@ -9,15 +9,14 @@ import java.util.List;
 import java.util.Map;
 
 import cpw.mods.fml.common.FMLLog;
+import cpw.mods.fml.common.IPlayerTracker;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
-import cpw.mods.fml.common.network.IConnectionHandler;
 import cpw.mods.fml.common.network.NetworkMod;
-import cpw.mods.fml.common.network.NetworkRegistry;
-import cpw.mods.fml.common.network.Player;
+import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.relauncher.RelaunchClassLoader;
 import javassist.is.faulty.Timings;
 import me.nallar.reporting.LeakDetector;
@@ -37,13 +36,10 @@ import me.nallar.tickthreading.util.TableFormatter;
 import me.nallar.tickthreading.util.VersionUtil;
 import net.minecraft.command.ServerCommandManager;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.INetworkManager;
-import net.minecraft.network.NetLoginHandler;
 import net.minecraft.network.NetServerHandler;
-import net.minecraft.network.packet.NetHandler;
-import net.minecraft.network.packet.Packet1Login;
 import net.minecraft.network.packet.Packet3Chat;
 import net.minecraft.network.packet.PacketCount;
 import net.minecraft.server.MinecraftServer;
@@ -120,9 +116,10 @@ public class TickThreading {
 			return;
 		}
 		appliedEnergisticsLoaded = Loader.isModLoaded("AppliedEnergistics");
-		NetworkRegistry.instance().registerConnectionHandler(new LoginWarningHandler());
+		GameRegistry.registerPlayerTracker(new LoginWarningHandler());
 	}
 
+	@SuppressWarnings ("FieldRepeatedlyAccessedInMethod")
 	@Mod.PreInit
 	public void preInit(FMLPreInitializationEvent event) {
 		Configuration config = new Configuration(event.getSuggestedConfigurationFile());
@@ -293,14 +290,14 @@ public class TickThreading {
 		}
 	}
 
-	private class LoginWarningHandler implements IConnectionHandler {
+	private class LoginWarningHandler implements IPlayerTracker {
 		LoginWarningHandler() {
 		}
 
 		@Override
-		public void playerLoggedIn(final Player player, final NetHandler netHandler, final INetworkManager manager) {
-			if (netHandler instanceof NetServerHandler) {
-				NetServerHandler netServerHandler = (NetServerHandler) netHandler;
+		public void onPlayerLogin(final EntityPlayer player) {
+			if (player instanceof EntityPlayerMP) {
+				NetServerHandler netServerHandler = ((EntityPlayerMP) player).playerNetServerHandler;
 				if (appliedEnergisticsLoaded) {
 					netServerHandler.sendPacketToPlayer(new Packet3Chat("You're using TickThreading with Applied Energistics. This is currently a bad idea, and you may lose items."));
 					netServerHandler.sendPacketToPlayer(new Packet3Chat("See https://github.com/nallar/TickThreading/issues/246"));
@@ -309,24 +306,15 @@ public class TickThreading {
 		}
 
 		@Override
-		public String connectionReceived(final NetLoginHandler netHandler, final INetworkManager manager) {
-			return null;
+		public void onPlayerLogout(final EntityPlayer player) {
 		}
 
 		@Override
-		public void connectionOpened(final NetHandler netClientHandler, final String server, final int port, final INetworkManager manager) {
+		public void onPlayerChangedDimension(final EntityPlayer player) {
 		}
 
 		@Override
-		public void connectionOpened(final NetHandler netClientHandler, final MinecraftServer server, final INetworkManager manager) {
-		}
-
-		@Override
-		public void connectionClosed(final INetworkManager manager) {
-		}
-
-		@Override
-		public void clientLoggedIn(final NetHandler clientHandler, final INetworkManager manager, final Packet1Login login) {
+		public void onPlayerRespawn(final EntityPlayer player) {
 		}
 	}
 }
