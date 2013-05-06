@@ -37,6 +37,9 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 
 	private static int getPseudoRandomHeightValue(int wX, int wZ, WorldServer worldServer, boolean surface, int gapChance) {
 		Chunk chunk = worldServer.getChunkIfExists(wX >> 4, wZ >> 4);
+		if (chunk == null) {
+			return -1;
+		}
 		int x = wX & 15;
 		int z = wZ & 15;
 		int height = chunk.getHeightValue(x, z);
@@ -145,13 +148,18 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 			int sZ = z * 16 + worldServer.rand.nextInt(16);
 			boolean surface = !creatureType.getPeacefulCreature() || (dayTime ? surfaceChance++ % 5 != 0 : surfaceChance++ % 5 == 0);
 			int gap = gapChance++;
-			int sY = getPseudoRandomHeightValue(sX, sZ, worldServer, surface, gap);
+			int sY;
 			if (creatureType == EnumCreatureType.waterCreature) {
 				String biomeName = worldServer.getBiomeGenForCoords(sX, sZ).biomeName;
 				if (!"Ocean".equals(biomeName) && !"River".equals(biomeName)) {
 					continue;
 				}
-				sY -= 2;
+				sY = getPseudoRandomHeightValue(sX, sZ, worldServer, true, gap) - 2;
+			} else {
+				sY = getPseudoRandomHeightValue(sX, sZ, worldServer, surface, gap);
+			}
+			if (sY < 0) {
+				continue;
 			}
 			if (worldServer.getBlockMaterial(sX, sY, sZ) == creatureType.getCreatureMaterial()) {
 				for (int i = 0; i < ((clumping * 3) / 2); i++) {
@@ -165,7 +173,8 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 						ssY = worldServer.rand.nextInt(63) + 1;
 					} else {
 						ssY = getPseudoRandomHeightValue(ssX, ssZ, worldServer, surface, gap);
-						if (!worldServer.getBlockMaterial(ssX, ssY - 1, ssZ).isOpaque() ||
+						if (ssY == -1 ||
+								!worldServer.getBlockMaterial(ssX, ssY - 1, ssZ).isOpaque() ||
 								!Block.blocksList[worldServer.getBlockId(ssX, ssY - 1, ssZ)].canCreatureSpawn(creatureType, worldServer, ssX, ssY - 1, ssZ)) {
 							continue;
 						}
