@@ -204,11 +204,13 @@
 			<replace class="me.nallar.patched.collection.IntHashMap"/>
 		</class>
 		<class id="net.minecraft.entity.player.EntityPlayerMP">
-			<synchronize field="loadedChunks">onUpdate</synchronize>
 			<addAll fromClass="me.nallar.patched.entity.PatchEntityPlayerMP"/>
 			<!-- Concurrent access during iteration = boom -->
 			<replaceInitializer field="destroyedItemsNetCache" class="me.nallar.tickthreading.collections.ConcurrentQueueList"/>
 			<replaceInitializer field="loadedChunks" class="me.nallar.tickthreading.collections.ConcurrentQueueList"/>
+		</class>
+		<class id="net.minecraft.entity.player.EntityPlayerMP">
+			<addAll fromClass="me.nallar.patched.entity.PatchEntityPlayerMPForge"/>
 		</class>
 		<class id="net.minecraft.entity.Entity">
 			<addAll fromClass="me.nallar.patched.entity.PatchEntity"/>
