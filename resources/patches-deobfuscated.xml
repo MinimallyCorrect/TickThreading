@@ -540,7 +540,6 @@
 			<synchronize field="facadeBlocks">blockCreated,getBlockId,getTile,computeConnections</synchronize>
 		</class>
 		<class id="buildcraft.transport.PipeTransportItems">
-			<!-- TODO: Find a more suitable way of making this concurrent without making performRemoval slow -->
 			<replaceInitializer field="travelingEntities" class="java.util.concurrent.ConcurrentHashMap"/>
 			<replaceInitializer field="toRemove" class="me.nallar.tickthreading.collections.SynchronizedSet"/>
 			<replaceMethod code="{
@@ -551,7 +550,8 @@
 					}
 					toRemove.clear();
 				}
-			}">performRemoval</replaceMethod>
+			}">performRemoval
+			</replaceMethod>
 		</class>
 		<class id="buildcraft.transport.PipeTransportPower">
 			<!-- TODO: Non-static lock, if possible -->
