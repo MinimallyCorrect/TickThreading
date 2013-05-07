@@ -52,6 +52,9 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 	@Declare
 	public boolean isChunkSavedPopulated(int x, int z) {
 		DataInputStream dataInputStream = regionFileCache.getChunkInputStream(x, z);
+		if (dataInputStream == null) {
+			return false;
+		}
 		try {
 			NBTTagCompound rootCompound = CompressedStreamTools.read(dataInputStream);
 			NBTTagCompound levelCompound = (NBTTagCompound) rootCompound.getTag("Level");
