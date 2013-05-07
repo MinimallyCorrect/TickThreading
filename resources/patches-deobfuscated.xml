@@ -630,6 +630,9 @@
 			<replaceInitializer field="entityLivingToShockEnergyMap" class="java.util.HashMap"/>
 			<synchronize>addTileEntity,removeTileEntity,emitEnergyFrom,discover</synchronize>
 		</class>
+		<class id="ic2.core.ExplosionIC2">
+			<synchronize>doExplosion</synchronize>
+		</class>
 		<class id="ic2.core.block.wiring.TileEntityElectricBlock">
 			<replaceMethodCall method="self.^method:TileEntity/onInventoryChanged^" code="{ }">^method:TileEntity/updateEntity^</replaceMethodCall>
 		</class>
