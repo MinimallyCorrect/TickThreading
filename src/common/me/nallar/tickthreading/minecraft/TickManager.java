@@ -293,6 +293,7 @@ public final class TickManager {
 		int xPos = tileEntity.lastTTX;
 		int yPos = tileEntity.lastTTY;
 		int zPos = tileEntity.lastTTZ;
+		tileEntity.shouldLock = 0;
 		if (tileEntity.xMinusLock != null) {
 			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos - 1, yPos, zPos);
 			if (lockTileEntity != null) {
@@ -317,7 +318,6 @@ public final class TickManager {
 				lockTileEntity.zMinusLock = tileEntity.zPlusLock = null;
 			}
 		}
-		tileEntity.shouldLock = 0;
 	}
 
 	public final void lock(TileEntity tileEntity) {
