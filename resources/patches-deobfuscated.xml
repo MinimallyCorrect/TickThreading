@@ -338,11 +338,10 @@
 		<class id="net.minecraft.block.BlockRedstoneWire">
 			<synchronize>calculateCurrentChanges,updateAndPropagateCurrentStrength</synchronize>
 		</class>
-		<!-- TODO: Use this once it's possible to access method parameters while replacing a MethodCall expression
 		<class id="net.minecraft.block.BlockFlowing">
-			<replaceMethodCall code="if ($1.worldGenInProgress.get() == Boolean.FALSE) { $0.$proceed($$); }" method="callEvent">updateTick</replaceMethodCall>
+			<!-- TODO: Make this cleaner once it's possible to access method parameters while replacing a MethodCall expression -->
+			<replaceMethodCall code="if (((org.bukkit.craftbukkit.v1_4_R1.CraftWorld) ((org.bukkit.event.block.BlockEvent) $1).getBlock().getWorld()).getHandle().worldGenInProgress.get() == Boolean.FALSE) { $0.callEvent($$); }" method="callEvent">updateTick</replaceMethodCall>
 		</class>
-		-->
 		<class id="net.minecraft.network.TcpConnection">
 			<addAll fromClass="me.nallar.patched.network.PatchTcpConnection"/>
 		</class>
