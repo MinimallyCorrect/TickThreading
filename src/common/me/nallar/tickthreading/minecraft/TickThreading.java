@@ -188,9 +188,10 @@ public class TickThreading {
 		}
 		if (DimensionManager.getWorld(world.getDimension()) != world) {
 			Log.severe("World " + world.getName() + " was loaded with an incorrect dimension ID!", new Throwable());
+			return;
 		}
 		if (managers.containsKey(world)) {
-			Log.severe("World " + world + "'s world load event was fired twice.", new Throwable());
+			Log.severe("World " + world.getName() + "'s world load event was fired twice.", new Throwable());
 			return;
 		}
 		TickManager manager = new TickManager((WorldServer) world, regionSize, getThreadCount(), waitForEntityTickCompletion);
@@ -213,12 +214,12 @@ public class TickThreading {
 	}
 
 	@ForgeSubscribe
-	public void onWorldUnload(WorldEvent.Unload event) {
+	public synchronized void onWorldUnload(WorldEvent.Unload event) {
 		World world = event.world;
 		try {
 			TickManager tickManager = managers.remove(world);
 			if (tickManager == null) {
-				Log.severe("World unload fired twice for world " + world.getName());
+				Log.severe("World unload fired twice for world " + world.getName(), new Throwable());
 				return;
 			}
 			tickManager.unload();

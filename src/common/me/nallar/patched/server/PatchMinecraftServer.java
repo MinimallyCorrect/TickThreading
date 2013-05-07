@@ -452,12 +452,15 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			long var2 = System.nanoTime();
 
 			WorldServer world = DimensionManager.getWorld(id);
-			world.dimensionId = id;
 			String name = world.getName();
 			TickManager tickManager = TickThreading.instance.getManager(world);
 			if (tickManager == null) {
 				Log.severe("Not sent WorldEvent.Load for loaded world " + name + ", sending it now.");
 				MinecraftForge.EVENT_BUS.post(new WorldEvent.Load(world));
+			}
+			if (world.getDimension() != id) {
+				Log.severe("World " + world.getName() + " exists in DimensionManager with an apparently incorrect dimension ID of " + id);
+				continue;
 			}
 			try {
 				profiler.startSection(world.getWorldInfo().getWorldName());
