@@ -5,13 +5,17 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import me.nallar.unsafe.UnsafeAccess;
+import sun.misc.Unsafe;
+
 public class ArrayListReplaceIterateTempListClear<T> extends ArrayList<T> {
 	private volatile boolean defer = false;
 	private final LinkedList<T> deferred = new LinkedList<T>();
 	private static final Iterator emptyIterator = Collections.emptyList().iterator();
+	private static final Unsafe $ = UnsafeAccess.$;
 
 	@Override
-	public boolean add(T t) {
+	public synchronized boolean add(T t) {
 		if (defer) {
 			return !contains(t) && deferred.add(t);
 		} else {
@@ -21,6 +25,7 @@ public class ArrayListReplaceIterateTempListClear<T> extends ArrayList<T> {
 
 	@Override
 	public synchronized Iterator<T> iterator() {
+		$.monitorEnter(this);
 		if (defer) {
 			return emptyIterator;
 		}
@@ -34,5 +39,6 @@ public class ArrayListReplaceIterateTempListClear<T> extends ArrayList<T> {
 		defer = false;
 		addAll(deferred);
 		deferred.clear();
+		$.monitorExit(this);
 	}
 }
