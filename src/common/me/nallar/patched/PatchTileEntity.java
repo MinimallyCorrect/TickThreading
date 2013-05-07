@@ -31,6 +31,8 @@ public abstract class PatchTileEntity extends TileEntity {
 	public java.util.concurrent.locks.Lock xPlusLock_;
 	@Declare
 	public java.util.concurrent.locks.Lock zPlusLock_;
+	@Declare
+	public byte shouldLock_;
 
 	public void construct() {
 		if (this instanceof IInventory || this instanceof ILiquidTank || this instanceof ICrafting || this instanceof IInvBasic || this instanceof ITankContainer) {

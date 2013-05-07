@@ -9,13 +9,17 @@ import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
-import me.nallar.tickthreading.util.concurrent.NotReallyAMutex;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.ChunkProviderServer;
 
 public class TileEntityTickRegion extends TickRegion {
+	public static final byte lockXPlus = 1 << 1;
+	public static final byte lockXMinus = 1 << 2;
+	public static final byte lockZPlus = 1 << 3;
+	public static final byte lockZMinus = 1 << 4;
+	public static final byte lockThis = 1 << 5;
 	private final Set<TileEntity> tileEntitySet = new LinkedHashSet<TileEntity>();
 
 	public TileEntityTickRegion(World world, TickManager manager, int regionX, int regionY) {
@@ -28,6 +32,8 @@ public class TileEntityTickRegion extends TickRegion {
 		final World world = this.world;
 		final boolean lockable = TickThreading.instance.lockRegionBorders;
 		final boolean profilingEnabled = manager.profilingEnabled || this.profilingEnabled;
+		byte lock = 0;
+		boolean anyLock = false;
 		Lock thisLock = null;
 		Lock xPlusLock = null;
 		Lock xMinusLock = null;
@@ -41,7 +47,13 @@ public class TileEntityTickRegion extends TickRegion {
 				entityTickProfiler.tick();
 			}
 		}
-		Lock noLock = NotReallyAMutex.lock;
+		// This code is performance critical.
+		// Locking calls are manipulated by the patcher,
+		// INVOKEVIRTUAL java.util.concurrent.locks.Lock.lock/unlock() calls are replaced with
+		// MONITORENTER/MONITOREXIT instructions.
+		// For this reason, although we do use interfaces which correctly implement lock/unlock depending on the TileEntity,
+		// it is critical that .lock() is not called on anything other than a NativeMutex instance in this code.
+		// Behaving in this manner also allows us to avoid the overhead of calling an interface method.
 		final Iterator<TileEntity> tileEntitiesIterator = tileEntitySet.iterator();
 		while (tileEntitiesIterator.hasNext()) {
 			if (profilingEnabled) {
@@ -55,40 +67,27 @@ public class TileEntityTickRegion extends TickRegion {
 					if (tileEntity.lastTTX != xPos || tileEntity.lastTTY != tileEntity.yCoord || tileEntity.lastTTZ != zPos) {
 						manager.lock(tileEntity);
 					}
-					thisLock = tileEntity.thisLock;
-					if (thisLock == noLock) {
-						thisLock = null;
-					}
-					xPlusLock = tileEntity.xPlusLock;
-					if (xPlusLock == noLock) {
-						xPlusLock = null;
-					}
-					zPlusLock = tileEntity.zPlusLock;
-					if (zPlusLock == noLock) {
-						zPlusLock = null;
-					}
-					zMinusLock = tileEntity.zMinusLock;
-					if (zMinusLock == noLock) {
-						zMinusLock = null;
-					}
-					xMinusLock = tileEntity.xMinusLock;
-					if (xMinusLock == noLock) {
-						xMinusLock = null;
-					}
-					if (xPlusLock != null) {
-						xPlusLock.lock();
-					}
-					if (zPlusLock != null) {
-						zPlusLock.lock();
-					}
-					if (thisLock != null) {
-						thisLock.lock();
-					}
-					if (zMinusLock != null) {
-						zMinusLock.lock();
-					}
-					if (xMinusLock != null) {
-						xMinusLock.lock();
+					if (anyLock = (lock = tileEntity.shouldLock) != 0) {
+						if ((lock & lockXPlus) != 0) {
+							xPlusLock = tileEntity.xPlusLock;
+							xPlusLock.lock();
+						}
+						if ((lock & lockZPlus) != 0) {
+							zPlusLock = tileEntity.zPlusLock;
+							zPlusLock.lock();
+						}
+						if ((lock & lockThis) != 0) {
+							thisLock = tileEntity.thisLock;
+							thisLock.lock();
+						}
+						if ((lock & lockZMinus) != 0) {
+							zMinusLock = tileEntity.zMinusLock;
+							zMinusLock.lock();
+						}
+						if ((lock & lockXMinus) != 0) {
+							xMinusLock = tileEntity.xMinusLock;
+							xMinusLock.lock();
+						}
 					}
 				}
 				if (manager.getHashCode(xPos, zPos) != hashCode) {
@@ -117,20 +116,20 @@ public class TileEntityTickRegion extends TickRegion {
 				Log.severe("Exception ticking TileEntity " + Log.toString(tileEntity) + " at x,y,z:" + xPos + ',' + tileEntity.yCoord + ',' + zPos
 						+ "\n World: " + Log.name(tileEntity.worldObj), throwable);
 			} finally {
-				if (lockable) {
-					if (xMinusLock != null) {
+				if (lockable && anyLock) {
+					if ((lock & lockXMinus) != 0) {
 						xMinusLock.unlock();
 					}
-					if (zMinusLock != null) {
+					if ((lock & lockZMinus) != 0) {
 						zMinusLock.unlock();
 					}
-					if (thisLock != null) {
+					if ((lock & lockThis) != 0) {
 						thisLock.unlock();
 					}
-					if (zPlusLock != null) {
+					if ((lock & lockZPlus) != 0) {
 						zPlusLock.unlock();
 					}
-					if (xPlusLock != null) {
+					if ((lock & lockXPlus) != 0) {
 						xPlusLock.unlock();
 					}
 				}

@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.locks.Lock;
 
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.collections.ConcurrentIterableArrayList;
@@ -19,6 +20,7 @@ import me.nallar.tickthreading.minecraft.tickregion.EntityTickRegion;
 import me.nallar.tickthreading.minecraft.tickregion.TickRegion;
 import me.nallar.tickthreading.minecraft.tickregion.TileEntityTickRegion;
 import me.nallar.tickthreading.util.TableFormatter;
+import me.nallar.tickthreading.util.concurrent.NotReallyAMutex;
 import me.nallar.unsafe.UnsafeUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -320,6 +322,7 @@ public final class TickManager {
 				lockTileEntity.zMinusLock = tileEntity.zPlusLock = null;
 			}
 		}
+		tileEntity.shouldLock = 0;
 	}
 
 	public final void lock(TileEntity tileEntity) {
@@ -337,11 +340,16 @@ public final class TickManager {
 		boolean onMinusZ = relativeZPos == 0;
 		boolean onPlusX = relativeXPos == maxPosition;
 		boolean onPlusZ = relativeZPos == maxPosition;
+		byte shouldLock = 0;
+		Lock noLock = NotReallyAMutex.lock;
 		if (onMinusX || onMinusZ || onPlusZ) { // minus X needs locked
 			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos - 1, yPos, zPos);
 			if (lockTileEntity != null) {
 				tileEntity.xMinusLock = lockTileEntity.thisLock;
 				lockTileEntity.xPlusLock = tileEntity.thisLock;
+				if (tileEntity.xMinusLock != noLock) {
+					shouldLock |= TileEntityTickRegion.lockXMinus;
+				}
 			}
 		}
 		if (onPlusX || onMinusZ || onPlusZ) { // plus X needs locked
@@ -349,6 +357,9 @@ public final class TickManager {
 			if (lockTileEntity != null) {
 				tileEntity.xPlusLock = lockTileEntity.thisLock;
 				lockTileEntity.xMinusLock = tileEntity.thisLock;
+				if (tileEntity.xPlusLock != noLock) {
+					shouldLock |= TileEntityTickRegion.lockXPlus;
+				}
 			}
 		}
 		if (onMinusZ || onMinusX || onPlusX) { // minus Z needs locked
@@ -356,6 +367,9 @@ public final class TickManager {
 			if (lockTileEntity != null) {
 				tileEntity.zMinusLock = lockTileEntity.thisLock;
 				lockTileEntity.zPlusLock = tileEntity.thisLock;
+				if (tileEntity.zMinusLock != noLock) {
+					shouldLock |= TileEntityTickRegion.lockZMinus;
+				}
 			}
 		}
 		if (onPlusZ || onMinusX || onPlusX) { // plus Z needs locked
@@ -363,8 +377,15 @@ public final class TickManager {
 			if (lockTileEntity != null) {
 				tileEntity.zPlusLock = lockTileEntity.thisLock;
 				lockTileEntity.zMinusLock = tileEntity.thisLock;
+				if (tileEntity.zPlusLock != noLock) {
+					shouldLock |= TileEntityTickRegion.lockZPlus;
+				}
 			}
 		}
+		if (tileEntity.thisLock != noLock && (onMinusX || onMinusZ || onPlusX || onPlusZ)) {
+			shouldLock |= TileEntityTickRegion.lockThis;
+		}
+		tileEntity.shouldLock = shouldLock;
 	}
 
 	public void doTick() {
