@@ -2,7 +2,6 @@ package me.nallar.patched;
 
 import me.nallar.tickthreading.patcher.Declare;
 import me.nallar.tickthreading.util.concurrent.NativeMutex;
-import me.nallar.tickthreading.util.concurrent.NotReallyAMutex;
 import net.minecraft.inventory.ICrafting;
 import net.minecraft.inventory.IInvBasic;
 import net.minecraft.inventory.IInventory;
@@ -22,23 +21,23 @@ public abstract class PatchTileEntity extends TileEntity {
 	@Declare
 	public me.nallar.tickthreading.minecraft.tickregion.TileEntityTickRegion tickRegion_;
 	@Declare
-	public java.util.concurrent.locks.Lock thisLock_;
+	public final java.util.concurrent.locks.Lock thisLock_ = null;
 	@Declare
-	public java.util.concurrent.locks.Lock xMinusLock_;
+	public volatile java.util.concurrent.locks.Lock xMinusLock_;
 	@Declare
-	public java.util.concurrent.locks.Lock zMinusLock_;
+	public volatile java.util.concurrent.locks.Lock zMinusLock_;
 	@Declare
-	public java.util.concurrent.locks.Lock xPlusLock_;
+	public volatile java.util.concurrent.locks.Lock xPlusLock_;
 	@Declare
-	public java.util.concurrent.locks.Lock zPlusLock_;
+	public volatile java.util.concurrent.locks.Lock zPlusLock_;
 	@Declare
-	public byte shouldLock_;
+	public byte usedLocks_;
 
 	public void construct() {
 		if (this instanceof IInventory || this instanceof ILiquidTank || this instanceof ICrafting || this instanceof IInvBasic || this instanceof ITankContainer) {
 			thisLock = new NativeMutex();
 		} else {
-			thisLock = NotReallyAMutex.lock;
+			thisLock = null;
 		}
 	}
 

@@ -22,7 +22,7 @@ public class PrePatcher {
 	private static final Pattern privatePattern = Pattern.compile("^(\\s+?)private", Pattern.MULTILINE);
 	private static final Pattern extendsPattern = Pattern.compile("\\s+?extends\\s+?([\\S]+)[^\\{]+?\\{", Pattern.DOTALL | Pattern.MULTILINE);
 	private static final Pattern declareMethodPattern = Pattern.compile("@Declare\\s+?(public\\s+?(\\S*?)?\\s+?(\\S*?)\\s*?\\S+?\\s*?\\([^\\{]*\\)\\s*?\\{)", Pattern.DOTALL | Pattern.MULTILINE);
-	private static final Pattern declareVariablePattern = Pattern.compile("@Declare\\s+?(public [^;\r\n]+?)_;", Pattern.DOTALL | Pattern.MULTILINE);
+	private static final Pattern declareVariablePattern = Pattern.compile("@Declare\\s+?(public [^;\r\n]+?)_( = [^;\r\n]+?)?;", Pattern.DOTALL | Pattern.MULTILINE);
 	private static final Pattern packageVariablePattern = Pattern.compile("\n    ? ?([^ ]+  ? ?[^ ]+);");
 
 	private static void recursiveSearch(File patchDirectory, File sourceDirectory, Map<File, String> patchClasses) {
@@ -106,7 +106,7 @@ public class PrePatcher {
 			Matcher variableMatcher = declareVariablePattern.matcher(contents);
 			while (variableMatcher.find()) {
 				String var = variableMatcher.group(1);
-				source.append(var).append(";\n");
+				source.append(var.replace(" final ", " ")).append(";\n");
 			}
 			source.append("\n}");
 			sourceString = source.toString();

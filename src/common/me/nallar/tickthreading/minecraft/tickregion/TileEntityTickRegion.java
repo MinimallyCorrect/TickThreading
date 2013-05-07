@@ -14,11 +14,6 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.ChunkProviderServer;
 
 public class TileEntityTickRegion extends TickRegion {
-	public static final byte lockXPlus = 1 << 1;
-	public static final byte lockXMinus = 1 << 2;
-	public static final byte lockZPlus = 1 << 3;
-	public static final byte lockZMinus = 1 << 4;
-	public static final byte lockThis = 1 << 5;
 	private final Set<TileEntity> tileEntitySet = new LinkedHashSet<TileEntity>();
 
 	public TileEntityTickRegion(World world, TickManager manager, int regionX, int regionY) {
@@ -30,8 +25,6 @@ public class TileEntityTickRegion extends TickRegion {
 		final ChunkProviderServer chunkProvider = (ChunkProviderServer) world.getChunkProvider();
 		final World world = this.world;
 		final boolean profilingEnabled = manager.profilingEnabled || this.profilingEnabled;
-		byte lock = 0;
-		boolean anyLock = false;
 		Lock thisLock = null;
 		Lock xPlusLock = null;
 		Lock xMinusLock = null;
@@ -52,6 +45,8 @@ public class TileEntityTickRegion extends TickRegion {
 		// For this reason, although we do use interfaces which correctly implement lock/unlock depending on the TileEntity,
 		// it is critical that .lock() is not called on anything other than a NativeMutex instance in this code.
 		// Behaving in this manner also allows us to avoid the overhead of calling an interface method.
+		// Volatile reads are, if used only when necessary, fast. JVM will not optimize out repeat volatile reads, happens-before on field write.
+		// Just don't read fields repeatedly unnecessary. Best not to do this with non-volatile fields anyway.
 		final Iterator<TileEntity> tileEntitiesIterator = tileEntitySet.iterator();
 		while (tileEntitiesIterator.hasNext()) {
 			if (profilingEnabled) {
@@ -60,32 +55,8 @@ public class TileEntityTickRegion extends TickRegion {
 			final TileEntity tileEntity = tileEntitiesIterator.next();
 			final int xPos = tileEntity.xCoord;
 			final int zPos = tileEntity.zCoord;
-			try {
-				if (tileEntity.lastTTX != xPos || tileEntity.lastTTY != tileEntity.yCoord || tileEntity.lastTTZ != zPos) {
-					manager.lock(tileEntity);
-				}
-				if (anyLock = (lock = tileEntity.shouldLock) != 0) {
-					if ((lock & lockXPlus) != 0) {
-						xPlusLock = tileEntity.xPlusLock;
-						xPlusLock.lock();
-					}
-					if ((lock & lockZPlus) != 0) {
-						zPlusLock = tileEntity.zPlusLock;
-						zPlusLock.lock();
-					}
-					if ((lock & lockThis) != 0) {
-						thisLock = tileEntity.thisLock;
-						thisLock.lock();
-					}
-					if ((lock & lockZMinus) != 0) {
-						zMinusLock = tileEntity.zMinusLock;
-						zMinusLock.lock();
-					}
-					if ((lock & lockXMinus) != 0) {
-						xMinusLock = tileEntity.xMinusLock;
-						xMinusLock.lock();
-					}
-				}
+			if (tileEntity.lastTTX != xPos || tileEntity.lastTTY != tileEntity.yCoord || tileEntity.lastTTZ != zPos) {
+				manager.lock(tileEntity);
 				if (manager.getHashCode(xPos, zPos) != hashCode) {
 					tileEntitiesIterator.remove();
 					manager.add(tileEntity, false);
@@ -95,7 +66,31 @@ public class TileEntityTickRegion extends TickRegion {
 								+ "\n Region: " + toString()
 								+ "\n World: " + Log.name(tileEntity.worldObj));
 					}
-				} else if (tileEntity.isInvalid()) {
+				}
+				continue;
+			}
+			try {
+				xPlusLock = tileEntity.xPlusLock;
+				zPlusLock = tileEntity.zPlusLock;
+				thisLock = tileEntity.thisLock;
+				xMinusLock = tileEntity.xMinusLock;
+				zMinusLock = tileEntity.zMinusLock;
+				if (xPlusLock != null) {
+					xPlusLock.lock();
+				}
+				if (zPlusLock != null) {
+					zPlusLock.lock();
+				}
+				if (thisLock != null) {
+					thisLock.lock();
+				}
+				if (zMinusLock != null) {
+					zMinusLock.lock();
+				}
+				if (xMinusLock != null) {
+					xMinusLock.lock();
+				}
+				if (tileEntity.isInvalid()) {
 					tileEntitiesIterator.remove();
 					manager.removed(tileEntity);
 					//Log.fine("Removed tile entity: " + xPos + ", " + tileEntity.yCoord + ", " + zPos + "\ttype:" + tileEntity.getClass().toString());
@@ -112,23 +107,22 @@ public class TileEntityTickRegion extends TickRegion {
 				Log.severe("Exception ticking TileEntity " + Log.toString(tileEntity) + " at x,y,z:" + xPos + ',' + tileEntity.yCoord + ',' + zPos
 						+ "\n World: " + Log.name(tileEntity.worldObj), throwable);
 			} finally {
-				if (anyLock) {
-					if ((lock & lockXMinus) != 0) {
-						xMinusLock.unlock();
-					}
-					if ((lock & lockZMinus) != 0) {
-						zMinusLock.unlock();
-					}
-					if ((lock & lockThis) != 0) {
-						thisLock.unlock();
-					}
-					if ((lock & lockZPlus) != 0) {
-						zPlusLock.unlock();
-					}
-					if ((lock & lockXPlus) != 0) {
-						xPlusLock.unlock();
-					}
+				if (xMinusLock != null) {
+					xMinusLock.unlock();
 				}
+				if (zMinusLock != null) {
+					zMinusLock.unlock();
+				}
+				if (thisLock != null) {
+					thisLock.unlock();
+				}
+				if (zPlusLock != null) {
+					zPlusLock.unlock();
+				}
+				if (xPlusLock != null) {
+					xPlusLock.unlock();
+				}
+
 				if (profilingEnabled) {
 					entityTickProfiler.record(tileEntity, System.nanoTime() - startTime);
 				}

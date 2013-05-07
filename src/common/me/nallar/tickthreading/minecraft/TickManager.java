@@ -20,7 +20,6 @@ import me.nallar.tickthreading.minecraft.tickregion.EntityTickRegion;
 import me.nallar.tickthreading.minecraft.tickregion.TickRegion;
 import me.nallar.tickthreading.minecraft.tickregion.TileEntityTickRegion;
 import me.nallar.tickthreading.util.TableFormatter;
-import me.nallar.tickthreading.util.concurrent.NotReallyAMutex;
 import me.nallar.unsafe.UnsafeUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -32,6 +31,10 @@ import net.minecraft.world.gen.ChunkProviderServer;
 import org.omg.CORBA.IntHolder;
 
 public final class TickManager {
+	private static final byte lockXPlus = 1 << 1;
+	private static final byte lockXMinus = 1 << 2;
+	private static final byte lockZPlus = 1 << 3;
+	private static final byte lockZMinus = 1 << 4;
 	public final int regionSize;
 	public boolean variableTickRate;
 	public boolean profilingEnabled = false;
@@ -290,114 +293,139 @@ public final class TickManager {
 	}
 
 	public void unlock(TileEntity tileEntity) {
-		int xPos = tileEntity.lastTTX;
-		int yPos = tileEntity.lastTTY;
-		int zPos = tileEntity.lastTTZ;
-		tileEntity.shouldLock = 0;
-		if (tileEntity.xMinusLock != null) {
-			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos - 1, yPos, zPos);
-			if (lockTileEntity != null) {
-				lockTileEntity.shouldLock &= ~TileEntityTickRegion.lockXPlus;
-				lockTileEntity.xPlusLock = tileEntity.xMinusLock = null;
+		synchronized (tileEntity) {
+			int xPos = tileEntity.lastTTX;
+			int yPos = tileEntity.lastTTY;
+			int zPos = tileEntity.lastTTZ;
+			byte locks = tileEntity.usedLocks;
+			if ((locks & lockXMinus) != 0) {
+				tileEntity.xMinusLock = null;
+				TileEntity lockTileEntity = world.getTEWithoutLoad(xPos - 1, yPos, zPos);
+				if (lockTileEntity != null) {
+					synchronized (lockTileEntity) {
+						lockTileEntity.usedLocks &= ~lockXPlus;
+						lockTileEntity.xPlusLock = null;
+					}
+				}
 			}
-		}
-		if (tileEntity.xPlusLock != null) {
-			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos + 1, yPos, zPos);
-			if (lockTileEntity != null) {
-				lockTileEntity.shouldLock &= ~TileEntityTickRegion.lockXMinus;
-				lockTileEntity.xMinusLock = tileEntity.xPlusLock = null;
+			if ((locks & lockXPlus) != 0) {
+				tileEntity.xPlusLock = null;
+				TileEntity lockTileEntity = world.getTEWithoutLoad(xPos + 1, yPos, zPos);
+				if (lockTileEntity != null) {
+					synchronized (lockTileEntity) {
+						lockTileEntity.usedLocks &= ~lockXMinus;
+						lockTileEntity.xMinusLock = null;
+					}
+				}
 			}
-		}
-		if (tileEntity.zMinusLock != null) {
-			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos, yPos, zPos - 1);
-			if (lockTileEntity != null) {
-				lockTileEntity.shouldLock &= ~TileEntityTickRegion.lockZPlus;
-				lockTileEntity.zPlusLock = tileEntity.zMinusLock = null;
+			if ((locks & lockZMinus) != 0) {
+				tileEntity.zMinusLock = null;
+				TileEntity lockTileEntity = world.getTEWithoutLoad(xPos, yPos, zPos - 1);
+				if (lockTileEntity != null) {
+					synchronized (lockTileEntity) {
+						lockTileEntity.usedLocks &= ~lockZPlus;
+						lockTileEntity.zPlusLock = null;
+					}
+				}
 			}
-		}
-		if (tileEntity.zPlusLock != null) {
-			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos, yPos, zPos + 1);
-			if (lockTileEntity != null) {
-				lockTileEntity.shouldLock &= ~TileEntityTickRegion.lockZMinus;
-				lockTileEntity.zMinusLock = tileEntity.zPlusLock = null;
+			if ((locks & lockZPlus) != 0) {
+				tileEntity.zPlusLock = null;
+				TileEntity lockTileEntity = world.getTEWithoutLoad(xPos, yPos, zPos + 1);
+				if (lockTileEntity != null) {
+					synchronized (lockTileEntity) {
+						lockTileEntity.usedLocks &= ~lockZMinus;
+						lockTileEntity.zMinusLock = null;
+					}
+				}
 			}
+			tileEntity.usedLocks = 0;
 		}
 	}
 
 	public final void lock(TileEntity tileEntity) {
-		unlock(tileEntity);
-		int maxPosition = (regionSize / 2) - 1;
-		int xPos = tileEntity.xCoord;
-		int yPos = tileEntity.yCoord;
-		int zPos = tileEntity.zCoord;
-		tileEntity.lastTTX = xPos;
-		tileEntity.lastTTY = yPos;
-		tileEntity.lastTTZ = zPos;
-		int relativeXPos = (xPos % regionSize) / 2;
-		int relativeZPos = (zPos % regionSize) / 2;
-		boolean onMinusX = relativeXPos == 0;
-		boolean onMinusZ = relativeZPos == 0;
-		boolean onPlusX = relativeXPos == maxPosition;
-		boolean onPlusZ = relativeZPos == maxPosition;
-		byte shouldLock = 0;
-		Lock noLock = NotReallyAMutex.lock;
-		boolean realLock = tileEntity.thisLock != noLock;
-		if (onMinusX || onMinusZ || onPlusZ) { // minus X needs locked
-			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos - 1, yPos, zPos);
-			if (lockTileEntity != null) {
-				tileEntity.xMinusLock = lockTileEntity.thisLock;
-				lockTileEntity.xPlusLock = tileEntity.thisLock;
-				if (tileEntity.xMinusLock != noLock) {
-					shouldLock |= TileEntityTickRegion.lockXMinus;
-				}
-				if (realLock) {
-					lockTileEntity.shouldLock |= TileEntityTickRegion.lockXPlus;
-				}
-			}
-		}
-		if (onPlusX || onMinusZ || onPlusZ) { // plus X needs locked
-			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos + 1, yPos, zPos);
-			if (lockTileEntity != null) {
-				tileEntity.xPlusLock = lockTileEntity.thisLock;
-				lockTileEntity.xMinusLock = tileEntity.thisLock;
-				if (tileEntity.xPlusLock != noLock) {
-					shouldLock |= TileEntityTickRegion.lockXPlus;
-				}
-				if (realLock) {
-					lockTileEntity.shouldLock |= TileEntityTickRegion.lockXMinus;
+		synchronized (tileEntity) {
+			unlock(tileEntity);
+			int maxPosition = (regionSize / 2) - 1;
+			int xPos = tileEntity.xCoord;
+			int yPos = tileEntity.yCoord;
+			int zPos = tileEntity.zCoord;
+			tileEntity.lastTTX = xPos;
+			tileEntity.lastTTY = yPos;
+			tileEntity.lastTTZ = zPos;
+			int relativeXPos = (xPos % regionSize) / 2;
+			int relativeZPos = (zPos % regionSize) / 2;
+			boolean onMinusX = relativeXPos == 0;
+			boolean onMinusZ = relativeZPos == 0;
+			boolean onPlusX = relativeXPos == maxPosition;
+			boolean onPlusZ = relativeZPos == maxPosition;
+			byte usedLocks = 0;
+			Lock thisLock = tileEntity.thisLock;
+			if (onMinusX || onMinusZ || onPlusZ) { // minus X needs locked
+				TileEntity lockTileEntity = world.getTEWithoutLoad(xPos - 1, yPos, zPos);
+				if (lockTileEntity != null) {
+					synchronized (lockTileEntity) {
+						Lock otherLock = lockTileEntity.thisLock;
+						tileEntity.xMinusLock = otherLock;
+						if (otherLock != null) {
+							usedLocks |= lockXMinus;
+						}
+						lockTileEntity.xPlusLock = thisLock;
+						if (thisLock != null) {
+							lockTileEntity.usedLocks |= lockXPlus;
+						}
+					}
 				}
 			}
-		}
-		if (onMinusZ || onMinusX || onPlusX) { // minus Z needs locked
-			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos, yPos, zPos - 1);
-			if (lockTileEntity != null) {
-				tileEntity.zMinusLock = lockTileEntity.thisLock;
-				lockTileEntity.zPlusLock = tileEntity.thisLock;
-				if (tileEntity.zMinusLock != noLock) {
-					shouldLock |= TileEntityTickRegion.lockZMinus;
-				}
-				if (realLock) {
-					lockTileEntity.shouldLock |= TileEntityTickRegion.lockZPlus;
-				}
-			}
-		}
-		if (onPlusZ || onMinusX || onPlusX) { // plus Z needs locked
-			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos, yPos, zPos + 1);
-			if (lockTileEntity != null) {
-				tileEntity.zPlusLock = lockTileEntity.thisLock;
-				lockTileEntity.zMinusLock = tileEntity.thisLock;
-				if (tileEntity.zPlusLock != noLock) {
-					shouldLock |= TileEntityTickRegion.lockZPlus;
-				}
-				if (realLock) {
-					lockTileEntity.shouldLock |= TileEntityTickRegion.lockZMinus;
+			if (onPlusX || onMinusZ || onPlusZ) { // plus X needs locked
+				TileEntity lockTileEntity = world.getTEWithoutLoad(xPos + 1, yPos, zPos);
+				if (lockTileEntity != null) {
+					synchronized (lockTileEntity) {
+						Lock otherLock = lockTileEntity.thisLock;
+						tileEntity.xPlusLock = otherLock;
+						if (otherLock != null) {
+							usedLocks |= lockXPlus;
+						}
+						lockTileEntity.xMinusLock = thisLock;
+						if (thisLock != null) {
+							lockTileEntity.usedLocks |= lockXMinus;
+						}
+					}
 				}
 			}
+			if (onMinusZ || onMinusX || onPlusX) { // minus Z needs locked
+				TileEntity lockTileEntity = world.getTEWithoutLoad(xPos, yPos, zPos - 1);
+				if (lockTileEntity != null) {
+					synchronized (lockTileEntity) {
+						Lock otherLock = lockTileEntity.thisLock;
+						tileEntity.zMinusLock = otherLock;
+						if (otherLock != null) {
+							usedLocks |= lockZMinus;
+						}
+						lockTileEntity.zPlusLock = thisLock;
+						if (thisLock != null) {
+							lockTileEntity.usedLocks |= lockZPlus;
+						}
+					}
+				}
+			}
+			if (onPlusZ || onMinusX || onPlusX) { // plus Z needs locked
+				TileEntity lockTileEntity = world.getTEWithoutLoad(xPos, yPos, zPos + 1);
+				if (lockTileEntity != null) {
+					synchronized (lockTileEntity) {
+						Lock otherLock = lockTileEntity.thisLock;
+						tileEntity.zPlusLock = otherLock;
+						if (otherLock != null) {
+							usedLocks |= lockZPlus;
+						}
+						lockTileEntity.zMinusLock = thisLock;
+						if (thisLock != null) {
+							lockTileEntity.usedLocks |= lockZMinus;
+						}
+					}
+				}
+			}
+			tileEntity.usedLocks = usedLocks;
 		}
-		if (realLock && (onMinusX || onMinusZ || onPlusX || onPlusZ)) {
-			shouldLock |= TileEntityTickRegion.lockThis;
-		}
-		tileEntity.shouldLock = shouldLock;
 	}
 
 	public void doTick() {
