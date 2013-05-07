@@ -361,6 +361,7 @@
 			<insertBefore code="inPlaceEvent = new me.nallar.tickthreading.util.BooleanThreadLocal();"/>
 			<final field="callingPlaceEvent"/>
 			<threadLocalBoolean field="callingPlaceEvent" threadLocalField="$0.inPlaceEvent"/>
+			<disable>loadChunkOnProvideBegin,loadChunkOnProvideEnd</disable>
 		</class>
 		<class id="net.minecraft.world.chunk.Chunk" env="mcpc">
 			<threadLocalBoolean field="callingPlaceEvent" threadLocalField="$0.inPlaceEvent"/>
