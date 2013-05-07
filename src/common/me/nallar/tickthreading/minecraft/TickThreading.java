@@ -73,7 +73,6 @@ public class TickThreading {
 	public boolean antiCheatKick = false;
 	public boolean antiCheatNotify = true;
 	public boolean cleanWorlds = true;
-	public boolean lockRegionBorders = true;
 	public boolean allowWorldUnloading = true;
 	public boolean requireOpForDumpCommand = true;
 	public boolean enableFastMobSpawning = true;
@@ -153,7 +152,6 @@ public class TickThreading {
 		antiCheatNotify = config.get(GENERAL, "antiCheatNotify", antiCheatNotify, "Whether to notify admins if TT anti-cheat detects cheating").getBoolean(antiCheatNotify);
 		cleanWorlds = config.get(GENERAL, "cleanWorlds", cleanWorlds, "Whether to clean worlds on unload - this should fix some memory leaks due to mods holding on to world objects").getBoolean(cleanWorlds);
 		allowWorldUnloading = config.get(GENERAL, "allowWorldUnloading", allowWorldUnloading, "Whether worlds should be allowed to unload.").getBoolean(allowWorldUnloading);
-		lockRegionBorders = config.get(GENERAL, "lockRegionBorders", lockRegionBorders, "Whether to prevent blocks next to each other on region borders from ticking concurrently. false = faster but experimental").getBoolean(lockRegionBorders);
 		enableBugWarningMessage = config.get(GENERAL, "enableBugWarningMessage", enableBugWarningMessage, "Whether to enable warning if there are severe known compatibility issues with the current TT build you are using and your installed mods. Highly recommend leaving this enabled, if you disable it chances are you'll get users experiencing these issues annoying mod authors, which I really don't want to happen.").getBoolean(enableBugWarningMessage);
 		config.save();
 		int[] disabledDimensions = config.get(GENERAL, "disableFastMobSpawningDimensions", new int[]{-1}, "List of dimensions not to enable fast spawning in.").getIntList();
