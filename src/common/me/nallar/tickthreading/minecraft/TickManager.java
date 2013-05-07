@@ -52,7 +52,6 @@ public final class TickManager {
 	private final ConcurrentIterableArrayList<TickRegion> tickRegions = new ConcurrentIterableArrayList<TickRegion>();
 	private final ThreadManager threadManager;
 	private final Map<Class<?>, Integer> entityClassToCountMap = new HashMap<Class<?>, Integer>();
-	private final boolean lock = TickThreading.instance.lockRegionBorders;
 
 	public TickManager(WorldServer world, int regionSize, int threads, boolean waitForCompletion) {
 		this.waitForCompletion = waitForCompletion;
@@ -239,9 +238,7 @@ public final class TickManager {
 				tileEntity.tickRegion = null;
 				tileEntity.onChunkUnload();
 			}
-			if (lock) {
-				unlock(tileEntity);
-			}
+			unlock(tileEntity);
 		}
 		synchronized (tileEntityLock) {
 			tileEntityList.removeAll(tileEntities);
@@ -271,9 +268,7 @@ public final class TickManager {
 		synchronized (tileEntityLock) {
 			tileEntityList.remove(tileEntity);
 		}
-		if (lock) {
-			unlock(tileEntity);
-		}
+		unlock(tileEntity);
 	}
 
 	public void removed(Entity entity) {
