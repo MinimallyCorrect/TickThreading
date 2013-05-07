@@ -31,7 +31,7 @@ public class LeakDetector {
 				LeakCheckEntry leakCheckEntry = scheduledObjects.remove(id);
 				Object o = leakCheckEntry.o.get();
 				if (o == null) {
-					Log.info("Object " + leakCheckEntry.description + " has been removed normally. :)");
+					Log.fine("Object " + leakCheckEntry.description + " has been removed normally. :)");
 				} else {
 					Log.warning("Probable memory leak detected. \"" + leakCheckEntry.description + "\" has not been garbage collected after " + waitTime / 1000 + "s.");
 				}
