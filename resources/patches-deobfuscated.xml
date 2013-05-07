@@ -341,7 +341,7 @@
 		<class id="net.minecraft.block.BlockFlowing">
 			<!-- TODO: Make this cleaner once it's possible to access method parameters while replacing a MethodCall expression -->
 			<replaceMethodCall
-							code="if (((org.bukkit.craftbukkit.v1_4_R1.CraftWorld) ((org.bukkit.event.block.BlockEvent) $1).getBlock().getWorld()).getHandle().worldGenInProgress.get() == Boolean.FALSE) { $0.callEvent($$); }"
+							code="if (((org.bukkit.craftbukkit.v1_4_R1.CraftWorld) ((org.bukkit.event.block.BlockEvent) $1).getBlock().getWorld()).getHandle().safeToGenerate()) { $0.callEvent($$); }"
 							method="callEvent">updateTick
 			</replaceMethodCall>
 		</class>

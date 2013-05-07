@@ -614,4 +614,9 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 			}
 		}
 	}
+
+
+	public boolean safeToGenerate() {
+		return theChunkProviderServer.safeToGenerate();
+	}
 }

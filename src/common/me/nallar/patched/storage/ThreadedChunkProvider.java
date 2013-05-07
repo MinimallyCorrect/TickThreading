@@ -286,6 +286,12 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	}
 
 	@Override
+	@Declare
+	public boolean safeToGenerate() {
+		return worldGenInProgress.get() == Boolean.FALSE && !Thread.holdsLock(generateLock);
+	}
+
+	@Override
 	public boolean chunkExists(int x, int z) {
 		long key = key(x, z);
 		return chunks.containsItem(key) || (worldGenInProgress.get() == Boolean.TRUE && (loadingChunks.containsItem(key) || (inUnload.get() == Boolean.TRUE && unloadingChunks.containsItem(key))));
@@ -461,7 +467,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	@SuppressWarnings ("ConstantConditions")
 	private Chunk getChunkAtInternal(final int x, final int z, boolean allowGenerate, boolean regenerate) {
-		if (worldGenInProgress.get() == Boolean.TRUE || Thread.holdsLock(generateLock)) {
+		if (!safeToGenerate()) {
 			return defaultEmptyChunk;
 		}
 
