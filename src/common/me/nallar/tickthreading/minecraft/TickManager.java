@@ -297,24 +297,28 @@ public final class TickManager {
 		if (tileEntity.xMinusLock != null) {
 			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos - 1, yPos, zPos);
 			if (lockTileEntity != null) {
+				lockTileEntity.shouldLock &= ~TileEntityTickRegion.lockXPlus;
 				lockTileEntity.xPlusLock = tileEntity.xMinusLock = null;
 			}
 		}
 		if (tileEntity.xPlusLock != null) {
 			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos + 1, yPos, zPos);
 			if (lockTileEntity != null) {
+				lockTileEntity.shouldLock &= ~TileEntityTickRegion.lockXMinus;
 				lockTileEntity.xMinusLock = tileEntity.xPlusLock = null;
 			}
 		}
 		if (tileEntity.zMinusLock != null) {
 			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos, yPos, zPos - 1);
 			if (lockTileEntity != null) {
+				lockTileEntity.shouldLock &= ~TileEntityTickRegion.lockZPlus;
 				lockTileEntity.zPlusLock = tileEntity.zMinusLock = null;
 			}
 		}
 		if (tileEntity.zPlusLock != null) {
 			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos, yPos, zPos + 1);
 			if (lockTileEntity != null) {
+				lockTileEntity.shouldLock &= ~TileEntityTickRegion.lockZMinus;
 				lockTileEntity.zMinusLock = tileEntity.zPlusLock = null;
 			}
 		}
@@ -337,6 +341,7 @@ public final class TickManager {
 		boolean onPlusZ = relativeZPos == maxPosition;
 		byte shouldLock = 0;
 		Lock noLock = NotReallyAMutex.lock;
+		boolean realLock = tileEntity.thisLock != noLock;
 		if (onMinusX || onMinusZ || onPlusZ) { // minus X needs locked
 			TileEntity lockTileEntity = world.getTEWithoutLoad(xPos - 1, yPos, zPos);
 			if (lockTileEntity != null) {
@@ -344,6 +349,9 @@ public final class TickManager {
 				lockTileEntity.xPlusLock = tileEntity.thisLock;
 				if (tileEntity.xMinusLock != noLock) {
 					shouldLock |= TileEntityTickRegion.lockXMinus;
+				}
+				if (realLock) {
+					lockTileEntity.shouldLock |= TileEntityTickRegion.lockXPlus;
 				}
 			}
 		}
@@ -355,6 +363,9 @@ public final class TickManager {
 				if (tileEntity.xPlusLock != noLock) {
 					shouldLock |= TileEntityTickRegion.lockXPlus;
 				}
+				if (realLock) {
+					lockTileEntity.shouldLock |= TileEntityTickRegion.lockXMinus;
+				}
 			}
 		}
 		if (onMinusZ || onMinusX || onPlusX) { // minus Z needs locked
@@ -364,6 +375,9 @@ public final class TickManager {
 				lockTileEntity.zPlusLock = tileEntity.thisLock;
 				if (tileEntity.zMinusLock != noLock) {
 					shouldLock |= TileEntityTickRegion.lockZMinus;
+				}
+				if (realLock) {
+					lockTileEntity.shouldLock |= TileEntityTickRegion.lockZPlus;
 				}
 			}
 		}
@@ -375,9 +389,12 @@ public final class TickManager {
 				if (tileEntity.zPlusLock != noLock) {
 					shouldLock |= TileEntityTickRegion.lockZPlus;
 				}
+				if (realLock) {
+					lockTileEntity.shouldLock |= TileEntityTickRegion.lockZMinus;
+				}
 			}
 		}
-		if (tileEntity.thisLock != noLock && (onMinusX || onMinusZ || onPlusX || onPlusZ)) {
+		if (realLock && (onMinusX || onMinusZ || onPlusX || onPlusZ)) {
 			shouldLock |= TileEntityTickRegion.lockThis;
 		}
 		tileEntity.shouldLock = shouldLock;
