@@ -10,6 +10,7 @@ import java.util.Set;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.block.Block;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.player.EntityPlayer;
@@ -34,6 +35,12 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 	private static final int clumping = 4;
 	private static int surfaceChance;
 	private static int gapChance;
+
+	// Spigot compatibility
+	@SuppressWarnings ("UnusedDeclaration")
+	public static int getEntityCount(WorldServer server, Class oClass) {
+		return server.countEntities(oClass);
+	}
 
 	private static int getPseudoRandomHeightValue(int wX, int wZ, WorldServer worldServer, boolean surface, int gapChance) {
 		Chunk chunk = worldServer.getChunkIfExists(wX >> 4, wZ >> 4);
