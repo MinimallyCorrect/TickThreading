@@ -18,7 +18,7 @@ public class LeakDetector {
 		waitTime = waitTimeSeconds * 1000;
 	}
 
-	public void scheduleLeakCheck(Object o, String oDescription_, boolean clean) {
+	public void scheduleLeakCheck(Object o, String oDescription_, final boolean clean) {
 		if (clean) {
 			timer.schedule(new CleanerTask(o), Math.min(waitTime / 2, 60000));
 		}
@@ -33,7 +33,12 @@ public class LeakDetector {
 				if (o == null) {
 					Log.fine("Object " + leakCheckEntry.description + " has been removed normally.");
 				} else {
-					Log.warning("Probable memory leak detected. \"" + leakCheckEntry.description + "\" has not been garbage collected after " + waitTime / 1000 + "s.");
+					String warning = "Probable memory leak detected. \"" + leakCheckEntry.description + "\" has not been garbage collected after " + waitTime / 1000 + "s.";
+					if (clean) {
+						Log.fine(warning);
+					} else {
+						Log.warning(warning);
+					}
 				}
 			}
 		}, waitTime);
