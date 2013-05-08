@@ -21,6 +21,8 @@ public abstract class PatchTileEntity extends TileEntity {
 	@Declare
 	public me.nallar.tickthreading.minecraft.tickregion.TileEntityTickRegion tickRegion_;
 	@Declare
+	public final java.util.concurrent.locks.Lock lockManagementLock_ = null;
+	@Declare
 	public final java.util.concurrent.locks.Lock thisLock_ = null;
 	@Declare
 	public volatile java.util.concurrent.locks.Lock xMinusLock_;
@@ -34,6 +36,7 @@ public abstract class PatchTileEntity extends TileEntity {
 	public byte usedLocks_;
 
 	public void construct() {
+		lockManagementLock = new NativeMutex();
 		if (this instanceof IInventory || this instanceof ILiquidTank || this instanceof ICrafting || this instanceof IInvBasic || this instanceof ITankContainer) {
 			thisLock = new NativeMutex();
 		} else {

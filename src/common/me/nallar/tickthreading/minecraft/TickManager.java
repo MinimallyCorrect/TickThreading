@@ -292,139 +292,210 @@ public final class TickManager {
 		}
 	}
 
-	void unlock(TileEntity tileEntity) {
-		synchronized (tileEntity) {
-			int xPos = tileEntity.lastTTX;
-			int yPos = tileEntity.lastTTY;
-			int zPos = tileEntity.lastTTZ;
-			byte locks = tileEntity.usedLocks;
-			if ((locks & lockXMinus) != 0) {
-				tileEntity.xMinusLock = null;
-				TileEntity lockTileEntity = world.getTEWithoutLoad(xPos - 1, yPos, zPos);
-				if (lockTileEntity != null) {
-					synchronized (lockTileEntity) {
-						lockTileEntity.usedLocks &= ~lockXPlus;
-						lockTileEntity.xPlusLock = null;
-					}
-				}
-			}
-			if ((locks & lockXPlus) != 0) {
-				tileEntity.xPlusLock = null;
-				TileEntity lockTileEntity = world.getTEWithoutLoad(xPos + 1, yPos, zPos);
-				if (lockTileEntity != null) {
-					synchronized (lockTileEntity) {
-						lockTileEntity.usedLocks &= ~lockXMinus;
-						lockTileEntity.xMinusLock = null;
-					}
-				}
-			}
-			if ((locks & lockZMinus) != 0) {
-				tileEntity.zMinusLock = null;
-				TileEntity lockTileEntity = world.getTEWithoutLoad(xPos, yPos, zPos - 1);
-				if (lockTileEntity != null) {
-					synchronized (lockTileEntity) {
-						lockTileEntity.usedLocks &= ~lockZPlus;
-						lockTileEntity.zPlusLock = null;
-					}
-				}
-			}
-			if ((locks & lockZPlus) != 0) {
-				tileEntity.zPlusLock = null;
-				TileEntity lockTileEntity = world.getTEWithoutLoad(xPos, yPos, zPos + 1);
-				if (lockTileEntity != null) {
-					synchronized (lockTileEntity) {
-						lockTileEntity.usedLocks &= ~lockZMinus;
-						lockTileEntity.zMinusLock = null;
-					}
-				}
-			}
-			tileEntity.usedLocks = 0;
+	/* Oh, Java.
+	Explicit MONITORENTER/EXIT should really be part of the language, there are just some cases like this where synchronized blocks get too messy,
+	and performance is bad if using other locks.
+	.lock/unlock calls here are replaced with MONITORENTER/EXIT.
+	 */
+	void unlock(TileEntity tE) {
+		Lock lock = tE.lockManagementLock;
+		lock.lock();
+		byte locks = tE.usedLocks;
+		tE.xPlusLock = null;
+		tE.xMinusLock = null;
+		tE.zPlusLock = null;
+		tE.zMinusLock = null;
+		tE.usedLocks = 0;
+		if (tE.thisLock == null) {
+			lock.unlock();
+			return;
+		}
+		int xPos = tE.lastTTX;
+		int yPos = tE.lastTTY;
+		int zPos = tE.lastTTZ;
+		boolean xM = ((locks & lockXMinus) != 0) || tE.xMinusLock != null;
+		boolean xP = ((locks & lockXPlus) != 0) || tE.xPlusLock != null;
+		boolean zM = ((locks & lockZMinus) != 0) || tE.zMinusLock != null;
+		boolean zP = ((locks & lockZPlus) != 0) || tE.zPlusLock != null;
+		TileEntity xMTE = xM ? world.getTEWithoutLoad(xPos - 1, yPos, zPos) : null;
+		TileEntity xPTE = xP ? world.getTEWithoutLoad(xPos + 1, yPos, zPos) : null;
+		TileEntity zMTE = zM ? world.getTEWithoutLoad(xPos, yPos, zPos - 1) : null;
+		TileEntity zPTE = zP ? world.getTEWithoutLoad(xPos, yPos, zPos + 1) : null;
+		if (xMTE == null) {
+			xM = false;
+		}
+		if (xPTE == null) {
+			xP = false;
+		}
+		if (zMTE == null) {
+			zM = false;
+		}
+		if (zPTE == null) {
+			zP = false;
+		}
+		lock.unlock();
+		if (xM) {
+			xMTE.lockManagementLock.lock();
+		}
+		if (xP) {
+			xPTE.lockManagementLock.lock();
+		}
+		lock.lock();
+		if (zM) {
+			zMTE.lockManagementLock.lock();
+		}
+		if (zP) {
+			zPTE.lockManagementLock.lock();
+		}
+
+		if (xM) {
+			xMTE.usedLocks &= ~lockXPlus;
+			xMTE.xPlusLock = null;
+		}
+		if (xP) {
+			xPTE.usedLocks &= ~lockXMinus;
+			xPTE.xMinusLock = null;
+		}
+		if (zM) {
+			zMTE.usedLocks &= ~lockZPlus;
+			zMTE.zPlusLock = null;
+		}
+		if (zP) {
+			zPTE.usedLocks &= ~lockZMinus;
+			zPTE.zMinusLock = null;
+		}
+
+		if (zP) {
+			zPTE.lockManagementLock.unlock();
+		}
+		if (zM) {
+			zMTE.lockManagementLock.unlock();
+		}
+		lock.unlock();
+		if (xP) {
+			xPTE.lockManagementLock.unlock();
+		}
+		if (xM) {
+			xMTE.lockManagementLock.unlock();
 		}
 	}
 
-	public final void lock(TileEntity tileEntity) {
-		synchronized (tileEntity) {
-			unlock(tileEntity);
-			int maxPosition = (regionSize / 2) - 1;
-			int xPos = tileEntity.xCoord;
-			int yPos = tileEntity.yCoord;
-			int zPos = tileEntity.zCoord;
-			tileEntity.lastTTX = xPos;
-			tileEntity.lastTTY = yPos;
-			tileEntity.lastTTZ = zPos;
-			int relativeXPos = (xPos % regionSize) / 2;
-			int relativeZPos = (zPos % regionSize) / 2;
-			boolean onMinusX = relativeXPos == 0;
-			boolean onMinusZ = relativeZPos == 0;
-			boolean onPlusX = relativeXPos == maxPosition;
-			boolean onPlusZ = relativeZPos == maxPosition;
-			byte usedLocks = 0;
-			Lock thisLock = tileEntity.thisLock;
-			if (onMinusX || onMinusZ || onPlusZ) { // minus X needs locked
-				TileEntity lockTileEntity = world.getTEWithoutLoad(xPos - 1, yPos, zPos);
-				if (lockTileEntity != null) {
-					synchronized (lockTileEntity) {
-						Lock otherLock = lockTileEntity.thisLock;
-						tileEntity.xMinusLock = otherLock;
-						if (otherLock != null) {
-							usedLocks |= lockXMinus;
-						}
-						lockTileEntity.xPlusLock = thisLock;
-						if (thisLock != null) {
-							lockTileEntity.usedLocks |= lockXPlus;
-						}
-					}
-				}
+	/*
+	 .lock/unlock calls here are replaced with MONITORENTER/EXIT.
+	*/
+	public final void lock(TileEntity tE) {
+		Lock thisLock = tE.thisLock;
+		unlock(tE);
+		Lock lock = tE.lockManagementLock;
+		lock.lock();
+		int maxPosition = (regionSize / 2) - 1;
+		int xPos = tE.xCoord;
+		int yPos = tE.yCoord;
+		int zPos = tE.zCoord;
+		tE.lastTTX = xPos;
+		tE.lastTTY = yPos;
+		tE.lastTTZ = zPos;
+		int relativeXPos = (xPos % regionSize) / 2;
+		int relativeZPos = (zPos % regionSize) / 2;
+		boolean onMinusX = relativeXPos == 0;
+		boolean onMinusZ = relativeZPos == 0;
+		boolean onPlusX = relativeXPos == maxPosition;
+		boolean onPlusZ = relativeZPos == maxPosition;
+		boolean xM = onMinusX || onMinusZ || onPlusZ;
+		boolean xP = onPlusX || onMinusZ || onPlusZ;
+		boolean zM = onMinusZ || onMinusX || onPlusX;
+		boolean zP = onPlusZ || onMinusX || onPlusX;
+		TileEntity xMTE = xM ? world.getTEWithoutLoad(xPos - 1, yPos, zPos) : null;
+		TileEntity xPTE = xP ? world.getTEWithoutLoad(xPos + 1, yPos, zPos) : null;
+		TileEntity zMTE = zM ? world.getTEWithoutLoad(xPos, yPos, zPos - 1) : null;
+		TileEntity zPTE = zP ? world.getTEWithoutLoad(xPos, yPos, zPos + 1) : null;
+		if (xMTE == null) {
+			xM = false;
+		}
+		if (xPTE == null) {
+			xP = false;
+		}
+		if (zMTE == null) {
+			zM = false;
+		}
+		if (zPTE == null) {
+			zP = false;
+		}
+		lock.unlock();
+		if (xM) {
+			xMTE.lockManagementLock.lock();
+		}
+		if (xP) {
+			xPTE.lockManagementLock.lock();
+		}
+		lock.lock();
+		if (zM) {
+			zMTE.lockManagementLock.lock();
+		}
+		if (zP) {
+			zPTE.lockManagementLock.lock();
+		}
+
+		byte usedLocks = tE.usedLocks;
+
+		if (xM) {
+			Lock otherLock = xMTE.thisLock;
+			if (otherLock != null) {
+				xMTE.usedLocks |= lockXPlus;
+				tE.xMinusLock = otherLock;
 			}
-			if (onPlusX || onMinusZ || onPlusZ) { // plus X needs locked
-				TileEntity lockTileEntity = world.getTEWithoutLoad(xPos + 1, yPos, zPos);
-				if (lockTileEntity != null) {
-					synchronized (lockTileEntity) {
-						Lock otherLock = lockTileEntity.thisLock;
-						tileEntity.xPlusLock = otherLock;
-						if (otherLock != null) {
-							usedLocks |= lockXPlus;
-						}
-						lockTileEntity.xMinusLock = thisLock;
-						if (thisLock != null) {
-							lockTileEntity.usedLocks |= lockXMinus;
-						}
-					}
-				}
+			if (thisLock != null) {
+				usedLocks |= lockXMinus;
+				xMTE.xPlusLock = thisLock;
 			}
-			if (onMinusZ || onMinusX || onPlusX) { // minus Z needs locked
-				TileEntity lockTileEntity = world.getTEWithoutLoad(xPos, yPos, zPos - 1);
-				if (lockTileEntity != null) {
-					synchronized (lockTileEntity) {
-						Lock otherLock = lockTileEntity.thisLock;
-						tileEntity.zMinusLock = otherLock;
-						if (otherLock != null) {
-							usedLocks |= lockZMinus;
-						}
-						lockTileEntity.zPlusLock = thisLock;
-						if (thisLock != null) {
-							lockTileEntity.usedLocks |= lockZPlus;
-						}
-					}
-				}
+		}
+		if (xP) {
+			Lock otherLock = xPTE.thisLock;
+			if (otherLock != null) {
+				xPTE.usedLocks |= lockXMinus;
+				tE.xPlusLock = otherLock;
 			}
-			if (onPlusZ || onMinusX || onPlusX) { // plus Z needs locked
-				TileEntity lockTileEntity = world.getTEWithoutLoad(xPos, yPos, zPos + 1);
-				if (lockTileEntity != null) {
-					synchronized (lockTileEntity) {
-						Lock otherLock = lockTileEntity.thisLock;
-						tileEntity.zPlusLock = otherLock;
-						if (otherLock != null) {
-							usedLocks |= lockZPlus;
-						}
-						lockTileEntity.zMinusLock = thisLock;
-						if (thisLock != null) {
-							lockTileEntity.usedLocks |= lockZMinus;
-						}
-					}
-				}
+			if (thisLock != null) {
+				usedLocks |= lockXPlus;
+				xPTE.xMinusLock = thisLock;
 			}
-			tileEntity.usedLocks = usedLocks;
+		}
+		if (zM) {
+			Lock otherLock = zMTE.thisLock;
+			if (otherLock != null) {
+				zMTE.usedLocks |= lockZPlus;
+				tE.zMinusLock = otherLock;
+			}
+			if (thisLock != null) {
+				usedLocks |= lockZMinus;
+				zMTE.zPlusLock = thisLock;
+			}
+		}
+		if (zP) {
+			Lock otherLock = zPTE.thisLock;
+			if (otherLock != null) {
+				zPTE.usedLocks |= lockZMinus;
+				tE.zPlusLock = otherLock;
+			}
+			if (thisLock != null) {
+				usedLocks |= lockZPlus;
+				zPTE.zMinusLock = thisLock;
+			}
+		}
+		tE.usedLocks = usedLocks;
+
+		if (zP) {
+			zPTE.lockManagementLock.unlock();
+		}
+		if (zM) {
+			zMTE.lockManagementLock.unlock();
+		}
+		lock.unlock();
+		if (xP) {
+			xPTE.lockManagementLock.unlock();
+		}
+		if (xM) {
+			xMTE.lockManagementLock.unlock();
 		}
 	}
 
