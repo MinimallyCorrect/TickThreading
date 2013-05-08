@@ -334,18 +334,21 @@ public final class TickManager {
 			zP = false;
 		}
 		lock.unlock();
-		if (xM) {
-			xMTE.lockManagementLock.lock();
+		if (!(xM || xP || zM || zP)) {
+			return;
 		}
 		if (xP) {
 			xPTE.lockManagementLock.lock();
+		}
+		if (zP) {
+			zPTE.lockManagementLock.lock();
 		}
 		lock.lock();
 		if (zM) {
 			zMTE.lockManagementLock.lock();
 		}
-		if (zP) {
-			zPTE.lockManagementLock.lock();
+		if (xM) {
+			xMTE.lockManagementLock.lock();
 		}
 
 		if (xM) {
@@ -364,19 +367,18 @@ public final class TickManager {
 			zPTE.usedLocks &= ~lockZMinus;
 			zPTE.zMinusLock = null;
 		}
-
-		if (zP) {
-			zPTE.lockManagementLock.unlock();
+		if (xM) {
+			xMTE.lockManagementLock.unlock();
 		}
 		if (zM) {
 			zMTE.lockManagementLock.unlock();
 		}
 		lock.unlock();
+		if (zP) {
+			zPTE.lockManagementLock.unlock();
+		}
 		if (xP) {
 			xPTE.lockManagementLock.unlock();
-		}
-		if (xM) {
-			xMTE.lockManagementLock.unlock();
 		}
 	}
 
@@ -384,7 +386,6 @@ public final class TickManager {
 	 .lock/unlock calls here are replaced with MONITORENTER/EXIT.
 	*/
 	public final void lock(TileEntity tE) {
-		Lock thisLock = tE.thisLock;
 		unlock(tE);
 		Lock lock = tE.lockManagementLock;
 		lock.lock();
@@ -422,18 +423,22 @@ public final class TickManager {
 			zP = false;
 		}
 		lock.unlock();
-		if (xM) {
-			xMTE.lockManagementLock.lock();
+		if (!(xM || xP || zM || zP)) {
+			return;
 		}
+		Lock thisLock = tE.thisLock;
 		if (xP) {
 			xPTE.lockManagementLock.lock();
+		}
+		if (zP) {
+			zPTE.lockManagementLock.lock();
 		}
 		lock.lock();
 		if (zM) {
 			zMTE.lockManagementLock.lock();
 		}
-		if (zP) {
-			zPTE.lockManagementLock.lock();
+		if (xM) {
+			xMTE.lockManagementLock.lock();
 		}
 
 		byte usedLocks = tE.usedLocks;
@@ -484,18 +489,18 @@ public final class TickManager {
 		}
 		tE.usedLocks = usedLocks;
 
-		if (zP) {
-			zPTE.lockManagementLock.unlock();
+		if (xM) {
+			xMTE.lockManagementLock.unlock();
 		}
 		if (zM) {
 			zMTE.lockManagementLock.unlock();
 		}
 		lock.unlock();
+		if (zP) {
+			zPTE.lockManagementLock.unlock();
+		}
 		if (xP) {
 			xPTE.lockManagementLock.unlock();
-		}
-		if (xM) {
-			xMTE.lockManagementLock.unlock();
 		}
 	}
 
