@@ -15,7 +15,7 @@ import me.nallar.tickthreading.Log;
 
 public enum CollectionsUtil {
 	;
-	public static final String defaultDelimiter = ",";
+	private static final String defaultDelimiter = ",";
 
 	public static List<String> split(String input) {
 		return split(input, defaultDelimiter);
@@ -29,7 +29,7 @@ public enum CollectionsUtil {
 		return newList;
 	}
 
-	public static List<String> split(String input, String delimiter) {
+	private static List<String> split(String input, String delimiter) {
 		if (input == null || input.isEmpty()) {
 			return Collections.emptyList();
 		}

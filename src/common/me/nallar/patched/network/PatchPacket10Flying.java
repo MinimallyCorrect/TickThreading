@@ -68,7 +68,7 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 		}
 	}
 
-	public static void sendChunks(EntityPlayerMP entityPlayerMP) {
+	private static void sendChunks(EntityPlayerMP entityPlayerMP) {
 		NetServerHandler netServerHandler = entityPlayerMP.playerNetServerHandler;
 		if (!entityPlayerMP.loadedChunks.isEmpty()) {
 			long st = 0;

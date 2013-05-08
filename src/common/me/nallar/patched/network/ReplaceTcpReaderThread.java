@@ -5,8 +5,8 @@ import net.minecraft.server.ThreadMinecraftServer;
 import net.minecraft.util.AxisAlignedBB;
 
 public abstract class ReplaceTcpReaderThread extends ThreadMinecraftServer {
-	int count;
-	final TcpConnection tcpConnection;
+	private int count;
+	private final TcpConnection tcpConnection;
 
 	public ReplaceTcpReaderThread(TcpConnection tcpConnection, String name) {
 		super(null, name);

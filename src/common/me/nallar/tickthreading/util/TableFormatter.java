@@ -23,7 +23,7 @@ public class TableFormatter {
 		if (chat) {
 			splitter = " " + ChatFormat.YELLOW + '|' + ChatFormat.RESET + ' ';
 			headingSplitter = splitter;
-			headingColour = ChatFormat.DARK_GREEN + "";
+			headingColour = String.valueOf(ChatFormat.DARK_GREEN);
 		}
 	}
 

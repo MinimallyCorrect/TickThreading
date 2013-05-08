@@ -75,7 +75,7 @@ public class PatchManager {
 		}
 	}
 
-	public void loadPatches(Class<? extends Patches> patchClass) {
+	void loadPatches(Class<? extends Patches> patchClass) {
 		try {
 			patchTypes = patchClass.getDeclaredConstructors()[0].newInstance(this, classRegistry);
 		} catch (Exception e) {
@@ -91,7 +91,7 @@ public class PatchManager {
 		}
 	}
 
-	public void loadConfig(InputStream configInputStream) throws IOException, SAXException {
+	void loadConfig(InputStream configInputStream) throws IOException, SAXException {
 		configDocument = DomUtil.readDocumentFromInputStream(configInputStream);
 	}
 

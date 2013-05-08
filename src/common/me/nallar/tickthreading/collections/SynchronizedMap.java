@@ -95,6 +95,7 @@ public class SynchronizedMap<K, V> extends HashMap<K, V> {
 			this.realSet = realSet;
 		}
 
+		@Override
 		public Iterator<K> iterator() {
 			if (!Thread.holdsLock(this)) {
 				throw new ConcurrencyError("Must synchronize to iterate.");
@@ -102,18 +103,22 @@ public class SynchronizedMap<K, V> extends HashMap<K, V> {
 			return realSet.iterator();
 		}
 
+		@Override
 		public int size() {
 			return SynchronizedMap.this.size();
 		}
 
+		@Override
 		public boolean contains(Object o) {
 			return containsKey(o);
 		}
 
+		@Override
 		public boolean remove(Object o) {
 			return SynchronizedMap.this.remove(o) != null;
 		}
 
+		@Override
 		public void clear() {
 			SynchronizedMap.this.clear();
 		}

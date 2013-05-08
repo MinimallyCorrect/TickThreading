@@ -12,7 +12,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.ChunkProviderServer;
 
 public class ChunkGarbageCollector {
-	public static final Profiler profiler = MinecraftServer.getServer().theProfiler;
+	private static final Profiler profiler = MinecraftServer.getServer().theProfiler;
 
 	public static void garbageCollect(WorldServer worldServer) {
 		profiler.startSection("chunkGC");

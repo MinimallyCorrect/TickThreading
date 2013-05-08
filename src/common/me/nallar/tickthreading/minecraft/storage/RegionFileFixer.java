@@ -11,7 +11,7 @@ import cpw.mods.fml.common.FMLLog;
 import me.nallar.unsafe.UnsafeUtil;
 import net.minecraft.world.chunk.storage.RegionFile;
 
-public class RegionFileFixer {
+class RegionFileFixer {
 	public static RegionFile newRegionFile(File regionFileFile) {
 		try {
 			return new RegionFile(regionFileFile);

@@ -12,7 +12,7 @@ import me.nallar.tickthreading.patcher.PatchMain;
 
 public enum LocationUtil {
 	;
-	public static final File currentDir = new File(".").getAbsoluteFile();
+	private static final File currentDir = new File(".").getAbsoluteFile();
 
 	private static String normalize(String path, String separator) {
 		path = path.replace(separator + separator, separator);
@@ -97,11 +97,11 @@ public enum LocationUtil {
 		return directoryOf(PatchMain.class).getParentFile();
 	}
 
-	public static File getCoreModsDirectory() {
+	private static File getCoreModsDirectory() {
 		return new File(getServerDirectory(), "coremods");
 	}
 
-	public static File getModsDirectory() {
+	private static File getModsDirectory() {
 		return new File(getServerDirectory(), "mods");
 	}
 

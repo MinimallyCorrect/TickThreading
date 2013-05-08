@@ -30,7 +30,7 @@ import net.minecraft.server.MinecraftServer;
 public class DeadLockDetector {
 	private boolean sentWarningRecently = false;
 	private static volatile long lastTickTime = 0;
-	public static Set<ThreadManager> threadManagers = Collections.newSetFromMap(new ConcurrentHashMap<ThreadManager, Boolean>());
+	public static final Set<ThreadManager> threadManagers = Collections.newSetFromMap(new ConcurrentHashMap<ThreadManager, Boolean>());
 
 	public DeadLockDetector() {
 		Thread deadlockThread = new Thread(new Runnable() {
@@ -63,7 +63,7 @@ public class DeadLockDetector {
 		}.start();
 	}
 
-	public boolean checkForDeadlocks() {
+	boolean checkForDeadlocks() {
 		Log.flush();
 		long deadTime = System.nanoTime() - lastTickTime;
 		if (lastTickTime == 0 || (!MinecraftServer.getServer().isServerRunning() && deadTime < (TickThreading.instance.deadLockTime * 10000000000l))) {

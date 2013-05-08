@@ -24,7 +24,7 @@ public enum ReflectUtil {
 		return field;
 	}
 
-	public static Method getMethod(Class c, String name) {
+	private static Method getMethod(Class c, String name) {
 		Method method = null;
 		do {
 			for (Method method_ : c.getDeclaredMethods()) {

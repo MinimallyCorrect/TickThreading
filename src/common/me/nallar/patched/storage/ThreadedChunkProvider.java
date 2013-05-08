@@ -83,7 +83,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	private final BooleanThreadLocal worldGenInProgress;
 	private boolean loadedPersistentChunks = false;
 	private boolean loadChunksInProvideChunk = true;
-	private int unloadTicks = 0;
+	private int loadChunksInProvideChunkTicks = 0;
 	private int overloadCount = 0;
 	private int saveTicks = 0;
 	private int maxChunksToSave = 384;
@@ -182,7 +182,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 		handleUnloadQueue(ticks - 3);
 
-		if (this.unloadTicks++ > 1200 && !world.multiverseWorld && world.provider.dimensionId != 0 && TickThreading.instance.allowWorldUnloading
+		if (ticks > 1200 && !world.multiverseWorld && world.provider.dimensionId != 0 && TickThreading.instance.allowWorldUnloading
 				&& loadedChunks.isEmpty() && ForgeChunkManager.getPersistentChunksFor(world).isEmpty()
 				&& (!TickThreading.instance.shouldLoadSpawn || !DimensionManager.shouldLoadSpawn(world.getDimension()))) {
 			DimensionManager.unloadWorld(world.getDimension());
@@ -192,11 +192,11 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			ChunkGarbageCollector.garbageCollect(world);
 		}
 
-		if (unloadTicks == 100) {
+		if (loadChunksInProvideChunkTicks++ == 100) {
 			loadChunksInProvideChunk = false;
 		}
 
-		if (!loadedPersistentChunks && unloadTicks >= 5) {
+		if (!loadedPersistentChunks && loadChunksInProvideChunkTicks >= 5) {
 			loadedPersistentChunks = true;
 			int loaded = 0;
 			int possible = world.getPersistentChunks().size();
@@ -316,12 +316,12 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	@Override
 	@Declare
 	public boolean unloadChunk(int x, int z) {
+		if (world.getPersistentChunks().keySet().contains(new ChunkCoordIntPair(x, z))) {
+			return false;
+		}
 		long hash = key(x, z);
 		Chunk chunk = (Chunk) chunks.getValueByKey(hash);
 		if (chunk == null) {
-			return false;
-		}
-		if (world.getPersistentChunks().keySet().contains(new ChunkCoordIntPair(x, z))) {
 			return false;
 		}
 		chunk.queuedUnload = true;

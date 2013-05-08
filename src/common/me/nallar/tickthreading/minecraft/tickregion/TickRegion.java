@@ -8,15 +8,15 @@ import me.nallar.tickthreading.util.TableFormatter;
 import net.minecraft.world.World;
 
 public abstract class TickRegion implements Runnable {
-	protected final Object tickStateLock = new Object();
-	protected volatile boolean ticking = false;
-	protected final Set toRemove = new LinkedHashSet();
-	protected final Set toAdd = new LinkedHashSet();
+	final Object tickStateLock = new Object();
+	volatile boolean ticking = false;
+	final Set toRemove = new LinkedHashSet();
+	final Set toAdd = new LinkedHashSet();
 	final World world;
 	final TickManager manager;
 	public final int hashCode;
-	protected final int regionX;
-	protected final int regionZ;
+	private final int regionX;
+	private final int regionZ;
 	private float averageTickTime = 1;
 	public boolean profilingEnabled = false;
 
@@ -94,7 +94,7 @@ public abstract class TickRegion implements Runnable {
 
 	public abstract boolean isEmpty();
 
-	public abstract int size();
+	protected abstract int size();
 
 	public abstract void processChanges();
 }

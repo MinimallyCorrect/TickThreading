@@ -23,7 +23,7 @@ public final class ThreadManager {
 	private final Object readyLock = new Object();
 	private final AtomicInteger waiting = new AtomicInteger();
 	private final Runnable killTask = new KillRunnable();
-	public long endTime = 0;
+	private long endTime = 0;
 	private final Runnable workerTask = new Runnable() {
 		@SuppressWarnings ("FieldRepeatedlyAccessedInMethod")
 		@Override

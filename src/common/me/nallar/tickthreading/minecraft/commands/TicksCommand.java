@@ -26,7 +26,7 @@ public class TicksCommand extends Command {
 		return !TickThreading.instance.requireOpForTicksCommand || super.canCommandSenderUseCommand(commandSender);
 	}
 
-	private void usage(ICommandSender commandSender) {
+	private static void usage(ICommandSender commandSender) {
 		sendChat(commandSender, "Usage: /ticks [e/b/r [radius]/?] [dimensionid]");
 	}
 

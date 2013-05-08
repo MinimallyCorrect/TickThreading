@@ -28,7 +28,7 @@ public class MethodDescription {
 		this(method.getDeclaringClass().getCanonicalName(), method.getName(), getJVMName(method.getReturnType()), getParameterList(method));
 	}
 
-	public MethodDescription(CtMethod ctMethod) {
+	private MethodDescription(CtMethod ctMethod) {
 		this(ctMethod.getDeclaringClass().getName(), ctMethod.getName(), ctMethod.getSignature());
 	}
 
@@ -41,7 +41,7 @@ public class MethodDescription {
 		return clazz + '/' + name;
 	}
 
-	public String getMCPName() {
+	String getMCPName() {
 		return '(' + parameters + ')' + returnType;
 	}
 
@@ -76,7 +76,7 @@ public class MethodDescription {
 				|| (other instanceof Method && new MethodDescription((Method) other).equals(this));
 	}
 
-	public boolean similar(Object other) {
+	boolean similar(Object other) {
 		return this == other || (other instanceof MethodDescription && ((MethodDescription) other).getShortName().equals(this.getShortName())) || (other instanceof Method && new MethodDescription((Method) other).similar(this));
 	}
 

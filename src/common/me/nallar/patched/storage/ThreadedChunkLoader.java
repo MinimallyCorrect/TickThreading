@@ -127,6 +127,8 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 		return this.checkedReadChunkFromNBT(world, x, z, nbttagcompound);
 	}
 
+	@Override
+	@Declare
 	public Chunk loadChunk__Async_CB(World world, int x, int z) {
 		throw new UnsupportedOperationException();
 	}
@@ -189,7 +191,7 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 		}
 	}
 
-	protected void addToSaveQueue(ChunkCoordIntPair par1ChunkCoordIntPair, NBTTagCompound par2NBTTagCompound, boolean unloading) {
+	void addToSaveQueue(ChunkCoordIntPair par1ChunkCoordIntPair, NBTTagCompound par2NBTTagCompound, boolean unloading) {
 		synchronized (this.syncLockObject) {
 			AnvilChunkLoaderPending pending = new AnvilChunkLoaderPending(par1ChunkCoordIntPair, par2NBTTagCompound);
 			pending.unloading = unloading;

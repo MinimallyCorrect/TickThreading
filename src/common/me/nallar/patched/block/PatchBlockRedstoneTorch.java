@@ -18,7 +18,7 @@ public abstract class PatchBlockRedstoneTorch extends BlockRedstoneTorch {
 		return (x & 0xFFFFFFL) << 28 | z & 0xFFFFFFL | (long) y << 56;
 	}
 
-	protected static boolean checkForBurnout(World world, long hash, boolean increment) {
+	private static boolean checkForBurnout(World world, long hash, boolean increment) {
 		Integer startTicks = world.redstoneBurnoutMap.get(hash);
 		int ticks = startTicks == null ? 0 : startTicks;
 		if (increment) {
@@ -37,7 +37,7 @@ public abstract class PatchBlockRedstoneTorch extends BlockRedstoneTorch {
 		return checkForBurnout(world, hash(x, y, z), increment);
 	}
 
-	protected static boolean isIndirectlyPowered(World world, int x, int y, int z, int metadata) {
+	private static boolean isIndirectlyPowered(World world, int x, int y, int z, int metadata) {
 		return metadata == 5 && world.isBlockIndirectlyProvidingPowerTo(x, y - 1, z, 0) || (metadata == 3 && world.isBlockIndirectlyProvidingPowerTo(x, y, z - 1, 2) || (metadata == 4 && world.isBlockIndirectlyProvidingPowerTo(x, y, z + 1, 3) || (metadata == 1 && world.isBlockIndirectlyProvidingPowerTo(x - 1, y, z, 4) || metadata == 2 && world.isBlockIndirectlyProvidingPowerTo(x + 1, y, z, 5))));
 	}
 

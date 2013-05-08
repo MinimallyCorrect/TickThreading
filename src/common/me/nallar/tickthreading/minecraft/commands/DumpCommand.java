@@ -73,7 +73,7 @@ public class DumpCommand extends Command {
 		return tf;
 	}
 
-	public static void dump(TableFormatter tf, Object toDump, int maxLen) {
+	private static void dump(TableFormatter tf, Object toDump, int maxLen) {
 		tf.sb.append(toDump.getClass().getName()).append('\n');
 		tf
 				.heading("Field")

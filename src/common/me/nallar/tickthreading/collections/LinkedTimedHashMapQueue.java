@@ -12,7 +12,7 @@ import java.util.Set;
 import me.nallar.tickthreading.Log;
 
 public class LinkedTimedHashMapQueue<K> extends HashMap<K, Integer> {
-	int ticks = Integer.MIN_VALUE;
+	private int ticks = Integer.MIN_VALUE;
 	private final Map<K, Integer> map;
 	private static final long serialVersionUID = 7249069246763182397L;
 
@@ -177,6 +177,7 @@ public class LinkedTimedHashMapQueue<K> extends HashMap<K, Integer> {
 				return entrySet.containsAll(c);
 			}
 
+			@Override
 			public boolean addAll(final Collection<? extends Map.Entry<K, Integer>> c) {
 				return entrySet.addAll(c);
 			}

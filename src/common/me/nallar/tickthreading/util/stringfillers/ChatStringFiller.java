@@ -10,7 +10,7 @@ import me.nallar.tickthreading.util.ChatFormat;
  * Derived from https://github.com/andfRa/Saga/blob/master/src/org/saga/utility/chat/ChatFiller.java
  */
 class ChatStringFiller extends StringFiller {
-	public static final double DEFAULT_LENGTH = 3.0 / 2.0;
+	private static final double DEFAULT_LENGTH = 3.0 / 2.0;
 	private static final double MAX_GAP = 1.25;
 	private static final HashMap<Character, Double> SIZE_MAP = new HashMap<Character, Double>() {
 		{
@@ -132,8 +132,8 @@ class ChatStringFiller extends StringFiller {
 
 		return result.toString()
 				.replace("\u278A", ChatFormat.DARK_GRAY + "`" + ChatFormat.RESET)
-				.replace("\u278B", ChatFormat.DARK_GRAY + "" + ChatFormat.BOLD + '`' + ChatFormat.RESET)
-				.replace("\u278C", ChatFormat.DARK_GRAY + "" + ChatFormat.BOLD + ' ' + ChatFormat.RESET);
+				.replace("\u278B", ChatFormat.DARK_GRAY + String.valueOf(ChatFormat.BOLD) + '`' + ChatFormat.RESET)
+				.replace("\u278C", ChatFormat.DARK_GRAY + String.valueOf(ChatFormat.BOLD) + ' ' + ChatFormat.RESET);
 	}
 
 	private static Character findCustom(double gapLen) {

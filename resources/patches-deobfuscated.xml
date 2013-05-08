@@ -189,7 +189,7 @@
 		</class>
 		<class id="net.minecraft.world.chunk.EmptyChunk">
 			<replaceMethod code="return 1;">getHeightValue</replaceMethod>
-			<replaceMethod code="if ($2 == 0) { return 7; } return 0;">getBlockID</replaceMethod>
+			<replaceMethod code="{ if ($2 == 0) { return 7; } return 0; }">getBlockID</replaceMethod>
 		</class>
 		<class id="net.minecraft.util.Vec3Pool">
 			<!-- This prevents entities in multiple threads using the same Vec3 for collisions. -->
@@ -472,9 +472,6 @@
 		</class>
 	</forge>
 	<forgeModLoader>
-		<class id="cpw.mods.fml.common.event.FMLInterModComms$IMCMessage">
-			<insertAfter code="if (key.toLowerCase().contains(&quot;security&quot;)) { Thread.dumpStack(); } "/>
-		</class>
 		<class id="cpw.mods.fml.common.registry.GameRegistry">
 			<addAll fromClass="me.nallar.patched.forge.PatchGameRegistry"/>
 		</class>

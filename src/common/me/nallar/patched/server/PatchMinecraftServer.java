@@ -48,13 +48,12 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.WorldEvent;
 
 public abstract class PatchMinecraftServer extends MinecraftServer {
-	public ThreadManager threadManager;
+	private ThreadManager threadManager;
 	private static float tickTime = 0;
 	private static float networkTickTime = 0;
 	private AtomicInteger currentWorld;
 	private Integer[] dimensionIdsToTick;
 	private Runnable tickRunnable;
-	public static int currentTick;
 	private static int TARGET_TPS;
 	private static int TARGET_TICK_TIME;
 	private static int NETWORK_TPS;
@@ -102,6 +101,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		this.serverRunning = false;
 	}
 
+	@Override
 	@Declare
 	public long[] getTickTimes(WorldServer w) {
 		return worldTickLengths.get(w.getName());
@@ -179,7 +179,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 						continue;
 					}
 					lastTick = curTime;
-					currentTick = tickCounter++;
+					tickCounter++;
 					try {
 						this.tick();
 					} catch (Exception e) {

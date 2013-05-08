@@ -38,14 +38,14 @@ public final class TickManager {
 	public final int regionSize;
 	public boolean variableTickRate;
 	public boolean profilingEnabled = false;
-	public double averageTickLength = 0;
-	public long lastTickLength = 0;
-	public long lastStartTime = 0;
+	private double averageTickLength = 0;
+	private long lastTickLength = 0;
+	private long lastStartTime = 0;
 	private static final int shuffleInterval = 800;
 	private int shuffleCount;
 	private final boolean waitForCompletion;
 	public final EntityTickProfiler entityTickProfiler = new EntityTickProfiler();
-	public final WorldServer world;
+	private final WorldServer world;
 	public final ArrayList<TileEntity> tileEntityList = new ArrayList<TileEntity>();
 	public final ArrayList<Entity> entityList = new ArrayList<Entity>();
 	public Object tileEntityLock = new Object();
@@ -112,7 +112,7 @@ public final class TickManager {
 		return callable;
 	}
 
-	public int getHashCode(TileEntity tileEntity) {
+	int getHashCode(TileEntity tileEntity) {
 		return getHashCode(tileEntity.xCoord, tileEntity.zCoord);
 	}
 
@@ -292,7 +292,7 @@ public final class TickManager {
 		}
 	}
 
-	public void unlock(TileEntity tileEntity) {
+	void unlock(TileEntity tileEntity) {
 		synchronized (tileEntity) {
 			int xPos = tileEntity.lastTTX;
 			int yPos = tileEntity.lastTTY;

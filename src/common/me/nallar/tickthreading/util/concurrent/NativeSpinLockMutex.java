@@ -1,15 +1,3 @@
-/*
-  File: Mutex.java
-
-  Originally written by Doug Lea and released into the public domain.
-  This may be used for any purposes whatsoever without acknowledgment.
-  Thanks for the assistance and support of Sun Microsystems Labs,
-  and everyone contributing, testing, and using this code.
-
-  History:
-  Date       Who                What
-  11Jun1998  dl               Create public version
-*/
 package me.nallar.tickthreading.util.concurrent;
 
 import java.util.concurrent.TimeUnit;

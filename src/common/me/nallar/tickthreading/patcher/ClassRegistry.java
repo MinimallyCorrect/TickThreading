@@ -38,14 +38,14 @@ import net.minecraft.server.MinecraftServer;
 // FieldRepeatedlyAccessedInMethod - I don't care about minor optimisations in patcher code, can't find a way to change inspections per package.
 @SuppressWarnings ({"unchecked", "ResultOfMethodCallIgnored", "FieldRepeatedlyAccessedInMethod"})
 public class ClassRegistry {
-	public String hashFileName = "patcher.hash";
-	public String patchedModsFolderName = "patchedMods";
-	public String modsFolderName = "mods";
+	private final String hashFileName = "patcher.hash";
+	private final String patchedModsFolderName = "patchedMods";
+	private final String modsFolderName = "mods";
 	private final Map<String, File> classNameToLocation = new HashMap<String, File>();
 	private final Map<File, Integer> locationToPatchHash = new HashMap<File, Integer>();
 	private final Map<File, Integer> expectedPatchHashes = new HashMap<File, Integer>();
 	private final Set<File> loadedFiles = new HashSet<File>();
-	public final Set<File> updatedFiles = new HashSet<File>();
+	private final Set<File> updatedFiles = new HashSet<File>();
 	private final Map<String, Set<File>> duplicateClassNamesToLocations = new HashMap<String, Set<File>>();
 	private final Set<ClassPath> classPathSet = new HashSet<ClassPath>();
 	private final Map<String, byte[]> replacementFiles = new HashMap<String, byte[]>();
@@ -196,7 +196,7 @@ public class ClassRegistry {
 		return shouldPatch(classNameToLocation.get(className));
 	}
 
-	public boolean shouldPatch(File file) {
+	boolean shouldPatch(File file) {
 		return forcePatching || file == null || !(expectedPatchHashes.get(file).equals(locationToPatchHash.get(file)));
 	}
 
@@ -246,13 +246,13 @@ public class ClassRegistry {
 		}
 	}
 
-	public void appendClassPath(String path) throws NotFoundException {
+	void appendClassPath(String path) throws NotFoundException {
 		if (!disableJavassistLoading) {
 			classPathSet.add(classes.appendClassPath(path));
 		}
 	}
 
-	public void loadHashes(File zipFile) throws IOException {
+	void loadHashes(File zipFile) throws IOException {
 		if (!modsFolderName.equalsIgnoreCase(zipFile.getParentFile().getName())) {
 			return;
 		}
@@ -289,7 +289,7 @@ public class ClassRegistry {
 		}
 	}
 
-	public void loadZip(ZipFile zip) throws IOException {
+	void loadZip(ZipFile zip) throws IOException {
 		File file = new File(zip.getName());
 		if (!loadedFiles.add(file)) {
 			return;
