@@ -7,7 +7,7 @@ import java.util.ListIterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 @SuppressWarnings ("ConstantConditions")
-class ListIteratorRemoveQueue<T> extends ConcurrentLinkedQueue<T> implements List<T> {
+public class ListIteratorRemoveQueue<T> extends ConcurrentLinkedQueue<T> implements List<T> {
 	@Override
 	public Iterator<T> iterator() {
 		return new Iterator<T>() {

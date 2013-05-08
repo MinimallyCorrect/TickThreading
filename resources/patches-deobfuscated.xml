@@ -1024,4 +1024,9 @@
 			<replaceMethod code="{ return $1.isChunkSavedPopulated($2, $3); }">isChunkSavedPopulated</replaceMethod>
 		</class>
 	</customOreGen>
+	<enderStorage>
+		<class id="">
+			<replaceInitializer field="dirtyStorage" class="me.nallar.tickthreading.collections.LinkedListReplaceIterateTempListClear"/>
+		</class>
+	</enderStorage>
 </mods>
