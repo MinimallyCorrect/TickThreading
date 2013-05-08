@@ -4,7 +4,9 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.patcher.Declare;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet51MapChunk;
 import net.minecraft.server.management.PlayerInstance;
 import net.minecraft.server.management.PlayerManager;
@@ -56,5 +58,22 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 			numberOfTilesToUpdate++;
 		}
 		tilesToUpdate.add(tileEntity);
+	}
+
+	@Override
+	protected void sendTileToAllPlayersWatchingChunk(TileEntity tileEntity) {
+		if (tileEntity != null) {
+			Packet descriptionPacket;
+			try {
+				descriptionPacket = tileEntity.getDescriptionPacket();
+			} catch (Throwable t) {
+				Log.severe("Failed to send TileEntity description for " + Log.toString(tileEntity) + " at chunk coords " + chunkLocation, t);
+				return;
+			}
+
+			if (descriptionPacket != null) {
+				this.sendToAllPlayersWatchingChunk(descriptionPacket);
+			}
+		}
 	}
 }
