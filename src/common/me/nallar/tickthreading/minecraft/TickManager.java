@@ -301,6 +301,10 @@ public final class TickManager {
 		Lock lock = tE.lockManagementLock;
 		lock.lock();
 		byte locks = tE.usedLocks;
+		boolean xM = ((locks & lockXMinus) != 0) || tE.xMinusLock != null;
+		boolean xP = ((locks & lockXPlus) != 0) || tE.xPlusLock != null;
+		boolean zM = ((locks & lockZMinus) != 0) || tE.zMinusLock != null;
+		boolean zP = ((locks & lockZPlus) != 0) || tE.zPlusLock != null;
 		tE.xPlusLock = null;
 		tE.xMinusLock = null;
 		tE.zPlusLock = null;
@@ -313,10 +317,6 @@ public final class TickManager {
 		int xPos = tE.lastTTX;
 		int yPos = tE.lastTTY;
 		int zPos = tE.lastTTZ;
-		boolean xM = ((locks & lockXMinus) != 0) || tE.xMinusLock != null;
-		boolean xP = ((locks & lockXPlus) != 0) || tE.xPlusLock != null;
-		boolean zM = ((locks & lockZMinus) != 0) || tE.zMinusLock != null;
-		boolean zP = ((locks & lockZPlus) != 0) || tE.zPlusLock != null;
 		TileEntity xMTE = xM ? world.getTEWithoutLoad(xPos - 1, yPos, zPos) : null;
 		TileEntity xPTE = xP ? world.getTEWithoutLoad(xPos + 1, yPos, zPos) : null;
 		TileEntity zMTE = zM ? world.getTEWithoutLoad(xPos, yPos, zPos - 1) : null;
