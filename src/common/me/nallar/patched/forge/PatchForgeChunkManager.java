@@ -27,7 +27,11 @@ public abstract class PatchForgeChunkManager extends ForgeChunkManager {
 	private static Field requestedChunksField;
 
 	public static void staticConstruct() throws NoSuchFieldException {
-		forcedChunks = new ForcedChunksRedirectMap();
+		try {
+			forcedChunks = new ForcedChunksRedirectMap();
+		} catch (NoSuchFieldError ignored) {
+			// MCPC+
+		}
 		requestedChunksField = Ticket.class.getDeclaredField("requestedChunks");
 		requestedChunksField.setAccessible(true);
 	}
@@ -58,8 +62,7 @@ public abstract class PatchForgeChunkManager extends ForgeChunkManager {
 		MinecraftForge.EVENT_BUS.post(new ForceChunkEvent(ticket, chunk));
 
 		synchronized (ForgeChunkManager.class) {
-			ImmutableSetMultimap<ChunkCoordIntPair, Ticket> newMap = ImmutableSetMultimap.<ChunkCoordIntPair, Ticket>builder().putAll(forcedChunks.get(ticket.world)).put(chunk, ticket).build();
-			forcedChunks.put(ticket.world, newMap);
+			ticket.world.forcedChunks = ImmutableSetMultimap.<ChunkCoordIntPair, Ticket>builder().putAll(ticket.world.forcedChunks).put(chunk, ticket).build();
 		}
 		if (ticket.getChunkListDepth() > 0 && requestedChunks.size() > ticket.getChunkListDepth()) {
 			ChunkCoordIntPair removed = requestedChunks.iterator().next();
