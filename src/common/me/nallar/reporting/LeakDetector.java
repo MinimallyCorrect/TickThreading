@@ -20,7 +20,7 @@ public class LeakDetector {
 
 	public void scheduleLeakCheck(Object o, String oDescription_, final boolean clean) {
 		if (clean) {
-			timer.schedule(new CleanerTask(o), Math.min(waitTime / 2, 60000));
+			timer.schedule(new CleanerTask(o), Math.min(waitTime / 2, 20000));
 		}
 		final long id = UnsafeUtil.addressOf(o);
 		final String oDescription = (oDescription_ == null ? "" : oDescription_ + " : ") + o.getClass() + '@' + System.identityHashCode(o) + ':' + id;
