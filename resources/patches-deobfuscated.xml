@@ -1025,7 +1025,7 @@
 		</class>
 	</customOreGen>
 	<enderStorage>
-		<class id="">
+		<class id="codechicken.enderstorage.api.EnderStorageManager">
 			<replaceInitializer field="dirtyStorage" class="me.nallar.tickthreading.collections.LinkedListReplaceIterateTempListClear"/>
 		</class>
 	</enderStorage>

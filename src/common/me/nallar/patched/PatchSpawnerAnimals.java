@@ -10,7 +10,6 @@ import java.util.Set;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.block.Block;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.player.EntityPlayer;
