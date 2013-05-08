@@ -30,7 +30,7 @@ public class Log {
 		// Inner class as constructors are protected.
 	};
 	private static Handler handler;
-	private static final int numberOfLogFiles = 5;
+	private static final int numberOfLogFiles = Integer.getInteger("tickthreading.numberOfLogFiles", 5);
 	private static final File logFolder = new File("TickThreadingLogs");
 	private static Handler wrappedHandler;
 	private static final Handler handlerWrapper = new Handler() {
