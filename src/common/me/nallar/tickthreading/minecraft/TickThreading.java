@@ -20,6 +20,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.relauncher.RelaunchClassLoader;
 import javassist.is.faulty.Timings;
 import me.nallar.reporting.LeakDetector;
+import me.nallar.reporting.Metrics;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.commands.Command;
 import me.nallar.tickthreading.minecraft.commands.DumpCommand;
@@ -57,6 +58,7 @@ import net.minecraftforge.event.world.WorldEvent;
 @Mod (modid = "TickThreading", name = "TickThreading", version = "@MOD_VERSION@")
 @NetworkMod (clientSideRequired = false, serverSideRequired = false)
 public class TickThreading {
+	private static final Metrics metrics = new Metrics("TickThreading", VersionUtil.TTVersionNumber());
 	private static final int loadedEntityFieldIndex = 0;
 	private static final int loadedTileEntityFieldIndex = 2;
 	public static TickThreading instance;
