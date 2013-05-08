@@ -970,6 +970,35 @@ public class Patches {
 		}
 	}
 
+	@Patch (
+			requiredAttributes = "field"
+	)
+	public void synchronizeNotNull(CtMethod ctMethod, Map<String, String> attributes) throws CannotCompileException {
+		String field = attributes.get("field");
+		CtClass ctClass = ctMethod.getDeclaringClass();
+		CtMethod replacement = CtNewMethod.copy(ctMethod, ctClass, null);
+		int i = 0;
+		try {
+			//noinspection InfiniteLoopStatement
+			for (; true; i++) {
+				ctClass.getDeclaredMethod(ctMethod.getName() + "_sync" + i);
+			}
+		} catch (NotFoundException ignored) {
+		}
+		ctMethod.setName(ctMethod.getName() + "_sync" + i);
+		List<AttributeInfo> annotations = ctMethod.getMethodInfo().getAttributes();
+		Iterator<AttributeInfo> attributeInfoIterator = annotations.iterator();
+		while (attributeInfoIterator.hasNext()) {
+			AttributeInfo attributeInfo = attributeInfoIterator.next();
+			if (attributeInfo instanceof AnnotationsAttribute) {
+				attributeInfoIterator.remove();
+				replacement.getMethodInfo().addAttribute(attributeInfo);
+			}
+		}
+		replacement.setBody("Object sync = + " + field + "; if (sync == null) { return " + ctMethod.getName() + "($$); } else { synchronized(sync) { return " + ctMethod.getName() + "($$); }");
+		ctClass.addMethod(replacement);
+	}
+
 	@Patch
 	public void ignoreExceptions(CtMethod ctMethod, Map<String, String> attributes) throws CannotCompileException, NotFoundException {
 		String returnCode = attributes.get("code");

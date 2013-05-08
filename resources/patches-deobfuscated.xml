@@ -941,6 +941,9 @@
 		</class>
 	</universalElectricity>
 	<appliedEnergistics>
+		<class id="appeng.me.basetiles.TileME">
+			<synchronizeNotNull field="getGrid()">^method:TileEntity/updateEntity^</synchronizeNotNull>
+		</class>
 		<class id="appeng.me.CellInventory">
 			<synchronize>^all^</synchronize>
 		</class>
@@ -950,7 +953,7 @@
 			<synchronize field="$1">addStackToList</synchronize>
 		</class>
 		<class id="appeng.me.tile.TileController">
-			<synchronize>getCellArray,resetCache</synchronize>
+			<synchronize>getCellArray,resetCache,^method:TileEntity/updateEntity^</synchronize>
 		</class>
 		<class id="appeng.me.tile.TileDrive">
 			<synchronize>getCellArray,resetCache</synchronize>
