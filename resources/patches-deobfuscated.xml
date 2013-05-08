@@ -95,6 +95,7 @@
 			<final field="playerEntities"/>
 			<final field="isRemote"/>
 			<public field="ambientTickCountdown"/>
+			<public field="forcedChunks"/>
 			<replaceInitializer field="playerEntities" class="java.util.concurrent.CopyOnWriteArrayList"/>
 		</class>
 		<class id="net.minecraft.world.ChunkCache">
