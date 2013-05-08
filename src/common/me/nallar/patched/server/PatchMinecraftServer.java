@@ -54,6 +54,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	private AtomicInteger currentWorld;
 	private Integer[] dimensionIdsToTick;
 	private Runnable tickRunnable;
+	private static int currentTick;
 	private static int TARGET_TPS;
 	private static int TARGET_TICK_TIME;
 	private static int NETWORK_TPS;
@@ -179,7 +180,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 						continue;
 					}
 					lastTick = curTime;
-					tickCounter++;
+					currentTick = tickCounter++;
 					try {
 						this.tick();
 					} catch (Exception e) {
