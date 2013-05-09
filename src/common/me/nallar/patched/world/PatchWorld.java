@@ -28,6 +28,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ReportedException;
+import net.minecraft.util.Vec3;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldProvider;
@@ -930,5 +931,46 @@ public abstract class PatchWorld extends World {
 	@Declare
 	public boolean isChunkSavedPopulated(int x, int z) {
 		return ((AnvilChunkLoader) ((WorldServer) (Object) this).theChunkProviderServer.currentChunkLoader).isChunkSavedPopulated(x, z);
+	}
+
+	private static double center(double a, double b) {
+		return ((a - b) / 2) + b;
+	}
+
+	@Override
+	public float getBlockDensity(Vec3 start, AxisAlignedBB target) {
+		if (target.getAverageEdgeLength() > 10) {
+			return 0.5f;
+		}
+		Vec3 center = getWorldVec3Pool().getVecFromPool(center(target.maxX, target.minX), center(target.maxY, target.minY), center(target.maxZ, target.minZ));
+		if (start.squareDistanceTo(center) > 1000 || !chunkExists(((int) center.xCoord) >> 4, ((int) center.zCoord) >> 4)) {
+			return 0.5f;
+		}
+		double dX = 1.0D / ((target.maxX - target.minX) * 2.0D + 1.0D);
+		double dY = 1.0D / ((target.maxY - target.minY) * 2.0D + 1.0D);
+		double dZ = 1.0D / ((target.maxZ - target.minZ) * 2.0D + 1.0D);
+		dX = dX > 0.02 ? dX : 0.02;
+		dY = dY > 0.02 ? dY : 0.02;
+		dZ = dZ > 0.02 ? dZ : 0.02;
+		int hit = 0;
+		int noHit = 0;
+
+		for (float var11 = 0.0F; var11 <= 1.0F; var11 = (float) ((double) var11 + dX)) {
+			for (float var12 = 0.0F; var12 <= 1.0F; var12 = (float) ((double) var12 + dY)) {
+				for (float var13 = 0.0F; var13 <= 1.0F; var13 = (float) ((double) var13 + dZ)) {
+					double x = target.minX + (target.maxX - target.minX) * (double) var11;
+					double y = target.minY + (target.maxY - target.minY) * (double) var12;
+					double z = target.minZ + (target.maxZ - target.minZ) * (double) var13;
+
+					if (this.rayTraceBlocks(center.setComponents(x, y, z), start) == null) {
+						++hit;
+					}
+
+					++noHit;
+				}
+			}
+		}
+
+		return (float) hit / (float) noHit;
 	}
 }

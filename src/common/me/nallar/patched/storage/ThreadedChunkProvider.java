@@ -17,7 +17,6 @@ import com.google.common.collect.ImmutableSetMultimap;
 
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.registry.GameRegistry;
-import me.nallar.exception.ConcurrencyError;
 import me.nallar.patched.annotation.FakeExtend;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.ChunkGarbageCollector;
@@ -560,7 +559,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 						worldGenInProgress.set(Boolean.FALSE);
 					}
 				}
-				tryPopulateChunks(chunk);
 			}
 		} finally {
 			if (lock.decrementAndGet() == 0) {
@@ -572,13 +570,33 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		fireBukkitLoadEvent(chunk, wasGenerated);
 		chunkLoadLocks.remove(key);
 
+		synchronized (generateLock) {
+			tryPopulateChunks(chunk);
+		}
+
 		return chunk;
 	}
 
-	@Override
-	@Declare
-	public Chunk getChunkFastUnsafe(int x, int z) {
-		return (Chunk) chunks.getValueByKey(key(x, z));
+	private void populate(Chunk chunk) {
+		synchronized (chunk) {
+			int x = chunk.xPosition;
+			int z = chunk.zPosition;
+			if (chunk.isTerrainPopulated) {
+				Log.warning("Attempted to populate chunk " + x + ',' + z + " which is already populated.");
+				return;
+			}
+			if (generator != null) {
+				generator.populate(this, x, z);
+				fireBukkitPopulateEvent(chunk);
+				GameRegistry.generateWorld(x, z, world, generator, this);
+				chunk.setChunkModified(); // It may have been modified in generator.populate/GameRegistry.generateWorld.
+			}
+			//noinspection ConstantConditions
+			if (chunk.isTerrainPopulated) {
+				Log.warning("Chunk " + chunk + " had its isTerrainPopulated field set to true incorrectly by external code while populating");
+			}
+			chunk.isTerrainPopulated = true;
+		}
 	}
 
 	private void tryPopulateChunks(Chunk centerChunk) {
@@ -605,6 +623,12 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		}
 
 		return true;
+	}
+
+	@Override
+	@Declare
+	public Chunk getChunkFastUnsafe(int x, int z) {
+		return (Chunk) chunks.getValueByKey(key(x, z));
 	}
 
 	private AtomicInteger getLock(long key) {
@@ -681,31 +705,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	@Override
 	public void populate(IChunkProvider chunkProvider, int x, int z) {
 		throw new UnsupportedOperationException("Unused, inefficient parameter choice.");
-	}
-
-	private void populate(Chunk chunk) {
-		if (!Thread.holdsLock(generateLock)) {
-			Log.severe("Attempted to populate chunk without locking generateLock", new ConcurrencyError("Caused by: incorrect external code"));
-		}
-		synchronized (chunk) {
-			int x = chunk.xPosition;
-			int z = chunk.zPosition;
-			if (chunk.isTerrainPopulated) {
-				Log.warning("Attempted to populate chunk " + x + ',' + z + " which is already populated.");
-				return;
-			}
-			if (generator != null) {
-				generator.populate(this, x, z);
-				fireBukkitPopulateEvent(chunk);
-				GameRegistry.generateWorld(x, z, world, generator, this);
-				chunk.setChunkModified(); // It may have been modified in generator.populate/GameRegistry.generateWorld.
-			}
-			//noinspection ConstantConditions
-			if (chunk.isTerrainPopulated) {
-				Log.warning("Chunk " + chunk + " had its isTerrainPopulated field set to true incorrectly by external code while populating");
-			}
-			chunk.isTerrainPopulated = true;
-		}
 	}
 
 	@Override
