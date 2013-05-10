@@ -937,9 +937,17 @@ public abstract class PatchWorld extends World {
 		return ((a - b) / 2) + b;
 	}
 
+	private static boolean isBroken(double a) {
+		return Double.isNaN(a) || Double.isInfinite(a);
+	}
+
 	@Override
 	public float getBlockDensity(Vec3 start, AxisAlignedBB target) {
-		if (target.getAverageEdgeLength() > 10) {
+		if (isBroken(target.minX) || isBroken(target.maxX) ||
+				isBroken(target.minY) || isBroken(target.maxY) ||
+				isBroken(target.minZ) || isBroken(target.maxZ) ||
+				isBroken(start.xCoord) || isBroken(start.yCoord) || isBroken(start.zCoord) ||
+				target.getAverageEdgeLength() > 10) {
 			return 0.5f;
 		}
 		Vec3 center = getWorldVec3Pool().getVecFromPool(center(target.maxX, target.minX), center(target.maxY, target.minY), center(target.maxZ, target.minZ));
