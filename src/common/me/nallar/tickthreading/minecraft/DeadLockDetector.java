@@ -110,6 +110,7 @@ public class DeadLockDetector {
 				prefix = ", ";
 			}
 		}
+		sb.append("\n\n");
 		LoadingCache<String, List<ThreadInfo>> threads = CacheBuilder.newBuilder().build(new CacheLoader<String, List<ThreadInfo>>() {
 			@Override
 			public List<ThreadInfo> load(final String key) throws Exception {
