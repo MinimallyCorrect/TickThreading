@@ -520,7 +520,7 @@
 	</forgeModLoader>
 	<factorization>
 		<class id="factorization.common.TileEntityWrathLamp">
-			<replaceInitializer field="airToUpdate" class="me.nallar.tickthreading.collections.ThreadSafePriorityQueue">^static^</replaceInitializer>
+			<replaceInitializer field="airToUpdate" class="me.nallar.tickthreading.collections.SynchronizedPriorityQueue">^static^</replaceInitializer>
 			<threadLocal field="toVisit" type="java.util.HashSet" threadLocalField="javassist.is.faulty.ThreadLocals.factorizationFindLightAirParentToVisit"/>
 			<replaceMethodCall code="$_ = $0.getChunkFromBlockCoordsIfExists($$);" method="^class:World^.^method:World/getChunkFromBlockCoords^">findLightAirParent</replaceMethodCall>
 		</class>

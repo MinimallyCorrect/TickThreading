@@ -2,7 +2,7 @@ package me.nallar.tickthreading.collections;
 
 import java.util.PriorityQueue;
 
-public class ThreadSafePriorityQueue<T> extends PriorityQueue<T> {
+public class SynchronizedPriorityQueue<T> extends PriorityQueue<T> {
 	@Override
 	public synchronized T remove() {
 		return super.remove();
