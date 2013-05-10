@@ -8,6 +8,7 @@ import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,6 +21,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
 import cpw.mods.fml.common.FMLCommonHandler;
+import me.nallar.exception.ThreadStuckError;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.util.ChatFormat;
 import me.nallar.tickthreading.util.CollectionsUtil;
@@ -28,6 +30,7 @@ import net.minecraft.network.packet.Packet3Chat;
 import net.minecraft.server.MinecraftServer;
 
 public class DeadLockDetector {
+	private boolean attemptedToRecoverDeadlock = false;
 	private boolean sentWarningRecently = false;
 	private static volatile long lastTickTime = 0;
 	public static final Set<ThreadManager> threadManagers = Collections.newSetFromMap(new ConcurrentHashMap<ThreadManager, Boolean>());
@@ -63,10 +66,21 @@ public class DeadLockDetector {
 		}.start();
 	}
 
+	private void tryFixDeadlocks(String stuckManagerName) {
+		stuckManagerName += " - ";
+		Iterable<Thread> threads = Thread.getAllStackTraces().keySet();
+		for (Thread thread : threads) {
+			if (thread.getName().startsWith(stuckManagerName)) {
+				thread.stop(new ThreadStuckError("Deadlock detected, appears to be caused by " + stuckManagerName));
+			}
+		}
+	}
+
 	boolean checkForDeadlocks() {
 		Log.flush();
 		long deadTime = System.nanoTime() - lastTickTime;
 		if (lastTickTime == 0 || (!MinecraftServer.getServer().isServerRunning() && deadTime < (TickThreading.instance.deadLockTime * 10000000000l))) {
+			attemptedToRecoverDeadlock = false;
 			return true;
 		}
 		if (TickThreading.instance.exitOnDeadlock) {
@@ -82,17 +96,14 @@ public class DeadLockDetector {
 		if (deadTime < (TickThreading.instance.deadLockTime * 1000000000l)) {
 			return true;
 		}
-		if (TickThreading.instance.exitOnDeadlock) {
-			sendChatSafely(ChatFormat.RED + TickThreading.instance.messageDeadlockSavingExiting);
-		}
 		final MinecraftServer minecraftServer = MinecraftServer.getServer();
-		if (minecraftServer.currentlySaving) {
+		if (minecraftServer.currentlySaving.get() != 0) {
 			Log.severe("The server seems to have frozen while saving - Waiting for two minutes to give it time to complete.");
 			Log.flush();
-			trySleep(120000);
-			if (minecraftServer.currentlySaving) {
+			trySleep(180000);
+			if (minecraftServer.currentlySaving.get() != 0) {
 				Log.info("Server still seems to be saving, must've deadlocked.");
-				minecraftServer.currentlySaving = false;
+				minecraftServer.currentlySaving.set(0);
 			} else {
 				return true;
 			}
@@ -100,58 +111,77 @@ public class DeadLockDetector {
 		TreeMap<String, String> sortedThreads = new TreeMap<String, String>();
 		StringBuilder sb = new StringBuilder();
 		ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-		sb
-				.append("The server appears to have deadlocked.")
-				.append("\nLast tick ").append(deadTime / 1000000000).append("s ago.");
-		String prefix = "\nWaiting ThreadManagers: ";
-		for (ThreadManager threadManager : threadManagers) {
-			if (threadManager.isWaiting()) {
-				sb.append(prefix).append(threadManager.getName());
+		if (!attemptedToRecoverDeadlock) {
+			sb
+					.append("The server appears to have deadlocked.")
+					.append("\nLast tick ").append(deadTime / 1000000000).append("s ago.");
+			String prefix = "\nWaiting ThreadManagers: ";
+			Set<String> threadManagerSet = new HashSet<String>();
+			for (ThreadManager threadManager : DeadLockDetector.threadManagers) {
+				if (threadManager.isWaiting()) {
+					threadManagerSet.add(threadManager.getName());
+				}
+			}
+			for (ThreadManager threadManager : threadManagerSet.toArray(new ThreadManager[threadManagerSet.size()])) {
+				threadManagerSet.remove(threadManager.getParentName());
+			}
+			for (String threadManager : threadManagerSet) {
+				sb.append(prefix).append(threadManager);
 				prefix = ", ";
 			}
-		}
-		sb.append("\n\n");
-		LoadingCache<String, List<ThreadInfo>> threads = CacheBuilder.newBuilder().build(new CacheLoader<String, List<ThreadInfo>>() {
-			@Override
-			public List<ThreadInfo> load(final String key) throws Exception {
-				return new ArrayList<ThreadInfo>();
-			}
-		});
-		ThreadInfo[] t = threadMXBean.dumpAllThreads(true, true);
-		for (ThreadInfo thread : t) {
-			String info = toString(thread, false);
-			if (info != null) {
-				threads.getUnchecked(info).add(thread);
-			}
-		}
-		for (Map.Entry<String, List<ThreadInfo>> entry : threads.asMap().entrySet()) {
-			List<ThreadInfo> threadInfoList = entry.getValue();
-			ThreadInfo lowest = null;
-			for (ThreadInfo threadInfo : threadInfoList) {
-				if (lowest == null || threadInfo.getThreadName().toLowerCase().compareTo(lowest.getThreadName().toLowerCase()) < 0) {
-					lowest = threadInfo;
-				}
-			}
-			List threadNameList = CollectionsUtil.newList(threadInfoList, new Function<Object, Object>() {
+			sb.append("\n\n");
+			LoadingCache<String, List<ThreadInfo>> threads = CacheBuilder.newBuilder().build(new CacheLoader<String, List<ThreadInfo>>() {
 				@Override
-				public Object apply(final Object input) {
-					return ((ThreadInfo) input).getThreadName();
+				public List<ThreadInfo> load(final String key) throws Exception {
+					return new ArrayList<ThreadInfo>();
 				}
 			});
-			Collections.sort(threadNameList);
-			sortedThreads.put(lowest.getThreadName(), '"' + CollectionsUtil.join(threadNameList, "\", \"") + "\" " + entry.getKey());
-		}
-		sb.append(CollectionsUtil.join(sortedThreads.values(), "\n"));
-		long[] deadlockedThreads = threadMXBean.findDeadlockedThreads();
-
-		if (deadlockedThreads != null) {
-			ThreadInfo[] infos = threadMXBean.getThreadInfo(deadlockedThreads, true, true);
-			sb.append("Definitely deadlocked: \n");
-			for (ThreadInfo threadInfo : infos) {
-				sb.append(toString(threadInfo, true)).append('\n');
+			ThreadInfo[] t = threadMXBean.dumpAllThreads(true, true);
+			for (ThreadInfo thread : t) {
+				String info = toString(thread, false);
+				if (info != null) {
+					threads.getUnchecked(info).add(thread);
+				}
 			}
+			for (Map.Entry<String, List<ThreadInfo>> entry : threads.asMap().entrySet()) {
+				List<ThreadInfo> threadInfoList = entry.getValue();
+				ThreadInfo lowest = null;
+				for (ThreadInfo threadInfo : threadInfoList) {
+					if (lowest == null || threadInfo.getThreadName().toLowerCase().compareTo(lowest.getThreadName().toLowerCase()) < 0) {
+						lowest = threadInfo;
+					}
+				}
+				List threadNameList = CollectionsUtil.newList(threadInfoList, new Function<Object, Object>() {
+					@Override
+					public Object apply(final Object input) {
+						return ((ThreadInfo) input).getThreadName();
+					}
+				});
+				Collections.sort(threadNameList);
+				sortedThreads.put(lowest.getThreadName(), '"' + CollectionsUtil.join(threadNameList, "\", \"") + "\" " + entry.getKey());
+			}
+			sb.append(CollectionsUtil.join(sortedThreads.values(), "\n"));
+			long[] deadlockedThreads = threadMXBean.findDeadlockedThreads();
+
+			if (deadlockedThreads != null) {
+				ThreadInfo[] infos = threadMXBean.getThreadInfo(deadlockedThreads, true, true);
+				sb.append("Definitely deadlocked: \n");
+				for (ThreadInfo threadInfo : infos) {
+					sb.append(toString(threadInfo, true)).append('\n');
+				}
+			}
+			sb.append("\nAttempting to recover without restarting.");
+			Log.severe(sb.toString());
+			for (String threadManager : threadManagerSet) {
+				tryFixDeadlocks(threadManager);
+			}
+			attemptedToRecoverDeadlock = true;
+			return true;
 		}
-		Log.severe(sb.toString());
+		if (TickThreading.instance.exitOnDeadlock) {
+			sendChatSafely(ChatFormat.RED + TickThreading.instance.messageDeadlockSavingExiting);
+		}
+		Log.severe("Failed to recover from the deadlock.");
 		Log.flush();
 		if (!TickThreading.instance.exitOnDeadlock) {
 			Log.severe("Now attempting to save the world. The server will not stop, you must do this yourself. If you want the server to stop automatically on deadlock, enable exitOnDeadlock in TT's config.");

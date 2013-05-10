@@ -1,24 +1,29 @@
 package me.nallar.tickthreading.minecraft;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import cpw.mods.fml.common.FMLCommonHandler;
+import me.nallar.exception.ThreadStuckError;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.collections.ConcurrentIterableArrayList;
+import me.nallar.tickthreading.util.FakeServerThread;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.ThreadMinecraftServer;
 import net.minecraft.util.AxisAlignedBB;
 
 public final class ThreadManager {
+	public static final Map<Long, String> threadIdToManager = new ConcurrentHashMap<Long, String>();
 	private static final Profiler profiler = MinecraftServer.getServer().theProfiler;
 	private final boolean isServer = FMLCommonHandler.instance().getEffectiveSide().isServer();
 	private final BlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<Runnable>();
-	private final String namePrefix;
+	private String parentName;
+	private final String name;
 	private final Set<Thread> workThreads = new HashSet<Thread>();
 	private final Object readyLock = new Object();
 	private final AtomicInteger waiting = new AtomicInteger();
@@ -28,41 +33,47 @@ public final class ThreadManager {
 		@SuppressWarnings ("FieldRepeatedlyAccessedInMethod")
 		@Override
 		public void run() {
-			while (true) {
-				try {
-					Runnable runnable;
-					synchronized (taskQueue) {
-						runnable = taskQueue.take();
+			try {
+				while (true) {
+					try {
+						try {
+							Runnable runnable;
+							synchronized (taskQueue) {
+								runnable = taskQueue.take();
+							}
+							if (runnable == killTask) {
+								workThreads.remove(Thread.currentThread());
+								return;
+							}
+							runnable.run();
+						} catch (InterruptedException ignored) {
+						} catch (Throwable t) {
+							Log.severe("Unhandled exception in worker thread " + Thread.currentThread().getName(), t);
+						}
+					} catch (ThreadStuckError ignored) {
 					}
-					if (runnable == killTask) {
-						workThreads.remove(Thread.currentThread());
-						return;
+					if (waiting.decrementAndGet() == 0) {
+						endTime = System.nanoTime();
+						synchronized (readyLock) {
+							readyLock.notify();
+						}
 					}
-					runnable.run();
-				} catch (InterruptedException ignored) {
-				} catch (Throwable t) {
-					Log.severe("Unhandled exception in worker thread " + Thread.currentThread().getName(), t);
 				}
-				if (waiting.decrementAndGet() == 0) {
-					endTime = System.nanoTime();
-					synchronized (readyLock) {
-						readyLock.notify();
-					}
-				}
+			} finally {
+				threadIdToManager.remove(Thread.currentThread().getId());
 			}
 		}
 	};
 
 	private void newThread(String name) {
-		Thread workThread = isServer ? new ServerWorkThread() : new Thread(workerTask);
-		workThread.setName(name);
-		workThread.setDaemon(true);
+		Thread workThread = isServer ? new FakeServerThread(workerTask, name, true) : new Thread(workerTask);
 		workThread.start();
+		threadIdToManager.put(workThread.getId(), this.name);
 		workThreads.add(workThread);
 	}
 
 	public ThreadManager(int threads, String name) {
-		namePrefix = name;
+		this.name = name;
 		DeadLockDetector.threadManagers.add(this);
 		addThreads(threads);
 	}
@@ -72,7 +83,7 @@ public final class ThreadManager {
 	}
 
 	public long waitForCompletion() {
-		profiler.startSection(namePrefix);
+		profiler.startSection(name);
 		synchronized (readyLock) {
 			while (waiting.get() > 0) {
 				try {
@@ -120,12 +131,16 @@ public final class ThreadManager {
 		} else {
 			Log.severe("Failed to add " + runnable);
 		}
+		if (parentName == null) {
+			String pName = threadIdToManager.get(Thread.currentThread().getId());
+			parentName = pName == null ? "none" : pName;
+		}
 	}
 
 	private void addThreads(int number) {
 		number += workThreads.size();
 		for (int i = workThreads.size() + 1; i <= number; i++) {
-			newThread(namePrefix + " - " + i);
+			newThread(name + " - " + i);
 		}
 	}
 
@@ -145,7 +160,11 @@ public final class ThreadManager {
 	}
 
 	public String getName() {
-		return namePrefix;
+		return name;
+	}
+
+	public String getParentName() {
+		return parentName;
 	}
 
 	private static class KillRunnable implements Runnable {
@@ -154,17 +173,6 @@ public final class ThreadManager {
 
 		@Override
 		public void run() {
-		}
-	}
-
-	private class ServerWorkThread extends ThreadMinecraftServer {
-		public ServerWorkThread() {
-			super(null, "");
-		}
-
-		@Override
-		public void run() {
-			workerTask.run();
 		}
 	}
 }

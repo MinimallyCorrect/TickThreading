@@ -69,12 +69,12 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	@Declare
 	public static java.util.LinkedList playersToCheckWorld_;
 	@Declare
-	public volatile boolean currentlySaving_;
+	public final java.util.concurrent.atomic.AtomicInteger currentlySaving_ = null;
 	@Declare
 	public static java.util.Set<net.minecraftforge.common.Configuration> toSaveConfigurationSet_;
 
 	public void construct() {
-		currentlySaving = false;
+		currentlySaving = new AtomicInteger();
 		tickNetworkInMainThread = true;
 		exceptionCount = new HashMap<Integer, Integer>();
 		worldTickLengths = new ConcurrentHashMap<String, long[]>();
@@ -497,6 +497,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				if (world.tickCount % TickThreading.instance.saveInterval == 0) {
 					theProfiler.startSection("save");
 					try {
+						currentlySaving.getAndIncrement();
 						long st = 0;
 						boolean enabled = Timings.enabled;
 						if (enabled) {
@@ -515,7 +516,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 					} catch (MinecraftException e) {
 						throw UnsafeUtil.throwIgnoreChecked(e);
 					} finally {
-						currentlySaving = false;
+						currentlySaving.getAndDecrement();
 					}
 					theProfiler.endSection();
 				}
@@ -574,8 +575,8 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	@Override
 	@Declare
 	public void saveEverything() {
-		if (this.isServerRunning() && !currentlySaving) {
-			currentlySaving = true;
+		if (this.isServerRunning() && currentlySaving.get() == 0) {
+			currentlySaving.getAndIncrement();
 			try {
 				this.serverConfigManager.saveAllPlayerData();
 				this.saveAllWorlds(false);
@@ -589,7 +590,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 					}
 				}
 			} finally {
-				currentlySaving = false;
+				currentlySaving.getAndDecrement();
 			}
 		} else {
 			Log.severe("Server is already saving or crashed while saving - not attempting to save.");
