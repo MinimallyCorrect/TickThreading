@@ -122,8 +122,10 @@ public class DeadLockDetector {
 					threadManagerSet.add(threadManager.getName());
 				}
 			}
-			for (ThreadManager threadManager : threadManagerSet.toArray(new ThreadManager[threadManagerSet.size()])) {
-				threadManagerSet.remove(threadManager.getParentName());
+			for (ThreadManager threadManager : DeadLockDetector.threadManagers) {
+				if (threadManager.isWaiting()) {
+					threadManagerSet.remove(threadManager.getParentName());
+				}
 			}
 			for (String threadManager : threadManagerSet) {
 				sb.append(prefix).append(threadManager);
