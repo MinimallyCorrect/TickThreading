@@ -19,7 +19,7 @@ public class LongList {
 		int index = size++;
 		long[] list = this.list;
 		int length = list.length;
-		if (index > length) {
+		if (index >= length) {
 			this.list = list = Arrays.copyOf(list, length == 0 ? 10 : length * 2);
 		}
 		list[index] = value;
