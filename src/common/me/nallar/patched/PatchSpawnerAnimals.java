@@ -1,13 +1,12 @@
 package me.nallar.patched;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import me.nallar.tickthreading.Log;
+import me.nallar.tickthreading.collections.LongList;
+import me.nallar.tickthreading.collections.LongSet;
 import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityLiving;
@@ -32,8 +31,13 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 	private static final int farRange = 5;
 	private static final int spawnVariance = 6;
 	private static final int clumping = 4;
+	private static final int maxChunksPerPlayer = square(farRange * 2) - square(closeRange * 2);
 	private static int surfaceChance;
 	private static int gapChance;
+
+	private static int square(int a) {
+		return a * a;
+	}
 
 	// Spigot compatibility
 	@SuppressWarnings ("UnusedDeclaration")
@@ -104,10 +108,10 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 
 		profiler.startSection("spawnableChunks");
 		int attemptedSpawnedMobs = 0;
-		Set<Long> closeChunks = new HashSet<Long>();
-		List<Long> spawnableChunks = new ArrayList<Long>();
-		for (Object entityPlayer_ : worldServer.playerEntities) {
-			EntityPlayer entityPlayer = (EntityPlayer) entityPlayer_;
+		LongSet closeChunks = new LongSet();
+		Collection<EntityPlayer> entityPlayers = worldServer.playerEntities;
+		LongList spawnableChunks = new LongList(entityPlayers.size() * maxChunksPerPlayer);
+		for (EntityPlayer entityPlayer : entityPlayers) {
 			int pX = entityPlayer.chunkCoordX;
 			int pZ = entityPlayer.chunkCoordZ;
 			int x = pX - closeRange;
@@ -120,8 +124,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 				}
 			}
 		}
-		for (Object entityPlayer_ : worldServer.playerEntities) {
-			EntityPlayer entityPlayer = (EntityPlayer) entityPlayer_;
+		for (EntityPlayer entityPlayer : entityPlayers) {
 			int pX = entityPlayer.chunkCoordX;
 			int pZ = entityPlayer.chunkCoordZ;
 			int x = pX - farRange;
@@ -139,7 +142,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 		}
 		profiler.endStartSection("spawnMobs");
 
-		int size = spawnableChunks.size();
+		int size = spawnableChunks.size;
 		if (size < 1) {
 			return 0;
 		}

@@ -7,18 +7,27 @@ package me.nallar.patched.collection;
 import java.util.Arrays;
 
 import me.nallar.patched.annotation.FakeExtend;
+import me.nallar.tickthreading.patcher.Declare;
+import net.minecraft.util.LongHashMap;
 
 @SuppressWarnings ("unchecked")
 @FakeExtend
-public abstract class LongHashMap extends net.minecraft.util.LongHashMap {
+public abstract class PatchLongHashMap extends LongHashMap {
 	private static final long EMPTY_KEY = Long.MIN_VALUE;
 	private static final int BUCKET_SIZE = 4096;
-	private long[][] keys;
-	private Object[][] values;
+	private final long[][] keys;
+	private final Object[][] values;
 	private int size;
 
-	public LongHashMap() {
-		initialize();
+	public PatchLongHashMap() {
+		keys = new long[BUCKET_SIZE][];
+		values = new Object[BUCKET_SIZE][];
+	}
+
+	@Override
+	@Declare
+	public long[][] getKeys() {
+		return keys;
 	}
 
 	@Override
@@ -55,7 +64,13 @@ public abstract class LongHashMap extends net.minecraft.util.LongHashMap {
 	}
 
 	@Override
-	public synchronized void add(long key, Object value) {
+	public void add(long key, Object value) {
+		put(key, value);
+	}
+
+	@Override
+	@Declare
+	public synchronized Object put(long key, Object value) {
 		int index = (int) (keyIndex(key) & (BUCKET_SIZE - 1));
 		long[] innerKeys = keys[index];
 		Object[] innerValues = values[index];
@@ -77,9 +92,10 @@ public abstract class LongHashMap extends net.minecraft.util.LongHashMap {
 					size++;
 				}
 				if (currentKey == EMPTY_KEY || currentKey == key) {
+					Object old = innerValues[i];
 					innerKeys[i] = key;
 					innerValues[i] = value;
-					return;
+					return old;
 				}
 			}
 
@@ -91,6 +107,7 @@ public abstract class LongHashMap extends net.minecraft.util.LongHashMap {
 			innerValues[i] = value;
 			size++;
 		}
+		return null;
 	}
 
 	@Override
@@ -127,11 +144,6 @@ public abstract class LongHashMap extends net.minecraft.util.LongHashMap {
 		}
 
 		return null;
-	}
-
-	private void initialize() {
-		keys = new long[BUCKET_SIZE][];
-		values = new Object[BUCKET_SIZE][];
 	}
 
 	private static long keyIndex(long key) {

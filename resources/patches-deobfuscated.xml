@@ -207,7 +207,7 @@
 			<replaceMethod fromClass="me.nallar.patched.PatchAxisAlignedBB">intersectsWith</replaceMethod>
 		</class>
 		<class id="net.minecraft.util.LongHashMap">
-			<replace class="me.nallar.patched.collection.LongHashMap"/>
+			<replace class="me.nallar.patched.collection.PatchLongHashMap"/>
 		</class>
 		<class id="net.minecraft.util.IntHashMap">
 			<replace class="me.nallar.patched.collection.IntHashMap"/>
