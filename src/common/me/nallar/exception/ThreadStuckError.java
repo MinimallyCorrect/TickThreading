@@ -19,8 +19,4 @@ public class ThreadStuckError extends Error {
 	public ThreadStuckError(final Throwable cause) {
 		super(cause);
 	}
-
-	protected ThreadStuckError(final String message, final Throwable cause, final boolean enableSuppression, final boolean writableStackTrace) {
-		super(message, cause, enableSuppression, writableStackTrace);
-	}
 }
