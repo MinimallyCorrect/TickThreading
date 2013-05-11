@@ -292,7 +292,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 				}
 			} catch (Throwable throwable) {
 				String message = throwable.getMessage();
-				if ((message == null ? "" : message).contains("for invalid side")) {
+				if (message != null && message.contains("for invalid side")) {
 					invalidClasses.add(name);
 					throw UnsafeUtil.throwIgnoreChecked(throwable);
 				} else if (basicClass != null || DEBUG_CLASSLOADING) {
