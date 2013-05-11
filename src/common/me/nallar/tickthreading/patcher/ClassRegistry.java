@@ -122,6 +122,7 @@ public class ClassRegistry {
 		ZipOutputStream zout = null;
 		backupDirectory.mkdir();
 		patchedModsFolder.mkdir();
+		File modsFolder = new File(patchedModsFolder.getParent(), "mods");
 		int patchedClasses = 0;
 		try {
 			for (File zipFile : updatedFiles) {
@@ -172,6 +173,11 @@ public class ClassRegistry {
 			delete(tempDirectory);
 		}
 		Log.info("Patched " + patchedClasses + " mod classes.");
+		for (File file : patchedModsFolder.listFiles()) {
+			if (!new File(modsFolder, file.getName()).exists() && file.delete()) {
+				Log.info("Deleted old patched mod file " + file.getName());
+			}
+		}
 	}
 
 	public CtClass getClass(String className) throws NotFoundException {
