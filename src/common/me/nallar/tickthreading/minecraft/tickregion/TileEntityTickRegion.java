@@ -101,7 +101,7 @@ public class TileEntityTickRegion extends TickRegion {
 						}
 					}
 				} else if (tileEntity.worldObj != null && chunkProvider.chunkExists(xPos >> 4, zPos >> 4)) {
-					tileEntity.updateEntity();
+					tileEntity.tickTT();
 				}
 			} catch (Throwable throwable) {
 				Log.severe("Exception ticking TileEntity " + Log.toString(tileEntity) + " at x,y,z:" + xPos + ',' + tileEntity.yCoord + ',' + zPos

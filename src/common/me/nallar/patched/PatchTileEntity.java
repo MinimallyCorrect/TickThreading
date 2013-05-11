@@ -46,6 +46,12 @@ public abstract class PatchTileEntity extends TileEntity {
 
 	@Override
 	@Declare
+	public void tickTT() {
+		updateEntity();
+	}
+
+	@Override
+	@Declare
 	public void sendTileWithNotify() {
 		WorldServer worldServer = ((WorldServer) worldObj);
 		if (worldServer == null) {
