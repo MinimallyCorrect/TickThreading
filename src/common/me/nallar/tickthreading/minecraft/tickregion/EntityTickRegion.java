@@ -7,11 +7,13 @@ import java.util.Set;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickManager;
 import me.nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
+import me.nallar.unsafe.UnsafeAccess;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.ChunkProviderServer;
+import sun.misc.Unsafe;
 
 public class EntityTickRegion extends TickRegion {
 	private final Set<Entity> entitySet = new LinkedHashSet<Entity>();
@@ -48,8 +50,14 @@ public class EntityTickRegion extends TickRegion {
 
 				if (!entity.isDead) {
 					if (entity instanceof EntityPlayerMP) {
-						synchronized (((EntityPlayerMP) entity).playerNetServerHandler) {
-							world.updateEntity(entity);
+						Unsafe $ = UnsafeAccess.$;
+						Object lock = ((EntityPlayerMP) entity).playerNetServerHandler;
+						if ($.tryMonitorEnter(lock)) {
+							try {
+								world.updateEntity(entity);
+							} finally {
+								$.monitorExit(lock);
+							}
 						}
 					} else {
 						world.updateEntity(entity);

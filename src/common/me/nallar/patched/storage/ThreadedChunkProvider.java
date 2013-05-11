@@ -102,7 +102,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		this.world = world;
 		currentChunkLoader = this.loader = loader;
 		loadedChunks = Collections.synchronizedList(new ArrayList<Chunk>());
-		defaultEmptyChunk = new EmptyChunk(world, 0, 0);
+		world.emptyChunk = defaultEmptyChunk = new EmptyChunk(world, 0, 0);
 		world.worldGenInProgress = worldGenInProgress = new BooleanThreadLocal();
 		world.inImmediateBlockUpdate = new BooleanThreadLocal();
 	}

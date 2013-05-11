@@ -197,14 +197,16 @@
 		</class>
 		<class id="net.minecraft.util.Vec3Pool">
 			<!-- This prevents entities in multiple threads using the same Vec3 for collisions. -->
-			<addAll fromClass="me.nallar.patched.PatchVec3Pool"/>
+			<replace class="me.nallar.patched.PatchVec3Pool"/>
 		</class>
-		<class id="net.minecraft.util.Vec3Pool" env="mcpc">
-			<disable>release</disable>
+		<class id="net.minecraft.util.AABBPool">
+			<!-- This prevents entities in multiple threads using the same Vec3 for collisions. -->
+			<replace class="me.nallar.patched.PatchAABBPool"/>
 		</class>
 		<class id="net.minecraft.util.AxisAlignedBB">
 			<!-- Improves performance -->
-			<replaceMethod fromClass="me.nallar.patched.PatchAxisAlignedBB">intersectsWith</replaceMethod>
+			<addAll fromClass="me.nallar.patched.PatchAxisAlignedBB"/>
+			<replaceInitializer field="theAABBLocalPool" code="$_ = null;">^static^</replaceInitializer>
 		</class>
 		<class id="net.minecraft.util.LongHashMap">
 			<replace class="me.nallar.patched.collection.PatchLongHashMap"/>

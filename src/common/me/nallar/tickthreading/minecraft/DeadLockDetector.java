@@ -36,14 +36,13 @@ public class DeadLockDetector {
 	public static final Set<ThreadManager> threadManagers = Collections.newSetFromMap(new ConcurrentHashMap<ThreadManager, Boolean>());
 
 	public DeadLockDetector() {
+		final int sleepTime = Math.max(1000, (TickThreading.instance.deadLockTime * 1000) / 6);
 		Thread deadlockThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
+				trySleep(10000);
 				while (checkForDeadlocks()) {
-					try {
-						Thread.sleep(6000);
-					} catch (InterruptedException ignored) {
-					}
+					trySleep(sleepTime);
 				}
 			}
 		});
@@ -51,8 +50,15 @@ public class DeadLockDetector {
 		deadlockThread.start();
 	}
 
+	public static void tickAhead(int seconds) {
+		tick(System.nanoTime() + seconds * 1000000000L);
+	}
+
 	public static synchronized long tick(long nanoTime) {
-		return lastTickTime = nanoTime;
+		if (lastTickTime < nanoTime) {
+			lastTickTime = nanoTime;
+		}
+		return nanoTime;
 	}
 
 	public static void sendChatSafely(final String message) {
@@ -69,9 +75,24 @@ public class DeadLockDetector {
 	private void tryFixDeadlocks(String stuckManagerName) {
 		stuckManagerName += " - ";
 		Iterable<Thread> threads = Thread.getAllStackTraces().keySet();
+		boolean lastWasKill = false;
 		for (Thread thread : threads) {
 			if (thread.getName().startsWith(stuckManagerName)) {
-				thread.stop(new ThreadStuckError("Deadlock detected, appears to be caused by " + stuckManagerName));
+				if (lastWasKill) {
+					trySleep(5);
+				}
+				StackTraceElement[] stackTraceElements = thread.getStackTrace();
+				int runCount = 0;
+				for (StackTraceElement stackTraceElement : stackTraceElements) {
+					if ("run".equals(stackTraceElement.getMethodName())) {
+						runCount++;
+						Log.info(stackTraceElement.toString());
+					}
+				}
+				if (runCount >= 3) {
+					thread.stop(new ThreadStuckError("Deadlock detected, appears to be caused by " + stuckManagerName));
+					lastWasKill = true;
+				}
 			}
 		}
 	}

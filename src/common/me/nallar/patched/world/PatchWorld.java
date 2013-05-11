@@ -69,6 +69,8 @@ public abstract class PatchWorld extends World {
 	public int originalDimension_;
 	@Declare
 	public boolean unloaded_;
+	@Declare
+	public Chunk emptyChunk_;
 
 	public void construct() {
 		tickCount = rand.nextInt(240); // So when different worlds do every N tick actions,
@@ -544,6 +546,9 @@ public abstract class PatchWorld extends World {
 								Block block = Block.blocksList[blkid];
 								if (block != null) {
 									block.addCollidingBlockToList(this, x, y, z, par2AxisAlignedBB, collidingBoundingBoxes, par1Entity);
+									if (collidingBoundingBoxes.size() > limit) {
+										return collidingBoundingBoxes;
+									}
 								}
 							}
 						}
@@ -875,7 +880,8 @@ public abstract class PatchWorld extends World {
 	@Override
 	@Declare
 	public Chunk getChunkIfExists(int x, int z) {
-		return ((ChunkProviderServer) chunkProvider).getChunkIfExists(x, z);
+		Chunk chunk = chunkProvider.provideChunk(x, z);
+		return chunk == emptyChunk ? null : chunk;
 	}
 
 	@Override

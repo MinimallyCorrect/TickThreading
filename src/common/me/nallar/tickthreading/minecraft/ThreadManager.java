@@ -3,7 +3,6 @@ package me.nallar.tickthreading.minecraft;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -21,7 +20,7 @@ public final class ThreadManager {
 	public static final Map<Long, String> threadIdToManager = new ConcurrentHashMap<Long, String>();
 	private static final Profiler profiler = MinecraftServer.getServer().theProfiler;
 	private final boolean isServer = FMLCommonHandler.instance().getEffectiveSide().isServer();
-	private final BlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<Runnable>();
+	private final LinkedBlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<Runnable>();
 	private String parentName;
 	private final String name;
 	private final Set<Thread> workThreads = new HashSet<Thread>();
@@ -37,10 +36,7 @@ public final class ThreadManager {
 				while (true) {
 					try {
 						try {
-							Runnable runnable;
-							synchronized (taskQueue) {
-								runnable = taskQueue.take();
-							}
+							Runnable runnable = taskQueue.take();
 							if (runnable == killTask) {
 								workThreads.remove(Thread.currentThread());
 								return;

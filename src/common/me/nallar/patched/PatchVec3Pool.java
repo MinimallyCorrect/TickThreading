@@ -26,4 +26,8 @@ public abstract class PatchVec3Pool extends Vec3Pool {
 	public int func_82590_d() {
 		return 0;
 	}
+
+	public void release(Vec3 vec3) {
+		// Do nothing. MCPC+ compatibility.
+	}
 }
