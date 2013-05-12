@@ -68,6 +68,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	}
 
 	private static final Runnable doNothingRunnable = new DoNothingRunnable();
+	private static final int populationRange = 1;
 	private final NonBlockingHashMapLong<AtomicInteger> chunkLoadLocks = new NonBlockingHashMapLong<AtomicInteger>();
 	private final LongHashMap chunks = new LongHashMap();
 	private final LongHashMap loadingChunks = new LongHashMap();
@@ -602,10 +603,10 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	private void tryPopulateChunks(Chunk centerChunk) {
 		int cX = centerChunk.xPosition;
 		int cZ = centerChunk.zPosition;
-		for (int x = cX - 1; x <= cX + 1; x++) {
-			for (int z = cZ - 1; z <= cZ + 1; z++) {
+		for (int x = cX - populationRange; x <= cX + populationRange; x++) {
+			for (int z = cZ - populationRange; z <= cZ + populationRange; z++) {
 				Chunk chunk = getChunkFastUnsafe(x, z);
-				if (chunk != null && !chunk.partiallyUnloaded && !chunk.isTerrainPopulated && checkChunksExistLoadedNormally(x - 1, z - 1, x - 1, z + 1)) {
+				if (chunk != null && !chunk.queuedUnload && !chunk.partiallyUnloaded && !chunk.isTerrainPopulated && checkChunksExistLoadedNormally(x - populationRange, z - populationRange, x - populationRange, z + populationRange)) {
 					populate(chunk);
 				}
 			}
@@ -616,7 +617,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		for (int x = minX; x <= maxX; ++x) {
 			for (int z = minZ; z <= maxZ; ++z) {
 				Chunk chunk = getChunkFastUnsafe(x, z);
-				if (chunk == null || chunk.partiallyUnloaded) {
+				if (chunk == null || chunk.queuedUnload || chunk.partiallyUnloaded) {
 					return false;
 				}
 			}
