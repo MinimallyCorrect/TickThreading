@@ -89,6 +89,12 @@ public abstract class PatchWorld extends World {
 
 	@Override
 	@Declare
+	public boolean onClient() {
+		return isRemote;
+	}
+
+	@Override
+	@Declare
 	public void setDimension(int dimensionId) {
 		WorldProvider provider = this.provider;
 		this.dimensionId = dimensionId;

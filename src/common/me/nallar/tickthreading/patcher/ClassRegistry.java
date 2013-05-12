@@ -59,6 +59,7 @@ public class ClassRegistry {
 	{
 		MethodInfo.doPreverify = true;
 		classes.appendSystemPath();
+		classes.importPackage("java.util");
 	}
 
 	public void clearClassInfo() {

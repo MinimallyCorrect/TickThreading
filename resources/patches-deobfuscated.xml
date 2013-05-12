@@ -905,6 +905,42 @@
 		<class id="thaumcraft.common.AuraManager">
 			<synchronize>registerAuraNode</synchronize>
 		</class>
+		<class id="thaumcraft.common.blocks.TileCrystalCapacitor">
+			<replaceFieldUsage field="count" writeCode="{ }" readCode="{ $_ = null; }">^all^</replaceFieldUsage>
+			<removeField field="count"/>
+			<insertAfter code="interval = new Random().nextInt(300);"/>
+			<replaceMethod code="{
+				^class:World^ world = this.^field:TileEntity/worldObj^;
+				if (!world.onClient() &amp;&amp; interval++ % 300 == 0) {
+					ArrayList e = thaumcraft.common.AuraManager.getAurasWithin(world, ^field:TileEntity/xCoord^ + 0.5, ^field:TileEntity/yCoord^ + 0.5, ^field:TileEntity/zCoord^ + 0.5);
+					if(e.size() == 0) {
+					   return;
+					}
+
+					Iterator i$ = e.iterator();
+
+					while(i$.hasNext()) {
+					   Integer key = (Integer)i$.next();
+					   thaumcraft.api.AuraNode nd = thaumcraft.common.AuraManager.getNode(key.intValue());
+					   if(nd != null) {
+					      if(nd.level &gt; nd.baseLevel &amp;&amp; this.storedVis &lt; this.maxVis) {
+					         thaumcraft.common.AuraManager.queueNodeChanges(nd.key, -1, 0, false, null, 0.0F, 0.0F, 0.0F);
+					         ++this.storedVis;
+					         sendTile();
+					         break;
+					      }
+
+					      if(nd.level &lt; nd.baseLevel &amp;&amp; this.storedVis &gt; 0) {
+					         thaumcraft.common.AuraManager.queueNodeChanges(nd.key, 1, 0, false, null, 0.0F, 0.0F, 0.0F);
+					         --this.storedVis;
+					         sendTile();
+					         break;
+					      }
+					   }
+					}
+				}
+			}">^method:TileEntity/updateEntity^</replaceMethod>
+		</class>
 		<class id="thaumcraft.common.blocks.TileMarker">
 			<replaceInitializer field="markers" class="me.nallar.tickthreading.collections.CHashMap">^static^</replaceInitializer>
 			<replaceInitializer field="markedForDeletion" class="me.nallar.tickthreading.collections.ArrayListReplaceIterateTempListClear">^static^</replaceInitializer>

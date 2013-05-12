@@ -32,6 +32,7 @@ import javassist.bytecode.CodeAttribute;
 import javassist.bytecode.CodeIterator;
 import javassist.bytecode.ConstPool;
 import javassist.bytecode.Descriptor;
+import javassist.bytecode.FieldInfo;
 import javassist.bytecode.MethodInfo;
 import javassist.bytecode.Mnemonic;
 import javassist.bytecode.Opcode;
@@ -1045,6 +1046,19 @@ public class Patches {
 			}
 		}
 		methodInfo.rebuildStackMapIf6(ctClass.getClassPool(), ctClass.getClassFile2());
+	}
+
+	@Patch (
+			requiredAttributes = "field"
+	)
+	public void removeField(CtClass ctClass, Map<String, String> attributes) {
+		String field = attributes.get("field");
+		Iterator<FieldInfo> i$ = ctClass.getClassFile().getFields().iterator();
+		while (i$.hasNext()) {
+			if (i$.next().getName().equals(field)) {
+				i$.remove();
+			}
+		}
 	}
 
 	private static String classSignatureToName(String signature) {
