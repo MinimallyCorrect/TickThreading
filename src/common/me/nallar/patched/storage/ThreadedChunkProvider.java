@@ -560,6 +560,9 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 						worldGenInProgress.set(Boolean.FALSE);
 					}
 				}
+				synchronized (generateLock) {
+					tryPopulateChunks(chunk);
+				}
 			}
 		} finally {
 			if (lock.decrementAndGet() == 0) {
@@ -570,10 +573,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		chunk.onChunkLoad();
 		fireBukkitLoadEvent(chunk, wasGenerated);
 		chunkLoadLocks.remove(key);
-
-		synchronized (generateLock) {
-			tryPopulateChunks(chunk);
-		}
 
 		return chunk;
 	}
