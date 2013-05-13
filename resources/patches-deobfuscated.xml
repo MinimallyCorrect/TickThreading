@@ -25,6 +25,8 @@
 		<class id="net.minecraft.server.MinecraftServer">
 			<addAll fromClass="me.nallar.patched.server.PatchMinecraftServer"/>
 			<public field="mcServer"/>
+			<volatile field="serverRunning"/>
+			<volatile field="serverIsRunning"/>
 		</class>
 		<class id="net.minecraft.server.MinecraftServer" env="mcpc">
 			<replaceMethod code="{
@@ -939,7 +941,8 @@
 					   }
 					}
 				}
-			}">^method:TileEntity/updateEntity^</replaceMethod>
+			}">^method:TileEntity/updateEntity^
+			</replaceMethod>
 		</class>
 		<class id="thaumcraft.common.blocks.TileMarker">
 			<replaceInitializer field="markers" class="me.nallar.tickthreading.collections.CHashMap">^static^</replaceInitializer>

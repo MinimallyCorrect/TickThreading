@@ -915,8 +915,8 @@ public class Patches {
 			emptyConstructor = false
 	)
 	public void synchronize(Object o, Map<String, String> attributes) throws CannotCompileException {
+		//noinspection StatementWithEmptyBody
 		if (o instanceof CtConstructor) {
-			return;
 		} else if (o instanceof CtMethod) {
 			synchronize((CtMethod) o, attributes.get("field"));
 		} else {

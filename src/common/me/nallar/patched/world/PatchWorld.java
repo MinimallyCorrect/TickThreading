@@ -189,7 +189,7 @@ public abstract class PatchWorld extends World {
 			try {
 				return getChunkFromChunkCoords(x >> 4, z >> 4).getBlockID(x & 15, y, z & 15);
 			} catch (Throwable t) {
-				Log.severe("Exception getting block ID in " + Log.name(this) + " at x,y,z" + x + ',' + y + ',' + z, t);
+				Log.severe("Exception getting block ID in " + Log.pos(this, x, y, z), t);
 			}
 		}
 		return 0;
@@ -203,7 +203,7 @@ public abstract class PatchWorld extends World {
 				Chunk chunk = ((ChunkProviderServer) chunkProvider).getChunkIfExists(x >> 4, z >> 4);
 				return chunk == null ? -1 : chunk.getBlockID(x & 15, y, z & 15);
 			} catch (Throwable t) {
-				Log.severe("Exception getting block ID in " + Log.name(this) + " at x,y,z" + x + ',' + y + ',' + z, t);
+				Log.severe("Exception getting block ID in " + Log.pos(this, x, y, z), t);
 			}
 		}
 		return 0;
@@ -300,7 +300,7 @@ public abstract class PatchWorld extends World {
 				try {
 					var6.onNeighborBlockChange(this, x, y, z, par4);
 				} catch (Throwable t) {
-					Log.severe("Exception while updating block neighbours at " + x + ',' + y + ',' + z, t);
+					Log.severe("Exception while updating block neighbours " + Log.pos(this, x, y, z), t);
 				}
 			}
 		}

@@ -68,11 +68,6 @@ public abstract class TickRegion implements Runnable {
 
 	protected abstract String getShortTypeName();
 
-	public String getStats() {
-		return this.getClass().getSimpleName() + " - X: " + regionX * manager.regionSize + ", Z: " + regionZ * manager.regionSize + ", time: " + getAverageTickTime() + "ms"
-				+ "\n size: " + size();
-	}
-
 	@Override
 	public String toString() {
 		return "rX: " + regionX + ", rZ: " + regionZ + ", hashCode: " + hashCode;
@@ -89,8 +84,6 @@ public abstract class TickRegion implements Runnable {
 		TickRegion otherTickRegion = (TickRegion) other;
 		return otherTickRegion.hashCode == this.hashCode && this.getClass().isInstance(other);
 	}
-
-	protected abstract TickRegion getCallable(int regionX, int regionZ);
 
 	public abstract boolean isEmpty();
 

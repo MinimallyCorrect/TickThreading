@@ -4,7 +4,6 @@ import java.io.File;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -70,13 +69,6 @@ public enum CollectionsUtil {
 			join = true;
 		}
 		return stringBuilder.toString();
-	}
-
-	public static Collection<String> stringify(Iterable<?> objects, Collection<String> strings) {
-		for (Object o : objects) {
-			strings.add(o.toString());
-		}
-		return strings;
 	}
 
 	public static String joinMap(Map<?, ?> map) {

@@ -175,11 +175,6 @@ public class TileEntityTickRegion extends TickRegion {
 	}
 
 	@Override
-	protected TickRegion getCallable(int regionX, int regionY) {
-		return manager.getTileEntityRegion(TickManager.getHashCodeFromRegionCoords(regionX, regionY));
-	}
-
-	@Override
 	public boolean isEmpty() {
 		return tileEntitySet.isEmpty();
 	}

@@ -119,7 +119,7 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 			try {
 				nbttagcompound = CompressedStreamTools.read(dataInputStream);
 			} catch (Throwable t) {
-				t.printStackTrace();
+				Log.severe("Failed to load chunk " + Log.pos(world, x, z), t);
 				return null;
 			}
 		}
@@ -187,7 +187,7 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 			}
 			this.addToSaveQueue(chunk.getChunkCoordIntPair(), nbttagcompound, chunk.alreadySavedAfterUnload || chunk.partiallyUnloaded || !chunk.isChunkLoaded);
 		} catch (Exception exception) {
-			exception.printStackTrace();
+			Log.severe("Failed to save chunk " + Log.pos(world, chunk.xPosition, chunk.zPosition));
 		}
 	}
 
@@ -226,7 +226,7 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 		try {
 			this.writeChunkNBTTags(anvilchunkloaderpending);
 		} catch (Exception exception) {
-			exception.printStackTrace();
+			Log.severe("Failed to write chunk data to disk " + Log.pos(anvilchunkloaderpending.chunkCoordinate.chunkXPos, anvilchunkloaderpending.chunkCoordinate.chunkZPos));
 		}
 
 		inProgressSaves.remove(hash);

@@ -137,11 +137,6 @@ public class EntityTickRegion extends TickRegion {
 	}
 
 	@Override
-	protected TickRegion getCallable(int regionX, int regionY) {
-		return manager.getEntityRegion(TickManager.getHashCodeFromRegionCoords(regionX, regionY));
-	}
-
-	@Override
 	public boolean isEmpty() {
 		return entitySet.isEmpty();
 	}

@@ -72,7 +72,7 @@ public class DeadLockDetector {
 		}.start();
 	}
 
-	private void tryFixDeadlocks(String stuckManagerName) {
+	private static void tryFixDeadlocks(String stuckManagerName) {
 		stuckManagerName += " - ";
 		Iterable<Thread> threads = Thread.getAllStackTraces().keySet();
 		boolean lastWasKill = false;

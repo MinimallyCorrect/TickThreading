@@ -12,7 +12,7 @@ import java.util.Set;
 import me.nallar.tickthreading.Log;
 
 public class LinkedTimedHashMapQueue<K> extends HashMap<K, Integer> {
-	private int ticks = Integer.MIN_VALUE;
+	int ticks = Integer.MIN_VALUE;
 	private final Map<K, Integer> map;
 	private static final long serialVersionUID = 7249069246763182397L;
 

@@ -73,7 +73,7 @@ public class Metrics {
 	/**
 	 * The current revision number
 	 */
-	private final static int REVISION = 6;
+	private static final int REVISION = 6;
 	/**
 	 * The base url of the metrics domain
 	 */
@@ -111,10 +111,6 @@ public class Metrics {
 	 */
 	private final Configuration configuration;
 	/**
-	 * The metrics configuration file
-	 */
-	private final File configurationFile;
-	/**
 	 * Unique server id
 	 */
 	private final String guid;
@@ -141,8 +137,7 @@ public class Metrics {
 		this.modversion = modversion;
 
 		// load the config
-		configurationFile = getConfigFile();
-		configuration = new Configuration(configurationFile);
+		configuration = new Configuration(getConfigFile());
 
 		// Get values, and add some defaults, if needed
 		configuration.get(Configuration.CATEGORY_GENERAL, "opt-out", false,
@@ -255,6 +250,7 @@ public class Metrics {
 				}
 				if (thrd == null) {
 					thrd = new Thread(new Runnable() {
+						@Override
 						public void run() {
 							try {
 								// We use the inverse of firstPost because if it
@@ -359,7 +355,7 @@ public class Metrics {
 	 * such as the GUID and opt-out status
 	 * @return the File object for the config file
 	 */
-	public File getConfigFile() {
+	public static File getConfigFile() {
 		return new File(Loader.instance().getConfigDir(), "PluginMetrics.cfg");
 	}
 
@@ -402,7 +398,7 @@ public class Metrics {
 		int coreCount = Runtime.getRuntime().availableProcessors();
 
 		// normalize os arch .. amd64 -> x86_64
-		if (osarch.equals("amd64")) {
+		if ("amd64".equals(osarch)) {
 			osarch = "x86_64";
 		}
 
@@ -505,7 +501,7 @@ public class Metrics {
 	 * POST requests
 	 * @return true if mineshafter is installed on the server
 	 */
-	private boolean isMineshafterPresent() {
+	private static boolean isMineshafterPresent() {
 		try {
 			Class.forName("mineshafter.MineServer");
 			return true;
@@ -559,7 +555,7 @@ public class Metrics {
 		 */
 		private final Set<Plotter> plotters = new LinkedHashSet<Plotter>();
 
-		private Graph(final String name) {
+		Graph(final String name) {
 			this.name = name;
 		}
 
@@ -621,7 +617,7 @@ public class Metrics {
 	/**
 	 * Interface used to collect custom data for a plugin
 	 */
-	public static abstract class Plotter {
+	public abstract static class Plotter {
 		/**
 		 * The plot's name
 		 */

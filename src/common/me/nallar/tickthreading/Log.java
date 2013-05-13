@@ -284,4 +284,20 @@ public class Log {
 	public static void log(Level level, Throwable throwable, String s) {
 		LOGGER.log(level, s, throwable);
 	}
+
+	public static String pos(final World world, final int x, final int z) {
+		return "in " + world.getName() + " " + pos(x, z);
+	}
+
+	public static String pos(final int x, final int z) {
+		return x + ", " + z;
+	}
+
+	public static String pos(final World world, final int x, final int y, final int z) {
+		return "in " + world.getName() + " " + pos(x, y, z);
+	}
+
+	public static String pos(final int x, final int y, final int z) {
+		return "at " + x + ", " + y + ", " + z;
+	}
 }
