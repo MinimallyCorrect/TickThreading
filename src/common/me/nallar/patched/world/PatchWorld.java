@@ -300,7 +300,7 @@ public abstract class PatchWorld extends World {
 				try {
 					var6.onNeighborBlockChange(this, x, y, z, par4);
 				} catch (Throwable t) {
-					Log.severe("Exception while updating block neighbours", t);
+					Log.severe("Exception while updating block neighbours at " + x + ',' + y + ',' + z, t);
 				}
 			}
 		}
