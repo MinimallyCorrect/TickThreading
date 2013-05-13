@@ -560,9 +560,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 						worldGenInProgress.set(Boolean.FALSE);
 					}
 				}
-				synchronized (generateLock) {
-					tryPopulateChunks(chunk);
-				}
 			}
 		} finally {
 			if (lock.decrementAndGet() == 0) {
@@ -573,6 +570,10 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		chunk.onChunkLoad();
 		fireBukkitLoadEvent(chunk, wasGenerated);
 		chunkLoadLocks.remove(key);
+
+		synchronized (generateLock) {
+			tryPopulateChunks(chunk);
+		}
 
 		return chunk;
 	}
@@ -605,7 +606,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		for (int x = cX - populationRange; x <= cX + populationRange; x++) {
 			for (int z = cZ - populationRange; z <= cZ + populationRange; z++) {
 				Chunk chunk = getChunkFastUnsafe(x, z);
-				if (chunk != null && !chunk.queuedUnload && !chunk.partiallyUnloaded && !chunk.isTerrainPopulated && checkChunksExistLoadedNormally(x - populationRange, z - populationRange, x - populationRange, z + populationRange)) {
+				if (chunk != null && !chunk.queuedUnload && !chunk.partiallyUnloaded && !chunk.isTerrainPopulated && checkChunksExistLoadedNormally(x - populationRange, z - populationRange, x + populationRange, z + populationRange)) {
 					populate(chunk);
 				}
 			}
