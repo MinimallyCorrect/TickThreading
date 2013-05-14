@@ -210,14 +210,19 @@ public abstract class PatchWorld extends World {
 	}
 
 	@Override
+	public Chunk getChunkFromChunkCoords(int x, int z) {
+		return chunkProvider.provideChunk(x, z);
+	}
+
+	@Override
 	@Declare
-	public Chunk getChunkFromChunkCoordsForceLoad(int x, int z) {
+	public Chunk getChunkFromChunkCoordsWithLoad(int x, int z) {
 		return chunkProvider.loadChunk(x, z);
 	}
 
 	@Override
 	@Declare
-	public int getBlockIdForceLoad(int x, int y, int z) {
+	public int getBlockIdWithLoad(int x, int y, int z) {
 		if (y >= 256) {
 			return 0;
 		} else {
@@ -334,7 +339,7 @@ public abstract class PatchWorld extends World {
 
 	@Override
 	@Declare
-	public TileEntity getTEForceLoad(int x, int y, int z) {
+	public TileEntity getTEWithLoad(int x, int y, int z) {
 		if (y >= 256) {
 			return null;
 		} else {

@@ -32,7 +32,6 @@ import javassist.bytecode.CodeAttribute;
 import javassist.bytecode.CodeIterator;
 import javassist.bytecode.ConstPool;
 import javassist.bytecode.Descriptor;
-import javassist.bytecode.FieldInfo;
 import javassist.bytecode.MethodInfo;
 import javassist.bytecode.Mnemonic;
 import javassist.bytecode.Opcode;
@@ -47,6 +46,8 @@ import javassist.expr.NewArray;
 import javassist.expr.NewExpr;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.mappings.MethodDescription;
+import me.nallar.tickthreading.util.MappingUtil;
+import me.nallar.unsafe.UnsafeUtil;
 import org.omg.CORBA.IntHolder;
 
 @SuppressWarnings ("MethodMayBeStatic")
@@ -1051,18 +1052,41 @@ public class Patches {
 	@Patch (
 			requiredAttributes = "field"
 	)
-	public void removeField(CtClass ctClass, Map<String, String> attributes) {
-		String field = attributes.get("field");
-		Iterator<FieldInfo> i$ = ctClass.getClassFile().getFields().iterator();
-		while (i$.hasNext()) {
-			if (i$.next().getName().equals(field)) {
-				i$.remove();
-			}
-		}
+	public void removeField(CtClass ctClass, Map<String, String> attributes) throws NotFoundException {
+		ctClass.removeField(ctClass.getDeclaredField(attributes.get("field")));
 	}
 
 	private static String classSignatureToName(String signature) {
 		//noinspection HardcodedFileSeparator
 		return signature.substring(1, signature.length() - 1).replace("/", ".");
+	}
+
+	public static void findUnusedFields(CtClass ctClass) {
+		final Set<String> readFields = new HashSet<String>();
+		final Set<String> writtenFields = new HashSet<String>();
+		try {
+			ctClass.instrument(new ExprEditor() {
+				@Override
+				public void edit(FieldAccess fieldAccess) {
+					if (fieldAccess.isReader()) {
+						readFields.add(fieldAccess.getFieldName());
+					} else if (fieldAccess.isWriter()) {
+						writtenFields.add(fieldAccess.getFieldName());
+					}
+				}
+			});
+			for (CtField ctField : ctClass.getDeclaredFields()) {
+				String fieldName = ctField.getName();
+				if (Modifier.isPrivate(ctField.getModifiers()) && !readFields.contains(fieldName)) {
+					if (writtenFields.contains(fieldName)) {
+						//Log.warning("Field " + fieldName + " is written to but not read from in class " + MappingUtil.debobfuscate(ctClass.getName()));
+					} else {
+						ctClass.removeField(ctField);
+					}
+				}
+			}
+		} catch (Throwable t) {
+			throw UnsafeUtil.throwIgnoreChecked(t);
+		}
 	}
 }

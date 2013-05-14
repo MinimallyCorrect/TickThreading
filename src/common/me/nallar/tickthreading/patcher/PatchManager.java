@@ -236,6 +236,7 @@ public class PatchManager {
 		for (Map.Entry<String, CtClass> entry : patchingClasses.entrySet()) {
 			String className = entry.getKey();
 			CtClass ctClass = entry.getValue();
+			Patches.findUnusedFields(ctClass);
 			try {
 				classRegistry.update(className, ctClass.toBytecode());
 			} catch (Exception e) {

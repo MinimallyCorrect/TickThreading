@@ -334,8 +334,8 @@
 			<noFinal field="chunkZPos"/>
 		</class>
 		<class id="net.minecraft.world.Teleporter">
-			<replaceMethodCall newMethod="getTEForceLoad" method="^class:WorldServer^.^method:World/getBlockTileEntity^">^all^</replaceMethodCall>
-			<replaceMethodCall newMethod="getBlockIdForceLoad" method="^class:WorldServer^.^method:World/getBlockId^">^all^</replaceMethodCall>
+			<replaceMethodCall newMethod="getTEWithLoad" method="^class:WorldServer^.^method:World/getBlockTileEntity^">^all^</replaceMethodCall>
+			<replaceMethodCall newMethod="getBlockIdWithLoad" method="^class:WorldServer^.^method:World/getBlockId^">^all^</replaceMethodCall>
 		</class>
 		<class id="net.minecraft.crash.CrashReport">
 			<addAll fromClass="me.nallar.patched.server.PatchCrashReport"/>
@@ -476,7 +476,7 @@
 							code="if ($1 != null &amp;&amp; $2 != null) { $1.world.^method:World/getChunkProvider^().^method:IChunkProvider/loadChunk^($2.^field:ChunkCoordIntPair/chunkXPos^, $2.^field:ChunkCoordIntPair/chunkZPos^); }">
 				forceChunk
 			</insertAfter>
-			<replaceMethodCall newMethod="getChunkFromChunkCoordsForceLoad" method="^class:World^.^method:World/getChunkFromChunkCoords^">loadWorld</replaceMethodCall>
+			<replaceMethodCall newMethod="getChunkFromChunkCoordsWithLoad" method="^class:World^.^method:World/getChunkFromChunkCoords^">loadWorld</replaceMethodCall>
 		</class>
 	</forge>
 	<forgeModLoader>
@@ -550,8 +550,8 @@
 	</buildCraftEnergy>
 	<buildCraftFactory>
 		<class id="buildcraft.BuildCraftFactory$QuarryChunkloadCallback">
-			<replaceMethodCall newMethod="getTEForceLoad" method="^class:World^.^method:World/getBlockTileEntity^">ticketsLoaded(Ljava.util.List;L^class:World^;)V</replaceMethodCall>
-			<replaceMethodCall newMethod="getBlockIdForceLoad" method="^class:World^.^method:World/getBlockId^">ticketsLoaded(Ljava.util.List;L^class:World^;I)Ljava.util.List;</replaceMethodCall>
+			<replaceMethodCall newMethod="getTEWithLoad" method="^class:World^.^method:World/getBlockTileEntity^">ticketsLoaded(Ljava.util.List;L^class:World^;)V</replaceMethodCall>
+			<replaceMethodCall newMethod="getBlockIdWithLoad" method="^class:World^.^method:World/getBlockId^">ticketsLoaded(Ljava.util.List;L^class:World^;I)Ljava.util.List;</replaceMethodCall>
 		</class>
 	</buildCraftFactory>
 	<buildCraftTransport>
@@ -729,12 +729,12 @@
 		</class>
 		<class id="codechicken.chunkloader.ChunkLoaderManager">
 			<disable>cleanChunks</disable>
-			<replaceMethodCall newMethod="getTEForceLoad" method="^class:World^.^method:World/getBlockTileEntity^">^all^</replaceMethodCall>
-			<replaceMethodCall newMethod="getBlockIdForceLoad" method="^class:World^.^method:World/getBlockId^">^all^</replaceMethodCall>
+			<replaceMethodCall newMethod="getTEWithLoad" method="^class:World^.^method:World/getBlockTileEntity^">^all^</replaceMethodCall>
+			<replaceMethodCall newMethod="getBlockIdWithLoad" method="^class:World^.^method:World/getBlockId^">^all^</replaceMethodCall>
 		</class>
 		<class id="codechicken.chunkloader.ChunkLoaderManager$ChunkLoaderOrganiser">
-			<replaceMethodCall newMethod="getTEForceLoad" method="^class:World^.^method:World/getBlockTileEntity^">^all^</replaceMethodCall>
-			<replaceMethodCall newMethod="getBlockIdForceLoad" method="^class:World^.^method:World/getBlockId^">^all^</replaceMethodCall>
+			<replaceMethodCall newMethod="getTEWithLoad" method="^class:World^.^method:World/getBlockTileEntity^">^all^</replaceMethodCall>
+			<replaceMethodCall newMethod="getBlockIdWithLoad" method="^class:World^.^method:World/getBlockId^">^all^</replaceMethodCall>
 			<synchronize>revive(^class:World^)V</synchronize>
 			<replaceInitializer field="timedUnloadQueue" class="me.nallar.tickthreading.collections.LinkedTimedHashMapQueue"/>
 		</class>
@@ -834,10 +834,10 @@
 			<replaceInitializer field="hasFallen" class="me.nallar.tickthreading.collections.CHashMap"/>
 		</class>
 		<class id="portalgun.common.core.ChunkLoadHandler">
-			<replaceMethodCall newMethod="getTEForceLoad" method="^class:World^.^method:World/getBlockTileEntity^">
+			<replaceMethodCall newMethod="getTEWithLoad" method="^class:World^.^method:World/getBlockTileEntity^">
 				ticketsLoaded(Ljava.util.List;L^class:World^;)V,ticketsLoaded(Ljava.util.List;L^class:World^;I)Ljava.util.List;
 			</replaceMethodCall>
-			<replaceMethodCall newMethod="getBlockIdForceLoad" method="^class:World^.^method:World/getBlockId^">
+			<replaceMethodCall newMethod="getBlockIdWithLoad" method="^class:World^.^method:World/getBlockId^">
 				ticketsLoaded(Ljava.util.List;L^class:World^;)V,ticketsLoaded(Ljava.util.List;L^class:World^;I)Ljava.util.List;
 			</replaceMethodCall>
 		</class>
@@ -881,10 +881,10 @@
 			<synchronize/>
 		</class>
 		<class id="chb.mods.mffs.common.ModularForceFieldSystem$MFFSChunkloadCallback">
-			<replaceMethodCall newMethod="getTEForceLoad" method="^class:World^.^method:World/getBlockTileEntity^">
+			<replaceMethodCall newMethod="getTEWithLoad" method="^class:World^.^method:World/getBlockTileEntity^">
 				ticketsLoaded(Ljava.util.List;L^class:World^;)V,ticketsLoaded(Ljava.util.List;L^class:World^;I)Ljava.util.List;
 			</replaceMethodCall>
-			<replaceMethodCall newMethod="getBlockIdForceLoad" method="^class:World^.^method:World/getBlockId^">
+			<replaceMethodCall newMethod="getBlockIdWithLoad" method="^class:World^.^method:World/getBlockId^">
 				ticketsLoaded(Ljava.util.List;L^class:World^;)V,ticketsLoaded(Ljava.util.List;L^class:World^;I)Ljava.util.List;
 			</replaceMethodCall>
 		</class>
@@ -1056,10 +1056,10 @@
 	</forestry>
 	<railCraft>
 		<class id="railcraft.common.util.misc.ChunkManager">
-			<replaceMethodCall newMethod="getTEForceLoad" method="^class:World^.^method:World/getBlockTileEntity^">
+			<replaceMethodCall newMethod="getTEWithLoad" method="^class:World^.^method:World/getBlockTileEntity^">
 				ticketsLoaded(Ljava.util.List;L^class:World^;)V,ticketsLoaded(Ljava.util.List;L^class:World^;I)Ljava.util.List;
 			</replaceMethodCall>
-			<replaceMethodCall newMethod="getBlockIdForceLoad" method="^class:World^.^method:World/getBlockId^">
+			<replaceMethodCall newMethod="getBlockIdWithLoad" method="^class:World^.^method:World/getBlockId^">
 				ticketsLoaded(Ljava.util.List;L^class:World^;)V,ticketsLoaded(Ljava.util.List;L^class:World^;I)Ljava.util.List;
 			</replaceMethodCall>
 		</class>
