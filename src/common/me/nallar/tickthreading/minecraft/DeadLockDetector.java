@@ -353,4 +353,8 @@ public class DeadLockDetector {
 			Log.severe(sb.toString());
 		}
 	}
+
+	public static void printLocks(final long id) {
+		Log.severe(toString(ManagementFactory.getThreadMXBean().getThreadInfo(new long[]{id}, true, true)[0], true));
+	}
 }

@@ -108,11 +108,11 @@
 			<insertAfter field="tickEntryID" code="this.$field = this.nextEntryID_.getAndIncrement();"/>
 		</class>
 		<class id="net.minecraft.world.WorldServer">
-			<synchronize>addBlockEvent,sendAndApplyBlockEvents</synchronize>
 			<addAll fromClass="me.nallar.patched.world.PatchWorldServer"/>
 			<profile>tickBlocksAndAmbiance</profile>
 			<profile>tick</profile>
 			<insertSuper>initialize</insertSuper>
+			<synchronize>addBlockEvent,sendAndApplyBlockEvents</synchronize>
 		</class>
 		<class id="net.minecraft.world.biome.BiomeDecorator">
 			<synchronize>decorate(Lnet/minecraft/world/World;Ljava/util/Random;II)V</synchronize>
@@ -949,7 +949,7 @@
 			<replaceInitializer field="markedForDeletion" class="me.nallar.tickthreading.collections.ArrayListReplaceIterateTempListClear">^static^</replaceInitializer>
 		</class>
 		<class id="thaumcraft.common.blocks.TileSensor">
-			<synchronize field="$1">getNoteBlockEvents</synchronize>
+			<replaceMethod code="((ArrayList) noteBlockEvents.get(world)).addAll($1.getNoteBlockEvents());">getNoteBlockEvents</replaceMethod>
 		</class>
 	</thaumcraft>
 	<universalElectricity>

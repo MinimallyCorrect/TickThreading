@@ -2,6 +2,7 @@ package me.nallar.patched.world;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -613,6 +614,22 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 				worldAccess.markBlockForUpdate(x, y, z);
 			}
 		}
+	}
+
+	@Override
+	@Declare
+	public synchronized List getNoteBlockEvents() {
+		ArrayList serverBlockEventList = blockEventCache[blockEventCacheIndex];
+		if (serverBlockEventList.isEmpty()) {
+			return Collections.EMPTY_LIST;
+		}
+		ArrayList<BlockEventData> noteBlockEvents = new ArrayList<BlockEventData>();
+		for (BlockEventData blockEventData : (Iterable<BlockEventData>) serverBlockEventList) {
+			if (blockEventData.getBlockID() == Block.music.blockID) {
+				noteBlockEvents.add(blockEventData);
+			}
+		}
+		return noteBlockEvents;
 	}
 
 	public boolean safeToGenerate() {

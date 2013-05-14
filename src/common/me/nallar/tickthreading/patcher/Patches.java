@@ -1077,10 +1077,17 @@ public class Patches {
 			});
 			for (CtField ctField : ctClass.getDeclaredFields()) {
 				String fieldName = ctField.getName();
-				if (Modifier.isPrivate(ctField.getModifiers()) && !readFields.contains(fieldName)) {
-					if (writtenFields.contains(fieldName)) {
-						//Log.warning("Field " + fieldName + " is written to but not read from in class " + MappingUtil.debobfuscate(ctClass.getName()));
-					} else {
+				if (fieldName.length() <= 2) {
+					continue;
+				}
+				if (Modifier.isPrivate(ctField.getModifiers())) {
+					boolean written = writtenFields.contains(fieldName);
+					boolean read = readFields.contains(fieldName);
+					if (read && written) {
+						continue;
+					}
+					Log.fine("Field " + fieldName + " in " + MappingUtil.debobfuscate(ctClass.getName()) + " is read: " + read + ", written: " + written);
+					if (!written && !read) {
 						ctClass.removeField(ctField);
 					}
 				}

@@ -269,7 +269,7 @@ public class UnsafeUtil {
 		Class c = o.getClass();
 		while (c != null) {
 			for (Field field : c.getDeclaredFields()) {
-				if (field.getType().isPrimitive() || (field.getModifiers() & Modifier.STATIC) == Modifier.STATIC) {
+				if ((!field.getType().isArray() && field.getType().isPrimitive()) || (field.getModifiers() & Modifier.STATIC) == Modifier.STATIC) {
 					continue;
 				}
 				try {
