@@ -30,6 +30,7 @@ import net.minecraft.network.packet.Packet3Chat;
 import net.minecraft.server.MinecraftServer;
 
 public class DeadLockDetector {
+	private static final StackTraceElement[] EMPTY_STACK_TRACE = new StackTraceElement[0];
 	private boolean attemptedToRecoverDeadlock = false;
 	private boolean sentWarningRecently = false;
 	private static volatile long lastTickTime = 0;
@@ -272,7 +273,7 @@ public class DeadLockDetector {
 		}
 		StackTraceElement[] stackTrace = threadInfo.getStackTrace();
 		if (stackTrace == null) {
-			return null;
+			stackTrace = EMPTY_STACK_TRACE;
 		}
 		StringBuilder sb = new StringBuilder();
 		if (name) {
@@ -296,12 +297,8 @@ public class DeadLockDetector {
 			String steString = stackTrace[i].toString();
 			sb.append("\tat ").append(steString);
 			sb.append('\n');
-			boolean possibleBlockedQueue = steString.startsWith("me.nallar.tickthreading.minecraft.ThreadManager$1.run(");
 			if (i == 0 && threadInfo.getLockInfo() != null) {
 				Thread.State ts = threadInfo.getThreadState();
-				if (ts == Thread.State.BLOCKED && possibleBlockedQueue && threadInfo.getLockInfo().toString().startsWith("java.util.concurrent.LinkedBlockingQueue")) {
-					return null;
-				}
 				switch (ts) {
 					case BLOCKED:
 						sb.append("\t-  blocked on ").append(threadInfo.getLockInfo());
@@ -321,9 +318,6 @@ public class DeadLockDetector {
 
 			for (MonitorInfo mi : threadInfo.getLockedMonitors()) {
 				if (mi.getLockedStackDepth() == i) {
-					if (possibleBlockedQueue && mi.toString().startsWith("java.util.concurrent.LinkedBlockingQueue")) {
-						return null;
-					}
 					sb.append("\t-  locked ").append(mi);
 					sb.append('\n');
 				}
@@ -340,7 +334,9 @@ public class DeadLockDetector {
 			}
 		}
 		sb.append('\n');
-		return sb.toString();
+		String ret = sb.toString();
+		return (ret.contains("at java.util.concurrent.LinkedBlockingQueue.take(Unknown Source)\n" +
+				"\tat me.nallar.tickthreading.minecraft.ThreadManager$1.run(ThreadManager.java:\n")) ? null : ret;
 	}
 
 	public static void checkForLeakedThreadManagers() {

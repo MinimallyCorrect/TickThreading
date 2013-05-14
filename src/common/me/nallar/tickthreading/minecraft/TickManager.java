@@ -5,12 +5,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.locks.Lock;
 
 import me.nallar.tickthreading.Log;
@@ -56,6 +56,7 @@ public final class TickManager {
 	private final ConcurrentIterableArrayList<TickRegion> tickRegions = new ConcurrentIterableArrayList<TickRegion>();
 	private final ThreadManager threadManager;
 	private final Map<Class<?>, Integer> entityClassToCountMap = new ConcurrentHashMap<Class<?>, Integer>();
+	private final ConcurrentLinkedQueue<TickRegion> removalQueue = new ConcurrentLinkedQueue<TickRegion>();
 
 	public TickManager(WorldServer world, int regionSize, int threads, boolean waitForCompletion) {
 		this.waitForCompletion = waitForCompletion;
@@ -130,34 +131,19 @@ public final class TickManager {
 		return x + (z << 16);
 	}
 
-	private void processChanges() {
-		try {
-			synchronized (tickRegions) {
-				Iterator<TickRegion> iterator = tickRegions.iterator();
-				while (iterator.hasNext()) {
-					TickRegion tickRegion = iterator.next();
-					tickRegion.processChanges();
-					if (tickRegion.isEmpty()) {
-						iterator.remove();
-						if (tickRegion instanceof EntityTickRegion) {
-							entityCallables.remove(tickRegion.hashCode);
-						} else {
-							tileEntityCallables.remove(tickRegion.hashCode);
-						}
-						tickRegion.die();
-					}
-				}
-				if (shuffleCount++ % shuffleInterval == 0) {
-					Collections.shuffle(tickRegions);
-				}
-			}
-		} catch (Exception e) {
-			Log.severe("Exception occurred while processing entity changes: ", e);
-		}
+	public void queueForRemoval(TickRegion tickRegion) {
+		removalQueue.add(tickRegion);
 	}
 
-	public boolean add(TileEntity tileEntity) {
-		return add(tileEntity, true);
+	private void processChanges() {
+		TickRegion tickRegion;
+		while ((tickRegion = removalQueue.poll()) != null) {
+			if (tickRegion.isEmpty()) {
+				if ((tickRegion instanceof EntityTickRegion ? entityCallables.remove(tickRegion.hashCode) : tileEntityCallables.remove(tickRegion.hashCode)) == tickRegion) {
+					tickRegions.remove(tickRegion);
+				}
+			}
+		}
 	}
 
 	public boolean add(TileEntity tileEntity, boolean newEntity) {
@@ -172,10 +158,6 @@ public final class TickManager {
 			return true;
 		}
 		return false;
-	}
-
-	public boolean add(Entity entity) {
-		return add(entity, true);
 	}
 
 	public boolean add(Entity entity, boolean newEntity) {
@@ -514,14 +496,7 @@ public final class TickManager {
 		}
 		threadManager.runList(tickRegions);
 		if (previousProfiling || waitForCompletion) {
-			lastTickLength = (threadManager.waitForCompletion() - lastStartTime);
-			averageTickLength = ((averageTickLength * 127) + lastTickLength) / 128;
-			threadManager.run(new Runnable() {
-				@Override
-				public void run() {
-					processChanges();
-				}
-			});
+			postTick();
 		}
 		if (previousProfiling) {
 			world.theProfiler.profilingEnabled = true;
@@ -533,12 +508,23 @@ public final class TickManager {
 
 	public void tickEnd() {
 		if (!waitForCompletion) {
-			lastTickLength = (threadManager.waitForCompletion() - lastStartTime);
-			averageTickLength = ((averageTickLength * 127) + lastTickLength) / 128;
+			postTick();
+		}
+	}
+
+	private void postTick() {
+		lastTickLength = (threadManager.waitForCompletion() - lastStartTime);
+		averageTickLength = ((averageTickLength * 127) + lastTickLength) / 128;
+		if (!removalQueue.isEmpty()) {
 			threadManager.run(new Runnable() {
 				@Override
 				public void run() {
 					processChanges();
+					if (shuffleCount++ % shuffleInterval == 0) {
+						synchronized (tickRegions) {
+							Collections.shuffle(tickRegions);
+						}
+					}
 				}
 			});
 		}

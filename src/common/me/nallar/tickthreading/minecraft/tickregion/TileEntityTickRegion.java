@@ -1,11 +1,10 @@
 package me.nallar.tickthreading.minecraft.tickregion;
 
 import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Set;
 import java.util.concurrent.locks.Lock;
 
 import me.nallar.tickthreading.Log;
+import me.nallar.tickthreading.collections.LinkedHashSetTempSetNoClear;
 import me.nallar.tickthreading.minecraft.TickManager;
 import me.nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
 import net.minecraft.tileentity.TileEntity;
@@ -14,7 +13,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.ChunkProviderServer;
 
 public class TileEntityTickRegion extends TickRegion {
-	private final Set<TileEntity> tileEntitySet = new LinkedHashSet<TileEntity>();
+	private final LinkedHashSetTempSetNoClear<TileEntity> tileEntitySet = new LinkedHashSetTempSetNoClear<TileEntity>();
 
 	public TileEntityTickRegion(World world, TickManager manager, int regionX, int regionY) {
 		super(world, manager, regionX, regionY);
@@ -47,7 +46,7 @@ public class TileEntityTickRegion extends TickRegion {
 		// Behaving in this manner also allows us to avoid the overhead of calling an interface method.
 		// Volatile reads are, if used only when necessary, fast. JVM will not optimize out repeat volatile reads, happens-before on field write.
 		// Just don't read fields repeatedly unnecessary. Best not to do this with non-volatile fields anyway.
-		final Iterator<TileEntity> tileEntitiesIterator = tileEntitySet.iterator();
+		final Iterator<TileEntity> tileEntitiesIterator = tileEntitySet.startIteration();
 		while (tileEntitiesIterator.hasNext()) {
 			if (profilingEnabled) {
 				startTime = System.nanoTime();
@@ -128,6 +127,7 @@ public class TileEntityTickRegion extends TickRegion {
 				}
 			}
 		}
+		tileEntitySet.done();
 	}
 
 	@Override
@@ -136,42 +136,11 @@ public class TileEntityTickRegion extends TickRegion {
 	}
 
 	public boolean add(TileEntity tileEntity) {
-		synchronized (tickStateLock) {
-			if (ticking) {
-				return toAdd.add(tileEntity) && !tileEntitySet.contains(tileEntity);
-			} else {
-				return tileEntitySet.add(tileEntity);
-			}
-		}
+		return tileEntitySet.add(tileEntity);
 	}
 
 	public boolean remove(TileEntity tileEntity) {
-		synchronized (tickStateLock) {
-			if (ticking) {
-				return toRemove.add(tileEntity) && tileEntitySet.contains(tileEntity);
-			} else {
-				return tileEntitySet.remove(tileEntity);
-			}
-		}
-	}
-
-	@Override
-	public void processChanges() {
-		synchronized (tickStateLock) {
-			if (ticking) {
-				return;
-			}
-			tileEntitySet.addAll(toAdd);
-			tileEntitySet.removeAll(toRemove);
-			toAdd.clear();
-			toRemove.clear();
-		}
-	}
-
-	@Override
-	public void die() {
-		super.die();
-		tileEntitySet.clear();
+		return tileEntitySet.remove(tileEntity);
 	}
 
 	@Override
@@ -182,5 +151,10 @@ public class TileEntityTickRegion extends TickRegion {
 	@Override
 	public int size() {
 		return tileEntitySet.size();
+	}
+
+	@Override
+	public void die() {
+		tileEntitySet.clear();
 	}
 }

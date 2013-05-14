@@ -14,7 +14,7 @@ public class LoadedEntityList<T> extends EntityList<T> {
 
 	@Override
 	public boolean add(T t) {
-		manager.add((Entity) t);
+		manager.add((Entity) t, true);
 		return true;
 	}
 

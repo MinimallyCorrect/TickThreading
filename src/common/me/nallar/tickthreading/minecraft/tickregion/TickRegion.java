@@ -1,17 +1,10 @@
 package me.nallar.tickthreading.minecraft.tickregion;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
-
 import me.nallar.tickthreading.minecraft.TickManager;
 import me.nallar.tickthreading.util.TableFormatter;
 import net.minecraft.world.World;
 
 public abstract class TickRegion implements Runnable {
-	final Object tickStateLock = new Object();
-	volatile boolean ticking = false;
-	final Set toRemove = new LinkedHashSet();
-	final Set toAdd = new LinkedHashSet();
 	final World world;
 	final TickManager manager;
 	public final int hashCode;
@@ -29,19 +22,13 @@ public abstract class TickRegion implements Runnable {
 		this.regionZ = regionZ;
 	}
 
-	public void die() {
-	}
-
 	@Override
-	public void run() {
+	public synchronized void run() {
 		if (shouldTick()) {
 			long startTime = System.nanoTime();
-			synchronized (tickStateLock) {
-				ticking = true;
-			}
 			doTick();
-			synchronized (tickStateLock) {
-				ticking = false;
+			if (isEmpty()) {
+				manager.queueForRemoval(this);
 			}
 			averageTickTime = ((averageTickTime * 127) + (System.nanoTime() - startTime)) / 128;
 		}
@@ -89,5 +76,5 @@ public abstract class TickRegion implements Runnable {
 
 	protected abstract int size();
 
-	public abstract void processChanges();
+	public abstract void die();
 }

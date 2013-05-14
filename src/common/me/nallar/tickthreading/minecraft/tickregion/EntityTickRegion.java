@@ -1,10 +1,9 @@
 package me.nallar.tickthreading.minecraft.tickregion;
 
 import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 import me.nallar.tickthreading.Log;
+import me.nallar.tickthreading.collections.LinkedHashSetTempSetNoClear;
 import me.nallar.tickthreading.minecraft.TickManager;
 import me.nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
 import me.nallar.unsafe.UnsafeAccess;
@@ -16,7 +15,7 @@ import net.minecraft.world.gen.ChunkProviderServer;
 import sun.misc.Unsafe;
 
 public class EntityTickRegion extends TickRegion {
-	private final Set<Entity> entitySet = new LinkedHashSet<Entity>();
+	private final LinkedHashSetTempSetNoClear<Entity> entitySet = new LinkedHashSetTempSetNoClear<Entity>();
 
 	public EntityTickRegion(World world, TickManager manager, int regionX, int regionZ) {
 		super(world, manager, regionX, regionZ);
@@ -31,7 +30,7 @@ public class EntityTickRegion extends TickRegion {
 		if (profilingEnabled) {
 			entityTickProfiler = manager.entityTickProfiler;
 		}
-		Iterator<Entity> entitiesIterator = entitySet.iterator();
+		Iterator<Entity> entitiesIterator = entitySet.startIteration();
 		while (entitiesIterator.hasNext()) {
 			if (profilingEnabled) {
 				startTime = System.nanoTime();
@@ -96,6 +95,7 @@ public class EntityTickRegion extends TickRegion {
 				entityTickProfiler.record(entity, System.nanoTime() - startTime);
 			}
 		}
+		entitySet.done();
 	}
 
 	@Override
@@ -104,36 +104,11 @@ public class EntityTickRegion extends TickRegion {
 	}
 
 	public boolean add(Entity entity) {
-		synchronized (tickStateLock) {
-			if (ticking) {
-				return toAdd.add(entity) && !entitySet.contains(entity);
-			} else {
-				return entitySet.add(entity);
-			}
-		}
+		return entitySet.add(entity);
 	}
 
 	public boolean remove(Entity entity) {
-		synchronized (tickStateLock) {
-			if (ticking) {
-				return toRemove.add(entity);
-			} else {
-				return entitySet.remove(entity);
-			}
-		}
-	}
-
-	@Override
-	public void processChanges() {
-		synchronized (tickStateLock) {
-			if (ticking) {
-				return;
-			}
-			entitySet.addAll(toAdd);
-			entitySet.removeAll(toRemove);
-			toAdd.clear();
-			toRemove.clear();
-		}
+		return entitySet.remove(entity);
 	}
 
 	@Override
@@ -148,7 +123,6 @@ public class EntityTickRegion extends TickRegion {
 
 	@Override
 	public void die() {
-		super.die();
 		entitySet.clear();
 	}
 }

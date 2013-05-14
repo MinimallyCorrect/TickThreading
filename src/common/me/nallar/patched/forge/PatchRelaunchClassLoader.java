@@ -185,8 +185,6 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 				} finally {
 					zipFile.close();
 				}
-			} else {
-				log(Level.WARNING, null, "%s doesn't exist.", patchedModFile.toString());
 			}
 		} catch (Exception e) {
 			log(Level.SEVERE, e, "Failed to load patched classes for " + patchedModFile.getName());

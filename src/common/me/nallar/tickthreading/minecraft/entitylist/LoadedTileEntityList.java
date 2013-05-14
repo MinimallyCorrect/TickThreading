@@ -14,7 +14,7 @@ public class LoadedTileEntityList<T> extends EntityList<T> {
 
 	@Override
 	public boolean add(T t) {
-		manager.add((TileEntity) t);
+		manager.add((TileEntity) t, true);
 		return true;
 	}
 

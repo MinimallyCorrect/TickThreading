@@ -606,14 +606,14 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		for (int x = cX - populationRange; x <= cX + populationRange; x++) {
 			for (int z = cZ - populationRange; z <= cZ + populationRange; z++) {
 				Chunk chunk = getChunkFastUnsafe(x, z);
-				if (chunk != null && !chunk.queuedUnload && !chunk.partiallyUnloaded && !chunk.isTerrainPopulated && checkChunksExistLoadedNormally(x - populationRange, z - populationRange, x + populationRange, z + populationRange)) {
+				if (chunk != null && !chunk.queuedUnload && !chunk.partiallyUnloaded && !chunk.isTerrainPopulated && checkChunksExistLoadedNormally(x - populationRange, x + populationRange, z - populationRange, z + populationRange)) {
 					populate(chunk);
 				}
 			}
 		}
 	}
 
-	public boolean checkChunksExistLoadedNormally(int minX, int minZ, int maxX, int maxZ) {
+	public boolean checkChunksExistLoadedNormally(int minX, int maxX, int minZ, int maxZ) {
 		for (int x = minX; x <= maxX; ++x) {
 			for (int z = minZ; z <= maxZ; ++z) {
 				Chunk chunk = getChunkFastUnsafe(x, z);

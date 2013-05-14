@@ -10,7 +10,7 @@ public class CHashMapReplaceClear<K, V> extends CHashMap<K, V> {
 	private ConcurrentHashMap<K, V> replaceMap;
 
 	@Override
-	public V put(K key, V value) {
+	public synchronized V put(K key, V value) {
 		if (inReplace.get() == Boolean.TRUE) {
 			return replaceMap.put(key, value);
 		} else {
@@ -19,14 +19,14 @@ public class CHashMapReplaceClear<K, V> extends CHashMap<K, V> {
 	}
 
 	@Override
-	public void clear() {
+	public synchronized void clear() {
 		if (inReplace.getAndSet(true) != Boolean.FALSE || replaceMap != null) {
 			throw new ConcurrencyError("Already replacing");
 		}
 		replaceMap = new ConcurrentHashMap<K, V>();
 	}
 
-	public void done() {
+	public synchronized void done() {
 		inReplace.set(false);
 		hashMap = replaceMap;
 		if (replaceMap == null) {
