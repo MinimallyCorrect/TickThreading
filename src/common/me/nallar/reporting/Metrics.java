@@ -148,6 +148,9 @@ public class Metrics {
 		configuration.save();
 		if (start()) {
 			Log.info("Started TT metrics reporting. This can be disabled in PluginMetrics.cfg");
+			Graph performance = createGraph("Performance");
+			performance.addPlotter(new TPSPlotter());
+			performance.addPlotter(new LoadPlotter());
 		}
 	}
 
@@ -672,6 +675,28 @@ public class Metrics {
 			final Plotter plotter = (Plotter) object;
 			return plotter.name.equals(name)
 					&& plotter.getValue() == getValue();
+		}
+	}
+
+	private static class TPSPlotter extends Plotter {
+		public TPSPlotter() {
+			super("TPS");
+		}
+
+		@Override
+		public int getValue() {
+			return Math.round((float) MinecraftServer.getTPS());
+		}
+	}
+
+	private static class LoadPlotter extends Plotter {
+		public LoadPlotter() {
+			super("Percentage Load");
+		}
+
+		@Override
+		public int getValue() {
+			return Math.round((float) ((MinecraftServer.getTickTime() * 100) / MinecraftServer.getTargetTickTime()));
 		}
 	}
 }
