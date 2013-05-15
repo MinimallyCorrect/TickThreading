@@ -949,7 +949,7 @@
 			<replaceInitializer field="markedForDeletion" class="me.nallar.tickthreading.collections.ArrayListReplaceIterateTempListClear">^static^</replaceInitializer>
 		</class>
 		<class id="thaumcraft.common.blocks.TileSensor">
-			<replaceMethod code="((ArrayList) noteBlockEvents.get(world)).addAll($1.getNoteBlockEvents());">getNoteBlockEvents</replaceMethod>
+			<replaceMethod code="((ArrayList) noteBlockEvents.get($1)).addAll($1.getNoteBlockEvents());">getNoteBlockEvents</replaceMethod>
 		</class>
 	</thaumcraft>
 	<universalElectricity>
@@ -1076,7 +1076,7 @@
 	</customOreGen>
 	<enderStorage>
 		<class id="codechicken.enderstorage.api.EnderStorageManager">
-			<replaceInitializer field="dirtyStorage" class="me.nallar.tickthreading.collections.LinkedListReplaceIterateTempListClear"/>
+			<insertAfter code="dirtyStorage = new me.nallar.tickthreading.collections.LinkedListReplaceIterateTempListClear();"/>
 		</class>
 	</enderStorage>
 </mods>

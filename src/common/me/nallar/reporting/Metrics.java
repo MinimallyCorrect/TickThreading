@@ -41,7 +41,6 @@ import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -418,11 +417,8 @@ public class Metrics {
 		// also lock everything
 		// inside of the graph (e.g plotters)
 		synchronized (graphs) {
-			final Iterator<Graph> iter = graphs.iterator();
 
-			while (iter.hasNext()) {
-				final Graph graph = iter.next();
-
+			for (final Graph graph : graphs) {
 				for (Plotter plotter : graph.getPlotters()) {
 					// The key name to send to the metrics server
 					// The format is C-GRAPHNAME-PLOTTERNAME where separator -
@@ -462,19 +458,22 @@ public class Metrics {
 		connection.setDoOutput(true);
 
 		// Write the data
-		final OutputStreamWriter writer = new OutputStreamWriter(
-				connection.getOutputStream());
-		writer.write(data.toString());
-		writer.flush();
+		final OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
+		try {
+			writer.write(data.toString());
+			writer.flush();
+		} finally {
+			writer.close();
+		}
 
 		// Now read the response
-		final BufferedReader reader = new BufferedReader(new InputStreamReader(
-				connection.getInputStream()));
-		final String response = reader.readLine();
-
-		// close resources
-		writer.close();
-		reader.close();
+		final String response;
+		final BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+		try {
+			response = reader.readLine();
+		} finally {
+			reader.close();
+		}
 
 		if (response == null || response.startsWith("ERR")) {
 			throw new IOException(response); // Throw the exception
@@ -482,11 +481,7 @@ public class Metrics {
 			// Is this the first update this hour?
 			if (response.contains("OK This is your first update this hour")) {
 				synchronized (graphs) {
-					final Iterator<Graph> iter = graphs.iterator();
-
-					while (iter.hasNext()) {
-						final Graph graph = iter.next();
-
+					for (final Graph graph : graphs) {
 						for (Plotter plotter : graph.getPlotters()) {
 							plotter.reset();
 						}
