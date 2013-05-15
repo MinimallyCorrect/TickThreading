@@ -18,8 +18,7 @@ public class CHashMapReplaceClear<K, V> extends CHashMap<K, V> {
 		}
 	}
 
-	@Override
-	public synchronized void clear() {
+	public synchronized void start() {
 		if (inReplace.getAndSet(true) != Boolean.FALSE || replaceMap != null) {
 			throw new ConcurrencyError("Already replacing");
 		}
@@ -27,11 +26,10 @@ public class CHashMapReplaceClear<K, V> extends CHashMap<K, V> {
 	}
 
 	public synchronized void done() {
-		inReplace.set(false);
-		hashMap = replaceMap;
-		if (replaceMap == null) {
-			throw new ConcurrencyError("Already done");
+		if (inReplace.getAndSet(false) != Boolean.TRUE || replaceMap == null) {
+			throw new ConcurrencyError("Not yet replacing");
 		}
+		hashMap = replaceMap;
 		replaceMap = null;
 	}
 }
