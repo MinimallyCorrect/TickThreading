@@ -51,6 +51,9 @@ import cpw.mods.fml.common.TickType;
 import cpw.mods.fml.common.registry.TickRegistry;
 import cpw.mods.fml.relauncher.Side;
 import me.nallar.tickthreading.Log;
+import me.nallar.tickthreading.minecraft.TickManager;
+import me.nallar.tickthreading.minecraft.TickThreading;
+import me.nallar.tickthreading.minecraft.commands.TPSCommand;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.Configuration;
 
@@ -151,6 +154,9 @@ public class Metrics {
 			Graph performance = createGraph("Performance");
 			performance.addPlotter(new TPSPlotter());
 			performance.addPlotter(new LoadPlotter());
+			performance.addPlotter(new ChunksPlotter());
+			performance.addPlotter(new EntitiesPlotter());
+			performance.addPlotter(new TileEntitiesPlotter());
 		}
 	}
 
@@ -697,6 +703,51 @@ public class Metrics {
 		@Override
 		public int getValue() {
 			return Math.round((float) ((MinecraftServer.getTickTime() * 100) / MinecraftServer.getTargetTickTime()));
+		}
+	}
+
+	private static class ChunksPlotter extends Plotter {
+		public ChunksPlotter() {
+			super("Loaded Chunks");
+		}
+
+		@Override
+		public int getValue() {
+			TPSCommand.StatsHolder statsHolder = new TPSCommand.StatsHolder();
+			for (TickManager tickManager : TickThreading.instance.getManagers()) {
+				tickManager.recordStats(statsHolder);
+			}
+			return statsHolder.chunks;
+		}
+	}
+
+	private static class EntitiesPlotter extends Plotter {
+		public EntitiesPlotter() {
+			super("Loaded Entities");
+		}
+
+		@Override
+		public int getValue() {
+			TPSCommand.StatsHolder statsHolder = new TPSCommand.StatsHolder();
+			for (TickManager tickManager : TickThreading.instance.getManagers()) {
+				tickManager.recordStats(statsHolder);
+			}
+			return statsHolder.entities;
+		}
+	}
+
+	private static class TileEntitiesPlotter extends Plotter {
+		public TileEntitiesPlotter() {
+			super("Loaded TileEntities");
+		}
+
+		@Override
+		public int getValue() {
+			TPSCommand.StatsHolder statsHolder = new TPSCommand.StatsHolder();
+			for (TickManager tickManager : TickThreading.instance.getManagers()) {
+				tickManager.recordStats(statsHolder);
+			}
+			return statsHolder.tileEntities;
 		}
 	}
 }

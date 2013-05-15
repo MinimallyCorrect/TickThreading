@@ -585,6 +585,12 @@ public final class TickManager {
 		}
 	}
 
+	public void recordStats(final TPSCommand.StatsHolder statsHolder) {
+		statsHolder.entities += entityList.size();
+		statsHolder.tileEntities += tileEntityList.size();
+		statsHolder.chunks += world.theChunkProviderServer.getLoadedChunkCount();
+	}
+
 	public void writeStats(TableFormatter tf, final TPSCommand.StatsHolder statsHolder) {
 		long timeTotal = 0;
 		double time = Double.NaN;
