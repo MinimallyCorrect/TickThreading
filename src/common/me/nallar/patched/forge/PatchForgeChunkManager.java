@@ -7,6 +7,7 @@ import java.util.LinkedHashSet;
 import java.util.logging.Level;
 
 import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 
 import cpw.mods.fml.common.FMLLog;
@@ -38,6 +39,27 @@ public abstract class PatchForgeChunkManager extends ForgeChunkManager {
 
 	public static ImmutableSetMultimap<ChunkCoordIntPair, Ticket> getPersistentChunksFor(World world) {
 		return world.forcedChunks;
+	}
+
+	public static void unforceChunk(Ticket ticket, ChunkCoordIntPair chunk) {
+		if (ticket == null || chunk == null) {
+			return;
+		}
+		LinkedHashSet<ChunkCoordIntPair> requestedChunks;
+		try {
+			requestedChunks = (LinkedHashSet<ChunkCoordIntPair>) requestedChunksField.get(ticket);
+		} catch (IllegalAccessException e) {
+			Log.severe("Failed to get requestedChunks", e);
+			return;
+		}
+		requestedChunks.remove(chunk);
+		MinecraftForge.EVENT_BUS.post(new UnforceChunkEvent(ticket, chunk));
+
+		synchronized (ForgeChunkManager.class) {
+			LinkedHashMultimap<ChunkCoordIntPair, Ticket> copy = LinkedHashMultimap.create(ticket.world.forcedChunks);
+			copy.remove(chunk, ticket);
+			ticket.world.forcedChunks = ImmutableSetMultimap.copyOf(copy);
+		}
 	}
 
 	public static void forceChunk(Ticket ticket, ChunkCoordIntPair chunk) {
