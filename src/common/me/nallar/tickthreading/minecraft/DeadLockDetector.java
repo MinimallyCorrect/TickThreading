@@ -202,6 +202,9 @@ public class DeadLockDetector {
 			attemptedToRecoverDeadlock = true;
 			return true;
 		}
+		if (TickThreading.instance.deadLockTime == 1) {
+			return true;
+		}
 		if (TickThreading.instance.exitOnDeadlock) {
 			sendChatSafely(ChatFormat.RED + TickThreading.instance.messageDeadlockSavingExiting);
 		}
@@ -339,8 +342,7 @@ public class DeadLockDetector {
 		}
 		sb.append('\n');
 		String ret = sb.toString();
-		return (run <= 2 && ret.contains("at java.util.concurrent.LinkedBlockingQueue.take(\n") &&
-				ret.contains("at me.nallar.tickthreading.minecraft.ThreadManager$1.run(ThreadManager.java:\n")) ? null : ret;
+		return (run <= 2 && ret.contains("at java.util.concurrent.LinkedBlockingQueue.take(")) ? null : ret;
 	}
 
 	public static void checkForLeakedThreadManagers() {
