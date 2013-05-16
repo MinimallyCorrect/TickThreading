@@ -149,14 +149,16 @@ public class Metrics {
 		debug = configuration.get(Configuration.CATEGORY_GENERAL, "debug",
 				false, "Set to true for verbose debug").getBoolean(false);
 		configuration.save();
-		if (start()) {
-			Log.info("Started TT metrics reporting. This can be disabled in PluginMetrics.cfg");
+		if (!isOptOut()) {
 			Graph performance = createGraph("Performance");
 			performance.addPlotter(new TPSPlotter());
 			performance.addPlotter(new LoadPlotter());
 			performance.addPlotter(new ChunksPlotter());
 			performance.addPlotter(new EntitiesPlotter());
 			performance.addPlotter(new TileEntitiesPlotter());
+			if (start()) {
+				Log.info("Started TT metrics reporting. This can be disabled in PluginMetrics.cfg");
+			}
 		}
 	}
 
