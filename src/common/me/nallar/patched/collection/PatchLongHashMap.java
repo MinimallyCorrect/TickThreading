@@ -14,15 +14,10 @@ import net.minecraft.util.LongHashMap;
 @FakeExtend
 public abstract class PatchLongHashMap extends LongHashMap {
 	private static final long EMPTY_KEY = Long.MIN_VALUE;
-	private static final int BUCKET_SIZE = 4096;
-	private final long[][] keys;
-	private final Object[][] values;
+	private static final int BUCKET_SIZE = 8192;
+	private final long[][] keys = new long[BUCKET_SIZE][];
+	private final Object[][] values = new Object[BUCKET_SIZE][];
 	private int size;
-
-	public PatchLongHashMap() {
-		keys = new long[BUCKET_SIZE][];
-		values = new Object[BUCKET_SIZE][];
-	}
 
 	@Override
 	@Declare

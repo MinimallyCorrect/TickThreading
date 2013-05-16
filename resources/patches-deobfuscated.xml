@@ -705,6 +705,28 @@
       }
    }">getFieldData
 			</replaceMethod>
+			<replaceMethod code="{
+				ic2.core.WorldData worldData = ic2.core.WorldData.get($1);
+				Collection networkedFieldsToUpdate = worldData.networkedFieldsToUpdate;
+
+				if (worldData.networkedFieldsToUpdate.isEmpty()) return;
+
+				Collection networkedFieldsToUpdateList;
+				synchronized(networkedFieldsToUpdate) {
+				  networkedFieldsToUpdateList = new ArrayList(networkedFieldsToUpdate);
+				  networkedFieldsToUpdate.clear();
+				}
+
+				for (Iterator i$ = $1.h.iterator(); i$.hasNext(); ) { Object obj = i$.next();
+					iq entityPlayer = (iq)obj;
+
+					sendUpdatePacket(networkedFieldsToUpdateList, entityPlayer);
+				}
+			}">sendUpdatePacket(L^class:World^;)V
+			</replaceMethod>
+		</class>
+		<class id="ic2.core.WorldData">
+			<replaceInitializer field="networkedFieldsToUpdate" class="me.nallar.tickthreading.collections.SynchronizedSet"/>
 		</class>
 	</industrialCraft>
 	<gregTech>
