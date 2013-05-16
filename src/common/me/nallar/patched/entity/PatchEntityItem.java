@@ -1,5 +1,6 @@
 package me.nallar.patched.entity;
 
+import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.item.EntityItem;
@@ -90,6 +91,12 @@ public abstract class PatchEntityItem extends EntityItem {
 	}
 
 	@Override
+	@Declare
+	public void combine() {
+		func_85054_d();
+	}
+
+	@Override
 	protected void func_85054_d() {
 		for (Object o : this.worldObj.getEntitiesWithinAABB(EntityItem.class, this.boundingBox.expand(mergeRadius, mergeRadius, mergeRadius))) {
 			EntityItem var2 = (EntityItem) o;
@@ -101,7 +108,11 @@ public abstract class PatchEntityItem extends EntityItem {
 	public boolean combineItems(EntityItem other) {
 		if (other == this) {
 			return false;
-		} else if (other.isEntityAlive() && this.isEntityAlive()) {
+		}
+		synchronized (EntityItem.class) {
+			if (this.isDead || other.isDead) {
+				return false;
+			}
 			ItemStack thisStack = this.getEntityItem();
 			ItemStack otherStack = other.getEntityItem();
 
@@ -116,15 +127,14 @@ public abstract class PatchEntityItem extends EntityItem {
 			} else if (thisStack.stackSize + otherStack.stackSize > thisStack.getMaxStackSize()) {
 				return false;
 			} else {
-				thisStack.stackSize += otherStack.stackSize;
-				this.delayBeforeCanPickup = Math.max(other.delayBeforeCanPickup, this.delayBeforeCanPickup);
-				this.age = Math.min(other.age, this.age);
-				this.func_92058_a(thisStack);
-				other.setDead();
+				otherStack.stackSize += thisStack.stackSize;
+				other.delayBeforeCanPickup = Math.max(other.delayBeforeCanPickup, this.delayBeforeCanPickup);
+				other.age = Math.min(other.age, this.age);
+				other.func_92058_a(otherStack);
+				other.setPosition(posX, posY, posZ);
+				this.setDead();
 				return true;
 			}
-		} else {
-			return false;
 		}
 	}
 }

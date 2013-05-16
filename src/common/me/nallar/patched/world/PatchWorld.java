@@ -143,10 +143,7 @@ public abstract class PatchWorld extends World {
 
 	@Override
 	public boolean isBlockNormalCube(int x, int y, int z) {
-		int id = getBlockIdWithoutLoad(x, y, z);
-		if (id == -1) {
-			return false;
-		}
+		int id = getBlockId(x, y, z);
 		Block block = Block.blocksList[id];
 		return block != null && block.isBlockNormalCube(this, x, y, z);
 	}
@@ -168,8 +165,6 @@ public abstract class PatchWorld extends World {
 
 			entity.setDead();
 
-			// The next instanceof, somehow, seems to throw NPEs. I don't even. :(
-			// http://pastebin.com/zqDPsUjz
 			if (entity instanceof EntityPlayer) {
 				if (playerEntities == null) {
 					// The world has been unloaded and cleaned already, so we can't remove the player entity.
@@ -179,7 +174,7 @@ public abstract class PatchWorld extends World {
 				this.updateAllPlayersSleepingFlag();
 			}
 		} catch (Exception e) {
-			Log.severe("Exception removing a player entity", e);
+			Log.severe("Exception removing an entity", e);
 		}
 	}
 
@@ -200,7 +195,7 @@ public abstract class PatchWorld extends World {
 	public int getBlockIdWithoutLoad(int x, int y, int z) {
 		if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000 && y >= 0 && y < 256) {
 			try {
-				Chunk chunk = ((ChunkProviderServer) chunkProvider).getChunkIfExists(x >> 4, z >> 4);
+				Chunk chunk = getChunkIfExists(x >> 4, z >> 4);
 				return chunk == null ? -1 : chunk.getBlockID(x & 15, y, z & 15);
 			} catch (Throwable t) {
 				Log.severe("Exception getting block ID in " + Log.pos(this, x, y, z), t);

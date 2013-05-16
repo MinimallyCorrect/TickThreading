@@ -19,6 +19,7 @@ import me.nallar.reporting.Reporter;
 import me.nallar.tickthreading.util.MappingUtil;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.gui.GuiLogOutputHandler;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 
@@ -276,9 +277,23 @@ public class Log {
 		return world.getName();
 	}
 
+	public static String classString(Object o) {
+		return "c " + MappingUtil.debobfuscate(o.getClass().getName()) + ' ';
+	}
+
 	public static String toString(Object o) {
-		String deobfuscatedName = MappingUtil.debobfuscate(o.getClass().getName());
-		return "c " + deobfuscatedName + ' ' + o.toString();
+		String cS = classString(o);
+		String s = o.toString();
+		if (!s.startsWith(cS)) {
+			s = cS + s;
+		}
+		if (o instanceof TileEntity) {
+			TileEntity tE = (TileEntity) o;
+			if (!s.contains(" x, y, z: ")) {
+				s += " x, y, z: " + tE.xCoord + ", " + tE.yCoord + ", " + tE.zCoord;
+			}
+		}
+		return s;
 	}
 
 	public static void log(Level level, Throwable throwable, String s) {

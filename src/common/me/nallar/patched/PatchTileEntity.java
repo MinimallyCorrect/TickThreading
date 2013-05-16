@@ -1,5 +1,6 @@
 package me.nallar.patched;
 
+import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.patcher.Declare;
 import me.nallar.tickthreading.util.concurrent.NativeMutex;
 import net.minecraft.inventory.ICrafting;
@@ -71,5 +72,10 @@ public abstract class PatchTileEntity extends TileEntity {
 		if (p != null) {
 			p.updateTile(this);
 		}
+	}
+
+	@Override
+	public String toString() {
+		return Log.classString(this) + '@' + System.identityHashCode(this) + " in " + Log.name(worldObj) + " at x, y, z: " + xCoord + ", " + yCoord + ", " + zCoord;
 	}
 }

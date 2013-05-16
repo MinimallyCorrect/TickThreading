@@ -60,10 +60,8 @@ public class TileEntityTickRegion extends TickRegion {
 					tileEntitiesIterator.remove();
 					manager.add(tileEntity, false);
 					if (hashCode != 0) {
-						Log.fine("A tile entity is in the wrong TickRegion - was it moved by a player, or did something bug out?"
-								+ "\n entity: " + Log.toString(tileEntity) + " at x,y,z:" + xPos + ',' + tileEntity.yCoord + ',' + zPos
-								+ "\n Region: " + toString()
-								+ "\n World: " + Log.name(tileEntity.worldObj));
+						Log.fine("A tile entity is in the wrong TickRegion - was it moved by a player, or did something break?"
+								+ "\n entity: " + Log.toString(tileEntity));
 					}
 				}
 				continue;
@@ -92,19 +90,15 @@ public class TileEntityTickRegion extends TickRegion {
 				if (tileEntity.isInvalid()) {
 					tileEntitiesIterator.remove();
 					manager.removed(tileEntity);
-					//Log.fine("Removed tile entity: " + xPos + ", " + tileEntity.yCoord + ", " + zPos + "\ttype:" + tileEntity.getClass().toString());
-					if (chunkProvider.chunkExists(xPos >> 4, zPos >> 4)) {
-						Chunk chunk = world.getChunkFromChunkCoords(xPos >> 4, zPos >> 4);
-						if (chunk != null) {
-							chunk.cleanChunkBlockTileEntity(xPos, tileEntity.yCoord, zPos);
-						}
+					Chunk chunk = world.getChunkIfExists(xPos >> 4, zPos >> 4);
+					if (chunk != null) {
+						chunk.cleanChunkBlockTileEntity(xPos, tileEntity.yCoord, zPos);
 					}
 				} else if (tileEntity.worldObj != null && chunkProvider.chunkExists(xPos >> 4, zPos >> 4)) {
 					tileEntity.tickTT();
 				}
 			} catch (Throwable throwable) {
-				Log.severe("Exception ticking TileEntity " + Log.toString(tileEntity) + " at x,y,z:" + xPos + ',' + tileEntity.yCoord + ',' + zPos
-						+ "\n World: " + Log.name(tileEntity.worldObj), throwable);
+				Log.severe("Exception ticking TileEntity " + Log.toString(tileEntity), throwable);
 			} finally {
 				if (xMinusLock != null) {
 					xMinusLock.unlock();

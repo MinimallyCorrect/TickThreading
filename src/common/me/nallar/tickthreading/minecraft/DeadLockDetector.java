@@ -292,9 +292,13 @@ public class DeadLockDetector {
 		if (threadInfo.isInNative()) {
 			sb.append(" (in native)");
 		}
+		int run = 0;
 		sb.append('\n');
 		for (int i = 0; i < stackTrace.length; i++) {
 			String steString = stackTrace[i].toString();
+			if (steString.contains(".run(")) {
+				run++;
+			}
 			sb.append("\tat ").append(steString);
 			sb.append('\n');
 			if (i == 0 && threadInfo.getLockInfo() != null) {
@@ -335,8 +339,8 @@ public class DeadLockDetector {
 		}
 		sb.append('\n');
 		String ret = sb.toString();
-		return (ret.contains("at java.util.concurrent.LinkedBlockingQueue.take(Unknown Source)\n" +
-				"\tat me.nallar.tickthreading.minecraft.ThreadManager$1.run(ThreadManager.java:\n")) ? null : ret;
+		return (run <= 2 && ret.contains("at java.util.concurrent.LinkedBlockingQueue.take(\n") &&
+				ret.contains("at me.nallar.tickthreading.minecraft.ThreadManager$1.run(ThreadManager.java:\n")) ? null : ret;
 	}
 
 	public static void checkForLeakedThreadManagers() {
