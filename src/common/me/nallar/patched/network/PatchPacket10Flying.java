@@ -104,19 +104,25 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 
 			if (!chunks.isEmpty()) {
 				netServerHandler.sendPacketToPlayer(new Packet56MapChunks(chunks));
-				Iterator var11 = tileEntities.iterator();
+				Iterator iterator = tileEntities.iterator();
 
-				while (var11.hasNext()) {
-					Packet var5 = ((TileEntity) var11.next()).getDescriptionPacket();
-					if (var5 != null) {
-						netServerHandler.sendPacketToPlayer(var5);
+				while (iterator.hasNext()) {
+					Packet descriptionPacket;
+					try {
+						descriptionPacket = ((TileEntity) iterator.next()).getDescriptionPacket();
+					} catch (Throwable t) {
+						Log.warning("A TileEntity failed to provide a description packet", t);
+						continue;
+					}
+					if (descriptionPacket != null) {
+						netServerHandler.sendPacketToPlayer(descriptionPacket);
 					}
 				}
 
-				var11 = chunks.iterator();
+				iterator = chunks.iterator();
 
-				while (var11.hasNext()) {
-					Chunk var10 = (Chunk) var11.next();
+				while (iterator.hasNext()) {
+					Chunk var10 = (Chunk) iterator.next();
 					entityPlayerMP.getServerForPlayer().getEntityTracker().func_85172_a(entityPlayerMP, var10);
 					try {
 						MinecraftForge.EVENT_BUS.post(new ChunkWatchEvent.Watch(var10.getChunkCoordIntPair(), entityPlayerMP));
