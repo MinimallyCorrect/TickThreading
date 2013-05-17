@@ -54,16 +54,18 @@ public class TileEntityTickRegion extends TickRegion {
 			final TileEntity tileEntity = tileEntitiesIterator.next();
 			final int xPos = tileEntity.xCoord;
 			final int zPos = tileEntity.zCoord;
+			if (manager.getHashCode(xPos, zPos) != hashCode) {
+				tileEntitiesIterator.remove();
+				manager.add(tileEntity, false);
+				if (hashCode != 0) {
+					Log.fine("A tile entity is in the wrong TickRegion - was it moved by a player, or did something break?"
+							+ "\n entity: " + Log.toString(tileEntity));
+				}
+				manager.lock(tileEntity);
+				continue;
+			}
 			if (tileEntity.lastTTX != xPos || tileEntity.lastTTY != tileEntity.yCoord || tileEntity.lastTTZ != zPos) {
 				manager.lock(tileEntity);
-				if (manager.getHashCode(xPos, zPos) != hashCode) {
-					tileEntitiesIterator.remove();
-					manager.add(tileEntity, false);
-					if (hashCode != 0) {
-						Log.fine("A tile entity is in the wrong TickRegion - was it moved by a player, or did something break?"
-								+ "\n entity: " + Log.toString(tileEntity));
-					}
-				}
 				continue;
 			}
 			try {

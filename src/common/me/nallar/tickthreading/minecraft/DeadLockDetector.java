@@ -87,7 +87,6 @@ public class DeadLockDetector {
 				for (StackTraceElement stackTraceElement : stackTraceElements) {
 					if ("run".equals(stackTraceElement.getMethodName())) {
 						runCount++;
-						Log.info(stackTraceElement.toString());
 					}
 				}
 				if (runCount >= 3) {

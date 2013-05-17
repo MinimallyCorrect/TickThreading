@@ -128,7 +128,7 @@ public final class TickManager {
 	}
 
 	public static int getHashCodeFromRegionCoords(int x, int z) {
-		return x + (z << 16);
+		return (x & 0xFFFF) | ((z & 0xFFFF) << 16);
 	}
 
 	public void queueForRemoval(TickRegion tickRegion) {
