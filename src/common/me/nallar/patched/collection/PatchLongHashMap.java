@@ -7,12 +7,13 @@ package me.nallar.patched.collection;
 import java.util.Arrays;
 
 import me.nallar.patched.annotation.FakeExtend;
+import me.nallar.patched.annotation.Generic;
 import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.util.LongHashMap;
 
 @SuppressWarnings ("unchecked")
 @FakeExtend
-public abstract class PatchLongHashMap extends LongHashMap {
+public abstract class PatchLongHashMap<V> extends LongHashMap<V> {
 	private static final long EMPTY_KEY = Long.MIN_VALUE;
 	private static final int BUCKET_SIZE = 8192;
 	private final long[][] keys = new long[BUCKET_SIZE][];
@@ -36,7 +37,8 @@ public abstract class PatchLongHashMap extends LongHashMap {
 	}
 
 	@Override
-	public Object getValueByKey(long key) {
+	@Generic
+	public V getValueByKey(long key) {
 		int index = (int) (keyIndex(key) & (BUCKET_SIZE - 1));
 		long[] inner = keys[index];
 		if (inner == null) {
@@ -50,7 +52,7 @@ public abstract class PatchLongHashMap extends LongHashMap {
 			} else if (innerKey == key) {
 				Object[] value = values[index];
 				if (value != null) {
-					return value[i];
+					return (V) value[i];
 				}
 			}
 		}
@@ -65,7 +67,7 @@ public abstract class PatchLongHashMap extends LongHashMap {
 
 	@Override
 	@Declare
-	public synchronized Object put(long key, Object value) {
+	public synchronized V put(long key, Object value) {
 		int index = (int) (keyIndex(key) & (BUCKET_SIZE - 1));
 		long[] innerKeys = keys[index];
 		Object[] innerValues = values[index];
@@ -90,7 +92,7 @@ public abstract class PatchLongHashMap extends LongHashMap {
 					Object old = innerValues[i];
 					innerKeys[i] = key;
 					innerValues[i] = value;
-					return old;
+					return (V) old;
 				}
 			}
 

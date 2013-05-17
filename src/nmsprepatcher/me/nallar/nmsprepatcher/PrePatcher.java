@@ -20,15 +20,16 @@ import com.google.common.base.Splitter;
 class PrePatcher {
 	private static final Logger log = Logger.getLogger("PatchLogger");
 	private static final Pattern privatePattern = Pattern.compile("^(\\s+?)private", Pattern.MULTILINE);
-	private static final Pattern extendsPattern = Pattern.compile("\\s+?extends\\s+?([\\S]+)[^\\{]+?\\{", Pattern.DOTALL | Pattern.MULTILINE);
+	private static final Pattern extendsPattern = Pattern.compile("^public.*?\\s+?extends\\s+?([\\S^<]+?)(?:<(\\S+)>)?[\\s]+?\\{", Pattern.MULTILINE);
+	private static final Pattern genericMethodPattern = Pattern.compile("@Generic\\s+?(public\\s+?(\\S*?)?\\s+?(\\S*?)\\s*?\\S+?\\s*?\\()[^\\{]*\\)\\s*?\\{", Pattern.DOTALL | Pattern.MULTILINE);
 	private static final Pattern declareMethodPattern = Pattern.compile("@Declare\\s+?(public\\s+?(\\S*?)?\\s+?(\\S*?)\\s*?\\S+?\\s*?\\([^\\{]*\\)\\s*?\\{)", Pattern.DOTALL | Pattern.MULTILINE);
 	private static final Pattern declareVariablePattern = Pattern.compile("@Declare\\s+?(public [^;\r\n]+?)_( = [^;\r\n]+?)?;", Pattern.DOTALL | Pattern.MULTILINE);
 	private static final Pattern packageVariablePattern = Pattern.compile("\n    ? ?([^ ]+  ? ?[^ ]+);");
 
-	private static void recursiveSearch(File patchDirectory, File sourceDirectory, Map<File, String> patchClasses) {
+	private static void recursiveSearch(File patchDirectory, File sourceDirectory, Map<File, String> patchClasses, Map<File, String> generics) {
 		for (File file : patchDirectory.listFiles()) {
 			if (file.isDirectory()) {
-				recursiveSearch(file, sourceDirectory, patchClasses);
+				recursiveSearch(file, sourceDirectory, patchClasses, generics);
 				continue;
 			}
 			String contents = readFile(file);
@@ -56,6 +57,10 @@ class PrePatcher {
 				log.severe("Can't find " + sourceFile + " for " + file + ", not patching.");
 				continue;
 			}
+			String generic = extendsMatcher.group(2);
+			if (generic != null) {
+				generics.put(sourceFile, generic);
+			}
 			String current = patchClasses.get(sourceFile);
 			patchClasses.put(sourceFile, (current == null ? "" : current) + contents);
 		}
@@ -66,7 +71,8 @@ class PrePatcher {
 			throw new IllegalArgumentException("Not a directory! " + patchDirectory + ", " + sourceDirectory);
 		}
 		Map<File, String> patchClasses = new HashMap<File, String>();
-		recursiveSearch(patchDirectory, sourceDirectory, patchClasses);
+		Map<File, String> generics = new HashMap<File, String>();
+		recursiveSearch(patchDirectory, sourceDirectory, patchClasses, generics);
 
 		for (Map.Entry<File, String> classPatchEntry : patchClasses.entrySet()) {
 			String contents = classPatchEntry.getValue();
@@ -110,6 +116,23 @@ class PrePatcher {
 			}
 			source.append("\n}");
 			sourceString = source.toString();
+			String generic = generics.get(sourceFile);
+			if (generic != null) {
+				sourceString = sourceString.replaceAll("class " + shortClassName + "(<[^>]>)?", "class " + shortClassName + '<' + generic + '>');
+			}
+			Matcher genericMatcher = genericMethodPattern.matcher(contents);
+			while (genericMatcher.find()) {
+				String original = genericMatcher.group(1);
+				String withoutGenerics = original.replace(' ' + generic + ' ', " Object ");
+				int index = sourceString.indexOf(withoutGenerics);
+				if (index == -1) {
+					log.warning("Couldn't find " + withoutGenerics + " in " + sourceFile);
+					continue;
+				}
+				int endIndex = sourceString.indexOf("\n    }", index);
+				String body = sourceString.substring(index, endIndex);
+				sourceString = sourceString.replace(body, body.replace(withoutGenerics, original).replace("return ", "return (" + generic + ") "));
+			}
 			// TODO: Fix package -> public properly later.
 			sourceString = sourceString.replace("\nfinal ", " ");
 			sourceString = sourceString.replace(" final ", " ");

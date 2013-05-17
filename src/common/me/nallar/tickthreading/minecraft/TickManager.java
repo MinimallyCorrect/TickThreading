@@ -536,8 +536,8 @@ public final class TickManager {
 			for (TickRegion tickRegion : tickRegions) {
 				tickRegion.die();
 			}
+			tickRegions.clear();
 		}
-		tickRegions.clear();
 		entityList.clear();
 		entityClassToCountMap.clear();
 		UnsafeUtil.clean(this);
