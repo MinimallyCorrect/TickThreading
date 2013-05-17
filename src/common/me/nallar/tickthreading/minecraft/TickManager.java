@@ -523,6 +523,9 @@ public final class TickManager {
 					if (shuffleCount++ % shuffleInterval == 0) {
 						synchronized (tickRegions) {
 							Collections.shuffle(tickRegions);
+							if (tickRegions.removeAll(Collections.singleton(null))) {
+								Log.severe("Something broke, tickRegions for " + world.getName() + " contained null!");
+							}
 						}
 					}
 				}
