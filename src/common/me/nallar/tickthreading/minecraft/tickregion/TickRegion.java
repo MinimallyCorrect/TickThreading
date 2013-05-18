@@ -1,10 +1,15 @@
 package me.nallar.tickthreading.minecraft.tickregion;
 
+import java.util.Random;
+
 import me.nallar.tickthreading.minecraft.TickManager;
+import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.util.TableFormatter;
 import net.minecraft.world.World;
 
 public abstract class TickRegion implements Runnable {
+	private static final boolean variableTickRate = TickThreading.instance.variableTickRate;
+	private static final Random rand = new Random();
 	final World world;
 	final TickManager manager;
 	public final int hashCode;
@@ -24,18 +29,19 @@ public abstract class TickRegion implements Runnable {
 
 	@Override
 	public synchronized void run() {
-		if (shouldTick()) {
+		float averageTickTime = this.averageTickTime;
+		if (shouldTick(averageTickTime)) {
 			long startTime = System.nanoTime();
 			doTick();
 			if (isEmpty()) {
 				manager.queueForRemoval(this);
 			}
-			averageTickTime = ((averageTickTime * 127) + (System.nanoTime() - startTime)) / 128;
+			this.averageTickTime = ((averageTickTime * 127) + (System.nanoTime() - startTime)) / 128;
 		}
 	}
 
-	boolean shouldTick() {
-		return !manager.variableTickRate || averageTickTime < 55000000 || Math.random() < 55000000d / averageTickTime;
+	private static boolean shouldTick(float averageTickTime) {
+		return !variableTickRate || averageTickTime < 20000000 || rand.nextFloat() < 20000000f / averageTickTime;
 	}
 
 	protected abstract void doTick();

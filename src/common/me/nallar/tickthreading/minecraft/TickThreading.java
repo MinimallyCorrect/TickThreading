@@ -88,7 +88,7 @@ public class TickThreading {
 	public int chunkGCInterval = 1200;
 	private int tickThreads = 0;
 	private int regionSize = 16;
-	private boolean variableTickRate = true;
+	public boolean variableTickRate = true;
 	private boolean appliedEnergisticsLoaded = false;
 	private DeadLockDetector deadLockDetector;
 	private HashSet<Integer> disabledFastMobSpawningDimensions = new HashSet<Integer>();
@@ -200,7 +200,6 @@ public class TickThreading {
 			return;
 		}
 		TickManager manager = new TickManager((WorldServer) world, regionSize, getThreadCount(), waitForEntityTickCompletion);
-		manager.setVariableTickRate(variableTickRate);
 		try {
 			Field loadedTileEntityField = FieldUtil.getFields(World.class, List.class)[loadedTileEntityFieldIndex];
 			new LoadedTileEntityList<TileEntity>(world, loadedTileEntityField, manager);

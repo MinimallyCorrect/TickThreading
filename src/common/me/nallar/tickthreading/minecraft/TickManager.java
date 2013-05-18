@@ -37,7 +37,6 @@ public final class TickManager {
 	private static final byte lockZPlus = 1 << 3;
 	private static final byte lockZMinus = 1 << 4;
 	public final int regionSize;
-	public boolean variableTickRate;
 	public boolean profilingEnabled = false;
 	private double averageTickLength = 0;
 	private long lastTickLength = 0;
@@ -64,10 +63,6 @@ public final class TickManager {
 		this.world = world;
 		this.regionSize = regionSize;
 		shuffleCount = world.rand.nextInt(shuffleInterval);
-	}
-
-	public void setVariableTickRate(boolean variableTickRate) {
-		this.variableTickRate = variableTickRate;
 	}
 
 	public TickRegion getTileEntityRegion(int hashCode) {
@@ -139,8 +134,10 @@ public final class TickManager {
 		TickRegion tickRegion;
 		while ((tickRegion = removalQueue.poll()) != null) {
 			if (tickRegion.isEmpty()) {
-				if ((tickRegion instanceof EntityTickRegion ? entityCallables.remove(tickRegion.hashCode) : tileEntityCallables.remove(tickRegion.hashCode)) == tickRegion) {
-					tickRegions.remove(tickRegion);
+				synchronized (tickRegions) {
+					if ((tickRegion instanceof EntityTickRegion ? entityCallables.remove(tickRegion.hashCode) : tileEntityCallables.remove(tickRegion.hashCode)) == tickRegion) {
+						tickRegions.remove(tickRegion);
+					}
 				}
 			}
 		}
