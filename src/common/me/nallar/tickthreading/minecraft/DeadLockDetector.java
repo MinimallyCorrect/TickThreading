@@ -35,6 +35,7 @@ public class DeadLockDetector {
 	private boolean sentWarningRecently = false;
 	private static volatile long lastTickTime = 0;
 	public static final Set<ThreadManager> threadManagers = Collections.newSetFromMap(new ConcurrentHashMap<ThreadManager, Boolean>());
+	private final boolean spikeDetector = TickThreading.instance.deadLockTime == 1;
 
 	public DeadLockDetector() {
 		final int sleepTime = Math.max(1000, (TickThreading.instance.deadLockTime * 1000) / 6);
@@ -118,7 +119,7 @@ public class DeadLockDetector {
 			return true;
 		}
 		final MinecraftServer minecraftServer = MinecraftServer.getServer();
-		if (minecraftServer.currentlySaving.get() != 0) {
+		if (!spikeDetector && minecraftServer.currentlySaving.get() != 0) {
 			Log.severe("The server seems to have frozen while saving - Waiting for two minutes to give it time to complete.");
 			Log.flush();
 			trySleep(180000);
@@ -134,7 +135,7 @@ public class DeadLockDetector {
 		ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
 		if (!attemptedToRecoverDeadlock) {
 			sb
-					.append("The server appears to have deadlocked.")
+					.append("The server appears to have ").append(spikeDetector ? "lag spiked." : "deadlocked.")
 					.append("\nLast tick ").append(deadTime / 1000000000).append("s ago.");
 			String prefix = "\nWaiting ThreadManagers: ";
 			Set<String> threadManagerSet = new HashSet<String>();
@@ -201,7 +202,7 @@ public class DeadLockDetector {
 			attemptedToRecoverDeadlock = true;
 			return true;
 		}
-		if (TickThreading.instance.deadLockTime == 1) {
+		if (spikeDetector) {
 			return true;
 		}
 		if (TickThreading.instance.exitOnDeadlock) {
