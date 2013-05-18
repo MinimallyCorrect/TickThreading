@@ -1103,4 +1103,12 @@
 			<insertAfter code="dirtyStorage = new me.nallar.tickthreading.collections.LinkedListReplaceIterateTempListClear();"/>
 		</class>
 	</enderStorage>
+	<millenaire>
+		<class id="org.millenaire.common.forge.Mill">
+			<replaceInitializer field="serverWorlds" class="me.nallar.tickthreading.collections.CopyOnWriteVector"/>
+		</class>
+		<class id="org.millenaire.common.MillVillager">
+			<replaceMethodCall method="error" code="{ }">registerInGlobalList</replaceMethodCall>
+		</class>
+	</millenaire>
 </mods>
