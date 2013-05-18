@@ -1110,5 +1110,13 @@
 		<class id="org.millenaire.common.MillVillager">
 			<replaceMethodCall method="error" code="{ }">registerInGlobalList</replaceMethodCall>
 		</class>
+		<class id="org.millenaire.common.MillWorld">
+			<replaceMethod code="{ return this.buildings.get($1);	}">getBuilding</replaceMethod>
+		</class>
+		<class id="org.millenaire.common.Point">
+			<replaceMethod code="{
+				return ((int) x) | (((int) y) &lt;&lt; 12) | (((int) z) &lt;&lt; 20);
+			}">hashCode</replaceMethod>
+		</class>
 	</millenaire>
 </mods>
