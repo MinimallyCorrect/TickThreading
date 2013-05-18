@@ -1111,7 +1111,7 @@
 			<replaceMethodCall method="error" code="{ }">registerInGlobalList</replaceMethodCall>
 		</class>
 		<class id="org.millenaire.common.MillWorld">
-			<replaceMethod code="{ return this.buildings.get($1);	}">getBuilding</replaceMethod>
+			<replaceMethod code="{ return (org.millenaire.common.Building) this.buildings.get($1);	}">getBuilding</replaceMethod>
 		</class>
 		<class id="org.millenaire.common.Point">
 			<replaceMethod code="{
