@@ -95,7 +95,7 @@ public abstract class PatchEntityItem extends EntityItem {
 	@Declare
 	public void aggressiveCombine() {
 		for (EntityItem entityItem : (Iterable<EntityItem>) this.worldObj.selectEntitiesWithinAABB(EntityItem.class, this.boundingBox.expand(aggressiveMergeRadius, aggressiveMergeRadius, aggressiveMergeRadius), null, 1D)) {
-			this.combineItemsOnSpawn(entityItem);
+			entityItem.combineItems(this);
 		}
 	}
 
@@ -135,39 +135,6 @@ public abstract class PatchEntityItem extends EntityItem {
 				this.age = Math.min(other.age, this.age);
 				this.func_92058_a(otherStack);
 				other.setDead();
-				return true;
-			}
-		}
-	}
-
-	public boolean combineItemsOnSpawn(EntityItem other) {
-		if (other == this) {
-			return false;
-		}
-		synchronized (EntityItem.class) {
-			if (this.isDead || other.isDead) {
-				return false;
-			}
-			ItemStack thisStack = this.getEntityItem();
-			ItemStack otherStack = other.getEntityItem();
-
-			if (thisStack.getItem() != otherStack.getItem()) {
-				return false;
-			} else if (thisStack.hasTagCompound() ^ otherStack.hasTagCompound()) {
-				return false;
-			} else if (thisStack.hasTagCompound() && !thisStack.getTagCompound().equals(otherStack.getTagCompound())) {
-				return false;
-			} else if (thisStack.getItem().getHasSubtypes() && thisStack.getItemDamage() != otherStack.getItemDamage()) {
-				return false;
-			} else if (thisStack.stackSize + otherStack.stackSize > thisStack.getMaxStackSize()) {
-				return false;
-			} else {
-				otherStack.stackSize += thisStack.stackSize;
-				thisStack.stackSize = 0;
-				other.delayBeforeCanPickup = Math.max(other.delayBeforeCanPickup, this.delayBeforeCanPickup);
-				other.age = Math.min(other.age, this.age);
-				other.func_92058_a(otherStack);
-				this.setDead();
 				return true;
 			}
 		}
