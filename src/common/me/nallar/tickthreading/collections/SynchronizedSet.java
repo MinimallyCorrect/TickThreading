@@ -2,9 +2,6 @@ package me.nallar.tickthreading.collections;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
-
-import me.nallar.exception.ConcurrencyError;
 
 public class SynchronizedSet<T> extends HashSet<T> {
 	public SynchronizedSet() {
@@ -36,14 +33,6 @@ public class SynchronizedSet<T> extends HashSet<T> {
 
 	public SynchronizedSet(final int initialCapacity) {
 		super(initialCapacity);
-	}
-
-	@Override
-	public Iterator<T> iterator() {
-		if (!Thread.holdsLock(this)) {
-			throw new ConcurrencyError("Unsafe iteration.");
-		}
-		return super.iterator();
 	}
 
 	@Override

@@ -7,8 +7,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import me.nallar.exception.ConcurrencyError;
-
 public class SynchronizedMap<K, V> extends HashMap<K, V> {
 	private KeySet ks;
 
@@ -97,9 +95,6 @@ public class SynchronizedMap<K, V> extends HashMap<K, V> {
 
 		@Override
 		public Iterator<K> iterator() {
-			if (!Thread.holdsLock(this)) {
-				throw new ConcurrencyError("Must synchronize to iterate.");
-			}
 			return realSet.iterator();
 		}
 

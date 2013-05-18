@@ -35,14 +35,6 @@ public class LinkedHashSetTempSetNoClear<T> extends LinkedHashSet<T> {
 		return iterating ? super.size() + toAdd.size() - toRemove.size() : super.size();
 	}
 
-	@Override
-	public Iterator<T> iterator() {
-		if (!Thread.holdsLock(this)) {
-			throw new IllegalStateException("Must lock this to iterate.");
-		}
-		return super.iterator();
-	}
-
 	public synchronized Iterator<T> startIteration() {
 		if (iterating) {
 			throw new IllegalStateException("Already iterating.");

@@ -1,6 +1,5 @@
 package me.nallar.patched.network;
 
-import me.nallar.exception.ConcurrencyError;
 import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.INetworkManager;
@@ -40,9 +39,6 @@ public abstract class PatchNetServerHandler extends NetServerHandler {
 	@Override
 	@Declare
 	public void handleTeleport(double x, double y, double z) {
-		if (!Thread.holdsLock(this)) {
-			throw new ConcurrencyError("Must synchronize for teleportation");
-		}
 		if (teleported < -1 && playerEntity.getDistanceSq(x, y, z) < 1000) {
 			return;
 		}
@@ -58,9 +54,6 @@ public abstract class PatchNetServerHandler extends NetServerHandler {
 	public void updatePositionAfterTP(float yaw, float pitch) {
 		if (Double.isNaN(tpPosX)) {
 			return;
-		}
-		if (!Thread.holdsLock(this)) {
-			throw new ConcurrencyError("Must synchronize for teleportation");
 		}
 		double x = tpPosX;
 		double y = playerEntity.posY;
