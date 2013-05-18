@@ -12,6 +12,7 @@ import net.minecraftforge.event.entity.item.ItemExpireEvent;
 
 public abstract class PatchEntityItem extends EntityItem {
 	private static final double mergeRadius = 1.5D;
+	private static final double aggressiveMergeRadius = 5D;
 
 	public PatchEntityItem(World par1World, double par2, double par4, double par6) {
 		super(par1World, par2, par4, par6);
@@ -92,15 +93,16 @@ public abstract class PatchEntityItem extends EntityItem {
 
 	@Override
 	@Declare
-	public void combine() {
-		func_85054_d();
+	public void aggressiveCombine() {
+		for (EntityItem entityItem : (Iterable<EntityItem>) this.worldObj.selectEntitiesWithinAABB(EntityItem.class, this.boundingBox.expand(aggressiveMergeRadius, aggressiveMergeRadius, aggressiveMergeRadius), null, 1D)) {
+			this.combineItemsOnSpawn(entityItem);
+		}
 	}
 
 	@Override
 	protected void func_85054_d() {
-		for (Object o : this.worldObj.getEntitiesWithinAABB(EntityItem.class, this.boundingBox.expand(mergeRadius, mergeRadius, mergeRadius))) {
-			EntityItem var2 = (EntityItem) o;
-			this.combineItems(var2);
+		for (EntityItem entityItem : (Iterable<EntityItem>) this.worldObj.selectEntitiesWithinAABB(EntityItem.class, this.boundingBox.expand(mergeRadius, mergeRadius, mergeRadius), null, 1D)) {
+			this.combineItems(entityItem);
 		}
 	}
 
@@ -127,11 +129,44 @@ public abstract class PatchEntityItem extends EntityItem {
 			} else if (thisStack.stackSize + otherStack.stackSize > thisStack.getMaxStackSize()) {
 				return false;
 			} else {
+				thisStack.stackSize += otherStack.stackSize;
+				otherStack.stackSize = 0;
+				this.delayBeforeCanPickup = Math.max(other.delayBeforeCanPickup, this.delayBeforeCanPickup);
+				this.age = Math.min(other.age, this.age);
+				this.func_92058_a(otherStack);
+				other.setDead();
+				return true;
+			}
+		}
+	}
+
+	public boolean combineItemsOnSpawn(EntityItem other) {
+		if (other == this) {
+			return false;
+		}
+		synchronized (EntityItem.class) {
+			if (this.isDead || other.isDead) {
+				return false;
+			}
+			ItemStack thisStack = this.getEntityItem();
+			ItemStack otherStack = other.getEntityItem();
+
+			if (thisStack.getItem() != otherStack.getItem()) {
+				return false;
+			} else if (thisStack.hasTagCompound() ^ otherStack.hasTagCompound()) {
+				return false;
+			} else if (thisStack.hasTagCompound() && !thisStack.getTagCompound().equals(otherStack.getTagCompound())) {
+				return false;
+			} else if (thisStack.getItem().getHasSubtypes() && thisStack.getItemDamage() != otherStack.getItemDamage()) {
+				return false;
+			} else if (thisStack.stackSize + otherStack.stackSize > thisStack.getMaxStackSize()) {
+				return false;
+			} else {
 				otherStack.stackSize += thisStack.stackSize;
+				thisStack.stackSize = 0;
 				other.delayBeforeCanPickup = Math.max(other.delayBeforeCanPickup, this.delayBeforeCanPickup);
 				other.age = Math.min(other.age, this.age);
 				other.func_92058_a(otherStack);
-				other.setPosition(posX, posY, posZ);
 				this.setDead();
 				return true;
 			}

@@ -260,6 +260,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	public void tick() {
 		long startTime = System.nanoTime();
 
+		TickThreading.instance.recentSpawnedItems = 0;
 		DeadLockDetector.tick(startTime);
 		Timings.tick();
 

@@ -17,6 +17,7 @@ import me.nallar.tickthreading.minecraft.entitylist.EntityList;
 import me.nallar.tickthreading.minecraft.entitylist.LoadedTileEntityList;
 import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.block.Block;
+import net.minecraft.command.IEntitySelector;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.entity.Entity;
@@ -943,6 +944,31 @@ public abstract class PatchWorld extends World {
 	@Declare
 	public boolean isChunkSavedPopulated(int x, int z) {
 		return ((AnvilChunkLoader) ((WorldServer) (Object) this).theChunkProviderServer.currentChunkLoader).isChunkSavedPopulated(x, z);
+	}
+
+	@Override
+	public List selectEntitiesWithinAABB(Class par1Class, AxisAlignedBB par2AxisAlignedBB, IEntitySelector par3IEntitySelector) {
+		return selectEntitiesWithinAABB(par1Class, par2AxisAlignedBB, par3IEntitySelector, MAX_ENTITY_RADIUS);
+	}
+
+	@Override
+	@Declare
+	public List selectEntitiesWithinAABB(Class par1Class, AxisAlignedBB par2AxisAlignedBB, IEntitySelector par3IEntitySelector, double MAX_ENTITY_RADIUS) {
+		int var4 = MathHelper.floor_double((par2AxisAlignedBB.minX - MAX_ENTITY_RADIUS) / 16.0D);
+		int var5 = MathHelper.floor_double((par2AxisAlignedBB.maxX + MAX_ENTITY_RADIUS) / 16.0D);
+		int var6 = MathHelper.floor_double((par2AxisAlignedBB.minZ - MAX_ENTITY_RADIUS) / 16.0D);
+		int var7 = MathHelper.floor_double((par2AxisAlignedBB.maxZ + MAX_ENTITY_RADIUS) / 16.0D);
+		ArrayList var8 = new ArrayList();
+
+		for (int var9 = var4; var9 <= var5; ++var9) {
+			for (int var10 = var6; var10 <= var7; ++var10) {
+				if (this.chunkExists(var9, var10)) {
+					this.getChunkFromChunkCoords(var9, var10).getEntitiesOfTypeWithinAAAB(par1Class, par2AxisAlignedBB, var8, par3IEntitySelector);
+				}
+			}
+		}
+
+		return var8;
 	}
 
 	private static double center(double a, double b) {

@@ -95,6 +95,7 @@ public class TickThreading {
 	private boolean waitForEntityTickCompletion = true;
 	private int targetTPS = 20;
 	private final LeakDetector leakDetector = new LeakDetector(1200);
+	public int recentSpawnedItems;
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load
@@ -264,8 +265,8 @@ public class TickThreading {
 	@ForgeSubscribe
 	public void onEntityJoinWorld(EntityJoinWorldEvent event) {
 		Entity e = event.entity;
-		if (e instanceof EntityItem) {
-			((EntityItem) e).combine();
+		if (e instanceof EntityItem && recentSpawnedItems++ > 200) {
+			((EntityItem) e).aggressiveCombine();
 			if (e.isDead) {
 				event.setCanceled(true);
 			}
