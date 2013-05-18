@@ -45,9 +45,8 @@ public abstract class PatchFMLCommonHandler extends FMLCommonHandler {
 				EnumSet<TickType> ticksToRun = ticker.ticks();
 				if (ticksToRun == null) {
 					continue;
-				} else {
-					ticksToRun = EnumSet.copyOf(ticksToRun);
 				}
+				ticksToRun = EnumSet.copyOf(ticksToRun);
 				ticksToRun.retainAll(ticks);
 				if (!ticksToRun.isEmpty()) {
 					ticker.tickStart(ticksToRun, data);
@@ -71,9 +70,8 @@ public abstract class PatchFMLCommonHandler extends FMLCommonHandler {
 				EnumSet<TickType> ticksToRun = ticker.ticks();
 				if (ticksToRun == null) {
 					continue;
-				} else {
-					ticksToRun = EnumSet.copyOf(ticksToRun);
 				}
+				ticksToRun = EnumSet.copyOf(ticksToRun);
 				ticksToRun.retainAll(ticks);
 				if (!ticksToRun.isEmpty()) {
 					ticker.tickEnd(ticksToRun, data);

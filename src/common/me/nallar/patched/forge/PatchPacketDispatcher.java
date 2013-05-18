@@ -7,7 +7,7 @@ import net.minecraft.server.management.PlayerInstance;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.WorldServer;
 
-public class PatchPacketDispatcher {
+public abstract class PatchPacketDispatcher {
 	public static void sendPacketToAllAround(double X, double Y, double Z, double range, int dimensionId, Packet packet) {
 		WorldServer worldServer = MinecraftServer.getServer().worldServerForDimension(dimensionId);
 		int x = MathHelper.floor_double(X);

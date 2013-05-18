@@ -479,6 +479,9 @@
 		<class id="cpw.mods.fml.common.registry.GameRegistry">
 			<addAll fromClass="me.nallar.patched.forge.PatchGameRegistry"/>
 		</class>
+		<class id="cpw.mods.fml.common.registry.TickRegistry">
+			<addAll fromClass="me.nallar.patched.forge.PatchTickRegistry"/>
+		</class>
 		<class id="cpw.mods.fml.relauncher.FMLLogFormatter">
 			<replace class="me.nallar.tickthreading.LogFormatter"/>
 		</class>
@@ -1118,7 +1121,8 @@
 		<class id="org.millenaire.common.Point">
 			<replaceMethod code="{
 				return ((int) x) | (((int) y) &lt;&lt; 12) | (((int) z) &lt;&lt; 20);
-			}">hashCode</replaceMethod>
+			}">hashCode
+			</replaceMethod>
 		</class>
 	</millenaire>
 </mods>
