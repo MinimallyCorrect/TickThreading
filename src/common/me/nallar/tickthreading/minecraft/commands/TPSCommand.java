@@ -98,6 +98,14 @@ public class TPSCommand extends Command {
 		}
 	}
 
+	public static StatsHolder populateStatsHolder() {
+		TPSCommand.StatsHolder statsHolder = new TPSCommand.StatsHolder();
+		for (TickManager tickManager : TickThreading.instance.getManagers()) {
+			tickManager.recordStats(statsHolder);
+		}
+		return statsHolder;
+	}
+
 	public static class StatsHolder {
 		public int chunks;
 		public int entities;

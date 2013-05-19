@@ -691,11 +691,7 @@ public class Metrics {
 
 		@Override
 		public int getValue() {
-			TPSCommand.StatsHolder statsHolder = new TPSCommand.StatsHolder();
-			for (TickManager tickManager : TickThreading.instance.getManagers()) {
-				tickManager.recordStats(statsHolder);
-			}
-			return statsHolder.chunks;
+			return TPSCommand.populateStatsHolder().chunks;
 		}
 	}
 
@@ -706,11 +702,7 @@ public class Metrics {
 
 		@Override
 		public int getValue() {
-			TPSCommand.StatsHolder statsHolder = new TPSCommand.StatsHolder();
-			for (TickManager tickManager : TickThreading.instance.getManagers()) {
-				tickManager.recordStats(statsHolder);
-			}
-			return statsHolder.entities;
+			return TPSCommand.populateStatsHolder().entities;
 		}
 	}
 
@@ -721,11 +713,7 @@ public class Metrics {
 
 		@Override
 		public int getValue() {
-			TPSCommand.StatsHolder statsHolder = new TPSCommand.StatsHolder();
-			for (TickManager tickManager : TickThreading.instance.getManagers()) {
-				tickManager.recordStats(statsHolder);
-			}
-			return statsHolder.tileEntities;
+			return TPSCommand.populateStatsHolder().tileEntities;
 		}
 	}
 }
