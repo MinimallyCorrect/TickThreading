@@ -265,10 +265,17 @@ public class TickThreading {
 	@ForgeSubscribe
 	public void onEntityJoinWorld(EntityJoinWorldEvent event) {
 		Entity e = event.entity;
-		if (e instanceof EntityItem && recentSpawnedItems++ > 200) {
-			((EntityItem) e).aggressiveCombine();
-			if (e.isDead) {
+		if (e instanceof EntityItem) {
+			int recentSpawnedItems = this.recentSpawnedItems++;
+			if (recentSpawnedItems > 100000) {
+				e.setDead();
 				event.setCanceled(true);
+			}
+			if (recentSpawnedItems > 200) {
+				((EntityItem) e).aggressiveCombine();
+				if (e.isDead) {
+					event.setCanceled(true);
+				}
 			}
 		}
 	}

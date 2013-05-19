@@ -133,7 +133,7 @@ public abstract class PatchEntityItem extends EntityItem {
 				otherStack.stackSize = 0;
 				this.delayBeforeCanPickup = Math.max(other.delayBeforeCanPickup, this.delayBeforeCanPickup);
 				this.age = Math.min(other.age, this.age);
-				this.func_92058_a(otherStack);
+				this.func_92058_a(thisStack);
 				other.setDead();
 				return true;
 			}
