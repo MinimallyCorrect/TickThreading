@@ -1031,9 +1031,9 @@
 			<synchronize field="$1">addStackToList</synchronize>
 		</class>
 		<class id="appeng.me.tile.TileController">
-			<replaceInitializer field="WaitingQueue" class="java.util.concurrent.ConcurrentLinkedDeque"/>
-			<replaceInitializer field="CraftingQueue" class="java.util.concurrent.ConcurrentLinkedDeque"/>
-			<synchronize>getCellArray,resetCache,^method:TileEntity/updateEntity^,advanceCraftingCursor</synchronize>
+			<replaceInitializer field="WaitingQueue" class="me.nallar.tickthreading.collections.ConcurrentLinkedQueueList"/>
+			<replaceInitializer field="CraftingQueue" class="me.nallar.tickthreading.collections.ConcurrentLinkedQueueList"/>
+			<synchronize>getCellArray,resetCache,^method:TileEntity/updateEntity^,advanceCraftingCursor,resetWaitingQueue</synchronize>
 		</class>
 		<class id="appeng.me.tile.TileDrive">
 			<synchronize>getCellArray,resetCache</synchronize>

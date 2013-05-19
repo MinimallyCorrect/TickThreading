@@ -51,8 +51,6 @@ import cpw.mods.fml.common.TickType;
 import cpw.mods.fml.common.registry.TickRegistry;
 import cpw.mods.fml.relauncher.Side;
 import me.nallar.tickthreading.Log;
-import me.nallar.tickthreading.minecraft.TickManager;
-import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.minecraft.commands.TPSCommand;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.Configuration;
