@@ -286,6 +286,7 @@ public class PatchManager {
 			}
 			String textContent = patchElement.getTextContent().trim();
 			if ("^all^".equals(textContent)) {
+				attributes.put("^all", "true");
 				List<CtBehavior> ctBehaviors = new ArrayList<CtBehavior>();
 				Collections.addAll(ctBehaviors, ctClass.getDeclaredMethods());
 				Collections.addAll(ctBehaviors, ctClass.getDeclaredConstructors());

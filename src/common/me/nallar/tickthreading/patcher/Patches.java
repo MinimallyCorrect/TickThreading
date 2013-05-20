@@ -468,6 +468,7 @@ public class Patches {
 			code_ = "$_ = $0." + newMethod + "($$);";
 		}
 		final String code = code_;
+		final IntHolder replaced = new IntHolder();
 		final int index = Integer.valueOf(index_);
 
 		ctBehavior.instrument(new ExprEditor() {
@@ -484,11 +485,15 @@ public class Patches {
 							return;
 						}
 					}
+					replaced.value++;
 					Log.info("Replaced call to " + methodCall.getClassName() + '/' + methodCall.getMethodName() + " in " + ctBehavior.getLongName());
 					methodCall.replace(code);
 				}
 			}
 		});
+		if (replaced.value == 0 && !attributes.containsKey("^all^")) {
+			Log.warning("Didn't find any method calls to replace");
+		}
 	}
 
 	@Patch (

@@ -81,7 +81,6 @@
 		<class id="net.minecraft.network.NetworkListenThread">
 			<synchronize>addPlayer,networkTick</synchronize>
 			<profile>networkTick</profile>
-			<replaceMethodCall code="{ $_ = null; }" method="log" index="1">networkTick</replaceMethodCall>
 		</class>
 		<class id="net.minecraft.network.TcpWriterThread">
 			<ignoreExceptions type="java.net.SocketException">run</ignoreExceptions>
@@ -311,17 +310,11 @@
 			<synchronize field="$1.loadedChunks">updateMountedMovingPlayer</synchronize>
 			<profile>updatePlayerInstances</profile>
 		</class>
+		<class id="net.minecraft.server.management.PlayerInstance" env="forge">
+			<replaceMethodCall method="^class:ChunkProviderServer^.^method:ChunkProviderServer/loadChunk^" code="{ $_ = null; }"/>
+		</class>
 		<class id="net.minecraft.server.management.PlayerInstance">
 			<addAll fromClass="me.nallar.patched.world.tracking.PatchPlayerInstance"/>
-			<insertBefore code="this.sendTiles();">sendChunkUpdate</insertBefore>
-		</class>
-		<class id="net.minecraft.server.management.PlayerInstance" env="forge">
-			<addAll fromClass="me.nallar.patched.world.tracking.PatchPlayerInstanceForge"/>
-			<lock field="myManager.playerUpdateLock">flagChunkForUpdate,sendChunkUpdate</lock>
-			<replaceMethodCall index="1" code="{ $_ = null; }"/>
-		</class>
-		<class id="net.minecraft.server.management.PlayerInstance">
-			<synchronize field="$1.loadedChunks">addPlayerToChunkWatchingList,sendThisChunkToPlayer</synchronize>
 		</class>
 		<class id="net.minecraft.world.ChunkCoordIntPair">
 			<addAll fromClass="me.nallar.patched.storage.PatchChunkCoordIntPair"/>
@@ -518,7 +511,6 @@
 		</class>
 		<class id="cpw.mods.fml.common.network.ModListResponsePacket">
 			<replaceMethodCall index="2" code="{ $_ = null; }" method="info">execute</replaceMethodCall>
-			<replaceMethodCall index="3" code="{ $_ = null; }" method="info">execute</replaceMethodCall>
 		</class>
 	</forgeModLoader>
 	<factorization>
