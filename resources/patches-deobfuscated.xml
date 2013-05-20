@@ -315,6 +315,7 @@
 		</class>
 		<class id="net.minecraft.server.management.PlayerInstance">
 			<addAll fromClass="me.nallar.patched.world.tracking.PatchPlayerInstance"/>
+			<public field="loaded"/>
 		</class>
 		<class id="net.minecraft.world.ChunkCoordIntPair">
 			<addAll fromClass="me.nallar.patched.storage.PatchChunkCoordIntPair"/>
