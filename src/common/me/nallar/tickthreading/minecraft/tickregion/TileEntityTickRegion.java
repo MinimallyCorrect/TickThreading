@@ -47,83 +47,86 @@ public class TileEntityTickRegion extends TickRegion {
 		// Volatile reads are, if used only when necessary, fast. JVM will not optimize out repeat volatile reads, happens-before on field write.
 		// Just don't read fields repeatedly unnecessary. Best not to do this with non-volatile fields anyway.
 		final Iterator<TileEntity> tileEntitiesIterator = tileEntitySet.startIteration();
-		while (tileEntitiesIterator.hasNext()) {
-			if (profilingEnabled) {
-				startTime = System.nanoTime();
-			}
-			final TileEntity tileEntity = tileEntitiesIterator.next();
-			final int xPos = tileEntity.xCoord;
-			final int zPos = tileEntity.zCoord;
-			if (manager.getHashCode(xPos, zPos) != hashCode) {
-				tileEntitiesIterator.remove();
-				manager.add(tileEntity, false);
-				if (hashCode != 0) {
-					Log.fine("A tile entity is in the wrong TickRegion - was it moved by a player, or did something break?"
-							+ "\n entity: " + Log.toString(tileEntity));
-				}
-				manager.lock(tileEntity);
-				continue;
-			}
-			if (tileEntity.lastTTX != xPos || tileEntity.lastTTY != tileEntity.yCoord || tileEntity.lastTTZ != zPos) {
-				manager.lock(tileEntity);
-				continue;
-			}
-			try {
-				xPlusLock = tileEntity.xPlusLock;
-				zPlusLock = tileEntity.zPlusLock;
-				thisLock = tileEntity.thisLock;
-				xMinusLock = tileEntity.xMinusLock;
-				zMinusLock = tileEntity.zMinusLock;
-				if (xPlusLock != null) {
-					xPlusLock.lock();
-				}
-				if (zPlusLock != null) {
-					zPlusLock.lock();
-				}
-				if (thisLock != null) {
-					thisLock.lock();
-				}
-				if (zMinusLock != null) {
-					zMinusLock.lock();
-				}
-				if (xMinusLock != null) {
-					xMinusLock.lock();
-				}
-				if (tileEntity.isInvalid()) {
-					tileEntitiesIterator.remove();
-					manager.removed(tileEntity);
-					Chunk chunk = world.getChunkIfExists(xPos >> 4, zPos >> 4);
-					if (chunk != null) {
-						chunk.cleanChunkBlockTileEntity(xPos, tileEntity.yCoord, zPos);
-					}
-				} else if (tileEntity.worldObj != null && chunkProvider.chunkExists(xPos >> 4, zPos >> 4)) {
-					tileEntity.tickTT();
-				}
-			} catch (Throwable throwable) {
-				Log.severe("Exception ticking TileEntity " + Log.toString(tileEntity), throwable);
-			} finally {
-				if (xMinusLock != null) {
-					xMinusLock.unlock();
-				}
-				if (zMinusLock != null) {
-					zMinusLock.unlock();
-				}
-				if (thisLock != null) {
-					thisLock.unlock();
-				}
-				if (zPlusLock != null) {
-					zPlusLock.unlock();
-				}
-				if (xPlusLock != null) {
-					xPlusLock.unlock();
-				}
-
+		try {
+			while (tileEntitiesIterator.hasNext()) {
 				if (profilingEnabled) {
-					entityTickProfiler.record(tileEntity, System.nanoTime() - startTime);
+					startTime = System.nanoTime();
+				}
+				final TileEntity tileEntity = tileEntitiesIterator.next();
+				final int xPos = tileEntity.xCoord;
+				final int zPos = tileEntity.zCoord;
+				if (manager.getHashCode(xPos, zPos) != hashCode) {
+					tileEntitiesIterator.remove();
+					manager.add(tileEntity, false);
+					if (hashCode != 0) {
+						Log.fine("A tile entity is in the wrong TickRegion - was it moved by a player, or did something break?"
+								+ "\n entity: " + Log.toString(tileEntity));
+					}
+					manager.lock(tileEntity);
+					continue;
+				}
+				if (tileEntity.lastTTX != xPos || tileEntity.lastTTY != tileEntity.yCoord || tileEntity.lastTTZ != zPos) {
+					manager.lock(tileEntity);
+					continue;
+				}
+				try {
+					xPlusLock = tileEntity.xPlusLock;
+					zPlusLock = tileEntity.zPlusLock;
+					thisLock = tileEntity.thisLock;
+					xMinusLock = tileEntity.xMinusLock;
+					zMinusLock = tileEntity.zMinusLock;
+					if (xPlusLock != null) {
+						xPlusLock.lock();
+					}
+					if (zPlusLock != null) {
+						zPlusLock.lock();
+					}
+					if (thisLock != null) {
+						thisLock.lock();
+					}
+					if (zMinusLock != null) {
+						zMinusLock.lock();
+					}
+					if (xMinusLock != null) {
+						xMinusLock.lock();
+					}
+					if (tileEntity.isInvalid()) {
+						tileEntitiesIterator.remove();
+						manager.removed(tileEntity);
+						Chunk chunk = world.getChunkIfExists(xPos >> 4, zPos >> 4);
+						if (chunk != null) {
+							chunk.cleanChunkBlockTileEntity(xPos, tileEntity.yCoord, zPos);
+						}
+					} else if (tileEntity.worldObj != null && chunkProvider.chunkExists(xPos >> 4, zPos >> 4)) {
+						tileEntity.tickTT();
+					}
+				} catch (Throwable throwable) {
+					Log.severe("Exception ticking TileEntity " + Log.toString(tileEntity), throwable);
+				} finally {
+					if (xMinusLock != null) {
+						xMinusLock.unlock();
+					}
+					if (zMinusLock != null) {
+						zMinusLock.unlock();
+					}
+					if (thisLock != null) {
+						thisLock.unlock();
+					}
+					if (zPlusLock != null) {
+						zPlusLock.unlock();
+					}
+					if (xPlusLock != null) {
+						xPlusLock.unlock();
+					}
+
+					if (profilingEnabled) {
+						entityTickProfiler.record(tileEntity, System.nanoTime() - startTime);
+					}
 				}
 			}
+		} finally {
+			tileEntitySet.done();
 		}
-		tileEntitySet.done();
 	}
 
 	@Override

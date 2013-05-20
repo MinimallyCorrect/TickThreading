@@ -31,71 +31,74 @@ public class EntityTickRegion extends TickRegion {
 			entityTickProfiler = manager.entityTickProfiler;
 		}
 		Iterator<Entity> entitiesIterator = entitySet.startIteration();
-		while (entitiesIterator.hasNext()) {
-			if (profilingEnabled) {
-				startTime = System.nanoTime();
-			}
-			Entity entity = entitiesIterator.next();
-			try {
-				Entity ridingEntity = entity.ridingEntity;
-				if (ridingEntity != null) {
-					if (!ridingEntity.isDead && ridingEntity.riddenByEntity == entity) {
-						continue;
+		try {
+			while (entitiesIterator.hasNext()) {
+				if (profilingEnabled) {
+					startTime = System.nanoTime();
+				}
+				Entity entity = entitiesIterator.next();
+				try {
+					Entity ridingEntity = entity.ridingEntity;
+					if (ridingEntity != null) {
+						if (!ridingEntity.isDead && ridingEntity.riddenByEntity == entity) {
+							continue;
+						}
+
+						ridingEntity.riddenByEntity = null;
+						entity.ridingEntity = null;
 					}
 
-					ridingEntity.riddenByEntity = null;
-					entity.ridingEntity = null;
-				}
+					if (!entity.isDead) {
+						if (entity instanceof EntityPlayerMP) {
+							Unsafe $ = UnsafeAccess.$;
+							Object lock = ((EntityPlayerMP) entity).playerNetServerHandler;
+							if ($.tryMonitorEnter(lock)) {
+								try {
+									world.updateEntity(entity);
+								} finally {
+									$.monitorExit(lock);
+								}
+							}
+						} else {
+							world.updateEntity(entity);
+						}
+					}
 
-				if (!entity.isDead) {
-					if (entity instanceof EntityPlayerMP) {
-						Unsafe $ = UnsafeAccess.$;
-						Object lock = ((EntityPlayerMP) entity).playerNetServerHandler;
-						if ($.tryMonitorEnter(lock)) {
-							try {
-								world.updateEntity(entity);
-							} finally {
-								$.monitorExit(lock);
+					if (entity.isDead) {
+						int entityX = entity.chunkCoordX;
+						int entityZ = entity.chunkCoordZ;
+
+						if (entity.addedToChunk) {
+							Chunk chunk = chunkProvider.getChunkIfExists(entityX, entityZ);
+							if (chunk != null) {
+								chunk.removeEntity(entity);
 							}
 						}
-					} else {
-						world.updateEntity(entity);
+
+						entitiesIterator.remove();
+						manager.removed(entity);
+						world.releaseEntitySkin(entity);
+					} else if (manager.getHashCode(entity) != hashCode) {
+						entitiesIterator.remove();
+						manager.add(entity, false);
+						//Log.severe("Inconsistent state: " + entity + " is in the wrong TickRegion.");
+						// Note to self for when I decide this is wrong later:
+						// Entities are supposed to move, of course this will happen!
+					}
+				} catch (Throwable throwable) {
+					Log.severe("Exception ticking entity " + entity + " in " + toString() + '/' + Log.name(entity.worldObj) + ':', throwable);
+					if (entity.worldObj != world) {
+						Log.severe("Seems to be caused by an entity being in a broken state, set to an impossible/incorrect world. Killing this entity.");
+						entity.setDead();
 					}
 				}
-
-				if (entity.isDead) {
-					int entityX = entity.chunkCoordX;
-					int entityZ = entity.chunkCoordZ;
-
-					if (entity.addedToChunk) {
-						Chunk chunk = chunkProvider.getChunkIfExists(entityX, entityZ);
-						if (chunk != null) {
-							chunk.removeEntity(entity);
-						}
-					}
-
-					entitiesIterator.remove();
-					manager.removed(entity);
-					world.releaseEntitySkin(entity);
-				} else if (manager.getHashCode(entity) != hashCode) {
-					entitiesIterator.remove();
-					manager.add(entity, false);
-					//Log.severe("Inconsistent state: " + entity + " is in the wrong TickRegion.");
-					// Note to self for when I decide this is wrong later:
-					// Entities are supposed to move, of course this will happen!
-				}
-			} catch (Throwable throwable) {
-				Log.severe("Exception ticking entity " + entity + " in " + toString() + '/' + Log.name(entity.worldObj) + ':', throwable);
-				if (entity.worldObj != world) {
-					Log.severe("Seems to be caused by an entity being in a broken state, set to an impossible/incorrect world. Killing this entity.");
-					entity.setDead();
+				if (profilingEnabled) {
+					entityTickProfiler.record(entity, System.nanoTime() - startTime);
 				}
 			}
-			if (profilingEnabled) {
-				entityTickProfiler.record(entity, System.nanoTime() - startTime);
-			}
+		} finally {
+			entitySet.done();
 		}
-		entitySet.done();
 	}
 
 	@Override
