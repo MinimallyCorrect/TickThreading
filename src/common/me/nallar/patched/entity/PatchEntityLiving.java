@@ -238,10 +238,10 @@ public abstract class PatchEntityLiving extends EntityLiving {
 		this.moveStrafing *= 0.98F;
 		this.moveForward *= 0.98F;
 		this.randomYawVelocity *= 0.9F;
-		float var11 = this.landMovementFactor;
+		float oldLandMovementFactor = this.landMovementFactor;
 		this.landMovementFactor *= this.getSpeedModifier();
 		this.moveEntityWithHeading(this.moveStrafing, this.moveForward);
-		this.landMovementFactor = var11;
+		this.landMovementFactor = oldLandMovementFactor;
 		theProfiler.endSection();
 		theProfiler.startSection("push");
 
@@ -268,54 +268,54 @@ public abstract class PatchEntityLiving extends EntityLiving {
 						continue;
 					}
 
-					int var6 = func_82159_b(itemStack);
+					int targetSlot = func_82159_b(itemStack);
 
-					if (var6 > -1) {
-						boolean var14 = true;
-						ItemStack var8 = this.getCurrentItemOrArmor(var6);
+					if (targetSlot > -1) {
+						boolean shouldEquip = true;
+						ItemStack oldItem = this.getCurrentItemOrArmor(targetSlot);
 
-						if (var8 != null) {
+						if (oldItem != null) {
 							if (isPlayer) {
 								continue;
 							}
-							if (var6 == 0) {
-								if (item instanceof ItemSword && !(var8.getItem() instanceof ItemSword)) {
-									var14 = true;
-								} else if (item instanceof ItemSword && var8.getItem() instanceof ItemSword) {
-									ItemSword var9 = (ItemSword) item;
-									ItemSword var10 = (ItemSword) var8.getItem();
+							if (targetSlot == 0) {
+								if (item instanceof ItemSword && !(oldItem.getItem() instanceof ItemSword)) {
+									shouldEquip = true;
+								} else if (item instanceof ItemSword && oldItem.getItem() instanceof ItemSword) {
+									ItemSword newSword = (ItemSword) item;
+									ItemSword oldSword = (ItemSword) oldItem.getItem();
 
-									if (var9.func_82803_g() == var10.func_82803_g()) {
-										var14 = itemStack.getItemDamage() > var8.getItemDamage() || itemStack.hasTagCompound() && !var8.hasTagCompound();
+									if (newSword.func_82803_g() == oldSword.func_82803_g()) {
+										shouldEquip = itemStack.getItemDamage() > oldItem.getItemDamage() || itemStack.hasTagCompound() && !oldItem.hasTagCompound();
 									} else {
-										var14 = var9.func_82803_g() > var10.func_82803_g();
+										shouldEquip = newSword.func_82803_g() > oldSword.func_82803_g();
 									}
 								} else {
-									var14 = false;
+									shouldEquip = false;
 								}
-							} else if (item instanceof ItemArmor && !(var8.getItem() instanceof ItemArmor)) {
-								var14 = true;
-							} else if (item instanceof ItemArmor && var8.getItem() instanceof ItemArmor) {
-								ItemArmor var15 = (ItemArmor) item;
-								ItemArmor var16 = (ItemArmor) var8.getItem();
+							} else if (item instanceof ItemArmor && !(oldItem.getItem() instanceof ItemArmor)) {
+								shouldEquip = true;
+							} else if (item instanceof ItemArmor && oldItem.getItem() instanceof ItemArmor) {
+								ItemArmor newArmor = (ItemArmor) item;
+								ItemArmor oldArmor = (ItemArmor) oldItem.getItem();
 
-								if (var15.damageReduceAmount == var16.damageReduceAmount) {
-									var14 = itemStack.getItemDamage() > var8.getItemDamage() || itemStack.hasTagCompound() && !var8.hasTagCompound();
+								if (newArmor.damageReduceAmount == oldArmor.damageReduceAmount) {
+									shouldEquip = itemStack.getItemDamage() > oldItem.getItemDamage() || itemStack.hasTagCompound() && !oldItem.hasTagCompound();
 								} else {
-									var14 = var15.damageReduceAmount > var16.damageReduceAmount;
+									shouldEquip = newArmor.damageReduceAmount > oldArmor.damageReduceAmount;
 								}
 							} else {
-								var14 = false;
+								shouldEquip = false;
 							}
 						}
 
-						if (var14) {
-							if (var8 != null && this.rand.nextFloat() - 0.1F < this.equipmentDropChances[var6]) {
-								this.entityDropItem(var8, 0.0F);
+						if (shouldEquip) {
+							if (oldItem != null && this.rand.nextFloat() - 0.1F < this.equipmentDropChances[targetSlot]) {
+								this.entityDropItem(oldItem, 0.0F);
 							}
 
-							this.setCurrentItemOrArmor(var6, itemStack);
-							this.equipmentDropChances[var6] = 2.0F;
+							this.setCurrentItemOrArmor(targetSlot, itemStack);
+							this.equipmentDropChances[targetSlot] = 2.0F;
 							this.persistenceRequired = true;
 							this.onItemPickup(entityItem, 1);
 							entityItem.setDead();
