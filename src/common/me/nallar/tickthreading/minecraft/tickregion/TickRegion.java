@@ -15,7 +15,7 @@ public abstract class TickRegion implements Runnable {
 	public final int hashCode;
 	private final int regionX;
 	private final int regionZ;
-	private float averageTickTime = 1;
+	private long averageTickTime = 1;
 	public boolean profilingEnabled = false;
 
 	TickRegion(World world, TickManager manager, int regionX, int regionZ) {
@@ -29,18 +29,18 @@ public abstract class TickRegion implements Runnable {
 
 	@Override
 	public synchronized void run() {
-		float averageTickTime = this.averageTickTime;
+		long averageTickTime = this.averageTickTime;
 		if (shouldTick(averageTickTime)) {
 			long startTime = System.nanoTime();
 			doTick();
 			if (isEmpty()) {
 				manager.queueForRemoval(this);
 			}
-			this.averageTickTime = ((averageTickTime * 127) + (System.nanoTime() - startTime)) / 128;
+			this.averageTickTime = ((averageTickTime * 31) + (System.nanoTime() - startTime)) / 32;
 		}
 	}
 
-	private static boolean shouldTick(float averageTickTime) {
+	private static boolean shouldTick(long averageTickTime) {
 		return !variableTickRate || averageTickTime < 20000000 || rand.nextFloat() < 20000000f / averageTickTime;
 	}
 
