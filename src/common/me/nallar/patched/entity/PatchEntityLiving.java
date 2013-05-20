@@ -7,6 +7,7 @@ import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
@@ -251,7 +252,7 @@ public abstract class PatchEntityLiving extends EntityLiving {
 		theProfiler.endSection();
 		theProfiler.startSection("looting");
 
-		if (!worldObj.isRemote && this.canPickUpLoot && !this.dead && worldObj.getGameRules().getGameRuleBooleanValue("mobGriefing")) {
+		if (!worldObj.isRemote && this.canPickUpLoot && !this.dead && !this.isDead && this.getHealth() > 0 && worldObj.getGameRules().getGameRuleBooleanValue("mobGriefing")) {
 			List<EntityItem> entityItemList = worldObj.getEntitiesWithinAABB(EntityItem.class, this.boundingBox.expand(1.0D, 0.0D, 1.0D));
 
 			for (EntityItem entityItem : entityItemList) {
@@ -262,7 +263,8 @@ public abstract class PatchEntityLiving extends EntityLiving {
 					// This isn't actually redundant, because patcher.
 					//noinspection RedundantCast
 					boolean isPlayer = (Object) this instanceof EntityPlayerMP;
-					if (!isPlayer && (!(itemStack.getItem() instanceof ItemArmor)) || entityItem.delayBeforeCanPickup > 8) {
+					Item item = itemStack.getItem();
+					if (item == null || (!(item instanceof ItemArmor) && (!isPlayer || entityItem.delayBeforeCanPickup > 8))) {
 						continue;
 					}
 
@@ -277,10 +279,10 @@ public abstract class PatchEntityLiving extends EntityLiving {
 								continue;
 							}
 							if (var6 == 0) {
-								if (itemStack.getItem() instanceof ItemSword && !(var8.getItem() instanceof ItemSword)) {
+								if (item instanceof ItemSword && !(var8.getItem() instanceof ItemSword)) {
 									var14 = true;
-								} else if (itemStack.getItem() instanceof ItemSword && var8.getItem() instanceof ItemSword) {
-									ItemSword var9 = (ItemSword) itemStack.getItem();
+								} else if (item instanceof ItemSword && var8.getItem() instanceof ItemSword) {
+									ItemSword var9 = (ItemSword) item;
 									ItemSword var10 = (ItemSword) var8.getItem();
 
 									if (var9.func_82803_g() == var10.func_82803_g()) {
@@ -291,10 +293,10 @@ public abstract class PatchEntityLiving extends EntityLiving {
 								} else {
 									var14 = false;
 								}
-							} else if (itemStack.getItem() instanceof ItemArmor && !(var8.getItem() instanceof ItemArmor)) {
+							} else if (item instanceof ItemArmor && !(var8.getItem() instanceof ItemArmor)) {
 								var14 = true;
-							} else if (itemStack.getItem() instanceof ItemArmor && var8.getItem() instanceof ItemArmor) {
-								ItemArmor var15 = (ItemArmor) itemStack.getItem();
+							} else if (item instanceof ItemArmor && var8.getItem() instanceof ItemArmor) {
+								ItemArmor var15 = (ItemArmor) item;
 								ItemArmor var16 = (ItemArmor) var8.getItem();
 
 								if (var15.damageReduceAmount == var16.damageReduceAmount) {
