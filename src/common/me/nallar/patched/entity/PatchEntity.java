@@ -29,7 +29,7 @@ public abstract class PatchEntity extends Entity {
 
 	@Override
 	@Declare
-	public float getDistanceToEntitySquared(Entity entity) {
+	public float getDistanceToEntitySq(Entity entity) {
 		float xD = (float) (this.posX - entity.posX);
 		float yD = (float) (this.posY - entity.posY);
 		float zD = (float) (this.posZ - entity.posZ);

@@ -587,6 +587,12 @@ public class Patches {
 			} catch (NotFoundException ignored) {
 				CtMethod added = CtNewMethod.copy(newMethod, ctClass, classMap);
 				ctClass.addMethod(added);
+				MethodInfo addedMethodInfo = added.getMethodInfo2();
+				String addedDescriptor = addedMethodInfo.getDescriptor();
+				String newDescriptor = newMethod.getMethodInfo2().getDescriptor();
+				if (!newDescriptor.equals(addedDescriptor)) {
+					addedMethodInfo.setDescriptor(newDescriptor);
+				}
 				replaceMethod(added, newMethod);
 				if (added.getName().startsWith("construct")) {
 					try {

@@ -98,7 +98,7 @@
 			<public field="ambientTickCountdown"/>
 			<public field="forcedChunks"/>
 			<replaceInitializer field="playerEntities" class="java.util.concurrent.CopyOnWriteArrayList"/>
-			<insertBefore code="if (preHandleSpawn($1)) { return; }">spawnEntityInWorld</insertBefore>
+			<insertBefore code="if (preHandleSpawn($1)) { return false; }">spawnEntityInWorld</insertBefore>
 		</class>
 		<class id="net.minecraft.world.ChunkCache">
 			<replaceMethodCall code="$_ = $0.getChunkIfExists($$);" method="^class:World^.^method:World/getChunkFromChunkCoords^"/>
