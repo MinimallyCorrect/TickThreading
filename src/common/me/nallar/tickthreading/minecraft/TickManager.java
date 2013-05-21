@@ -652,9 +652,8 @@ public final class TickManager {
 				}
 			}
 			tf.finishTable();
-			stats.append('\n');
 			averageAverageTickTime /= tickRegions.size();
-			stats.append("---- World stats ----");
+			stats.append("\n---- World stats ----");
 			stats.append('\n').append(world.getChunkProvider().makeString());
 			stats.append("\nAverage tick time: ").append(averageAverageTickTime).append("ms");
 			stats.append("\nMax tick time: ").append(maxTickTime).append("ms");

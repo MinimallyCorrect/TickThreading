@@ -26,6 +26,7 @@ import me.nallar.tickthreading.minecraft.ThreadManager;
 import me.nallar.tickthreading.minecraft.TickManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
+import me.nallar.tickthreading.util.EnvironmentInfo;
 import me.nallar.tickthreading.util.FakeServerThread;
 import me.nallar.tickthreading.util.PatchUtil;
 import me.nallar.unsafe.UnsafeUtil;
@@ -282,29 +283,34 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 		this.updateTimeLightAndEntities();
 
-		if (this.tickCounter % TickThreading.instance.saveInterval == 0) {
+		int ticks = this.tickCounter;
+		if (ticks % TickThreading.instance.saveInterval == 0) {
 			theProfiler.startSection("save");
 			this.serverConfigManager.saveAllPlayerData();
 			theProfiler.endSection();
 		}
 
 		theProfiler.startSection("tallying");
-		this.sentPacketCountArray[this.tickCounter % 100] = Packet.sentID - this.lastSentPacketID;
+		this.sentPacketCountArray[ticks % 100] = Packet.sentID - this.lastSentPacketID;
 		this.lastSentPacketID = Packet.sentID;
-		this.sentPacketSizeArray[this.tickCounter % 100] = Packet.sentSize - this.lastSentPacketSize;
+		this.sentPacketSizeArray[ticks % 100] = Packet.sentSize - this.lastSentPacketSize;
 		this.lastSentPacketSize = Packet.sentSize;
-		this.receivedPacketCountArray[this.tickCounter % 100] = Packet.receivedID - this.lastReceivedID;
+		this.receivedPacketCountArray[ticks % 100] = Packet.receivedID - this.lastReceivedID;
 		this.lastReceivedID = Packet.receivedID;
-		this.receivedPacketSizeArray[this.tickCounter % 100] = Packet.receivedSize - this.lastReceivedSize;
+		this.receivedPacketSizeArray[ticks % 100] = Packet.receivedSize - this.lastReceivedSize;
 		this.lastReceivedSize = Packet.receivedSize;
 		theProfiler.endStartSection("snooper");
 
-		if (!this.usageSnooper.isSnooperRunning() && this.tickCounter > 100) {
+		if (!this.usageSnooper.isSnooperRunning() && ticks > 100) {
 			this.usageSnooper.startSnooper();
 		}
 
-		if (this.tickCounter % 6000 == 0) {
+		if (ticks % 6000 == 0) {
 			this.usageSnooper.addMemoryStatsToSnooper();
+		}
+
+		if (ticks % 1200 == 0) {
+			EnvironmentInfo.checkOpenFileHandles();
 		}
 
 		theProfiler.endStartSection("forgePostServerTick");
@@ -328,7 +334,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		}
 		theProfiler.endSection();
 		theProfiler.endSection();
-		tickTime = tickTime * 0.98f + ((this.tickTimeArray[this.tickCounter % 100] = System.nanoTime() - startTime) * 0.02f);
+		tickTime = tickTime * 0.98f + ((this.tickTimeArray[ticks % 100] = System.nanoTime() - startTime) * 0.02f);
 	}
 
 	@Override
