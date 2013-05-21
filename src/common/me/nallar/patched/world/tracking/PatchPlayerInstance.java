@@ -126,32 +126,34 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 
 	@Override
 	public synchronized void flagChunkForUpdate(int par1, int par2, int par3) {
-		markRequiresUpdate(true);
+		int tiles = markRequiresUpdate(true);
 
 		this.field_73260_f |= 1 << (par2 >> 4);
 
 		short var4 = (short) (par1 << 12 | par3 << 8 | par2);
+		short[] locationOfBlockChange = this.locationOfBlockChange;
 
-		for (int var5 = 0; var5 < this.numberOfTilesToUpdate; ++var5) {
-			if (this.locationOfBlockChange[var5] == var4) {
+		for (int var5 = 0; var5 < tiles; ++var5) {
+			if (locationOfBlockChange[var5] == var4) {
 				return;
 			}
 		}
 
-		if (this.numberOfTilesToUpdate == locationOfBlockChange.length) {
-			this.locationOfBlockChange = Arrays.copyOf(this.locationOfBlockChange, locationOfBlockChange.length << 1);
+		if (tiles == locationOfBlockChange.length) {
+			this.locationOfBlockChange = locationOfBlockChange = Arrays.copyOf(locationOfBlockChange, locationOfBlockChange.length << 1);
 		}
-		this.locationOfBlockChange[this.numberOfTilesToUpdate++] = var4;
+		locationOfBlockChange[tiles] = var4;
 	}
 
-	private void markRequiresUpdate(boolean increment) {
+	private int markRequiresUpdate(boolean increment) {
 		boolean requiresWatch = false;
+		int tiles = 0;
 		synchronized (this) {
 			if (!watched) {
 				watched = requiresWatch = true;
 			}
 			if (increment) {
-				numberOfTilesToUpdate++;
+				tiles = numberOfTilesToUpdate++;
 			}
 		}
 		if (requiresWatch) {
@@ -164,6 +166,7 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 			}
 			numberOfTilesToUpdate++;
 		}
+		return tiles;
 	}
 
 	@Override
@@ -198,12 +201,13 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 				int var1;
 				int var2;
 				int var3;
+				short[] locationOfBlockChange = this.locationOfBlockChange;
 
 				WorldServer worldServer = this.myManager.getWorldServer();
 				if (this.numberOfTilesToUpdate == 1) {
-					var1 = this.chunkLocation.chunkXPos * 16 + (this.locationOfBlockChange[0] >> 12 & 15);
-					var2 = this.locationOfBlockChange[0] & 255;
-					var3 = this.chunkLocation.chunkZPos * 16 + (this.locationOfBlockChange[0] >> 8 & 15);
+					var1 = this.chunkLocation.chunkXPos * 16 + (locationOfBlockChange[0] >> 12 & 15);
+					var2 = locationOfBlockChange[0] & 255;
+					var3 = this.chunkLocation.chunkZPos * 16 + (locationOfBlockChange[0] >> 8 & 15);
 					this.sendToAllPlayersWatchingChunk(new Packet53BlockChange(var1, var2, var3, worldServer));
 
 					if (worldServer.blockHasTileEntity(var1, var2, var3)) {
@@ -213,15 +217,15 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 					int var4;
 
 					if (this.numberOfTilesToUpdate >= ForgeDummyContainer.clumpingThreshold) {
-						this.sendToAllPlayersWatchingChunk(new Packet51MapChunk(worldServer.getChunkFromChunkCoords(this.chunkLocation.chunkXPos, this.chunkLocation.chunkZPos), false, this.field_73260_f));
+						this.sendToAllPlayersWatchingChunk(new Packet51MapChunk(worldServer.getChunkFromChunkCoords(this.chunkLocation.chunkXPos, chunkLocation.chunkZPos), false, this.field_73260_f));
 					} else {
-						this.sendToAllPlayersWatchingChunk(new Packet52MultiBlockChange(this.chunkLocation.chunkXPos, this.chunkLocation.chunkZPos, this.locationOfBlockChange, this.numberOfTilesToUpdate, worldServer));
+						this.sendToAllPlayersWatchingChunk(new Packet52MultiBlockChange(this.chunkLocation.chunkXPos, this.chunkLocation.chunkZPos, locationOfBlockChange, this.numberOfTilesToUpdate, worldServer));
 					}
 
 					for (var1 = 0; var1 < this.numberOfTilesToUpdate; ++var1) {
-						var2 = this.chunkLocation.chunkXPos * 16 + (this.locationOfBlockChange[var1] >> 12 & 15);
-						var3 = this.locationOfBlockChange[var1] & 255;
-						var4 = this.chunkLocation.chunkZPos * 16 + (this.locationOfBlockChange[var1] >> 8 & 15);
+						var2 = this.chunkLocation.chunkXPos * 16 + (locationOfBlockChange[var1] >> 12 & 15);
+						var3 = locationOfBlockChange[var1] & 255;
+						var4 = this.chunkLocation.chunkZPos * 16 + (locationOfBlockChange[var1] >> 8 & 15);
 
 						if (worldServer.blockHasTileEntity(var2, var3, var4)) {
 							this.sendTileToAllPlayersWatchingChunk(worldServer.getBlockTileEntity(var2, var3, var4));
