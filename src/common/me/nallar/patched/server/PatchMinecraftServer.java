@@ -23,7 +23,6 @@ import me.nallar.insecurity.InsecurityManager;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.DeadLockDetector;
 import me.nallar.tickthreading.minecraft.ThreadManager;
-import me.nallar.tickthreading.minecraft.TickManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
 import me.nallar.tickthreading.util.EnvironmentInfo;
@@ -464,8 +463,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 			WorldServer world = DimensionManager.getWorld(id);
 			String name = world.getName();
-			TickManager tickManager = TickThreading.instance.getManager(world);
-			if (tickManager == null) {
+			if (!world.loadEventFired) {
 				Log.severe("Not sent WorldEvent.Load for loaded world " + name + ", sending it now.");
 				MinecraftForge.EVENT_BUS.post(new WorldEvent.Load(world));
 			}

@@ -73,6 +73,8 @@ public abstract class PatchWorld extends World {
 	public boolean unloaded_;
 	@Declare
 	public Chunk emptyChunk_;
+	@Declare
+	public boolean loadEventFired_;
 
 	public void construct() {
 		tickCount = rand.nextInt(240); // So when different worlds do every N tick actions,

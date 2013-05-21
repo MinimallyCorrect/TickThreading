@@ -471,6 +471,10 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			return defaultEmptyChunk;
 		}
 
+		if (!world.loadEventFired) {
+			Log.severe("Loaded chunk before world load event fired, this can cause many issues, including loss of multiblock data.", new Throwable());
+		}
+
 		long key = key(x, z);
 		Chunk chunk;
 

@@ -198,6 +198,7 @@ public class TickThreading {
 			Log.severe("World " + world.getName() + "'s world load event was fired twice.", new Throwable());
 			return;
 		}
+		world.loadEventFired = true;
 		TickManager manager = new TickManager((WorldServer) world, regionSize, getThreadCount(), waitForEntityTickCompletion);
 		try {
 			Field loadedTileEntityField = FieldUtil.getFields(World.class, List.class)[loadedTileEntityFieldIndex];
