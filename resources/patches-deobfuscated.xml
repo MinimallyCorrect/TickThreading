@@ -894,6 +894,9 @@
 			<!-- Spams logs, slow -->
 			<disable>doSortingTreeEffect</disable>
 		</class>
+		<class id="twilightforest.biomes.TFBiomeDecorator">
+			<synchronize>^method:BiomeDecorator/decorate^</synchronize>
+		</class>
 	</twilightForest>
 	<bukkitForge>
 		<class id="org.bukkit.plugin.SimplePluginManager">
