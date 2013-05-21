@@ -31,6 +31,7 @@ import me.nallar.tickthreading.util.PatchUtil;
 import me.nallar.unsafe.UnsafeUtil;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet4UpdateTime;
@@ -260,6 +261,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	public void tick() {
 		long startTime = System.nanoTime();
 
+		EntityItem.resetLast();
 		TickThreading.recentSpawnedItems = 0;
 		DeadLockDetector.tick(startTime);
 		Timings.tick();

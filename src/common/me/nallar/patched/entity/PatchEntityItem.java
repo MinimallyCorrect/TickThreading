@@ -93,15 +93,20 @@ public abstract class PatchEntityItem extends EntityItem {
 		}
 	}
 
+	@Declare
+	public static void resetLast() {
+		last = null;
+	}
+
 	@Override
 	@Declare
 	public boolean aggressiveCombine() {
 		EntityItem last_ = last;
-		if (this.getDistanceToEntitySq(last_) < aggressiveMergeRadiusSquared && last_.combineItems(this)) {
+		if (last_ != null && this.getDistanceToEntitySq(last_) < aggressiveMergeRadiusSquared && last_.combineItems(this)) {
 			return true;
 		}
 		for (EntityItem entityItem : (Iterable<EntityItem>) this.worldObj.selectEntitiesWithinAABB(EntityItem.class, this.boundingBox.expand(aggressiveMergeRadius, aggressiveMergeRadius, aggressiveMergeRadius), null, 1D)) {
-			if (entityItem.combineItems(this)) {
+			if (entityItem != last_ && entityItem.combineItems(this)) {
 				return true;
 			}
 		}
