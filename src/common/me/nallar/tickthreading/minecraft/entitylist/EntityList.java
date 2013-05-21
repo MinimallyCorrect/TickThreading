@@ -7,17 +7,21 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
+import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickManager;
 import net.minecraft.world.World;
 
 /*
-* Used to override World.loadedTileEntityList.
+* Used to override World.loadedTile/EntityList.
 * */
 public abstract class EntityList<T> extends ArrayList<T> {
 	public final TickManager manager;
 	public final ArrayList innerList;
 
 	EntityList(World world, Field overriddenField, TickManager manager, ArrayList innerList) {
+		if (innerList.getClass() != ArrayList.class) {
+			Log.severe("Another mod has replaced an entity list with an instance of " + innerList.getClass().getName());
+		}
 		this.manager = manager;
 		this.innerList = innerList;
 		overriddenField.setAccessible(true);
@@ -56,16 +60,25 @@ public abstract class EntityList<T> extends ArrayList<T> {
 
 	@Override
 	public Iterator<T> iterator() {
+		if (!Thread.holdsLock(this)) {
+			throw new IllegalStateException("Must synchronize to iterate over EntityList.");
+		}
 		return (Iterator<T>) innerList.iterator();
 	}
 
 	@Override
 	public ListIterator<T> listIterator() {
+		if (!Thread.holdsLock(this)) {
+			throw new IllegalStateException("Must synchronize to iterate over EntityList.");
+		}
 		return (ListIterator<T>) innerList.listIterator();
 	}
 
 	@Override
 	public ListIterator<T> listIterator(int index) {
+		if (!Thread.holdsLock(this)) {
+			throw new IllegalStateException("Must synchronize to iterate over EntityList.");
+		}
 		return (ListIterator<T>) innerList.listIterator(index);
 	}
 
