@@ -87,7 +87,7 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 				long var2 = (long) this.chunkLocation.chunkXPos + 2147483647L | (long) this.chunkLocation.chunkZPos + 2147483647L << 32;
 				this.myManager.getChunkWatchers().remove(var2);
 
-				if (numberOfTilesToUpdate > 0) {
+				if (watched) {
 					List chunkWatcherWithPlayers = this.myManager.getChunkWatcherWithPlayers();
 					this.myManager.playerUpdateLock.lock();
 					try {
@@ -164,7 +164,6 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 			} finally {
 				this.myManager.playerUpdateLock.unlock();
 			}
-			numberOfTilesToUpdate++;
 		}
 		return tiles;
 	}
@@ -195,6 +194,9 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 
 	@Override
 	public void sendChunkUpdate() {
+		if (playersInChunk.isEmpty()) {
+			return;
+		}
 		sendTiles();
 		synchronized (this) {
 			int numberOfTilesToUpdate = this.numberOfTilesToUpdate;
