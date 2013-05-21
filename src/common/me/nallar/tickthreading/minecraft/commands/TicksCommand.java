@@ -22,8 +22,8 @@ public class TicksCommand extends Command {
 	}
 
 	@Override
-	public boolean canCommandSenderUseCommand(ICommandSender commandSender) {
-		return !TickThreading.instance.requireOpForTicksCommand || super.canCommandSenderUseCommand(commandSender);
+	public boolean requireOp() {
+		return TickThreading.instance.requireOpForTicksCommand;
 	}
 
 	private static void usage(ICommandSender commandSender) {

@@ -22,11 +22,6 @@ public class TPSCommand extends Command {
 	}
 
 	@Override
-	public boolean canCommandSenderUseCommand(ICommandSender par1ICommandSender) {
-		return true;
-	}
-
-	@Override
 	public void processCommand(ICommandSender commandSender, List<String> arguments) {
 		StatsHolder statsHolder = new StatsHolder();
 		TableFormatter tf = new TableFormatter(commandSender);

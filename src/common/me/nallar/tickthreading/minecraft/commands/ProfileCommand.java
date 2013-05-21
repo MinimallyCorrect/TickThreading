@@ -21,8 +21,8 @@ public class ProfileCommand extends Command {
 	}
 
 	@Override
-	public boolean canCommandSenderUseCommand(ICommandSender commandSender) {
-		return !TickThreading.instance.requireOpForProfileCommand || super.canCommandSenderUseCommand(commandSender);
+	public boolean requireOp() {
+		return TickThreading.instance.requireOpForProfileCommand;
 	}
 
 	@Override

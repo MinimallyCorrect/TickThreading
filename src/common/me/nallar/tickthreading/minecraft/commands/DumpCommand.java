@@ -23,8 +23,8 @@ public class DumpCommand extends Command {
 	}
 
 	@Override
-	public boolean canCommandSenderUseCommand(ICommandSender commandSender) {
-		return !TickThreading.instance.requireOpForDumpCommand || super.canCommandSenderUseCommand(commandSender);
+	public boolean requireOp() {
+		return TickThreading.instance.requireOpForDumpCommand;
 	}
 
 	@Override

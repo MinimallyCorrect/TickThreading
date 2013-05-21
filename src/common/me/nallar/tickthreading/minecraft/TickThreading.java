@@ -61,10 +61,11 @@ import net.minecraftforge.event.world.WorldEvent;
 @Mod (modid = "TickThreading", name = "TickThreading", version = "@MOD_VERSION@")
 @NetworkMod (clientSideRequired = false, serverSideRequired = false)
 public class TickThreading {
+	@Mod.Instance
+	public static TickThreading instance;
 	private static final Metrics metrics = new Metrics("TickThreading", VersionUtil.TTVersionNumber());
 	private static final int loadedEntityFieldIndex = 0;
 	private static final int loadedTileEntityFieldIndex = 2;
-	public static TickThreading instance;
 	final Map<World, TickManager> managers = new LinkedHashMap<World, TickManager>();
 	private final Runtime runtime = Runtime.getRuntime();
 	public String messageDeadlockDetected = "The server appears to have frozen and will restart soon if it does not recover. :(";
@@ -111,7 +112,6 @@ public class TickThreading {
 			MinecraftServer.getServer().initiateShutdown();
 			Runtime.getRuntime().exit(1);
 		}
-		instance = this;
 	}
 
 	@Mod.Init
@@ -183,6 +183,7 @@ public class TickThreading {
 		MinecraftServer.setTargetTPS(targetTPS);
 		FMLLog.info("Loaded " + RelaunchClassLoader.patchedClasses + " patched classes" +
 				"\nUsed " + RelaunchClassLoader.usedPatchedClasses + '.');
+		Command.checkForPermissions();
 	}
 
 	@ForgeSubscribe
