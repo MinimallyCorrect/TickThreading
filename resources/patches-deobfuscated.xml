@@ -871,6 +871,14 @@
 		</class>
 	</graviGun>
 	<twilightForest>
+		<class id="twilightforest.entity.HydraHeadContainer">
+			<insertBefore code="{
+				if ($1.^field:Entity/boundingBox^ == null) {
+					return;
+				}
+			}">faceEntity,setTargetEntity
+			</insertBefore>
+		</class>
 		<class id="twilightforest.TFFeatureCache">
 			<synchronize>save</synchronize>
 		</class>
