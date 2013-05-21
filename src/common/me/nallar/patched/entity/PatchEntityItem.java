@@ -13,6 +13,8 @@ import net.minecraftforge.event.entity.item.ItemExpireEvent;
 public abstract class PatchEntityItem extends EntityItem {
 	private static final double mergeRadius = 1.5D;
 	private static final double aggressiveMergeRadius = 5D;
+	private static final float aggressiveMergeRadiusSquared = 25f;
+	private static EntityItem last;
 
 	public PatchEntityItem(World par1World, double par2, double par4, double par6) {
 		super(par1World, par2, par4, par6);
@@ -93,16 +95,26 @@ public abstract class PatchEntityItem extends EntityItem {
 
 	@Override
 	@Declare
-	public void aggressiveCombine() {
-		for (EntityItem entityItem : (Iterable<EntityItem>) this.worldObj.selectEntitiesWithinAABB(EntityItem.class, this.boundingBox.expand(aggressiveMergeRadius, aggressiveMergeRadius, aggressiveMergeRadius), null, 1D)) {
-			entityItem.combineItems(this);
+	public boolean aggressiveCombine() {
+		EntityItem last_ = last;
+		if (this.getDistanceToEntitySquared(last_) < aggressiveMergeRadiusSquared && last_.combineItems(this)) {
+			return true;
 		}
+		for (EntityItem entityItem : (Iterable<EntityItem>) this.worldObj.selectEntitiesWithinAABB(EntityItem.class, this.boundingBox.expand(aggressiveMergeRadius, aggressiveMergeRadius, aggressiveMergeRadius), null, 1D)) {
+			if (entityItem.combineItems(this)) {
+				return true;
+			}
+		}
+		last = this;
+		return false;
 	}
 
 	@Override
 	protected void func_85054_d() {
 		for (EntityItem entityItem : (Iterable<EntityItem>) this.worldObj.selectEntitiesWithinAABB(EntityItem.class, this.boundingBox.expand(mergeRadius, mergeRadius, mergeRadius), null, 1D)) {
-			this.combineItems(entityItem);
+			if (this.combineItems(entityItem)) {
+				return;
+			}
 		}
 	}
 

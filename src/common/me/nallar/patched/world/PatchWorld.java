@@ -22,6 +22,7 @@ import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityTracker;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.profiler.Profiler;
@@ -958,17 +959,18 @@ public abstract class PatchWorld extends World {
 		int var5 = MathHelper.floor_double((par2AxisAlignedBB.maxX + MAX_ENTITY_RADIUS) / 16.0D);
 		int var6 = MathHelper.floor_double((par2AxisAlignedBB.minZ - MAX_ENTITY_RADIUS) / 16.0D);
 		int var7 = MathHelper.floor_double((par2AxisAlignedBB.maxZ + MAX_ENTITY_RADIUS) / 16.0D);
-		ArrayList var8 = new ArrayList();
+		ArrayList entities = new ArrayList();
 
-		for (int var9 = var4; var9 <= var5; ++var9) {
-			for (int var10 = var6; var10 <= var7; ++var10) {
-				if (this.chunkExists(var9, var10)) {
-					this.getChunkFromChunkCoords(var9, var10).getEntitiesOfTypeWithinAAAB(par1Class, par2AxisAlignedBB, var8, par3IEntitySelector);
+		for (int cX = var4; cX <= var5; ++cX) {
+			for (int cZ = var6; cZ <= var7; ++cZ) {
+				Chunk chunk = getChunkIfExists(cX, cZ);
+				if (chunk != null) {
+					chunk.getEntitiesOfTypeWithinAAAB(par1Class, par2AxisAlignedBB, entities, par3IEntitySelector);
 				}
 			}
 		}
 
-		return var8;
+		return entities;
 	}
 
 	private static double center(double a, double b) {
@@ -1018,5 +1020,23 @@ public abstract class PatchWorld extends World {
 		}
 
 		return (float) hit / (float) noHit;
+	}
+
+	@Override
+	@Declare
+	public boolean preHandleSpawn(Entity e) {
+		if (e instanceof EntityItem) {
+			int recentSpawnedItems = TickThreading.recentSpawnedItems++;
+			if (recentSpawnedItems > 100000) {
+				e.setDead();
+				return true;
+			}
+			if (recentSpawnedItems > 200) {
+				if (((EntityItem) e).aggressiveCombine()) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 }

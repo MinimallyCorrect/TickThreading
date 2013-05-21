@@ -1061,6 +1061,11 @@ public class Patches {
 		ctClass.removeField(ctClass.getDeclaredField(attributes.get("field")));
 	}
 
+	@Patch
+	public void removeMethod(CtMethod ctMethod, Map<String, String> attributes) throws NotFoundException {
+		ctMethod.getDeclaringClass().removeMethod(ctMethod);
+	}
+
 	private static String classSignatureToName(String signature) {
 		//noinspection HardcodedFileSeparator
 		return signature.substring(1, signature.length() - 1).replace("/", ".");

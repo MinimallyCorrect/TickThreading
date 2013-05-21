@@ -28,6 +28,15 @@ public abstract class PatchEntity extends Entity {
 	}
 
 	@Override
+	@Declare
+	public float getDistanceToEntitySquared(Entity entity) {
+		float xD = (float) (this.posX - entity.posX);
+		float yD = (float) (this.posY - entity.posY);
+		float zD = (float) (this.posZ - entity.posZ);
+		return xD * xD + yD * yD + zD * zD;
+	}
+
+	@Override
 	public boolean handleLavaMovement() {
 		return (lavaCheckTicks++ % 15 == 0) ? inLava = this.worldObj.isMaterialInBB(this.boundingBox.expand(-0.10000000149011612D, -0.4000000059604645D, -0.10000000149011612D), Material.lava) : inLava;
 	}

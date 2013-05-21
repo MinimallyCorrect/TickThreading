@@ -36,8 +36,6 @@ import me.nallar.tickthreading.util.PatchUtil;
 import me.nallar.tickthreading.util.TableFormatter;
 import me.nallar.tickthreading.util.VersionUtil;
 import net.minecraft.command.ServerCommandManager;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
@@ -53,7 +51,6 @@ import net.minecraftforge.common.Configuration;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.ForgeSubscribe;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.WorldEvent;
 
@@ -96,7 +93,7 @@ public class TickThreading {
 	private boolean waitForEntityTickCompletion = true;
 	private int targetTPS = 20;
 	private final LeakDetector leakDetector = new LeakDetector(1200);
-	public int recentSpawnedItems;
+	public static int recentSpawnedItems;
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load
@@ -257,24 +254,6 @@ public class TickThreading {
 				Item usedItemType = usedItem.getItem();
 				if (usedItemType == Item.pocketSundial && (!requireOpForDumpCommand || entityPlayer.canCommandSenderUseCommand(4, "dump"))) {
 					Command.sendChat(entityPlayer, DumpCommand.dump(new TableFormatter(entityPlayer), entityPlayer.worldObj, event.x, event.y, event.z, 35).toString());
-					event.setCanceled(true);
-				}
-			}
-		}
-	}
-
-	@ForgeSubscribe
-	public void onEntityJoinWorld(EntityJoinWorldEvent event) {
-		Entity e = event.entity;
-		if (e instanceof EntityItem) {
-			int recentSpawnedItems = this.recentSpawnedItems++;
-			if (recentSpawnedItems > 100000) {
-				e.setDead();
-				event.setCanceled(true);
-			}
-			if (recentSpawnedItems > 200) {
-				((EntityItem) e).aggressiveCombine();
-				if (e.isDead) {
 					event.setCanceled(true);
 				}
 			}

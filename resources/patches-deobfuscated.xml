@@ -98,6 +98,7 @@
 			<public field="ambientTickCountdown"/>
 			<public field="forcedChunks"/>
 			<replaceInitializer field="playerEntities" class="java.util.concurrent.CopyOnWriteArrayList"/>
+			<insertBefore code="if (preHandleSpawn($1)) { return; }">spawnEntityInWorld</insertBefore>
 		</class>
 		<class id="net.minecraft.world.ChunkCache">
 			<replaceMethodCall code="$_ = $0.getChunkIfExists($$);" method="^class:World^.^method:World/getChunkFromChunkCoords^"/>
@@ -214,6 +215,9 @@
 		</class>
 		<class id="net.minecraft.util.IntHashMap">
 			<replace class="me.nallar.patched.collection.IntHashMap"/>
+		</class>
+		<class id="net.minecraft.entity.passive.EntitySquid">
+			<removeMethod>isInWater</removeMethod>
 		</class>
 		<class id="net.minecraft.entity.player.EntityPlayerMP">
 			<addAll fromClass="me.nallar.patched.entity.PatchEntityPlayerMP"/>
