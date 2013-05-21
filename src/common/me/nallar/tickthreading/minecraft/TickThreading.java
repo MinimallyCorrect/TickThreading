@@ -138,7 +138,7 @@ public class TickThreading {
 		tickThreads = config.get(GENERAL, "tickThreads", tickThreads, "number of threads to use to tick. 0 = automatic").getInt(tickThreads);
 		regionSize = config.get(GENERAL, "regionSize", regionSize, "width/length of tick regions, specified in blocks.").getInt(regionSize);
 		saveInterval = config.get(GENERAL, "saveInterval", saveInterval, "Time between auto-saves, in ticks.").getInt(saveInterval);
-		deadLockTime = config.get(GENERAL, "deadLockTime", deadLockTime, "The time(seconds) of being frozen which will trigger the DeadLockDetector.").getInt(deadLockTime);
+		deadLockTime = config.get(GENERAL, "deadLockTime", deadLockTime, "The time(seconds) of being frozen which will trigger the DeadLockDetector. Set to 1 to instead detect lag spikes.").getInt(deadLockTime);
 		chunkCacheSize = Math.max(100, config.get(GENERAL, "chunkCacheSize", chunkCacheSize, "Number of unloaded chunks to keep cached. Replacement for Forge's dormant chunk cache, which tends to break. Minimum size of 100").getInt(chunkCacheSize));
 		chunkGCInterval = config.get(GENERAL, "chunkGCInterval", chunkGCInterval, "Interval between chunk garbage collections in ticks").getInt(chunkGCInterval);
 		targetTPS = config.get(GENERAL, "targetTPS", targetTPS, "TPS the server should try to run at.").getInt(targetTPS);
