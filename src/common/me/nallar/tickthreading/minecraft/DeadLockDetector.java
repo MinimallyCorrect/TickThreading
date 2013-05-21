@@ -53,11 +53,14 @@ public class DeadLockDetector {
 	}
 
 	public static void tickAhead(int seconds) {
-		tick(System.nanoTime() + seconds * 1000000000L);
+		tick(System.nanoTime() + seconds * 10000000000l);
 	}
 
 	public static synchronized long tick(long nanoTime) {
-		if (lastTickTime < nanoTime) {
+		long lastTickTime_ = lastTickTime;
+		if (lastTickTime_ == 0) {
+			lastTickTime = nanoTime + 10 * 10000000000l;
+		} else if (lastTickTime_ < nanoTime) {
 			lastTickTime = nanoTime;
 		}
 		return nanoTime;
