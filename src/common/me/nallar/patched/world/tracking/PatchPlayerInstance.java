@@ -125,35 +125,35 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 	}
 
 	@Override
-	public synchronized void flagChunkForUpdate(int par1, int par2, int par3) {
-		int tiles = markRequiresUpdate(true);
+	public void flagChunkForUpdate(int par1, int par2, int par3) {
+		markRequiresUpdate();
 
-		this.field_73260_f |= 1 << (par2 >> 4);
+		synchronized (this) {
+			this.field_73260_f |= 1 << (par2 >> 4);
 
-		short var4 = (short) (par1 << 12 | par3 << 8 | par2);
-		short[] locationOfBlockChange = this.locationOfBlockChange;
+			short mask = (short) (par1 << 12 | par3 << 8 | par2);
+			short[] locationOfBlockChange = this.locationOfBlockChange;
 
-		for (int var5 = 0; var5 < tiles; ++var5) {
-			if (locationOfBlockChange[var5] == var4) {
-				return;
+			int tiles = numberOfTilesToUpdate;
+			for (int var5 = 0; var5 < tiles; ++var5) {
+				if (locationOfBlockChange[var5] == mask) {
+					return;
+				}
 			}
-		}
 
-		if (tiles == locationOfBlockChange.length) {
-			this.locationOfBlockChange = locationOfBlockChange = Arrays.copyOf(locationOfBlockChange, locationOfBlockChange.length << 1);
+			if (tiles == locationOfBlockChange.length) {
+				this.locationOfBlockChange = locationOfBlockChange = Arrays.copyOf(locationOfBlockChange, locationOfBlockChange.length << 1);
+			}
+			locationOfBlockChange[tiles++] = mask;
+			numberOfTilesToUpdate = tiles;
 		}
-		locationOfBlockChange[tiles] = var4;
 	}
 
-	private int markRequiresUpdate(boolean increment) {
+	private void markRequiresUpdate() {
 		boolean requiresWatch = false;
-		int tiles = 0;
 		synchronized (this) {
 			if (!watched) {
 				watched = requiresWatch = true;
-			}
-			if (increment) {
-				tiles = numberOfTilesToUpdate++;
 			}
 		}
 		if (requiresWatch) {
@@ -165,13 +165,12 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 				this.myManager.playerUpdateLock.unlock();
 			}
 		}
-		return tiles;
 	}
 
 	@Override
 	@Declare
 	public void updateTile(TileEntity tileEntity) {
-		markRequiresUpdate(false);
+		markRequiresUpdate();
 		tilesToUpdate.add(tileEntity);
 	}
 

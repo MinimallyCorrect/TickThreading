@@ -195,11 +195,13 @@ public class DeadLockDetector {
 					sb.append(toString(threadInfo, true)).append('\n');
 				}
 			}
-			sb.append("\nAttempting to recover without restarting.");
-			Log.severe(sb.toString());
-			for (String threadManager : threadManagerSet) {
-				tryFixDeadlocks(threadManager);
+			if (!spikeDetector) {
+				sb.append("\nAttempting to recover without restarting.");
+				for (String threadManager : threadManagerSet) {
+					tryFixDeadlocks(threadManager);
+				}
 			}
+			Log.severe(sb.toString());
 			attemptedToRecoverDeadlock = true;
 			return true;
 		}
