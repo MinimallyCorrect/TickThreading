@@ -238,6 +238,7 @@ public class PatchManager {
 			CtClass ctClass = entry.getValue();
 			Patches.findUnusedFields(ctClass);
 			try {
+				ctClass.getClassFile().compact();
 				classRegistry.update(className, ctClass.toBytecode());
 			} catch (Exception e) {
 				Log.severe("Javassist failed to save " + className, e);
@@ -286,7 +287,7 @@ public class PatchManager {
 			}
 			String textContent = patchElement.getTextContent().trim();
 			if ("^all^".equals(textContent)) {
-				attributes.put("^all", "true");
+				attributes.put("^all^", "true");
 				List<CtBehavior> ctBehaviors = new ArrayList<CtBehavior>();
 				Collections.addAll(ctBehaviors, ctClass.getDeclaredMethods());
 				Collections.addAll(ctBehaviors, ctClass.getDeclaredConstructors());

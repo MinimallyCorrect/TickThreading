@@ -427,11 +427,19 @@ public class Patches {
 		if (readCode == null && writeCode == null) {
 			throw new IllegalArgumentException("readCode or writeCode must be set");
 		}
+		final IntHolder replaced = new IntHolder();
 		try {
 			ctBehavior.instrument(new ExprEditor() {
 				@Override
 				public void edit(FieldAccess fieldAccess) throws CannotCompileException {
-					if (fieldAccess.getFieldName().equals(field) && (clazz == null || fieldAccess.getClassName().equals(clazz))) {
+					String fieldName;
+					try {
+						fieldName = fieldAccess.getFieldName();
+					} catch (ClassCastException e) {
+						Log.warning("Can't examine field access at " + fieldAccess.getLineNumber() + " which is a r: " + fieldAccess.isReader() + " w: " + fieldAccess.isWriter());
+						return;
+					}
+					if ((clazz == null || fieldAccess.getClassName().equals(clazz)) && fieldName.equals(field)) {
 						if (removeAfter) {
 							try {
 								removeAfterIndex(ctBehavior, fieldAccess.indexOfBytecode());
@@ -444,12 +452,16 @@ public class Patches {
 							fieldAccess.replace(writeCode);
 						} else if (fieldAccess.isReader() && readCode != null) {
 							fieldAccess.replace(readCode);
-							Log.info("Replaced in " + ctBehavior + ' ' + fieldAccess.getFieldName() + " read with " + readCode);
+							Log.info("Replaced in " + ctBehavior + ' ' + fieldName + " read with " + readCode);
 						}
+						replaced.value++;
 					}
 				}
 			});
 		} catch (ThisIsNotAnError ignored) {
+		}
+		if (replaced.value == 0 && !attributes.containsKey("^all^")) {
+			Log.severe("Didn't replace any field accesses.");
 		}
 	}
 

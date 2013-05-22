@@ -127,6 +127,12 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 
 	@Override
 	@Declare
+	public List getPlayerEntities() {
+		return playerEntities;
+	}
+
+	@Override
+	@Declare
 	public void stopChunkTickThreads() {
 		threadManager.stop();
 	}
