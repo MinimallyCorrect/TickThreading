@@ -1045,4 +1045,9 @@ public abstract class PatchWorld extends World {
 		}
 		return false;
 	}
+
+	@Declare
+	public Entity getEntity(int id) {
+		return ((WorldServer) (Object) this).getEntityTracker().getEntity(id);
+	}
 }

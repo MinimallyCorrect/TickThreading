@@ -1126,4 +1126,16 @@
 			</replaceMethod>
 		</class>
 	</millenaire>
+	<stevesCarts>
+		<class id="vswe.stevescarts.CommonProxy">
+			<replaceMethod code="{
+				^class:Entity^ entity = $2.getEntity($1);
+				if (entity instanceof vswe.stevescarts.Carts.entMCBase) {
+					return (vswe.stevescarts.Carts.entMCBase) entity;
+				}
+				return null;
+			}">getCart
+			</replaceMethod>
+		</class>
+	</stevesCarts>
 </mods>
