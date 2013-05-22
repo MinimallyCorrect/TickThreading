@@ -44,6 +44,7 @@ import javassist.expr.Instanceof;
 import javassist.expr.MethodCall;
 import javassist.expr.NewArray;
 import javassist.expr.NewExpr;
+import me.nallar.insecurity.ThisIsNotAnError;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.mappings.MethodDescription;
 import me.nallar.tickthreading.util.MappingUtil;
@@ -422,22 +423,34 @@ public class Patches {
 		final String readCode = attributes.get("readCode");
 		final String writeCode = attributes.get("writeCode");
 		final String clazz = attributes.get("class");
+		final boolean removeAfter = attributes.containsKey("removeAfter");
 		if (readCode == null && writeCode == null) {
 			throw new IllegalArgumentException("readCode or writeCode must be set");
 		}
-		ctBehavior.instrument(new ExprEditor() {
-			@Override
-			public void edit(FieldAccess fieldAccess) throws CannotCompileException {
-				if (fieldAccess.getFieldName().equals(field) && (clazz == null || fieldAccess.getClassName().equals(clazz))) {
-					if (fieldAccess.isWriter() && writeCode != null) {
-						fieldAccess.replace(writeCode);
-					} else if (fieldAccess.isReader() && readCode != null) {
-						fieldAccess.replace(readCode);
-						Log.info("Replaced in " + ctBehavior + ' ' + fieldAccess.getFieldName() + " read with " + readCode);
+		try {
+			ctBehavior.instrument(new ExprEditor() {
+				@Override
+				public void edit(FieldAccess fieldAccess) throws CannotCompileException {
+					if (fieldAccess.getFieldName().equals(field) && (clazz == null || fieldAccess.getClassName().equals(clazz))) {
+						if (removeAfter) {
+							try {
+								removeAfterIndex(ctBehavior, fieldAccess.indexOfBytecode());
+							} catch (BadBytecode badBytecode) {
+								throw UnsafeUtil.throwIgnoreChecked(badBytecode);
+							}
+							throw new ThisIsNotAnError();
+						}
+						if (fieldAccess.isWriter() && writeCode != null) {
+							fieldAccess.replace(writeCode);
+						} else if (fieldAccess.isReader() && readCode != null) {
+							fieldAccess.replace(readCode);
+							Log.info("Replaced in " + ctBehavior + ' ' + fieldAccess.getFieldName() + " read with " + readCode);
+						}
 					}
 				}
-			}
-		});
+			});
+		} catch (ThisIsNotAnError ignored) {
+		}
 	}
 
 	@Patch
@@ -470,27 +483,39 @@ public class Patches {
 		final String code = code_;
 		final IntHolder replaced = new IntHolder();
 		final int index = Integer.valueOf(index_);
+		final boolean removeAfter = attributes.containsKey("removeAfter");
 
-		ctBehavior.instrument(new ExprEditor() {
-			private int currentIndex = 0;
+		try {
+			ctBehavior.instrument(new ExprEditor() {
+				private int currentIndex = 0;
 
-			@Override
-			public void edit(MethodCall methodCall) throws CannotCompileException {
-				if ((className == null || methodCall.getClassName().equals(className)) && (method.isEmpty() || methodCall.getMethodName().equals(method)) && (index == -1 || currentIndex++ == index)) {
-					if (newMethod != null) {
-						try {
-							CtMethod oldMethod = methodCall.getMethod();
-							oldMethod.getDeclaringClass().getDeclaredMethod(newMethod, oldMethod.getParameterTypes());
-						} catch (NotFoundException e) {
-							return;
+				@Override
+				public void edit(MethodCall methodCall) throws CannotCompileException {
+					if ((className == null || methodCall.getClassName().equals(className)) && (method.isEmpty() || methodCall.getMethodName().equals(method)) && (index == -1 || currentIndex++ == index)) {
+						if (newMethod != null) {
+							try {
+								CtMethod oldMethod = methodCall.getMethod();
+								oldMethod.getDeclaringClass().getDeclaredMethod(newMethod, oldMethod.getParameterTypes());
+							} catch (NotFoundException e) {
+								return;
+							}
 						}
+						replaced.value++;
+						Log.info("Replaced call to " + methodCall.getClassName() + '/' + methodCall.getMethodName() + " in " + ctBehavior.getLongName());
+						if (removeAfter) {
+							try {
+								removeAfterIndex(ctBehavior, methodCall.indexOfBytecode());
+							} catch (BadBytecode badBytecode) {
+								throw UnsafeUtil.throwIgnoreChecked(badBytecode);
+							}
+							throw new ThisIsNotAnError();
+						}
+						methodCall.replace(code);
 					}
-					replaced.value++;
-					Log.info("Replaced call to " + methodCall.getClassName() + '/' + methodCall.getMethodName() + " in " + ctBehavior.getLongName());
-					methodCall.replace(code);
 				}
-			}
-		});
+			});
+		} catch (ThisIsNotAnError ignored) {
+		}
 		if (replaced.value == 0 && !attributes.containsKey("^all^")) {
 			Log.warning("Didn't find any method calls to replace");
 		}
@@ -537,6 +562,22 @@ public class Patches {
 					}
 				}
 			}
+			methodInfo.rebuildStackMapIf6(ctClass.getClassPool(), ctClass.getClassFile2());
+		}
+	}
+
+	private void removeAfterIndex(CtBehavior ctBehavior, int index) throws BadBytecode {
+		Log.info("Removed after " + index + " in " + ctBehavior.getLongName());
+		CtClass ctClass = ctBehavior.getDeclaringClass();
+		MethodInfo methodInfo = ctBehavior.getMethodInfo2();
+		CodeAttribute codeAttribute = methodInfo.getCodeAttribute();
+		if (codeAttribute != null) {
+			CodeIterator iterator = codeAttribute.iterator();
+			int i, length = iterator.getCodeLength() - 1;
+			for (i = index; i < length; i++) {
+				iterator.writeByte(Opcode.NOP, i);
+			}
+			iterator.writeByte(Opcode.RETURN, i);
 			methodInfo.rebuildStackMapIf6(ctClass.getClassPool(), ctClass.getClassFile2());
 		}
 	}

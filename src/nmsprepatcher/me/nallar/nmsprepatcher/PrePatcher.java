@@ -20,9 +20,9 @@ import com.google.common.base.Splitter;
 class PrePatcher {
 	private static final Logger log = Logger.getLogger("PatchLogger");
 	private static final Pattern privatePattern = Pattern.compile("^(\\s+?)private", Pattern.MULTILINE);
-	private static final Pattern extendsPattern = Pattern.compile("^public.*?\\s+?extends\\s+?([\\S^<]+?)(?:<(\\S+)>)?[\\s]+?\\{", Pattern.MULTILINE);
+	private static final Pattern extendsPattern = Pattern.compile("^public.*?\\s+?extends\\s+?([\\S^<]+?)(?:<(\\S+)>)?[\\s]+?(?:implements [^}]+?)?\\{", Pattern.MULTILINE);
 	private static final Pattern genericMethodPattern = Pattern.compile("@Generic\\s+?(public\\s+?(\\S*?)?\\s+?(\\S*?)\\s*?\\S+?\\s*?\\()[^\\{]*\\)\\s*?\\{", Pattern.DOTALL | Pattern.MULTILINE);
-	private static final Pattern declareMethodPattern = Pattern.compile("@Declare\\s+?(public\\s+?(\\S*?)?\\s+?(\\S*?)\\s*?\\S+?\\s*?\\([^\\{]*\\)\\s*?\\{)", Pattern.DOTALL | Pattern.MULTILINE);
+	private static final Pattern declareMethodPattern = Pattern.compile("@Declare\\s+?(public\\s+?(?:(?:synchronized|static) )*(\\S*?)?\\s+?(\\S*?)\\s*?\\S+?\\s*?\\([^\\{]*\\)\\s*?\\{)", Pattern.DOTALL | Pattern.MULTILINE);
 	private static final Pattern declareVariablePattern = Pattern.compile("@Declare\\s+?(public [^;\r\n]+?)_( = [^;\r\n]+?)?;", Pattern.DOTALL | Pattern.MULTILINE);
 	private static final Pattern packageVariablePattern = Pattern.compile("\n    ? ?([^ ]+  ? ?[^ ]+);");
 
@@ -32,6 +32,9 @@ class PrePatcher {
 				recursiveSearch(file, sourceDirectory, patchClasses, generics);
 				continue;
 			}
+			if (!file.getName().endsWith(".java")) {
+				continue;
+			}
 			String contents = readFile(file);
 			if (contents == null) {
 				log.log(Level.SEVERE, "Failed to read " + file);
@@ -39,6 +42,9 @@ class PrePatcher {
 			}
 			Matcher extendsMatcher = extendsPattern.matcher(contents);
 			if (!extendsMatcher.find()) {
+				if (contents.contains(" extends")) {
+					log.warning("Didn't match extends matcher for " + file);
+				}
 				continue;
 			}
 			String shortClassName = extendsMatcher.group(1);

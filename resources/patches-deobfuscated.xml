@@ -296,18 +296,7 @@
 			<addAll fromClass="me.nallar.patched.server.PatchServerConfigurationManagerForge"/>
 		</class>
 		<class id="net.minecraft.server.management.PlayerManager">
-			<newField field="readWriteLock" class="java.util.concurrent.locks.ReentrantReadWriteLock"/>
-			<newField field="playersUpdateLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>
-			<newField field="playerUpdateLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.readLock();"/>
 			<addAll fromClass="me.nallar.patched.world.tracking.PatchPlayerManager"/>
-		</class>
-		<class id="net.minecraft.server.management.PlayerManager" env="forge">
-			<addAll fromClass="me.nallar.patched.world.tracking.PatchPlayerManagerForge"/>
-		</class>
-		<class id="net.minecraft.server.management.PlayerManager" env="mcpc">
-			<lock field="playersUpdateLock">updatePlayerInstances</lock>
-		</class>
-		<class id="net.minecraft.server.management.PlayerManager">
 			<replaceMethodCall method="sort" index="1" code="{ }">updateMountedMovingPlayer</replaceMethodCall>
 			<synchronize>addPlayer,removePlayer</synchronize>
 			<synchronize field="$1.loadedChunks">addPlayer,removePlayer,filterChunkLoadQueue</synchronize>
@@ -318,6 +307,8 @@
 			<replaceMethodCall method="^class:ChunkProviderServer^.^method:ChunkProviderServer/loadChunk^" code="{ $_ = null; }"/>
 		</class>
 		<class id="net.minecraft.server.management.PlayerInstance">
+			<replaceInitializer field="playersInChunk" code="$_ = Collections.synchronizedList(new ArrayList());"/>
+			<replaceMethodCall method="^class:PlayerManager^.^method:PlayerManager/getWorldServer^" removeAfter="true"/>
 			<addAll fromClass="me.nallar.patched.world.tracking.PatchPlayerInstance"/>
 			<public field="loaded"/>
 			<final field="chunkLocation"/>

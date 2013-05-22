@@ -3,11 +3,11 @@ package me.nallar.patched.world.tracking;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.patcher.Declare;
+import me.nallar.tickthreading.util.ChunkLoadRunnable;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet51MapChunk;
@@ -18,6 +18,7 @@ import net.minecraft.server.management.PlayerManager;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.WorldServer;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.ForgeDummyContainer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.ChunkWatchEvent;
@@ -28,6 +29,8 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 	@Declare
 	public boolean loaded_;
 	private boolean watched;
+	@Declare
+	public net.minecraft.world.chunk.Chunk chunk_;
 
 	public PatchPlayerInstance(PlayerManager par1PlayerManager, int par2, int par3) {
 		super(par1PlayerManager, par2, par3);
@@ -61,8 +64,10 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 
 	@Override
 	@Declare
-	public void clearTileCount() {
+	public synchronized void clearTileCount() {
 		this.numberOfTilesToUpdate = 0;
+		this.field_73260_f = 0;
+		this.watched = false;
 	}
 
 	@Override
@@ -88,13 +93,7 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 				this.myManager.getChunkWatchers().remove(var2);
 
 				if (watched) {
-					List chunkWatcherWithPlayers = this.myManager.getChunkWatcherWithPlayers();
-					this.myManager.playerUpdateLock.lock();
-					try {
-						chunkWatcherWithPlayers.remove(this);
-					} finally {
-						this.myManager.playerUpdateLock.unlock();
-					}
+					this.myManager.getChunkWatcherWithPlayers().remove(this);
 				}
 
 				this.myManager.getWorldServer().theChunkProviderServer.unloadChunksIfNotNearSpawn(this.chunkLocation.chunkXPos, this.chunkLocation.chunkZPos);
@@ -126,6 +125,9 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 
 	@Override
 	public void flagChunkForUpdate(int par1, int par2, int par3) {
+		if (noUpdateRequired()) {
+			return;
+		}
 		markRequiresUpdate();
 
 		synchronized (this) {
@@ -157,19 +159,16 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 			}
 		}
 		if (requiresWatch) {
-			List chunkWatcherWithPlayers = this.myManager.getChunkWatcherWithPlayers();
-			this.myManager.playerUpdateLock.lock();
-			try {
-				chunkWatcherWithPlayers.add(this);
-			} finally {
-				this.myManager.playerUpdateLock.unlock();
-			}
+			this.myManager.getChunkWatcherWithPlayers().add(this);
 		}
 	}
 
 	@Override
 	@Declare
 	public void updateTile(TileEntity tileEntity) {
+		if (noUpdateRequired()) {
+			return;
+		}
 		markRequiresUpdate();
 		tilesToUpdate.add(tileEntity);
 	}
@@ -191,9 +190,14 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 		}
 	}
 
+	private boolean noUpdateRequired() {
+		return chunk == null || !chunk.isTerrainPopulated || playersInChunk.isEmpty();
+	}
+
 	@Override
 	public void sendChunkUpdate() {
-		if (playersInChunk.isEmpty()) {
+		watched = false;
+		if (noUpdateRequired()) {
 			return;
 		}
 		sendTiles();
@@ -242,7 +246,6 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 				this.numberOfTilesToUpdate = 0;
 				this.field_73260_f = 0;
 			}
-			watched = false;
 		}
 	}
 
@@ -264,7 +267,7 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 		}
 	}
 
-	public static class LoadRunnable implements Runnable {
+	public static class LoadRunnable extends ChunkLoadRunnable {
 		final PlayerInstance playerInstance;
 
 		public LoadRunnable(PlayerInstance playerInstance) {
@@ -272,8 +275,9 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 		}
 
 		@Override
-		public void run() {
+		public void onLoad(Chunk chunk) {
 			playerInstance.loaded = true;
+			playerInstance.chunk = chunk;
 		}
 	}
 }

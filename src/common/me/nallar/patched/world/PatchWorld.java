@@ -963,6 +963,10 @@ public abstract class PatchWorld extends World {
 		int var7 = MathHelper.floor_double((par2AxisAlignedBB.maxZ + MAX_ENTITY_RADIUS) / 16.0D);
 		ArrayList entities = new ArrayList();
 
+		if (var5 < var4 || var7 < var6) {
+			return entities;
+		}
+
 		for (int cX = var4; cX <= var5; ++cX) {
 			for (int cZ = var6; cZ <= var7; ++cZ) {
 				Chunk chunk = getChunkIfExists(cX, cZ);

@@ -108,6 +108,15 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		world.inImmediateBlockUpdate = new BooleanThreadLocal();
 	}
 
+	@Declare
+	public static void onChunkLoad(Chunk chunk, Runnable runnable) {
+		if (runnable instanceof me.nallar.tickthreading.util.ChunkLoadRunnable) {
+			((me.nallar.tickthreading.util.ChunkLoadRunnable) runnable).onLoad(chunk);
+		} else {
+			runnable.run();
+		}
+	}
+
 	@Override
 	@Declare
 	public WorldServer getWorld() {
@@ -449,7 +458,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 		if (chunk != null) {
 			if (runnable != null) {
-				runnable.run();
+				ThreadedChunkProvider.onChunkLoad(chunk, runnable);
 			}
 			return chunk;
 		}
@@ -846,7 +855,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				if (chunk == null || (allowGenerate && chunk instanceof EmptyChunk)) {
 					FMLLog.warning("Failed to load chunk at " + Log.name(worldServer) + ':' + x + ',' + z + " asynchronously. Provided " + chunk);
 				} else {
-					runnable.run();
+					ChunkProviderServer.onChunkLoad(chunk, runnable);
 				}
 			} catch (Throwable t) {
 				FMLLog.log(Level.SEVERE, t, "Exception loading chunk asynchronously.");
