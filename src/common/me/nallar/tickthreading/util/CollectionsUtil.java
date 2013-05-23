@@ -5,6 +5,7 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,7 +21,7 @@ public enum CollectionsUtil {
 		return split(input, defaultDelimiter);
 	}
 
-	public static List newList(List<?> input, Function<Object, ?> function) {
+	public static List<? extends Object> newList(List<?> input, Function<Object, ?> function) {
 		List<Object> newList = new ArrayList<Object>(input.size());
 		for (Object o : input) {
 			newList.add(function.apply(o));
@@ -85,5 +86,20 @@ public enum CollectionsUtil {
 			notFirst = true;
 		}
 		return stringBuilder.toString();
+	}
+
+	@SuppressWarnings ("unchecked")
+	public static <K, V> Map<K, V> map(Object... objects) {
+		HashMap map = new HashMap();
+		Object key = null;
+		for (final Object object : objects) {
+			if (key == null) {
+				key = object;
+			} else {
+				map.put(key, object);
+				key = null;
+			}
+		}
+		return map;
 	}
 }

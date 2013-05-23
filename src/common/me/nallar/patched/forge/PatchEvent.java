@@ -6,11 +6,7 @@ import net.minecraftforge.event.Cancelable;
 import net.minecraftforge.event.Event;
 
 public abstract class PatchEvent extends Event {
-	private static ConcurrentHashMap<Class, Boolean> annotationMap; // Class -> boolean instead of Class -> (Class -> boolean) because forge ignores annotation type
-
-	public static void staticConstruct() {
-		annotationMap = new ConcurrentHashMap<Class, Boolean>();
-	}
+	private static final ConcurrentHashMap<Class, Boolean> annotationMap = new ConcurrentHashMap<Class, Boolean>();
 
 	@Override
 	protected boolean hasAnnotation(Class annotation) {

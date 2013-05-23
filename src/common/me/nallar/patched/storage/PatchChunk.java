@@ -80,12 +80,12 @@ public abstract class PatchChunk extends Chunk {
 				var4 = 0;
 			}
 
-			if (var5 >= this.entityLists.length) {
-				var5 = this.entityLists.length - 1;
+			if (var5 >= entityLists.length) {
+				var5 = entityLists.length - 1;
 			}
 
 			for (int var6 = var4; var6 <= var5; ++var6) {
-				List var7 = this.entityLists[var6];
+				List var7 = entityLists[var6];
 
 				for (Object aVar7 : var7) {
 					Entity var9 = (Entity) aVar7;
@@ -99,10 +99,8 @@ public abstract class PatchChunk extends Chunk {
 
 						if (var10 != null) {
 							for (Entity aVar10 : var10) {
-								var9 = aVar10;
-
-								if (var9 != excludedEntity && var9.boundingBox.intersectsWith(collisionArea)) {
-									collidingAABBs.add(var9);
+								if (aVar10 != excludedEntity && aVar10.boundingBox.intersectsWith(collisionArea)) {
+									collidingAABBs.add(aVar10);
 									if (--limit == 0) {
 										return;
 									}
@@ -119,16 +117,16 @@ public abstract class PatchChunk extends Chunk {
 
 	@Override
 	public void addTileEntity(TileEntity tileEntity) {
-		int x = tileEntity.xCoord - this.xPosition * 16;
+		int x = tileEntity.xCoord - xPosition * 16;
 		int y = tileEntity.yCoord;
-		int z = tileEntity.zCoord - this.zPosition * 16;
+		int z = tileEntity.zCoord - zPosition * 16;
 
-		if (this.isChunkLoaded) {
-			this.setChunkBlockTileEntity(x, y, z, tileEntity);
-			this.worldObj.addTileEntity(tileEntity);
+		if (isChunkLoaded) {
+			setChunkBlockTileEntity(x, y, z, tileEntity);
+			worldObj.addTileEntity(tileEntity);
 		} else {
 			ChunkPosition chunkPosition = new ChunkPosition(x, y, z);
-			tileEntity.setWorldObj(this.worldObj);
+			tileEntity.setWorldObj(worldObj);
 
 			Block block = Block.blocksList[getBlockID(x, y, z)];
 			if (block != null && block.hasTileEntity(getBlockMetadata(x, y, z))) {
@@ -145,12 +143,12 @@ public abstract class PatchChunk extends Chunk {
 	public void onChunkUnload() {
 		isChunkLoaded = false;
 		Set<TileEntity> removalSet = worldObj.tileEntityRemovalSet;
-		for (TileEntity var2 : (Iterable<TileEntity>) this.chunkTileEntityMap.values()) {
+		for (TileEntity var2 : (Iterable<TileEntity>) chunkTileEntityMap.values()) {
 			removalSet.add(var2);
 		}
 
-		for (List entityList : this.entityLists) {
-			this.worldObj.unloadEntities(entityList);
+		for (List entityList : entityLists) {
+			worldObj.unloadEntities(entityList);
 		}
 
 		synchronized (ChunkEvent.class) {
@@ -170,11 +168,11 @@ public abstract class PatchChunk extends Chunk {
 	@Override
 	@Declare
 	public void threadUnsafeChunkLoad() {
-		this.isChunkLoaded = true;
+		isChunkLoaded = true;
 
-		worldObj.addTileEntity(this.chunkTileEntityMap.values());
+		worldObj.addTileEntity(chunkTileEntityMap.values());
 
-		for (List entityList : this.entityLists) {
+		for (List entityList : entityLists) {
 			worldObj.addLoadedEntities(entityList);
 		}
 
@@ -189,9 +187,9 @@ public abstract class PatchChunk extends Chunk {
 		int entityChunkX = MathHelper.floor_double(par1Entity.posX / 16.0D);
 		int entityChunkZ = MathHelper.floor_double(par1Entity.posZ / 16.0D);
 
-		if (entityChunkX != this.xPosition || entityChunkZ != this.zPosition) {
+		if (entityChunkX != xPosition || entityChunkZ != zPosition) {
 			if (Log.debug) {
-				FMLLog.log(Level.WARNING, new Throwable(), "Entity %s added to the wrong chunk - expected x%d z%d, got x%d z%d", par1Entity.toString(), this.xPosition, this.zPosition, entityChunkX, entityChunkZ);
+				FMLLog.log(Level.WARNING, new Throwable(), "Entity %s added to the wrong chunk - expected x%d z%d, got x%d z%d", par1Entity.toString(), xPosition, zPosition, entityChunkX, entityChunkZ);
 			}
 			if (worldObj instanceof WorldServer) {
 				Chunk correctChunk = ((WorldServer) worldObj).theChunkProviderServer.getChunkIfExists(entityChunkX, entityChunkZ);
@@ -204,7 +202,7 @@ public abstract class PatchChunk extends Chunk {
 			}
 		}
 
-		this.hasEntities = true;
+		hasEntities = true;
 
 		int var4 = MathHelper.floor_double(par1Entity.posY / 16.0D);
 
@@ -212,15 +210,15 @@ public abstract class PatchChunk extends Chunk {
 			var4 = 0;
 		}
 
-		if (var4 >= this.entityLists.length) {
-			var4 = this.entityLists.length - 1;
+		if (var4 >= entityLists.length) {
+			var4 = entityLists.length - 1;
 		}
-		MinecraftForge.EVENT_BUS.post(new EntityEvent.EnteringChunk(par1Entity, this.xPosition, this.zPosition, par1Entity.chunkCoordX, par1Entity.chunkCoordZ));
+		MinecraftForge.EVENT_BUS.post(new EntityEvent.EnteringChunk(par1Entity, xPosition, zPosition, par1Entity.chunkCoordX, par1Entity.chunkCoordZ));
 		par1Entity.addedToChunk = true;
-		par1Entity.chunkCoordX = this.xPosition;
+		par1Entity.chunkCoordX = xPosition;
 		par1Entity.chunkCoordY = var4;
-		par1Entity.chunkCoordZ = this.zPosition;
-		this.entityLists[var4].add(par1Entity);
+		par1Entity.chunkCoordZ = zPosition;
+		entityLists[var4].add(par1Entity);
 	}
 
 	@Override
@@ -228,13 +226,13 @@ public abstract class PatchChunk extends Chunk {
 	public void setChunkBlockTileEntityWithoutValidate(int x, int y, int z, TileEntity tileEntity) {
 		ChunkPosition var5 = new ChunkPosition(x, y, z);
 		tileEntity.worldObj = worldObj;
-		tileEntity.xCoord = this.xPosition * 16 + x;
+		tileEntity.xCoord = xPosition * 16 + x;
 		tileEntity.yCoord = y;
-		tileEntity.zCoord = this.zPosition * 16 + z;
+		tileEntity.zCoord = zPosition * 16 + z;
 
 		Block block = Block.blocksList[getBlockID(x, y, z)];
 		if (block != null && block.hasTileEntity(getBlockMetadata(x, y, z))) {
-			this.chunkTileEntityMap.put(var5, tileEntity);
+			chunkTileEntityMap.put(var5, tileEntity);
 		}
 	}
 
@@ -243,13 +241,13 @@ public abstract class PatchChunk extends Chunk {
 	public boolean setBlockIDWithMetadataWithoutValidate(int x, int y, int z, int id, int meta) {
 		int xzIndex = z << 4 | x;
 
-		if (y >= this.precipitationHeightMap[xzIndex] - 1) {
-			this.precipitationHeightMap[xzIndex] = -999;
+		if (y >= precipitationHeightMap[xzIndex] - 1) {
+			precipitationHeightMap[xzIndex] = -999;
 		}
 
-		int var7 = this.heightMap[xzIndex];
-		int var8 = this.getBlockID(x, y, z);
-		int var9 = this.getBlockMetadata(x, y, z);
+		int var7 = heightMap[xzIndex];
+		int var8 = getBlockID(x, y, z);
+		int var9 = getBlockMetadata(x, y, z);
 
 		if (var8 == id && var9 == meta) {
 			return false;
@@ -258,7 +256,7 @@ public abstract class PatchChunk extends Chunk {
 				return false;
 			}
 
-			ExtendedBlockStorage var10 = this.storageArrays[y >> 4];
+			ExtendedBlockStorage var10 = storageArrays[y >> 4];
 			boolean var11 = false;
 
 			if (var10 == null) {
@@ -266,12 +264,12 @@ public abstract class PatchChunk extends Chunk {
 					return false;
 				}
 
-				var10 = this.storageArrays[y >> 4] = new ExtendedBlockStorage(y >> 4 << 4, !this.worldObj.provider.hasNoSky);
+				var10 = storageArrays[y >> 4] = new ExtendedBlockStorage(y >> 4 << 4, !worldObj.provider.hasNoSky);
 				var11 = y >= var7;
 			}
 
-			int var12 = this.xPosition * 16 + x;
-			int var13 = this.zPosition * 16 + z;
+			int var12 = xPosition * 16 + x;
+			int var13 = zPosition * 16 + z;
 
 			var10.setExtBlockID(x, y & 15, z, id);
 
@@ -279,7 +277,7 @@ public abstract class PatchChunk extends Chunk {
 				if (Block.blocksList[var8] != null && Block.blocksList[var8].hasTileEntity(var9)) {
 					TileEntity te = worldObj.getBlockTileEntity(var12, y, var13);
 					if (te != null && te.shouldRefresh(var8, id, var9, meta, worldObj, var12, y, var13)) {
-						this.worldObj.removeBlockTileEntity(var12, y, var13);
+						worldObj.removeBlockTileEntity(var12, y, var13);
 					}
 				}
 			}
@@ -290,28 +288,28 @@ public abstract class PatchChunk extends Chunk {
 				var10.setExtBlockMetadata(x, y & 15, z, meta);
 
 				if (var11) {
-					this.generateSkylightMap();
+					generateSkylightMap();
 				} else {
 					if (getBlockLightOpacity(x, y, z) > 0) {
 						if (y >= var7) {
-							this.relightBlock(x, y + 1, z);
+							relightBlock(x, y + 1, z);
 						}
 					} else if (y == var7 - 1) {
-						this.relightBlock(x, y, z);
+						relightBlock(x, y, z);
 					}
 
-					this.propagateSkylightOcclusion(x, z);
+					propagateSkylightOcclusion(x, z);
 				}
 
 				TileEntity var14;
 
 				if (id != 0) {
 					if (Block.blocksList[id] != null && Block.blocksList[id].hasTileEntity(meta)) {
-						var14 = this.getChunkBlockTileEntity(x, y, z);
+						var14 = getChunkBlockTileEntity(x, y, z);
 
 						if (var14 == null) {
-							var14 = Block.blocksList[id].createTileEntity(this.worldObj, meta);
-							this.worldObj.setBlockTileEntity(var12, y, var13, var14);
+							var14 = Block.blocksList[id].createTileEntity(worldObj, meta);
+							worldObj.setBlockTileEntity(var12, y, var13, var14);
 						}
 
 						if (var14 != null) {
@@ -321,7 +319,7 @@ public abstract class PatchChunk extends Chunk {
 					}
 				}
 
-				this.isModified = true;
+				isModified = true;
 				return true;
 			}
 		}
@@ -331,13 +329,13 @@ public abstract class PatchChunk extends Chunk {
 	public boolean setBlockIDWithMetadata(int x, int y, int z, int id, int meta) {
 		int horizontalIndex = z << 4 | x;
 
-		if (y >= this.precipitationHeightMap[horizontalIndex] - 1) {
-			this.precipitationHeightMap[horizontalIndex] = -999;
+		if (y >= precipitationHeightMap[horizontalIndex] - 1) {
+			precipitationHeightMap[horizontalIndex] = -999;
 		}
 
-		int height = this.heightMap[horizontalIndex];
-		int oldId = this.getBlockID(x, y, z);
-		int oldMeta = this.getBlockMetadata(x, y, z);
+		int height = heightMap[horizontalIndex];
+		int oldId = getBlockID(x, y, z);
+		int oldMeta = getBlockMetadata(x, y, z);
 
 		if (oldId == id && oldMeta == meta) {
 			return false;
@@ -349,7 +347,7 @@ public abstract class PatchChunk extends Chunk {
 				return false;
 			}
 
-			ExtendedBlockStorage ebs = this.storageArrays[y >> 4];
+			ExtendedBlockStorage ebs = storageArrays[y >> 4];
 			boolean changedHeightMap = false;
 
 			if (ebs == null) {
@@ -357,27 +355,27 @@ public abstract class PatchChunk extends Chunk {
 					return false;
 				}
 
-				ebs = this.storageArrays[y >> 4] = new ExtendedBlockStorage(y >> 4 << 4, !this.worldObj.provider.hasNoSky);
+				ebs = storageArrays[y >> 4] = new ExtendedBlockStorage(y >> 4 << 4, !worldObj.provider.hasNoSky);
 				changedHeightMap = y >= height;
 			}
 
-			int wX = this.xPosition * 16 + x;
-			int wZ = this.zPosition * 16 + z;
+			int wX = xPosition * 16 + x;
+			int wZ = zPosition * 16 + z;
 			Block oldBlock = oldId > 0 ? Block.blocksList[oldId] : null;
 
-			if (oldBlock != null && !this.worldObj.isRemote) {
-				oldBlock.onSetBlockIDWithMetaData(this.worldObj, wX, y, wZ, oldMeta);
+			if (oldBlock != null && !worldObj.isRemote) {
+				oldBlock.onSetBlockIDWithMetaData(worldObj, wX, y, wZ, oldMeta);
 			}
 
 			ebs.setExtBlockID(x, y & 15, z, id);
 
 			if (oldBlock != null) {
-				if (!this.worldObj.isRemote) {
-					oldBlock.breakBlock(this.worldObj, wX, y, wZ, oldId, oldMeta);
+				if (!worldObj.isRemote) {
+					oldBlock.breakBlock(worldObj, wX, y, wZ, oldId, oldMeta);
 				} else if (oldBlock.hasTileEntity(oldMeta)) {
 					TileEntity te = worldObj.getBlockTileEntity(wX, y, wZ);
 					if (te != null && te.shouldRefresh(oldId, id, oldMeta, meta, worldObj, wX, y, wZ)) {
-						this.worldObj.removeBlockTileEntity(wX, y, wZ);
+						worldObj.removeBlockTileEntity(wX, y, wZ);
 					}
 				}
 			}
@@ -388,24 +386,24 @@ public abstract class PatchChunk extends Chunk {
 				ebs.setExtBlockMetadata(x, y & 15, z, meta);
 
 				if (changedHeightMap) {
-					this.generateSkylightMap();
+					generateSkylightMap();
 				} else {
 					if (getBlockLightOpacity(x, y, z) > 0) {
 						if (y >= height) {
-							this.relightBlock(x, y + 1, z);
+							relightBlock(x, y + 1, z);
 						}
 					} else if (y == height - 1) {
-						this.relightBlock(x, y, z);
+						relightBlock(x, y, z);
 					}
 
-					this.propagateSkylightOcclusion(x, z);
+					propagateSkylightOcclusion(x, z);
 				}
 
 				Block block = id > 0 ? Block.blocksList[id] : null;
 				if (block != null) {
 					// CraftBukkit - Don't place while processing the BlockPlaceEvent, unless it's a BlockContainer
-					if (!this.worldObj.isRemote && (block instanceof BlockContainer || (worldObj.inPlaceEvent == null || worldObj.inPlaceEvent.get() == Boolean.FALSE))) {
-						block.onBlockAdded(this.worldObj, wX, y, wZ);
+					if (!worldObj.isRemote && (block instanceof BlockContainer || (worldObj.inPlaceEvent == null || worldObj.inPlaceEvent.get() == Boolean.FALSE))) {
+						block.onBlockAdded(worldObj, wX, y, wZ);
 					}
 
 					if (block.hasTileEntity(meta)) {
@@ -415,11 +413,11 @@ public abstract class PatchChunk extends Chunk {
 						}
 						//CraftBukkit end
 
-						TileEntity tileEntity = this.getChunkBlockTileEntity(x, y, z);
+						TileEntity tileEntity = getChunkBlockTileEntity(x, y, z);
 
 						if (tileEntity == null) {
-							tileEntity = block.createTileEntity(this.worldObj, meta);
-							this.worldObj.setBlockTileEntity(wX, y, wZ, tileEntity);
+							tileEntity = block.createTileEntity(worldObj, meta);
+							worldObj.setBlockTileEntity(wX, y, wZ, tileEntity);
 						}
 
 						if (tileEntity != null) {
@@ -429,7 +427,7 @@ public abstract class PatchChunk extends Chunk {
 					}
 				}
 
-				this.isModified = true;
+				isModified = true;
 				return true;
 			}
 		}

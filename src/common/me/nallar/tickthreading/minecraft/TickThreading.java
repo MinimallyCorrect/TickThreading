@@ -50,6 +50,7 @@ import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.Configuration;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.EventPriority;
 import net.minecraftforge.event.ForgeSubscribe;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.WorldEvent;
@@ -183,7 +184,9 @@ public class TickThreading {
 		Command.checkForPermissions();
 	}
 
-	@ForgeSubscribe
+	@ForgeSubscribe (
+			priority = EventPriority.HIGHEST
+	)
 	public synchronized void onWorldLoad(WorldEvent.Load event) {
 		World world = event.world;
 		if (world.isRemote) {

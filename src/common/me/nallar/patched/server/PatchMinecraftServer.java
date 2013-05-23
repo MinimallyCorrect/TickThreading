@@ -2,10 +2,10 @@ package me.nallar.patched.server;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -68,8 +68,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	private Map<String, long[]> worldTickLengths;
 	@Declare
 	public List<WorldServer> worlds_;
-	@Declare
-	public static java.util.LinkedList playersToCheckWorld_;
+	public static java.util.ArrayList playersToCheckWorld = new ArrayList();
 	@Declare
 	public final java.util.concurrent.atomic.AtomicInteger currentlySaving_ = null;
 	@Declare
@@ -83,13 +82,20 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	}
 
 	public static void staticConstruct() {
-		playersToCheckWorld = new LinkedList();
 		setTargetTPS(20);
 		setNetworkTPS(40);
 	}
 
 	public PatchMinecraftServer(File par1File) {
 		super(par1File);
+	}
+
+	@Declare
+	public static void addPlayerToCheckWorld(net.minecraft.entity.player.EntityPlayerMP entityPlayerMP) {
+		ArrayList<EntityPlayerMP> playersToCheckWorld_ = playersToCheckWorld;
+		synchronized (playersToCheckWorld_) {
+			playersToCheckWorld_.add(entityPlayerMP);
+		}
 	}
 
 	@Override
@@ -314,10 +320,10 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 		theProfiler.endStartSection("forgePostServerTick");
 		FMLCommonHandler.instance().onPostServerTick();
-		LinkedList<EntityPlayerMP> playersToCheckWorld = MinecraftServer.playersToCheckWorld;
-		if (!playersToCheckWorld.isEmpty()) {
-			synchronized (playersToCheckWorld) {
-				for (EntityPlayerMP entityPlayerMP : playersToCheckWorld) {
+		ArrayList<EntityPlayerMP> playersToCheckWorld_ = playersToCheckWorld;
+		if (!playersToCheckWorld_.isEmpty()) {
+			synchronized (playersToCheckWorld_) {
+				for (EntityPlayerMP entityPlayerMP : playersToCheckWorld_) {
 					World world = entityPlayerMP.worldObj;
 					List<Entity> entityList = world.loadedEntityList;
 					synchronized (entityList) {
@@ -328,7 +334,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 						world.playerEntities.add(entityPlayerMP);
 					}
 				}
-				playersToCheckWorld.clear();
+				playersToCheckWorld_.clear();
 			}
 		}
 		theProfiler.endSection();

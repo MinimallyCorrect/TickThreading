@@ -25,7 +25,7 @@ import net.minecraftforge.event.world.ChunkWatchEvent;
 
 public abstract class PatchPlayerInstance extends PlayerInstance {
 	private ConcurrentLinkedQueue<TileEntity> tilesToUpdate;
-	private static byte[] unloadSequence;
+	private static final byte[] unloadSequence = {0x78, (byte) 0x9C, 0x63, 0x64, 0x1C, (byte) 0xD9, 0x00, 0x00, (byte) 0x81, (byte) 0x80, 0x01, 0x01};
 	@Declare
 	public boolean loaded_;
 	private boolean watched;
@@ -34,10 +34,6 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 
 	public PatchPlayerInstance(PlayerManager par1PlayerManager, int par2, int par3) {
 		super(par1PlayerManager, par2, par3);
-	}
-
-	public static void staticConstruct() {
-		unloadSequence = new byte[]{0x78, (byte) 0x9C, 0x63, 0x64, 0x1C, (byte) 0xD9, 0x00, 0x00, (byte) 0x81, (byte) 0x80, 0x01, 0x01};
 	}
 
 	public void construct() {

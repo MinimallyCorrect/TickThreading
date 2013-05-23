@@ -40,6 +40,7 @@ import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.EmptyChunk;
 import net.minecraft.world.chunk.IChunkProvider;
+import net.minecraft.world.chunk.storage.AnvilChunkLoader;
 import net.minecraft.world.chunk.storage.IChunkLoader;
 import net.minecraft.world.gen.ChunkProviderServer;
 import net.minecraftforge.common.DimensionManager;
@@ -81,7 +82,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	private final Chunk defaultEmptyChunk;
 	private final BooleanThreadLocal inUnload = new BooleanThreadLocal();
 	private final BooleanThreadLocal worldGenInProgress;
-	private boolean loadedPersistentChunks = false;
 	private boolean loadChunksInProvideChunk = true;
 	private int loadChunksInProvideChunkTicks = 0;
 	private int overloadCount = 0;
@@ -201,12 +201,8 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			ChunkGarbageCollector.garbageCollect(world);
 		}
 
-		if (loadChunksInProvideChunkTicks++ == 100) {
+		if (loadChunksInProvideChunkTicks++ == 200) {
 			loadChunksInProvideChunk = false;
-		}
-
-		if (!loadedPersistentChunks && loadChunksInProvideChunkTicks >= 5) {
-			loadedPersistentChunks = true;
 			int loaded = 0;
 			int possible = world.getPersistentChunks().size();
 			for (ChunkCoordIntPair chunkCoordIntPair : world.getPersistentChunks().keySet()) {
@@ -390,6 +386,37 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	public Chunk regenerateChunk(int x, int z) {
 		unloadChunkImmediately(x, z, false);
 		return getChunkAtInternal(x, z, true, true);
+	}
+
+	@Override
+	@Declare
+	public void cacheChunk(int x, int z) {
+		if (!((AnvilChunkLoader) loader).isChunkCacheFull()) {
+			chunkLoadThreadPool.execute(new ChunkCacheRunnable(this, x, z));
+		}
+	}
+
+	@Override
+	@Declare
+	public void cacheChunkInternal(int x, int z) {
+		AnvilChunkLoader anvilChunkLoader = (AnvilChunkLoader) loader;
+		if (anvilChunkLoader.isChunkCacheFull()) {
+			return;
+		}
+		long key = key(x, z);
+		final AtomicInteger lock = getLock(key);
+		try {
+			synchronized (lock) {
+				if (chunks.containsItem(key) || loadingChunks.containsItem(key) || unloadingChunks.containsItem(key)) {
+					return;
+				}
+				anvilChunkLoader.cacheChunk(world, x, z);
+			}
+		} finally {
+			if (lock.decrementAndGet() == 0) {
+				loadingChunks.remove(key);
+			}
+		}
 	}
 
 	@Override
@@ -800,7 +827,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	@Override
 	public String makeString() {
-		return "Loaded " + loadedChunks.size() + " Loading " + loadingChunks.getNumHashElements() + " Unload " + unloadStage0.size() + " UnloadSave " + unloadStage1.size() + " Locks " + chunkLoadLocks.size() + " PartialSave " + lastChunksSaved + " LCOPR " + loadChunksInProvideChunk;
+		return "Loaded " + loadedChunks.size() + " Loading " + loadingChunks.getNumHashElements() + " Unload " + unloadStage0.size() + " UnloadSave " + unloadStage1.size() + " Locks " + chunkLoadLocks.size() + " PartialSave " + lastChunksSaved + " Forced " + world.getPersistentChunks().size() + " Cached " + ((AnvilChunkLoader) loader).getCachedChunks();
 	}
 
 	@Override
@@ -860,6 +887,23 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			} catch (Throwable t) {
 				FMLLog.log(Level.SEVERE, t, "Exception loading chunk asynchronously.");
 			}
+		}
+	}
+
+	public static class ChunkCacheRunnable implements Runnable {
+		private final ChunkProviderServer chunkProviderServer;
+		private final int x;
+		private final int z;
+
+		public ChunkCacheRunnable(final ChunkProviderServer chunkProviderServer, final int x, final int z) {
+			this.chunkProviderServer = chunkProviderServer;
+			this.x = x;
+			this.z = z;
+		}
+
+		@Override
+		public void run() {
+			chunkProviderServer.cacheChunkInternal(x, z);
 		}
 	}
 }

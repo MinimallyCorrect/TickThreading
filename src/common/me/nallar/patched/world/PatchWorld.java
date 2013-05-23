@@ -75,6 +75,8 @@ public abstract class PatchWorld extends World {
 	public Chunk emptyChunk_;
 	@Declare
 	public boolean loadEventFired_;
+	@Declare
+	public boolean forcedChunksInited_;
 
 	public void construct() {
 		tickCount = rand.nextInt(240); // So when different worlds do every N tick actions,
@@ -525,17 +527,21 @@ public abstract class PatchWorld extends World {
 	public List getCollidingBoundingBoxes(Entity par1Entity, AxisAlignedBB par2AxisAlignedBB, int limit) {
 		List collidingBoundingBoxes = (List) ThreadLocals.collidingBoundingBoxes.get();
 		collidingBoundingBoxes.clear();
-		int var3 = MathHelper.floor_double(par2AxisAlignedBB.minX);
-		int var4 = MathHelper.floor_double(par2AxisAlignedBB.maxX + 1.0D);
-		int var5 = MathHelper.floor_double(par2AxisAlignedBB.minY);
-		int var6 = MathHelper.floor_double(par2AxisAlignedBB.maxY + 1.0D);
-		int var7 = MathHelper.floor_double(par2AxisAlignedBB.minZ);
-		int var8 = MathHelper.floor_double(par2AxisAlignedBB.maxZ + 1.0D);
+		int minX = MathHelper.floor_double(par2AxisAlignedBB.minX);
+		int maxX = MathHelper.floor_double(par2AxisAlignedBB.maxX) + 1;
+		int minY = MathHelper.floor_double(par2AxisAlignedBB.minY);
+		int maxY = MathHelper.floor_double(par2AxisAlignedBB.maxY) + 1;
+		int minZ = MathHelper.floor_double(par2AxisAlignedBB.minZ);
+		int maxZ = MathHelper.floor_double(par2AxisAlignedBB.maxZ) + 1;
 
-		int ystart = ((var5 - 1) < 0) ? 0 : (var5 - 1);
-		for (int chunkx = (var3 >> 4); chunkx <= ((var4 - 1) >> 4); chunkx++) {
+		if (minX >= maxX || minY >= maxY || minZ >= maxZ) {
+			return collidingBoundingBoxes;
+		}
+
+		int ystart = ((minY - 1) < 0) ? 0 : (minY - 1);
+		for (int chunkx = (minX >> 4); chunkx <= ((maxX - 1) >> 4); chunkx++) {
 			int cx = chunkx << 4;
-			for (int chunkz = (var7 >> 4); chunkz <= ((var8 - 1) >> 4); chunkz++) {
+			for (int chunkz = (minZ >> 4); chunkz <= ((maxZ - 1) >> 4); chunkz++) {
 				Chunk chunk = this.getChunkIfExists(chunkx, chunkz);
 				if (chunk == null) {
 					continue;
@@ -543,14 +549,14 @@ public abstract class PatchWorld extends World {
 				// Compute ranges within chunk
 				int cz = chunkz << 4;
 				// Compute ranges within chunk
-				int xstart = (var3 < cx) ? cx : var3;
-				int xend = (var4 < (cx + 16)) ? var4 : (cx + 16);
-				int zstart = (var7 < cz) ? cz : var7;
-				int zend = (var8 < (cz + 16)) ? var8 : (cz + 16);
+				int xstart = (minX < cx) ? cx : minX;
+				int xend = (maxX < (cx + 16)) ? maxX : (cx + 16);
+				int zstart = (minZ < cz) ? cz : minZ;
+				int zend = (maxZ < (cz + 16)) ? maxZ : (cz + 16);
 				// Loop through blocks within chunk
 				for (int x = xstart; x < xend; x++) {
 					for (int z = zstart; z < zend; z++) {
-						for (int y = ystart; y < var6; y++) {
+						for (int y = ystart; y < maxY; y++) {
 							int blkid = chunk.getBlockID(x - cx, y, z - cz);
 							if (blkid > 0) {
 								Block block = Block.blocksList[blkid];

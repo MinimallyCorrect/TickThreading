@@ -11,14 +11,10 @@ import net.minecraftforge.common.Property;
 import static net.minecraftforge.common.Configuration.allowedProperties;
 
 public abstract class PatchConfigCategory extends ConfigCategory {
-	private static Splitter splitter;
+	private static final Splitter splitter = Splitter.onPattern("\r?\n");
 
 	public PatchConfigCategory(String name) {
 		super(name);
-	}
-
-	public static void staticConstruct() {
-		splitter = Splitter.onPattern("\r?\n");
 	}
 
 	@Override

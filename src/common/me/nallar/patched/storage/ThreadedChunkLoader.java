@@ -47,6 +47,7 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 	public final File chunkSaveLocation;
 	private final Cache<Long, NBTTagCompound> chunkCache;
 	public final RegionFileCache regionFileCache;
+	private int cacheSize;
 
 	@Override
 	@Declare
@@ -71,7 +72,7 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 		if (file == null) {
 			Log.severe("Null chunk save location set for ThreadedChunkLoader", new Throwable());
 		}
-		chunkCache = CacheBuilder.newBuilder().maximumSize(TickThreading.instance.chunkCacheSize).build();
+		chunkCache = CacheBuilder.newBuilder().maximumSize(cacheSize = TickThreading.instance.chunkCacheSize).build();
 		regionFileCache = new RegionFileCache(chunkSaveLocation);
 	}
 
@@ -85,6 +86,37 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 		}
 
 		return regionFileCache.get(i, j).isChunkSaved(i & 31, j & 31);
+	}
+
+	@Override
+	@Declare
+	public int getCachedChunks() {
+		return (int) chunkCache.size();
+	}
+
+	@Override
+	@Declare
+	public boolean isChunkCacheFull() {
+		return chunkCache.size() >= cacheSize;
+	}
+
+	@Override
+	@Declare
+	public void cacheChunk(World world, int x, int z) {
+		DataInputStream dataInputStream = regionFileCache.getChunkInputStream(x, z);
+
+		if (dataInputStream == null) {
+			return;
+		}
+
+		NBTTagCompound nbttagcompound;
+		try {
+			nbttagcompound = CompressedStreamTools.read(dataInputStream);
+		} catch (Throwable t) {
+			Log.severe("Failed to cache chunk " + Log.pos(world, x, z), t);
+			return;
+		}
+		chunkCache.put(hash(x, z), nbttagcompound);
 	}
 
 	@Override

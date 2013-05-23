@@ -47,11 +47,12 @@ import javassist.expr.NewExpr;
 import me.nallar.insecurity.ThisIsNotAnError;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.mappings.MethodDescription;
+import me.nallar.tickthreading.util.CollectionsUtil;
 import me.nallar.tickthreading.util.MappingUtil;
 import me.nallar.unsafe.UnsafeUtil;
 import org.omg.CORBA.IntHolder;
 
-@SuppressWarnings ("MethodMayBeStatic")
+@SuppressWarnings ({"MethodMayBeStatic", "ObjectAllocationInLoop"})
 public class Patches {
 	private final PatchManager patchManager;
 	private final ClassRegistry classRegistry;
@@ -233,7 +234,7 @@ public class Patches {
 				}
 			});
 		}
-		if (replaced.value == 0) {
+		if (replaced.value == 0 && !attributes.containsKey("silent")) {
 			Log.severe("No field initializers found for replacement");
 		}
 	}
@@ -460,7 +461,7 @@ public class Patches {
 			});
 		} catch (ThisIsNotAnError ignored) {
 		}
-		if (replaced.value == 0 && !attributes.containsKey("^all^")) {
+		if (replaced.value == 0 && !attributes.containsKey("silent")) {
 			Log.severe("Didn't replace any field accesses.");
 		}
 	}
@@ -528,7 +529,7 @@ public class Patches {
 			});
 		} catch (ThisIsNotAnError ignored) {
 		}
-		if (replaced.value == 0 && !attributes.containsKey("^all^")) {
+		if (replaced.value == 0 && !attributes.containsKey("silent")) {
 			Log.warning("Didn't find any method calls to replace");
 		}
 	}
@@ -606,10 +607,28 @@ public class Patches {
 			if (!ctField.getName().isEmpty() && ctField.getName().charAt(ctField.getName().length() - 1) == '_') {
 				ctField.setName(ctField.getName().substring(0, ctField.getName().length() - 1));
 			}
+			CtClass expectedType = ctField.getType();
+			boolean expectStatic = (ctField.getModifiers() & Modifier.STATIC) == Modifier.STATIC;
+			String fieldName = ctField.getName();
 			try {
-				ctClass.getDeclaredField(ctField.getName());
+				CtClass type = ctClass.getDeclaredField(fieldName).getType();
+				if (type != expectedType) {
+					Log.severe("Field " + fieldName + " already exists, but as a different type. Exists: " + type + ", expected: " + expectedType);
+					removeField(ctClass, CollectionsUtil.<String, String>map("field", fieldName));
+					throw new NotFoundException("");
+				}
+				boolean isStatic = (ctField.getModifiers() & Modifier.STATIC) == Modifier.STATIC;
+				if (isStatic != expectStatic) {
+					Log.severe("Can't add field " + fieldName + " as it already exists, but it is static: " + isStatic + " and we expected: " + expectStatic);
+				}
 			} catch (NotFoundException ignored) {
 				ctClass.addField(new CtField(ctField, ctClass));
+			}
+			if (expectStatic) {
+				CtBehavior initializer = ctClass.getClassInitializer();
+				if (initializer != null) {
+					removeInitializers(initializer, ctField);
+				}
 			}
 		}
 		for (CtMethod newMethod : from.getDeclaredMethods()) {
@@ -681,7 +700,24 @@ public class Patches {
 		for (CtClass CtInterface : from.getInterfaces()) {
 			ctClass.addInterface(CtInterface);
 		}
+		CtConstructor initializer = from.getClassInitializer();
+		if (initializer != null) {
+			ctClass.addMethod(initializer.toMethod("patchStaticInitializer", ctClass));
+			ctClass.makeClassInitializer().insertAfter("patchStaticInitializer();");
+		}
 		publicInnerClasses(fromClass);
+	}
+
+	private void removeInitializers(CtBehavior ctBehavior, final CtField ctField) throws CannotCompileException, NotFoundException {
+		replaceInitializer(ctBehavior, CollectionsUtil.<String, String>map(
+				"field", ctField.getName(),
+				"code", "{ $_ = null; }",
+				"silent", "true"));
+		replaceFieldUsage(ctBehavior, CollectionsUtil.<String, String>map(
+				"field", ctField.getName(),
+				"writeCode", "{ }",
+				"readCode", "{ }",
+				"silent", "true"));
 	}
 
 	@Patch (
@@ -754,9 +790,19 @@ public class Patches {
 		} else if (o instanceof CtClass) {
 			CtClass ctClass = (CtClass) o;
 			ctClass.setModifiers(Modifier.setPublic(ctClass.getModifiers()));
-			for (CtConstructor ctConstructor : ctClass.getDeclaredConstructors()) {
-				public_(ctConstructor, Collections.<String, String>emptyMap());
+			List<Object> toPublic = new ArrayList<Object>();
+			if (attributes.containsKey("all")) {
+				Collections.addAll(toPublic, ctClass.getDeclaredFields());
+				Collections.addAll(toPublic, ctClass.getDeclaredBehaviors());
+			} else {
+				Collections.addAll(toPublic, ctClass.getDeclaredConstructors());
 			}
+			for (Object o_ : toPublic) {
+				public_(o_, Collections.<String, String>emptyMap());
+			}
+		} else if (o instanceof CtField) {
+			CtField ctField = (CtField) o;
+			ctField.setModifiers(Modifier.setPublic(ctField.getModifiers()));
 		} else {
 			CtBehavior ctBehavior = (CtBehavior) o;
 			ctBehavior.setModifiers(Modifier.setPublic(ctBehavior.getModifiers()));
@@ -1118,6 +1164,21 @@ public class Patches {
 	)
 	public void removeField(CtClass ctClass, Map<String, String> attributes) throws NotFoundException {
 		ctClass.removeField(ctClass.getDeclaredField(attributes.get("field")));
+	}
+
+	@Patch (
+			requiredAttributes = "field"
+	)
+	public void removeFieldAndInitializers(CtClass ctClass, Map<String, String> attributes) throws NotFoundException, CannotCompileException {
+		CtField ctField = ctClass.getDeclaredField(attributes.get("field"));
+		for (CtBehavior ctBehavior : ctClass.getDeclaredConstructors()) {
+			removeInitializers(ctBehavior, ctField);
+		}
+		CtBehavior ctBehavior = ctClass.getClassInitializer();
+		if (ctBehavior != null) {
+			removeInitializers(ctBehavior, ctField);
+		}
+		ctClass.removeField(ctField);
 	}
 
 	@Patch

@@ -31,6 +31,9 @@ import me.nallar.unsafe.UnsafeUtil;
 import sun.misc.URLClassPath;
 
 public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
+	private static final ThreadLocal<byte[]> buffer = new ThreadLocal<byte[]>();
+	private static final PrintStream err = new PrintStream(new FileOutputStream(FileDescriptor.err));
+	;
 	@Declare
 	public static int patchedClasses_;
 	@Declare
@@ -39,9 +42,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 	private File minecraftdir;
 	private File patchedModsFolder;
 	private URLClassPath ucp;
-	private static PrintStream err;
 	private Set<String> patchedURLs;
-	private ThreadLocal<byte[]> buffer;
 
 	private static void log(Level level, Throwable t, String message, Object... data) {
 		try {
@@ -69,15 +70,8 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 		}
 	}
 
-	@SuppressWarnings ("ZeroLengthArrayAllocation")
-	public static void staticConstruct() {
-		EMPTY_BYTE_ARRAY = new byte[0];
-		err = new PrintStream(new FileOutputStream(FileDescriptor.err));
-	}
-
 	public void construct() {
 		try {
-			buffer = new ThreadLocal<byte[]>();
 			patchedURLs = new HashSet<String>();
 			Field field = URLClassLoader.class.getDeclaredField("ucp");
 			field.setAccessible(true);
@@ -301,7 +295,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 		return basicClass;
 	}
 
-	private static byte[] EMPTY_BYTE_ARRAY;
+	private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
 
 	@Override
 	protected byte[] readFully(InputStream stream) {
