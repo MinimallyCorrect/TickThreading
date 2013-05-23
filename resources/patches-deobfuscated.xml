@@ -438,6 +438,8 @@
 			<addAll fromClass="me.nallar.patched.forge.PatchConfigCategory"/>
 		</class>
 		<class id="net.minecraftforge.event.Event">
+			<final field="listeners"/>
+			<removeField field="annotationMap"/>
 			<addAll fromClass="me.nallar.patched.forge.PatchEvent"/>
 		</class>
 		<class id="net.minecraftforge.common.DimensionManager">
