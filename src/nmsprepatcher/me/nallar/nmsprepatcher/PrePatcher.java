@@ -25,7 +25,7 @@ class PrePatcher {
 	private static final Pattern declareMethodPattern = Pattern.compile("@Declare\\s+?(public\\s+?(?:(?:synchronized|static) )*(\\S*?)?\\s+?(\\S*?)\\s*?\\S+?\\s*?\\([^\\{]*\\)\\s*?\\{)", Pattern.DOTALL | Pattern.MULTILINE);
 	private static final Pattern declareVariablePattern = Pattern.compile("@Declare\\s+?(public [^;\r\n]+?)_( = [^;\r\n]+?)?;", Pattern.DOTALL | Pattern.MULTILINE);
 	private static final Pattern packageVariablePattern = Pattern.compile("\n    ? ?([^ ]+  ? ?[^ ]+);");
-	private static final Pattern innerClassPattern = Pattern.compile("[^\n]public(?: static)? class ([^ ]+) ", Pattern.MULTILINE);
+	private static final Pattern innerClassPattern = Pattern.compile("[^\n]public (?:static )?class ([^ \n]+)[ \n]", Pattern.MULTILINE);
 
 	private static void recursiveSearch(File patchDirectory, File sourceDirectory, Map<File, String> patchClasses, Map<File, String> generics) {
 		for (File file : patchDirectory.listFiles()) {
@@ -133,18 +133,11 @@ class PrePatcher {
 				String withoutGenerics = original.replace(' ' + generic + ' ', " Object ");
 				int index = sourceString.indexOf(withoutGenerics);
 				if (index == -1) {
-					log.warning("Couldn't find " + withoutGenerics + " in " + sourceFile);
 					continue;
 				}
 				int endIndex = sourceString.indexOf("\n    }", index);
 				String body = sourceString.substring(index, endIndex);
 				sourceString = sourceString.replace(body, body.replace(withoutGenerics, original).replace("return ", "return (" + generic + ") "));
-			}
-			Matcher innerClassMatcher = innerClassPattern.matcher(sourceString);
-			while (innerClassMatcher.find()) {
-				String name = innerClassMatcher.group(1);
-				log.info("Found " + name + " in " + sourceFile);
-				sourceString = sourceString.replace("    " + name + '(', "    public " + name + '(');
 			}
 			// TODO: Fix package -> public properly later.
 			sourceString = sourceString.replace("\nfinal ", " ");
@@ -154,11 +147,10 @@ class PrePatcher {
 			sourceString = sourceString.replace("\n    protected " + shortClassName, "\n    public " + shortClassName);
 			sourceString = sourceString.replace("private class", "public class");
 			sourceString = sourceString.replace("protected class", "public class");
+			sourceString = privatePattern.matcher(sourceString).replaceAll("$1protected");
 			if (contents.contains("\n@Public")) {
 				sourceString = sourceString.replace("protected ", "public ");
 			}
-			Matcher privateMatcher = privatePattern.matcher(sourceString);
-			sourceString = privateMatcher.replaceAll("$1protected");
 			sourceString = sourceString.replace("protected void save(", "public void save(");
 			Matcher packageMatcher = packageVariablePattern.matcher(sourceString);
 			StringBuffer sb = new StringBuffer();
@@ -166,8 +158,14 @@ class PrePatcher {
 				packageMatcher.appendReplacement(sb, "\n    public " + packageMatcher.group(1) + ';');
 			}
 			packageMatcher.appendTail(sb);
+			sourceString = sb.toString();
+			Matcher innerClassMatcher = innerClassPattern.matcher(sourceString);
+			while (innerClassMatcher.find()) {
+				String name = innerClassMatcher.group(1);
+				sourceString = sourceString.replace("    " + name + '(', "    public " + name + '(');
+			}
 			try {
-				writeFile(sourceFile, sb.toString().replace("    ", "\t"));
+				writeFile(sourceFile, sourceString.replace("    ", "\t"));
 			} catch (IOException e) {
 				log.log(Level.SEVERE, "Failed to save " + sourceFile, e);
 			}
