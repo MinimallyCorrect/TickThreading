@@ -127,17 +127,18 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 		synchronized (this.syncLockObject) {
 			AnvilChunkLoaderPending pendingchunktosave = pendingSaves.get(chunkcoordintpair);
 
+			long hash = hash(x, z);
 			if (pendingchunktosave == null) {
-				long hash = hash(x, z);
+
 				nbttagcompound = (NBTTagCompound) inProgressSaves.getValueByKey(hash);
 				if (nbttagcompound == null) {
 					nbttagcompound = chunkCache.getIfPresent(hash);
 				}
-				if (nbttagcompound != null) {
-					chunkCache.invalidate(hash);
-				}
 			} else {
 				nbttagcompound = pendingchunktosave.nbtTags;
+			}
+			if (nbttagcompound != null) {
+				chunkCache.invalidate(hash);
 			}
 		}
 
