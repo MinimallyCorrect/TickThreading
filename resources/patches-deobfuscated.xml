@@ -926,13 +926,6 @@
 			<replaceInitializer field="FieldFusion" class="java.util.concurrent.ConcurrentHashMap"/>
 		</class>
 		<class id="chb.mods.mffs.common.tileentity.TileEntityProjector">
-			<newField field="fieldInteriorMap" class="me.nallar.tickthreading.collections.CHashMapReplaceClear"/>
-			<newField field="fieldDefMap" class="me.nallar.tickthreading.collections.CHashMapReplaceClear"/>
-			<replaceInitializer field="field_interior" code="$_ = java.util.Collections.newSetFromMap(fieldInteriorMap);"/>
-			<replaceInitializer field="field_def" code="$_ = java.util.Collections.newSetFromMap(fieldDefMap);"/>
-			<replaceMethodCall method="clear" code="{ }">calculateField(Z)Z</replaceMethodCall>
-			<insertBefore code="{ fieldInteriorMap.start(); fieldDefMap.start(); }">calculateField(Z)Z</insertBefore>
-			<insertAfter finally="true" code="{ fieldInteriorMap.done(); fieldDefMap.done(); }">calculateField(Z)Z</insertAfter>
 			<synchronize>calculateField(Z)Z</synchronize>
 		</class>
 	</MFFS>
