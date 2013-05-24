@@ -13,8 +13,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.locks.Lock;
 
+import me.nallar.collections.ConcurrentIterableArrayList;
 import me.nallar.tickthreading.Log;
-import me.nallar.tickthreading.collections.ConcurrentIterableArrayList;
 import me.nallar.tickthreading.minecraft.commands.TPSCommand;
 import me.nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
 import me.nallar.tickthreading.minecraft.tickregion.EntityTickRegion;

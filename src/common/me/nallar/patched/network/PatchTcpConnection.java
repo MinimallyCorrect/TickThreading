@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import me.nallar.collections.ConcurrentQueueList;
 import me.nallar.tickthreading.Log;
-import me.nallar.tickthreading.collections.ConcurrentQueueList;
 import me.nallar.tickthreading.patcher.Declare;
 import me.nallar.tickthreading.util.ReflectUtil;
 import net.minecraft.network.TcpConnection;

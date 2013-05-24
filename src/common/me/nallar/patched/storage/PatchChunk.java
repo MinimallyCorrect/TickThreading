@@ -6,8 +6,8 @@ import java.util.Set;
 import java.util.logging.Level;
 
 import cpw.mods.fml.common.FMLLog;
+import me.nallar.collections.SynchronizedList;
 import me.nallar.tickthreading.Log;
-import me.nallar.tickthreading.collections.SynchronizedList;
 import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;

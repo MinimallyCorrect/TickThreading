@@ -1,4 +1,4 @@
-package me.nallar.tickthreading.collections;
+package me.nallar.collections;
 
 import java.util.Iterator;
 import java.util.LinkedHashSet;

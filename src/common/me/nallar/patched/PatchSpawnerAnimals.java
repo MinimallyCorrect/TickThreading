@@ -4,9 +4,9 @@ import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Map;
 
+import me.nallar.collections.LongList;
+import me.nallar.collections.LongSet;
 import me.nallar.tickthreading.Log;
-import me.nallar.tickthreading.collections.LongList;
-import me.nallar.tickthreading.collections.LongSet;
 import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityLiving;

@@ -221,8 +221,8 @@
 		<class id="net.minecraft.entity.player.EntityPlayerMP">
 			<addAll fromClass="me.nallar.patched.entity.PatchEntityPlayerMP"/>
 			<!-- Concurrent access during iteration = boom -->
-			<replaceInitializer field="destroyedItemsNetCache" class="me.nallar.tickthreading.collections.ConcurrentQueueList"/>
-			<replaceInitializer field="loadedChunks" class="me.nallar.tickthreading.collections.ConcurrentQueueList"/>
+			<replaceInitializer field="destroyedItemsNetCache" class="me.nallar.collections.ConcurrentQueueList"/>
+			<replaceInitializer field="loadedChunks" class="me.nallar.collections.ConcurrentQueueList"/>
 		</class>
 		<class id="net.minecraft.entity.player.EntityPlayerMP">
 			<addAll fromClass="me.nallar.patched.entity.PatchEntityPlayerMPForge"/>
@@ -285,8 +285,8 @@
 			<lock field="playerUpdateLock">createPlayerForUser,sendPacketToAllPlayers,sendPlayerInfoToAllPlayers</lock>
 			<lock field="playerUpdateLock">sendPacketToAllPlayersInDimension,getPlayerListAsString,getAllUsernames,getPlayerForUsername,findPlayers,sendToAllNearExcept</lock>
 			<lock field="playerUpdateLock">saveAllPlayerData,getPlayerList</lock>
-			<replaceInitializer field="playerEntityList" class="me.nallar.tickthreading.collections.LockArrayList"/>
-			<insertAfter code="((me.nallar.tickthreading.collections.LockArrayList)^field:ServerConfigurationManager/playerEntityList^).lock = playersUpdateLock;"/>
+			<replaceInitializer field="playerEntityList" class="me.nallar.collections.LockArrayList"/>
+			<insertAfter code="((me.nallar.collections.LockArrayList)^field:ServerConfigurationManager/playerEntityList^).lock = playersUpdateLock;"/>
 			<synchronize field="$1.loadedChunks">respawnPlayer</synchronize>
 			<synchronize field="$1.loadedChunks">transferPlayerToDimension(Lnet.minecraft.entity.player.EntityPlayerMP;ILnet.minecraft.world.Teleporter;)V</synchronize>
 			<synchronize field="$1.playerNetServerHandler">transferPlayerToDimension(Lnet.minecraft.entity.player.EntityPlayerMP;ILnet.minecraft.world.Teleporter;)V</synchronize>
@@ -519,7 +519,7 @@
 	</forgeModLoader>
 	<factorization>
 		<class id="factorization.common.TileEntityWrathLamp">
-			<replaceInitializer field="airToUpdate" class="me.nallar.tickthreading.collections.SynchronizedPriorityQueue">^static^</replaceInitializer>
+			<replaceInitializer field="airToUpdate" class="me.nallar.collections.SynchronizedPriorityQueue">^static^</replaceInitializer>
 			<threadLocal field="toVisit" type="java.util.HashSet" threadLocalField="javassist.is.faulty.ThreadLocals.factorizationFindLightAirParentToVisit"/>
 			<replaceMethodCall code="$_ = $0.getChunkFromBlockCoordsIfExists($$);" method="^class:World^.^method:World/getChunkFromBlockCoords^">findLightAirParent</replaceMethodCall>
 		</class>
@@ -549,7 +549,7 @@
 			<replaceMethodCall newMethod="getBlockIdWithLoad" method="^class:World^.^method:World/getBlockId^">ticketsLoaded(Ljava.util.List;L^class:World^;I)Ljava.util.List;</replaceMethodCall>
 		</class>
 		<class id="buildcraft.factory.TilePump">
-			<replaceInitializer field="blocksToPump" class="me.nallar.tickthreading.collections.TreeMapHashMap"/>
+			<replaceInitializer field="blocksToPump" class="me.nallar.collections.TreeMapHashMap"/>
 			<insertBefore code="blocksToPump.clear();">initializePumpFromPosition</insertBefore>
 		</class>
 	</buildCraftFactory>
@@ -561,7 +561,7 @@
 		</class>
 		<class id="buildcraft.transport.PipeTransportItems">
 			<replaceInitializer field="travelingEntities" class="java.util.concurrent.ConcurrentHashMap"/>
-			<replaceInitializer field="toRemove" class="me.nallar.tickthreading.collections.SynchronizedSet"/>
+			<replaceInitializer field="toRemove" class="me.nallar.collections.SynchronizedSet"/>
 			<replaceMethod code="{
 				synchronized(toRemove) {
 					java.util.Iterator i = toRemove.iterator();
@@ -610,7 +610,7 @@
 			<synchronize>onRemove,pop,addNew,addNewColor,addBounce,addAll,getLast,readFromNBT,writeToNBT</synchronize>
 		</class>
 		<class id="com.eloraam.redpower.core.TubeFlow">
-			<replaceInitializer field="contents" class="me.nallar.tickthreading.collections.ConcurrentLinkedQueueList"/>
+			<replaceInitializer field="contents" class="me.nallar.collections.ConcurrentLinkedQueueList"/>
 			<replaceInitializer field="contents" code="contents.clear(); $_ = null;">readFromNBT</replaceInitializer>
 			<replaceFieldUsage field="contents" writeCode="{ }">readFromNBT</replaceFieldUsage>
 			<final field="contents"/>
@@ -724,13 +724,13 @@
 			</replaceMethod>
 		</class>
 		<class id="ic2.core.WorldData">
-			<replaceInitializer field="networkedFieldsToUpdate" class="me.nallar.tickthreading.collections.SynchronizedSet"/>
+			<replaceInitializer field="networkedFieldsToUpdate" class="me.nallar.collections.SynchronizedSet"/>
 		</class>
 	</industrialCraft>
 	<gregTech>
 		<class id="gregtechmod.GT_Mod">
 			<synchronize>readIDSUData,writeIDSUData</synchronize>
-			<replaceInitializer fieldClass="gregtechmod.common.tileentities.GT_TileEntity_IDSU" field="sEnergyList" class="me.nallar.tickthreading.collections.CHashMap">readIDSUData</replaceInitializer>
+			<replaceInitializer fieldClass="gregtechmod.common.tileentities.GT_TileEntity_IDSU" field="sEnergyList" class="me.nallar.collections.CHashMap">readIDSUData</replaceInitializer>
 		</class>
 		<class id="gregtechmod.common.tileentities.GT_TileEntityMetaID_Machine">
 			<replaceMethodCall method="self.^method:TileEntity/onInventoryChanged^" code="{ }">^method:TileEntity/updateEntity^</replaceMethodCall>
@@ -741,32 +741,171 @@
 	</gregTech>
 	<chickenChunks>
 		<class id="codechicken.chunkloader.ChunkLoaderEventHandler">
-			<newField field="staticLock" class="java.lang.Object" static=""/>
-			<synchronize field="staticLock">tickEnd,onPlayerLogout,onWorldLoad,onWorldUnload,onChunkForce,onChunkUnForce</synchronize>
 			<replaceMethod code="return java.util.EnumSet.of(cpw.mods.fml.common.TickType.SERVER, cpw.mods.fml.common.TickType.WORLD);">ticks</replaceMethod>
 		</class>
 		<class id="codechicken.chunkloader.PlayerChunkViewerManager">
+			<replaceInitializer field="ticketIDs" class="me.nallar.collections.CHashMap"/>
+			<replaceInitializer field="lastLoadedChunkMap" class="me.nallar.collections.CHashMap"/>
+			<replaceInitializer field="playerViewers" class="me.nallar.collections.ConcurrentLinkedQueueList"/>
+			<replaceInitializer field="chunkChanges" class="me.nallar.collections.LinkedListIterateClear"/>
+			<replaceInitializer field="ticketChanges" class="me.nallar.collections.LinkedListIterateClear"/>
+			<replaceInitializer field="dimChanges" class="me.nallar.collections.LinkedListIterateClear"/>
+			<replaceInitializer field="logouts" class="me.nallar.collections.LinkedListIterateClear"/>
+			<replaceInitializer field="addViewers" class="me.nallar.collections.LinkedListIterateClear"/>
+			<replaceMethod code="{
+				++time;
+				me.nallar.collections.LinkedListIterateClear logouts = (me.nallar.collections.LinkedListIterateClear) this.logouts;
+				Iterator var2 = logouts.clearIterator();
+				ArrayList temp = new ArrayList(logouts.size() + 3);
+				while (var2.hasNext()) {
+					temp.add(var2.next());
+				}
+
+				var2 = temp.iterator();
+				String username;
+				while(var2.hasNext()) {
+					username = (String)var2.next();
+					Iterator player = playerViewers.iterator();
+
+					while(player.hasNext()) {
+						if(((codechicken.chunkloader.PlayerChunkViewerTracker)player.next()).owner.^field:EntityPlayer/username^.equals(username)) {
+							player.remove();
+						}
+					}
+				}
+
+				var2 = temp.iterator();
+
+				Iterator var4;
+				codechicken.chunkloader.PlayerChunkViewerTracker player1;
+				while(var2.hasNext()) {
+					username = (String)var2.next();
+					var4 = playerViewers.iterator();
+
+					while(var4.hasNext()) {
+						player1 = (codechicken.chunkloader.PlayerChunkViewerTracker)var4.next();
+						player1.removePlayer(username);
+					}
+				}
+
+				me.nallar.collections.LinkedListIterateClear dimChanges = (me.nallar.collections.LinkedListIterateClear) this.dimChanges;
+				var2 = dimChanges.clearIterator();
+				ArrayList tempDim = new ArrayList(dimChanges.size() + 3);
+				while (var2.hasNext()) {
+					tempDim.add(var2.next());
+				}
+
+				var2 = tempDim.iterator();
+				codechicken.chunkloader.PlayerChunkViewerManager$DimensionChange username1;
+				while(var2.hasNext()) {
+					username1 = (codechicken.chunkloader.PlayerChunkViewerManager$DimensionChange)var2.next();
+					if(username1.add) {
+						var4 = playerViewers.iterator();
+
+						while(var4.hasNext()) {
+							player1 = (codechicken.chunkloader.PlayerChunkViewerTracker)var4.next();
+							player1.loadDimension(username1.world);
+						}
+					}
+				}
+
+				me.nallar.collections.LinkedListIterateClear chunkChanges = (me.nallar.collections.LinkedListIterateClear) this.chunkChanges;
+
+				var2 = chunkChanges.clearIterator();
+
+				while(var2.hasNext()) {
+					codechicken.chunkloader.PlayerChunkViewerManager$ChunkChange username2 = (codechicken.chunkloader.PlayerChunkViewerManager$ChunkChange)var2.next();
+					var4 = playerViewers.iterator();
+
+					while(var4.hasNext()) {
+						player1 = (codechicken.chunkloader.PlayerChunkViewerTracker)var4.next();
+						player1.sendChunkChange(username2);
+					}
+				}
+
+				me.nallar.collections.LinkedListIterateClear ticketChanges = (me.nallar.collections.LinkedListIterateClear) this.ticketChanges;
+				var2 = ticketChanges.clearIterator();
+
+				while(var2.hasNext()) {
+					codechicken.chunkloader.PlayerChunkViewerManager$TicketChange username3 = (codechicken.chunkloader.PlayerChunkViewerManager$TicketChange)var2.next();
+					if(ticketIDs.containsKey(username3.ticket)) {
+						var4 = playerViewers.iterator();
+
+						while(var4.hasNext()) {
+							player1 = (codechicken.chunkloader.PlayerChunkViewerTracker)var4.next();
+							player1.sendTicketChange(username3);
+						}
+					} else {
+						ticketIDs.put(username3.ticket, Integer.valueOf(ticketID++));
+						var4 = playerViewers.iterator();
+
+						while(var4.hasNext()) {
+							player1 = (codechicken.chunkloader.PlayerChunkViewerTracker)var4.next();
+							player1.addTicket(codechicken.core.CommonUtils.getDimension(username3.ticket.world), username3.ticket);
+						}
+					}
+				}
+
+				var2 = tempDim.iterator();
+
+				while(var2.hasNext()) {
+					username1 = (codechicken.chunkloader.PlayerChunkViewerManager$DimensionChange)var2.next();
+					if(!username1.add) {
+						var4 = playerViewers.iterator();
+
+						while(var4.hasNext()) {
+							player1 = (codechicken.chunkloader.PlayerChunkViewerTracker)var4.next();
+							player1.unloadDimension(codechicken.core.CommonUtils.getDimension(username1.world));
+						}
+					}
+				}
+
+				if(time % 10 == 0) {
+					var2 = codechicken.core.ServerUtils.getAllPlayers().iterator();
+
+					while(var2.hasNext()) {
+						^class:EntityPlayer^ username4 = (^class:EntityPlayer^)var2.next();
+						var4 = playerViewers.iterator();
+
+						while(var4.hasNext()) {
+							player1 = (codechicken.chunkloader.PlayerChunkViewerTracker)var4.next();
+							player1.updatePlayer(username4);
+						}
+					}
+				}
+
+
+				var2 = ((me.nallar.collections.LinkedListIterateClear) this.addViewers).clearIterator();
+
+				while(var2.hasNext()) {
+					username = (String)var2.next();
+					^class:EntityPlayerMP^ player2 = codechicken.core.ServerUtils.getPlayer(username);
+					if(player2 != null) {
+						playerViewers.add(new codechicken.chunkloader.PlayerChunkViewerTracker(player2, this));
+					}
+				}
+			 }">update
+			</replaceMethod>
+			<synchronize>update</synchronize>
 			<synchronize field="$1.b.g">calculateChunkChanges</synchronize>
 		</class>
 		<class id="codechicken.chunkloader.ChunkLoaderManager">
 			<disable>cleanChunks</disable>
 			<replaceMethodCall newMethod="getTEWithLoad" method="^class:World^.^method:World/getBlockTileEntity^">^all^</replaceMethodCall>
 			<replaceMethodCall newMethod="getBlockIdWithLoad" method="^class:World^.^method:World/getBlockId^">^all^</replaceMethodCall>
+			<synchronize field="$1.b.g">tickEnd</synchronize>
 		</class>
 		<class id="codechicken.chunkloader.ChunkLoaderManager$ChunkLoaderOrganiser">
 			<replaceMethodCall newMethod="getTEWithLoad" method="^class:World^.^method:World/getBlockTileEntity^">^all^</replaceMethodCall>
 			<replaceMethodCall newMethod="getBlockIdWithLoad" method="^class:World^.^method:World/getBlockId^">^all^</replaceMethodCall>
 			<synchronize>revive(^class:World^)V</synchronize>
-			<replaceInitializer field="timedUnloadQueue" class="me.nallar.tickthreading.collections.LinkedTimedHashMapQueue"/>
-		</class>
-		<class id="codechicken.chunkloader.CommandChunkLoaders">
-			<synchronize field="codechicken.chunkloader.ChunkLoaderEventHandler.staticLock">handleCommand</synchronize>
+			<replaceInitializer field="timedUnloadQueue" class="me.nallar.collections.LinkedTimedHashMapQueue"/>
 		</class>
 		<class id="codechicken.core.world.WorldExtension">
-			<replaceInitializer field="chunkMap" class="me.nallar.tickthreading.collections.CHashMap"/>
+			<replaceInitializer field="chunkMap" class="me.nallar.collections.CHashMap"/>
 		</class>
 		<class id="codechicken.xycraftcopy.core.world.WorldExtension">
-			<replaceInitializer field="chunkMap" class="me.nallar.tickthreading.collections.CHashMap"/>
+			<replaceInitializer field="chunkMap" class="me.nallar.collections.CHashMap"/>
 		</class>
 		<class id="codechicken.core.world.WorldExtensionManager$WorldExtensionEventHandler">
 			<synchronize>onChunkLoad,onChunkUnLoad,onChunkDataLoad,onChunkDataSave</synchronize>
@@ -790,7 +929,7 @@
 	</chickenChunks>
 	<wirelessRedstone>
 		<class id="codechicken.wirelessredstone.core.RedstoneEther">
-			<replaceInitializer field="playerJammedMap" class="me.nallar.tickthreading.collections.CHashMap"/>
+			<replaceInitializer field="playerJammedMap" class="me.nallar.collections.CHashMap"/>
 			<final field="playerJammedMap"/>
 		</class>
 		<class id="codechicken.wirelessredstone.core.RedstoneEtherServer">
@@ -847,12 +986,12 @@
 	<portalGun>
 		<class id="portalgun.common.core.TickHandlerServer">
 			<synchronize field="$1.e">worldTick</synchronize>
-			<replaceInitializer field="grabMap" class="me.nallar.tickthreading.collections.CHashMap"/>
-			<replaceInitializer field="portals" class="me.nallar.tickthreading.collections.CHashMap"/>
-			<replaceInitializer field="moonPortals" class="me.nallar.tickthreading.collections.CHashMap"/>
-			<replaceInitializer field="potatosProgression" class="me.nallar.tickthreading.collections.CHashMap"/>
-			<replaceInitializer field="lastSeenEntity" class="me.nallar.tickthreading.collections.CHashMap"/>
-			<replaceInitializer field="hasFallen" class="me.nallar.tickthreading.collections.CHashMap"/>
+			<replaceInitializer field="grabMap" class="me.nallar.collections.CHashMap"/>
+			<replaceInitializer field="portals" class="me.nallar.collections.CHashMap"/>
+			<replaceInitializer field="moonPortals" class="me.nallar.collections.CHashMap"/>
+			<replaceInitializer field="potatosProgression" class="me.nallar.collections.CHashMap"/>
+			<replaceInitializer field="lastSeenEntity" class="me.nallar.collections.CHashMap"/>
+			<replaceInitializer field="hasFallen" class="me.nallar.collections.CHashMap"/>
 		</class>
 		<class id="portalgun.common.core.ChunkLoadHandler">
 			<replaceMethodCall newMethod="getTEWithLoad" method="^class:World^.^method:World/getBlockTileEntity^">
@@ -929,7 +1068,7 @@
 	</MFFS>
 	<thaumcraft>
 		<class id="thaumcraft.api.ObjectTags">
-			<replaceInitializer field="tags" class="me.nallar.tickthreading.collections.CHashMap"/>
+			<replaceInitializer field="tags" class="me.nallar.collections.CHashMap"/>
 		</class>
 		<class id="thaumcraft.common.AuraManager">
 			<synchronize>registerAuraNode</synchronize>
@@ -972,8 +1111,8 @@
 			</replaceMethod>
 		</class>
 		<class id="thaumcraft.common.blocks.TileMarker">
-			<replaceInitializer field="markers" class="me.nallar.tickthreading.collections.CHashMap">^static^</replaceInitializer>
-			<replaceInitializer field="markedForDeletion" class="me.nallar.tickthreading.collections.ArrayListReplaceIterateTempListClear">^static^</replaceInitializer>
+			<replaceInitializer field="markers" class="me.nallar.collections.CHashMap">^static^</replaceInitializer>
+			<replaceInitializer field="markedForDeletion" class="me.nallar.collections.ArrayListReplaceIterateTempListClear">^static^</replaceInitializer>
 		</class>
 		<class id="thaumcraft.common.blocks.TileSensor">
 			<replaceMethod code="((ArrayList) noteBlockEvents.get($1)).addAll($1.getNoteBlockEvents());">getNoteBlockEvents</replaceMethod>
@@ -985,14 +1124,14 @@
 			<newField field="readWriteLock" class="me.nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock"/>
 			<newField field="writeLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>
 			<newField field="readLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.readLock();"/>
-			<replaceInitializer field="electricityNetworks" class="me.nallar.tickthreading.collections.LockArrayList"/>
-			<insertAfter code="((me.nallar.tickthreading.collections.LockArrayList)electricityNetworks).lock = writeLock;"/>
+			<replaceInitializer field="electricityNetworks" class="me.nallar.collections.LockArrayList"/>
+			<insertAfter code="((me.nallar.collections.LockArrayList)electricityNetworks).lock = writeLock;"/>
 			<lock field="readLock">unregister,cleanUpNetworks,resetConductors</lock>
 			<synchronize>mergeConnection,splitConnection,cleanUpNetworks</synchronize>
 			<insertBefore code="if (cleanNetworkCount++ % 15 != 0) { return; }">cleanUpNetworks</insertBefore>
 		</class>
 		<class id="universalelectricity.core.electricity.ElectricityConnections">
-			<replaceInitializer field="connectors" class="me.nallar.tickthreading.collections.CHashMap"/>
+			<replaceInitializer field="connectors" class="me.nallar.collections.CHashMap"/>
 		</class>
 		<class id="universalelectricity.core.electricity.ElectricityNetwork">
 			<replaceMethodCall code="$_ = $0.getTEWithoutLoad($$);" method="^class:World^.^method:World/getBlockTileEntity^">getProduced,getRequestWithoutReduction</replaceMethodCall>
@@ -1000,10 +1139,10 @@
 			<replaceMethod code="{
 				me.nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock readWriteLock = new me.nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock();
 				readLock = readWriteLock.readLock();
-				consumers = new me.nallar.tickthreading.collections.CHashMap();
-				producers = new me.nallar.tickthreading.collections.CHashMap();
-				conductors = new me.nallar.tickthreading.collections.LockArrayList();
-				((me.nallar.tickthreading.collections.LockArrayList)conductors).lock = readWriteLock.writeLock();
+				consumers = new me.nallar.collections.CHashMap();
+				producers = new me.nallar.collections.CHashMap();
+				conductors = new me.nallar.collections.LockArrayList();
+				((me.nallar.collections.LockArrayList)conductors).lock = readWriteLock.writeLock();
 				this.addConductor($1);
 			}"/>
 			<lock field="readLock">addConductor,cleanConductors,setNetwork,resetConductors,onOverCharge,getTotalResistance,refreshConductors</lock>
@@ -1031,8 +1170,8 @@
 			<synchronize field="$1">addStackToList</synchronize>
 		</class>
 		<class id="appeng.me.tile.TileController">
-			<replaceInitializer field="WaitingQueue" class="me.nallar.tickthreading.collections.ConcurrentLinkedQueueList"/>
-			<replaceInitializer field="CraftingQueue" class="me.nallar.tickthreading.collections.ConcurrentLinkedQueueList"/>
+			<replaceInitializer field="WaitingQueue" class="me.nallar.collections.ConcurrentLinkedQueueList"/>
+			<replaceInitializer field="CraftingQueue" class="me.nallar.collections.ConcurrentLinkedQueueList"/>
 			<synchronize>getCellArray,resetCache,^method:TileEntity/updateEntity^,advanceCraftingCursor,resetWaitingQueue</synchronize>
 		</class>
 		<class id="appeng.me.tile.TileDrive">
@@ -1048,13 +1187,13 @@
 			<synchronize>^all^</synchronize>
 		</class>
 		<class id="appeng.common.MEGridEvents">
-			<replaceInitializer field="requests" class="me.nallar.tickthreading.collections.ConcurrentQueueList">^static^</replaceInitializer>
+			<replaceInitializer field="requests" class="me.nallar.collections.ConcurrentQueueList">^static^</replaceInitializer>
 		</class>
 	</appliedEnergistics>
 	<xyCraft>
 		<class id="soaryn.xycraft.machines.block.XyCraftWorldExtension">
-			<replaceInitializer field="multiBlocks" class="me.nallar.tickthreading.collections.CHashMap"/>
-			<replaceInitializer field="deferredLoadSet" class="me.nallar.tickthreading.collections.HashSetReplaceIterateTempListNoClear"/>
+			<replaceInitializer field="multiBlocks" class="me.nallar.collections.CHashMap"/>
+			<replaceInitializer field="deferredLoadSet" class="me.nallar.collections.HashSetReplaceIterateTempListNoClear"/>
 			<synchronize>defer,remMultiBlock</synchronize>
 			<replaceFieldUsage field="useTemp" writeCode="$1 = false;">updateDeffered</replaceFieldUsage>
 			<insertAfter code="deferredLoadSet.clear();">updateDeffered</insertAfter>
@@ -1105,12 +1244,12 @@
 	</customOreGen>
 	<enderStorage>
 		<class id="codechicken.enderstorage.api.EnderStorageManager">
-			<insertAfter code="dirtyStorage = new me.nallar.tickthreading.collections.LinkedListReplaceIterateTempListClear();"/>
+			<insertAfter code="dirtyStorage = new me.nallar.collections.LinkedListReplaceIterateTempListClear();"/>
 		</class>
 	</enderStorage>
 	<millenaire>
 		<class id="org.millenaire.common.forge.Mill">
-			<replaceInitializer field="serverWorlds" class="me.nallar.tickthreading.collections.CopyOnWriteVector"/>
+			<replaceInitializer field="serverWorlds" class="me.nallar.collections.CopyOnWriteVector"/>
 		</class>
 		<class id="org.millenaire.common.MillVillager">
 			<replaceMethodCall method="error" code="{ }">registerInGlobalList</replaceMethodCall>

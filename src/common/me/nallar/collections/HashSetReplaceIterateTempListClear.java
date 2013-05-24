@@ -1,18 +1,17 @@
-package me.nallar.tickthreading.collections;
+package me.nallar.collections;
 
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import me.nallar.unsafe.UnsafeAccess;
-import sun.misc.Unsafe;
+import me.nallar.tickthreading.util.BooleanThreadLocal;
 
-public class ArrayListReplaceIterateTempListClear<T> extends ArrayList<T> {
+public class HashSetReplaceIterateTempListClear<T> extends HashSet<T> {
 	private volatile boolean defer = false;
 	private final LinkedList<T> deferred = new LinkedList<T>();
 	private static final Iterator emptyIterator = Collections.emptyList().iterator();
-	private static final Unsafe $ = UnsafeAccess.$;
+	private final BooleanThreadLocal noDefer = new BooleanThreadLocal();
 
 	@Override
 	public synchronized boolean add(T t) {
@@ -25,8 +24,8 @@ public class ArrayListReplaceIterateTempListClear<T> extends ArrayList<T> {
 
 	@Override
 	public synchronized Iterator<T> iterator() {
-		$.monitorEnter(this);
 		if (defer) {
+			noDefer.set(true);
 			return emptyIterator;
 		}
 		defer = true;
@@ -35,10 +34,13 @@ public class ArrayListReplaceIterateTempListClear<T> extends ArrayList<T> {
 
 	@Override
 	public synchronized void clear() {
+		if (noDefer.get()) {
+			noDefer.set(false);
+			return;
+		}
 		super.clear();
 		defer = false;
 		addAll(deferred);
 		deferred.clear();
-		$.monitorExit(this);
 	}
 }

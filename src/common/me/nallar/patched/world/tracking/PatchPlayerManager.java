@@ -1,7 +1,7 @@
 package me.nallar.patched.world.tracking;
 
+import me.nallar.collections.ConcurrentLinkedQueueList;
 import me.nallar.tickthreading.Log;
-import me.nallar.tickthreading.collections.ConcurrentLinkedQueueList;
 import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.server.management.PlayerInstance;
 import net.minecraft.server.management.PlayerManager;

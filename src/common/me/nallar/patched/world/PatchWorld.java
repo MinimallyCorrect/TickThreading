@@ -9,8 +9,8 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableSetMultimap;
 
+import me.nallar.collections.ForcedChunksRedirectMap;
 import me.nallar.tickthreading.Log;
-import me.nallar.tickthreading.collections.ForcedChunksRedirectMap;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.minecraft.entitylist.EntityList;
 import me.nallar.tickthreading.minecraft.entitylist.LoadedTileEntityList;

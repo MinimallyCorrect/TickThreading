@@ -1,4 +1,4 @@
-package me.nallar.tickthreading.collections;
+package me.nallar.collections;
 
 import java.util.Collection;
 import java.util.List;

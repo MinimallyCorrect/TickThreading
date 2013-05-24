@@ -1,4 +1,4 @@
-package me.nallar.tickthreading.collections;
+package me.nallar.collections;
 
 public class SynchronizedList<T> extends ConcurrentUnsafeIterableArrayList<T> {
 	@Override

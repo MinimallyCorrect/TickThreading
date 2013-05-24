@@ -2,8 +2,8 @@ package me.nallar.tickthreading.minecraft.tickregion;
 
 import java.util.Iterator;
 
+import me.nallar.collections.LinkedHashSetTempSetNoClear;
 import me.nallar.tickthreading.Log;
-import me.nallar.tickthreading.collections.LinkedHashSetTempSetNoClear;
 import me.nallar.tickthreading.minecraft.TickManager;
 import me.nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
 import me.nallar.unsafe.UnsafeAccess;

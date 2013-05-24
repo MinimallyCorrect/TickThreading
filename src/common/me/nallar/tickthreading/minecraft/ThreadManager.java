@@ -8,9 +8,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import cpw.mods.fml.common.FMLCommonHandler;
+import me.nallar.collections.ConcurrentIterableArrayList;
 import me.nallar.exception.ThreadStuckError;
 import me.nallar.tickthreading.Log;
-import me.nallar.tickthreading.collections.ConcurrentIterableArrayList;
 import me.nallar.tickthreading.util.FakeServerThread;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
