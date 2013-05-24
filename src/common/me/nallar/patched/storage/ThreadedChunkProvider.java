@@ -507,10 +507,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			return defaultEmptyChunk;
 		}
 
-		if (!world.loadEventFired) {
-			Log.severe("Loaded chunk before world load event fired, this can cause many issues, including loss of multiblock data.", new Throwable());
-		}
-
 		long key = key(x, z);
 		Chunk chunk;
 
@@ -541,6 +537,9 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 					} else {
 						loadingChunks.put(key, chunk);
 						inLoadingMap = true;
+						if (!world.loadEventFired) {
+							Log.warning("Loaded chunk before world load event fired, this can cause many issues, including loss of multiblock data.", new Throwable());
+						}
 					}
 				} else {
 					inLoadingMap = true;
