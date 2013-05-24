@@ -27,7 +27,7 @@ import net.minecraft.world.WorldServer;
 public class Log {
 	public static final Logger LOGGER = Logger.getLogger("TickThreading");
 	public static final boolean debug = System.getProperty("tickthreading.debug") != null;
-	private static final Level DEBUG = new Level("DEBUG", Level.SEVERE.intValue(), null) {
+	public static final Level DEBUG = new Level("DEBUG", Level.SEVERE.intValue(), null) {
 		// Inner class as constructors are protected.
 	};
 	private static Handler handler;

@@ -221,7 +221,7 @@ public abstract class PatchChunk extends Chunk {
 
 		if (entityChunkX != xPosition || entityChunkZ != zPosition) {
 			if (Log.debug) {
-				FMLLog.log(Level.WARNING, new Throwable(), "Entity %s added to the wrong chunk - expected x%d z%d, got x%d z%d", par1Entity.toString(), xPosition, zPosition, entityChunkX, entityChunkZ);
+				FMLLog.log(Log.DEBUG, new Throwable(), "Entity %s added to the wrong chunk - expected x%d z%d, got x%d z%d", par1Entity.toString(), xPosition, zPosition, entityChunkX, entityChunkZ);
 			}
 			if (worldObj instanceof WorldServer) {
 				Chunk correctChunk = ((WorldServer) worldObj).theChunkProviderServer.getChunkIfExists(entityChunkX, entityChunkZ);
