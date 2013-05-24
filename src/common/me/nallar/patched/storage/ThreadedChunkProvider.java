@@ -594,7 +594,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 						chunk.threadUnsafeChunkLoad();
 
 						chunks.put(key, chunk);
-						loadedChunks.add(chunk);
 					} finally {
 						worldGenInProgress.set(Boolean.FALSE);
 					}
@@ -606,6 +605,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			}
 		}
 
+		loadedChunks.add(chunk);
 		chunk.onChunkLoad();
 		fireBukkitLoadEvent(chunk, wasGenerated);
 		chunkLoadLocks.remove(key);

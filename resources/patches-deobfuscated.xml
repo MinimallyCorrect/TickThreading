@@ -893,7 +893,6 @@
 			<disable>cleanChunks</disable>
 			<replaceMethodCall newMethod="getTEWithLoad" method="^class:World^.^method:World/getBlockTileEntity^">^all^</replaceMethodCall>
 			<replaceMethodCall newMethod="getBlockIdWithLoad" method="^class:World^.^method:World/getBlockId^">^all^</replaceMethodCall>
-			<synchronize field="$1.b.g">tickEnd</synchronize>
 		</class>
 		<class id="codechicken.chunkloader.ChunkLoaderManager$ChunkLoaderOrganiser">
 			<replaceMethodCall newMethod="getTEWithLoad" method="^class:World^.^method:World/getBlockTileEntity^">^all^</replaceMethodCall>
