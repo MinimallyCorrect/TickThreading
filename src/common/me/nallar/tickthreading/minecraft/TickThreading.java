@@ -19,7 +19,6 @@ import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.relauncher.RelaunchClassLoader;
 import javassist.is.faulty.Timings;
-import me.nallar.insecurity.ThisIsNotAnError;
 import me.nallar.reporting.LeakDetector;
 import me.nallar.reporting.Metrics;
 import me.nallar.tickthreading.Log;
@@ -53,7 +52,6 @@ import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.EventPriority;
 import net.minecraftforge.event.ForgeSubscribe;
-import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.WorldEvent;
 
@@ -264,15 +262,6 @@ public class TickThreading {
 				}
 			}
 		}
-	}
-
-	@ForgeSubscribe
-	public void onEntityFall(LivingFallEvent event) {
-		if (!Log.debug || !(event.entity instanceof EntityPlayerMP)) {
-			return;
-		}
-		EntityPlayerMP entityPlayerMP = (EntityPlayerMP) event.entity;
-		Log.debug(entityPlayerMP.username + " fell " + TableFormatter.formatDoubleWithPrecision(event.distance, 2) + " blocks. Current thread: " + Log.toString(Thread.currentThread()), new ThisIsNotAnError());
 	}
 
 	public TickManager getManager(World world) {

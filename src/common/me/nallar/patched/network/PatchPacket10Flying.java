@@ -16,7 +16,6 @@ import net.minecraft.network.packet.Packet56MapChunks;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.ChunkCoordIntPair;
-import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.ChunkWatchEvent;
@@ -47,6 +46,11 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 			if (finishedTeleporting && mainThreadProcess) {
 				finishedTeleporting = false;
 				teleported = nsh.teleported = -21;
+			}
+			double yPosition = this.yPosition;
+			if (yPosition < -5 && entityPlayerMP.worldObj.getDimension() == 0) {
+				nsh.setPlayerLocation(xPosition, entityPlayerMP.worldObj.getHeightValue((int) xPosition, (int) zPosition) + 1, zPosition, entityPlayerMP.rotationYaw, entityPlayerMP.rotationPitch);
+				return;
 			}
 			if ((yPosition == -999.0D && stance == -999.0D) || (finishedTeleporting && (teleported < -20 || (nsh.tpPosY < yPosition + 0.02)))) {
 				nsh.tpPosX = Double.NaN;
