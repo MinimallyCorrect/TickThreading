@@ -87,6 +87,9 @@ public abstract class PatchChunk extends Chunk {
 			int length = entityList.size() - 1;
 			for (; length >= 0; length--) {
 				Entity entity = (Entity) entities[length];
+				if (entity == null) {
+					continue;
+				}
 				if (entity.boundingBox.intersectsWith(aabb) && aClass.isAssignableFrom(entity.getClass()) && (selector == null || selector.isEntityApplicable(entity))) {
 					list.add(entity);
 				}
@@ -120,6 +123,9 @@ public abstract class PatchChunk extends Chunk {
 			int length = entityList.size() - 1;
 			for (; length >= 0; length--) {
 				Entity entity = (Entity) entities[length];
+				if (entity == null) {
+					continue;
+				}
 
 				if (entity != excludedEntity && entity.boundingBox.intersectsWith(collisionArea)) {
 					collidingAABBs.add(entity);

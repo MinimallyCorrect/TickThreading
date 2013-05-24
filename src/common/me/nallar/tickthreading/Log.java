@@ -190,7 +190,7 @@ public class Log {
 	}
 
 	public static void flush() {
-		handler.flush();
+		if (handler != null) { handler.flush(); }
 	}
 
 	public static void debug(String msg) {
