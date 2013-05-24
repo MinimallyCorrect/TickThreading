@@ -12,8 +12,6 @@ import java.util.LinkedList;
  */
 @SuppressWarnings ("UnusedDeclaration")
 public class ThreadLocals {
-	public static final ThreadLocal entitiesWithinAABBExcludingEntity = new ArrayListThreadLocal();
-	public static final ThreadLocal collidingBoundingBoxes = new ArrayListThreadLocal();
 	public static final ThreadLocal redPowerBlockUpdateSet = new HashSetThreadLocal();
 	public static final ThreadLocal redPowerPowerSearch = new LinkedListThreadLocal();
 	public static final ThreadLocal redPowerPowerSearchTest = new HashSetThreadLocal();

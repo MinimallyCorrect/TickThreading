@@ -641,6 +641,11 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		return noteBlockEvents;
 	}
 
+	@Override
+	public Chunk getChunkIfExists(int x, int z) {
+		return theChunkProviderServer.getChunkIfExists(x, z);
+	}
+
 	public boolean safeToGenerate() {
 		return theChunkProviderServer.safeToGenerate();
 	}

@@ -9,7 +9,6 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableSetMultimap;
 
-import javassist.is.faulty.ThreadLocals;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.collections.ForcedChunksRedirectMap;
 import me.nallar.tickthreading.minecraft.TickThreading;
@@ -48,6 +47,7 @@ import org.cliffc.high_scale_lib.NonBlockingHashMapLong;
 
 @SuppressWarnings ("unchecked")
 public abstract class PatchWorld extends World {
+	private static final double COLLISION_RANGE = 2D;
 	private int forcedUpdateCount;
 	@Declare
 	public ThreadLocal<Boolean> inPlaceEvent_;
@@ -459,8 +459,7 @@ public abstract class PatchWorld extends World {
 	@Override
 	@Declare
 	public boolean hasCollidingBoundingBoxes(Entity par1Entity, AxisAlignedBB par2AxisAlignedBB) {
-		List collidingBoundingBoxes = (List) ThreadLocals.collidingBoundingBoxes.get();
-		collidingBoundingBoxes.clear();
+		ArrayList collidingBoundingBoxes = new ArrayList();
 		int minX = MathHelper.floor_double(par2AxisAlignedBB.minX);
 		int maxX = MathHelper.floor_double(par2AxisAlignedBB.maxX + 1.0D);
 		int minY = MathHelper.floor_double(par2AxisAlignedBB.minY);
@@ -525,8 +524,7 @@ public abstract class PatchWorld extends World {
 	@Override
 	@Declare
 	public List getCollidingBoundingBoxes(Entity par1Entity, AxisAlignedBB par2AxisAlignedBB, int limit) {
-		List collidingBoundingBoxes = (List) ThreadLocals.collidingBoundingBoxes.get();
-		collidingBoundingBoxes.clear();
+		ArrayList collidingBoundingBoxes = new ArrayList();
 		int minX = MathHelper.floor_double(par2AxisAlignedBB.minX);
 		int maxX = MathHelper.floor_double(par2AxisAlignedBB.maxX) + 1;
 		int minY = MathHelper.floor_double(par2AxisAlignedBB.minY);
@@ -562,13 +560,13 @@ public abstract class PatchWorld extends World {
 								Block block = Block.blocksList[blkid];
 								if (block != null) {
 									block.addCollidingBlockToList(this, x, y, z, par2AxisAlignedBB, collidingBoundingBoxes, par1Entity);
-									if (collidingBoundingBoxes.size() > limit) {
-										return collidingBoundingBoxes;
-									}
 								}
 							}
 						}
 					}
+				}
+				if (collidingBoundingBoxes.size() >= limit) {
+					return collidingBoundingBoxes;
 				}
 			}
 		}
@@ -616,18 +614,17 @@ public abstract class PatchWorld extends World {
 	@Override
 	@Declare
 	public List getEntitiesWithinAABBExcludingEntity(Entity par1Entity, AxisAlignedBB par2AxisAlignedBB, int limit) {
-		List entitiesWithinAABBExcludingEntity = (List) ThreadLocals.entitiesWithinAABBExcludingEntity.get();
-		entitiesWithinAABBExcludingEntity.clear();
-		int minX = MathHelper.floor_double((par2AxisAlignedBB.minX - MAX_ENTITY_RADIUS) / 16.0D);
-		int maxX = MathHelper.floor_double((par2AxisAlignedBB.maxX + MAX_ENTITY_RADIUS) / 16.0D);
-		int minZ = MathHelper.floor_double((par2AxisAlignedBB.minZ - MAX_ENTITY_RADIUS) / 16.0D);
-		int maxZ = MathHelper.floor_double((par2AxisAlignedBB.maxZ + MAX_ENTITY_RADIUS) / 16.0D);
+		ArrayList entitiesWithinAABBExcludingEntity = new ArrayList();
+		int minX = MathHelper.floor_double((par2AxisAlignedBB.minX - COLLISION_RANGE) / 16.0D);
+		int maxX = MathHelper.floor_double((par2AxisAlignedBB.maxX + COLLISION_RANGE) / 16.0D);
+		int minZ = MathHelper.floor_double((par2AxisAlignedBB.minZ - COLLISION_RANGE) / 16.0D);
+		int maxZ = MathHelper.floor_double((par2AxisAlignedBB.maxZ + COLLISION_RANGE) / 16.0D);
 
 		for (int x = minX; x <= maxX; ++x) {
 			for (int z = minZ; z <= maxZ; ++z) {
 				Chunk chunk = getChunkIfExists(x, z);
 				if (chunk != null) {
-					chunk.getEntitiesWithinAABBForEntity(par1Entity, par2AxisAlignedBB, entitiesWithinAABBExcludingEntity, limit);
+					limit = chunk.getEntitiesWithinAABBForEntity(par1Entity, par2AxisAlignedBB, entitiesWithinAABBExcludingEntity, limit);
 				}
 			}
 		}
@@ -637,23 +634,7 @@ public abstract class PatchWorld extends World {
 
 	@Override
 	public List getEntitiesWithinAABBExcludingEntity(Entity par1Entity, AxisAlignedBB par2AxisAlignedBB) {
-		List entitiesWithinAABBExcludingEntity = (List) ThreadLocals.entitiesWithinAABBExcludingEntity.get();
-		entitiesWithinAABBExcludingEntity.clear();
-		int var3 = MathHelper.floor_double((par2AxisAlignedBB.minX - MAX_ENTITY_RADIUS) / 16.0D);
-		int var4 = MathHelper.floor_double((par2AxisAlignedBB.maxX + MAX_ENTITY_RADIUS) / 16.0D);
-		int var5 = MathHelper.floor_double((par2AxisAlignedBB.minZ - MAX_ENTITY_RADIUS) / 16.0D);
-		int var6 = MathHelper.floor_double((par2AxisAlignedBB.maxZ + MAX_ENTITY_RADIUS) / 16.0D);
-
-		for (int var7 = var3; var7 <= var4; ++var7) {
-			for (int var8 = var5; var8 <= var6; ++var8) {
-				Chunk chunk = getChunkIfExists(var7, var8);
-				if (chunk != null) {
-					chunk.getEntitiesWithinAABBForEntity(par1Entity, par2AxisAlignedBB, entitiesWithinAABBExcludingEntity);
-				}
-			}
-		}
-
-		return entitiesWithinAABBExcludingEntity;
+		return getEntitiesWithinAABBExcludingEntity(par1Entity, par2AxisAlignedBB, 1000);
 	}
 
 	@Override
@@ -957,16 +938,35 @@ public abstract class PatchWorld extends World {
 
 	@Override
 	public List selectEntitiesWithinAABB(Class par1Class, AxisAlignedBB par2AxisAlignedBB, IEntitySelector par3IEntitySelector) {
-		return selectEntitiesWithinAABB(par1Class, par2AxisAlignedBB, par3IEntitySelector, MAX_ENTITY_RADIUS);
+		int var4 = MathHelper.floor_double((par2AxisAlignedBB.minX - COLLISION_RANGE) / 16.0D);
+		int var5 = MathHelper.floor_double((par2AxisAlignedBB.maxX + COLLISION_RANGE) / 16.0D);
+		int var6 = MathHelper.floor_double((par2AxisAlignedBB.minZ - COLLISION_RANGE) / 16.0D);
+		int var7 = MathHelper.floor_double((par2AxisAlignedBB.maxZ + COLLISION_RANGE) / 16.0D);
+		ArrayList entities = new ArrayList();
+
+		if (var5 < var4 || var7 < var6) {
+			return entities;
+		}
+
+		for (int cX = var4; cX <= var5; ++cX) {
+			for (int cZ = var6; cZ <= var7; ++cZ) {
+				Chunk chunk = getChunkIfExists(cX, cZ);
+				if (chunk != null) {
+					chunk.getEntitiesOfTypeWithinAAAB(par1Class, par2AxisAlignedBB, entities, par3IEntitySelector);
+				}
+			}
+		}
+
+		return entities;
 	}
 
 	@Override
 	@Declare
-	public List selectEntitiesWithinAABB(Class par1Class, AxisAlignedBB par2AxisAlignedBB, IEntitySelector par3IEntitySelector, double MAX_ENTITY_RADIUS) {
-		int var4 = MathHelper.floor_double((par2AxisAlignedBB.minX - MAX_ENTITY_RADIUS) / 16.0D);
-		int var5 = MathHelper.floor_double((par2AxisAlignedBB.maxX + MAX_ENTITY_RADIUS) / 16.0D);
-		int var6 = MathHelper.floor_double((par2AxisAlignedBB.minZ - MAX_ENTITY_RADIUS) / 16.0D);
-		int var7 = MathHelper.floor_double((par2AxisAlignedBB.maxZ + MAX_ENTITY_RADIUS) / 16.0D);
+	public List selectEntitiesWithinAABB(Class par1Class, AxisAlignedBB par2AxisAlignedBB, IEntitySelector par3IEntitySelector, double COLLISION_RANGE) {
+		int var4 = MathHelper.floor_double((par2AxisAlignedBB.minX - COLLISION_RANGE) / 16.0D);
+		int var5 = MathHelper.floor_double((par2AxisAlignedBB.maxX + COLLISION_RANGE) / 16.0D);
+		int var6 = MathHelper.floor_double((par2AxisAlignedBB.minZ - COLLISION_RANGE) / 16.0D);
+		int var7 = MathHelper.floor_double((par2AxisAlignedBB.maxZ + COLLISION_RANGE) / 16.0D);
 		ArrayList entities = new ArrayList();
 
 		if (var5 < var4 || var7 < var6) {

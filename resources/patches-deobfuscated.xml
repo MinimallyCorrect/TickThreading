@@ -185,8 +185,6 @@
 			<final field="entityLists"/>
 			<final field="worldObj"/>
 			<volatile field="isTerrainPopulated"/>
-			<lock field="entityListWriteLock">onChunkLoad,onChunkUnload,removeEntityAtIndex,addEntity</lock>
-			<lock field="entityListReadLock">getEntitiesWithinAABBForEntity,getEntitiesOfTypeWithinAAAB</lock>
 			<replaceInitializer field="chunkTileEntityMap" class="java.util.concurrent.ConcurrentHashMap"/>
 			<!--
 			Used to debug when mods are setting chunk.isModified when they shouldn't - for example, GregTech sets every chunk with a gregtech machine in as modified

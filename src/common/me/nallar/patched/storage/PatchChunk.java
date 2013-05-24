@@ -3,15 +3,15 @@ package me.nallar.patched.storage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
 
 import cpw.mods.fml.common.FMLLog;
 import me.nallar.tickthreading.Log;
+import me.nallar.tickthreading.collections.SynchronizedList;
 import me.nallar.tickthreading.patcher.Declare;
-import me.nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
+import net.minecraft.command.IEntitySelector;
 import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
@@ -35,8 +35,6 @@ public abstract class PatchChunk extends Chunk {
 	public boolean partiallyUnloaded_;
 	@Declare
 	public boolean alreadySavedAfterUnload_;
-	public Lock entityListWriteLock;
-	public Lock entityListReadLock;
 
 	public PatchChunk(World par1World, int par2, int par3) {
 		super(par1World, par2, par3);
@@ -45,10 +43,10 @@ public abstract class PatchChunk extends Chunk {
 	private List<TileEntity> toInvalidate;
 
 	public void construct() {
+		for (int i = 0; i < entityLists.length; i++) {
+			entityLists[i] = new SynchronizedList();
+		}
 		toInvalidate = new ArrayList<TileEntity>();
-		TwoWayReentrantReadWriteLock twoWayReentrantReadWriteLock = new TwoWayReentrantReadWriteLock();
-		entityListWriteLock = twoWayReentrantReadWriteLock.writeLock();
-		entityListReadLock = twoWayReentrantReadWriteLock.readLock();
 	}
 
 	@Override
@@ -67,52 +65,84 @@ public abstract class PatchChunk extends Chunk {
 		return "chunk at " + xPosition + ',' + zPosition + " which is " + (partiallyUnloaded ? (alreadySavedAfterUnload ? "unloaded" : "unloading") : "loaded") + " and " + (isTerrainPopulated ? "" : "un") + "populated";
 	}
 
-	@SuppressWarnings ("FieldRepeatedlyAccessedInMethod") // Patcher makes entityLists final
+	@Override
+	public void getEntitiesOfTypeWithinAAAB(Class aClass, AxisAlignedBB aabb, List list, IEntitySelector selector) {
+		int var5 = MathHelper.floor_double((aabb.minY - 2D) / 16.0D);
+		int var6 = MathHelper.floor_double((aabb.maxY + 2D) / 16.0D);
+
+		if (var5 < 0) {
+			var5 = 0;
+		} else if (var5 >= this.entityLists.length) {
+			var5 = this.entityLists.length - 1;
+		}
+
+		if (var6 >= this.entityLists.length) {
+			var6 = this.entityLists.length - 1;
+		} else if (var6 < 0) {
+			var6 = 0;
+		}
+
+		for (int var7 = var5; var7 <= var6; ++var7) {
+			SynchronizedList<Entity> entityList = (SynchronizedList<Entity>) this.entityLists[var7];
+			Object[] entities = entityList.elementData();
+			int length = entityList.size() - 1;
+			for (; length >= 0; length--) {
+				Entity entity = (Entity) entities[length];
+				if (entity.boundingBox.intersectsWith(aabb) && aClass.isAssignableFrom(entity.getClass()) && (selector == null || selector.isEntityApplicable(entity))) {
+					list.add(entity);
+				}
+			}
+		}
+	}
+
+	@Override
+	public void getEntitiesWithinAABBForEntity(Entity excludedEntity, AxisAlignedBB collisionArea, List collidingAABBs) {
+		getEntitiesWithinAABBForEntity(excludedEntity, collisionArea, collidingAABBs, 2000);
+	}
+
 	@Override
 	@Declare
-	public void getEntitiesWithinAABBForEntity(Entity excludedEntity, AxisAlignedBB collisionArea, List collidingAABBs, int limit) {
-		entityListReadLock.lock();
-		try {
-			int var4 = MathHelper.floor_double((collisionArea.minY - World.MAX_ENTITY_RADIUS) / 16.0D);
-			int var5 = MathHelper.floor_double((collisionArea.maxY + World.MAX_ENTITY_RADIUS) / 16.0D);
+	public int getEntitiesWithinAABBForEntity(Entity excludedEntity, AxisAlignedBB collisionArea, List collidingAABBs, int limit) {
+		int var4 = MathHelper.floor_double((collisionArea.minY - 2D) / 16.0D);
+		int var5 = MathHelper.floor_double((collisionArea.maxY + 2D) / 16.0D);
 
-			if (var4 < 0) {
-				var4 = 0;
-			}
+		if (var4 < 0) {
+			var4 = 0;
+		}
 
-			if (var5 >= entityLists.length) {
-				var5 = entityLists.length - 1;
-			}
+		if (var5 >= entityLists.length) {
+			var5 = entityLists.length - 1;
+		}
 
-			for (int var6 = var4; var6 <= var5; ++var6) {
-				List var7 = entityLists[var6];
+		for (int var6 = var4; var6 <= var5; ++var6) {
+			SynchronizedList<Entity> entityList = (SynchronizedList<Entity>) entityLists[var6];
 
-				for (Object aVar7 : var7) {
-					Entity var9 = (Entity) aVar7;
+			Object[] entities = entityList.elementData();
+			int length = entityList.size() - 1;
+			for (; length >= 0; length--) {
+				Entity entity = (Entity) entities[length];
 
-					if (var9 != excludedEntity && var9.boundingBox.intersectsWith(collisionArea)) {
-						collidingAABBs.add(var9);
-						if (--limit == 0) {
-							return;
-						}
-						Entity[] var10 = var9.getParts();
+				if (entity != excludedEntity && entity.boundingBox.intersectsWith(collisionArea)) {
+					collidingAABBs.add(entity);
+					if (--limit == 0) {
+						return limit;
+					}
+					Entity[] var10 = entity.getParts();
 
-						if (var10 != null) {
-							for (Entity aVar10 : var10) {
-								if (aVar10 != excludedEntity && aVar10.boundingBox.intersectsWith(collisionArea)) {
-									collidingAABBs.add(aVar10);
-									if (--limit == 0) {
-										return;
-									}
+					if (var10 != null) {
+						for (Entity part : var10) {
+							if (part != excludedEntity && part.boundingBox.intersectsWith(collisionArea)) {
+								collidingAABBs.add(part);
+								if (--limit == 0) {
+									return limit;
 								}
 							}
 						}
 					}
 				}
 			}
-		} finally {
-			entityListReadLock.unlock();
 		}
+		return limit;
 	}
 
 	@Override
@@ -173,7 +203,9 @@ public abstract class PatchChunk extends Chunk {
 		worldObj.addTileEntity(chunkTileEntityMap.values());
 
 		for (List entityList : entityLists) {
-			worldObj.addLoadedEntities(entityList);
+			synchronized (entityList) {
+				worldObj.addLoadedEntities(entityList);
+			}
 		}
 
 		synchronized (ChunkEvent.class) {
