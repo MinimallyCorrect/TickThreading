@@ -28,6 +28,9 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 
 	@Override
 	public void processPacket(NetHandler par1NetHandler) {
+		if (!(par1NetHandler instanceof NetServerHandler)) {
+			Log.warning(par1NetHandler + " sent a movement update before properly connecting. It will be ignored.");
+		}
 		NetServerHandler nsh = (NetServerHandler) par1NetHandler;
 		EntityPlayerMP entityPlayerMP = nsh.playerEntity;
 		boolean mainThreadProcess = false;
@@ -56,7 +59,7 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 				nsh.tpPosX = Double.NaN;
 				nsh.setHasMoved();
 				nsh.tpPosY = -256;
-				par1NetHandler.handleFlying(this);
+				nsh.handleFlying(this);
 			} else {
 				entityPlayerMP.fallDistance = 0;
 				if (teleported <= 7) {
