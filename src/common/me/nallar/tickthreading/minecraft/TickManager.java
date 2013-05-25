@@ -1,6 +1,7 @@
 package me.nallar.tickthreading.minecraft;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -180,13 +181,19 @@ public final class TickManager {
 	}
 
 	public void batchRemoveEntities(Collection<Entity> entities) {
-		ChunkProviderServer chunkProviderServer = (ChunkProviderServer) world.getChunkProvider();
-
+		entities = safeCopyClear(entities);
+		if (entities == null) {
+			return;
+		}
 		synchronized (entityLock) {
 			entityList.removeAll(entities);
 		}
 
+		ChunkProviderServer chunkProviderServer = world.theChunkProviderServer;
 		for (Entity entity : entities) {
+			if (entity == null) {
+				continue;
+			}
 			int x = entity.chunkCoordX;
 			int z = entity.chunkCoordZ;
 
@@ -199,8 +206,9 @@ public final class TickManager {
 
 			world.releaseEntitySkin(entity);
 
-			if (entity.tickRegion != null) {
-				entity.tickRegion.remove(entity);
+			EntityTickRegion tickRegion = entity.tickRegion;
+			if (tickRegion != null) {
+				tickRegion.remove(entity);
 				entity.tickRegion = null;
 				Class entityClass = entity.getClass();
 				synchronized (entityClassToCountMap) {
@@ -215,9 +223,14 @@ public final class TickManager {
 	}
 
 	public void batchRemoveTileEntities(Collection<TileEntity> tileEntities) {
+		tileEntities = safeCopyClear(tileEntities);
+		if (tileEntities == null) {
+			return;
+		}
 		for (TileEntity tileEntity : tileEntities) {
-			if (tileEntity.tickRegion != null) {
-				tileEntity.tickRegion.remove(tileEntity);
+			TileEntityTickRegion tickRegion = tileEntity.tickRegion;
+			if (tickRegion != null) {
+				tickRegion.remove(tileEntity);
 				tileEntity.tickRegion = null;
 				tileEntity.onChunkUnload();
 			}
@@ -225,6 +238,17 @@ public final class TickManager {
 		}
 		synchronized (tileEntityLock) {
 			tileEntityList.removeAll(tileEntities);
+		}
+	}
+
+	private static <T> Collection<T> safeCopyClear(Collection<T> c) {
+		synchronized (c) {
+			if (c.isEmpty()) {
+				return null;
+			}
+			Collection<T> copy = (Collection<T>) Arrays.asList(c.toArray());
+			c.clear();
+			return copy;
 		}
 	}
 

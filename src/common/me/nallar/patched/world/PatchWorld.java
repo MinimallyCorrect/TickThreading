@@ -2,14 +2,13 @@ package me.nallar.patched.world;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import com.google.common.collect.ImmutableSetMultimap;
 
 import me.nallar.collections.ForcedChunksRedirectMap;
+import me.nallar.collections.SynchronizedSet;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.minecraft.entitylist.EntityList;
@@ -54,9 +53,9 @@ public abstract class PatchWorld extends World {
 	@Declare
 	public org.cliffc.high_scale_lib.NonBlockingHashMapLong<Integer> redstoneBurnoutMap_;
 	@Declare
-	public Set<Entity> unloadedEntitySet_;
+	public me.nallar.collections.SynchronizedSet<Entity> unloadedEntitySet_;
 	@Declare
-	public Set<TileEntity> tileEntityRemovalSet_;
+	public me.nallar.collections.SynchronizedSet<TileEntity> tileEntityRemovalSet_;
 	@Declare
 	public com.google.common.collect.ImmutableSetMultimap<ChunkCoordIntPair, ForgeChunkManager.Ticket> forcedChunks_;
 	@Declare
@@ -81,8 +80,8 @@ public abstract class PatchWorld extends World {
 	public void construct() {
 		tickCount = rand.nextInt(240); // So when different worlds do every N tick actions,
 		// they won't all happen at the same time even if the worlds loaded at the same time
-		tileEntityRemovalSet = new HashSet<TileEntity>();
-		unloadedEntitySet = new HashSet<Entity>();
+		tileEntityRemovalSet = new SynchronizedSet<TileEntity>();
+		unloadedEntitySet = new SynchronizedSet<Entity>();
 		redstoneBurnoutMap = new NonBlockingHashMapLong<Integer>();
 		if (dimensionId == 0) {
 			dimensionId = provider.dimensionId;
@@ -662,6 +661,9 @@ public abstract class PatchWorld extends World {
 	@Override
 	public void unloadEntities(List entitiesToUnload) {
 		for (Entity entity : (Iterable<Entity>) entitiesToUnload) {
+			if (entity == null) {
+				Log.warning("Tried to unload null entity", new Throwable());
+			}
 			if (!(entity instanceof EntityPlayerMP)) {
 				unloadedEntitySet.add(entity);
 			}
@@ -670,15 +672,17 @@ public abstract class PatchWorld extends World {
 
 	@Override
 	public void updateEntities() {
-		this.theProfiler.startSection("entities");
-		this.theProfiler.startSection("global");
+		final Profiler theProfiler = this.theProfiler;
+		theProfiler.startSection("updateEntities");
 		int var1;
 		Entity var2;
 		CrashReport var4;
 		CrashReportCategory var5;
 
-		for (var1 = 0; var1 < this.weatherEffects.size(); ++var1) {
-			var2 = (Entity) this.weatherEffects.get(var1);
+		theProfiler.startSection("global");
+		final List weatherEffects = this.weatherEffects;
+		for (var1 = 0; var1 < weatherEffects.size(); ++var1) {
+			var2 = (Entity) weatherEffects.get(var1);
 
 			try {
 				++var2.ticksExisted;
@@ -692,17 +696,20 @@ public abstract class PatchWorld extends World {
 			}
 
 			if (var2.isDead) {
-				this.weatherEffects.remove(var1--);
+				weatherEffects.remove(var1--);
 			}
 		}
 
-		this.theProfiler.endStartSection("remove");
+		theProfiler.endStartSection("remove");
 		int var3;
 		int var13;
-		if (this.loadedEntityList instanceof EntityList) {
-			((EntityList) this.loadedEntityList).manager.batchRemoveEntities(unloadedEntitySet);
+		final List loadedEntityList = this.loadedEntityList;
+		boolean tickTT = loadedEntityList instanceof EntityList;
+		if (tickTT) {
+			((EntityList) loadedEntityList).manager.batchRemoveEntities(unloadedEntitySet);
+			((EntityList) loadedEntityList).manager.doTick();
 		} else {
-			this.loadedEntityList.removeAll(this.unloadedEntitySet);
+			loadedEntityList.removeAll(unloadedEntitySet);
 
 			for (Entity entity : unloadedEntitySet) {
 				var3 = entity.chunkCoordX;
@@ -717,18 +724,10 @@ public abstract class PatchWorld extends World {
 
 				releaseEntitySkin(entity);
 			}
-		}
-		this.unloadedEntitySet.clear();
-		this.theProfiler.endStartSection("regular");
-
-		boolean shouldTickThreadingTick = true;
-
-		if (this.loadedEntityList instanceof EntityList) {
-			((EntityList) this.loadedEntityList).manager.doTick();
-			shouldTickThreadingTick = false;
-		} else {
-			for (var1 = 0; var1 < this.loadedEntityList.size(); ++var1) {
-				var2 = (Entity) this.loadedEntityList.get(var1);
+			unloadedEntitySet.clear();
+			theProfiler.endStartSection("entities");
+			for (var1 = 0; var1 < loadedEntityList.size(); ++var1) {
+				var2 = (Entity) loadedEntityList.get(var1);
 
 				if (var2.ridingEntity != null) {
 					if (!var2.ridingEntity.isDead && var2.ridingEntity.riddenByEntity == var2) {
@@ -739,11 +738,11 @@ public abstract class PatchWorld extends World {
 					var2.ridingEntity = null;
 				}
 
-				this.theProfiler.startSection("tick");
+				theProfiler.startSection("tick");
 
 				if (!var2.isDead) {
 					try {
-						this.updateEntity(var2);
+						updateEntity(var2);
 					} catch (Throwable var7) {
 						var4 = CrashReport.makeCrashReport(var7, "Ticking entity");
 						var5 = var4.makeCategory("Entity being ticked");
@@ -753,8 +752,8 @@ public abstract class PatchWorld extends World {
 					}
 				}
 
-				this.theProfiler.endSection();
-				this.theProfiler.startSection("remove");
+				theProfiler.endSection();
+				theProfiler.startSection("remove");
 
 				if (var2.isDead) {
 					var3 = var2.chunkCoordX;
@@ -767,29 +766,21 @@ public abstract class PatchWorld extends World {
 						}
 					}
 
-					this.loadedEntityList.remove(var1--);
-					this.releaseEntitySkin(var2);
+					loadedEntityList.remove(var1--);
+					releaseEntitySkin(var2);
 				}
 
-				this.theProfiler.endSection();
+				theProfiler.endSection();
 			}
-		}
+			theProfiler.endStartSection("tileEntities");
+			scanningTileEntities = true;
 
-		this.theProfiler.endStartSection("tileEntities");
-
-		if (this.loadedEntityList instanceof EntityList) {
-			if (shouldTickThreadingTick) {
-				((EntityList) this.loadedEntityList).manager.doTick();
-			}
-		} else {
-			this.scanningTileEntities = true;
-
-			Iterator var14 = this.loadedTileEntityList.iterator();
+			Iterator var14 = loadedTileEntityList.iterator();
 
 			while (var14.hasNext()) {
 				TileEntity var9 = (TileEntity) var14.next();
 
-				if (!var9.isInvalid() && var9.func_70309_m() && this.blockExists(var9.xCoord, var9.yCoord, var9.zCoord)) {
+				if (!var9.isInvalid() && var9.func_70309_m() && blockExists(var9.xCoord, var9.yCoord, var9.zCoord)) {
 					try {
 						var9.updateEntity();
 					} catch (Throwable var8) {
@@ -804,7 +795,7 @@ public abstract class PatchWorld extends World {
 				if (var9.isInvalid()) {
 					var14.remove();
 
-					Chunk var11 = this.getChunkIfExists(var9.xCoord >> 4, var9.zCoord >> 4);
+					Chunk var11 = getChunkIfExists(var9.xCoord >> 4, var9.zCoord >> 4);
 
 					if (var11 != null) {
 						var11.cleanChunkBlockTileEntity(var9.xCoord & 15, var9.yCoord, var9.zCoord & 15);
@@ -813,65 +804,64 @@ public abstract class PatchWorld extends World {
 			}
 		}
 
-		this.theProfiler.endStartSection("removingTileEntities");
+		theProfiler.endStartSection("removingTileEntities");
 
-		if (!this.tileEntityRemovalSet.isEmpty()) {
-			if (loadedTileEntityList instanceof LoadedTileEntityList) {
-				((LoadedTileEntityList) loadedTileEntityList).manager.batchRemoveTileEntities(tileEntityRemovalSet);
-			} else {
-				if (!warnedWrongList && loadedTileEntityList.getClass() != ArrayList.class) {
-					Log.severe("TickThreading's replacement loaded tile entity list has been replaced by one from another mod!\n" +
-							"Class: " + loadedTileEntityList.getClass() + ", toString(): " + loadedTileEntityList);
-					warnedWrongList = true;
-				}
-				for (TileEntity tile : tileEntityRemovalSet) {
-					tile.onChunkUnload();
-				}
-				this.loadedTileEntityList.removeAll(tileEntityRemovalSet);
+		final List loadedTileEntityList = this.loadedTileEntityList;
+		if (loadedTileEntityList instanceof LoadedTileEntityList) {
+			((LoadedTileEntityList) loadedTileEntityList).manager.batchRemoveTileEntities(tileEntityRemovalSet);
+		} else {
+			if (!warnedWrongList && loadedTileEntityList.getClass() != ArrayList.class) {
+				Log.severe("TickThreading's replacement loaded tile entity list has been replaced by one from another mod!\n" +
+						"Class: " + loadedTileEntityList.getClass() + ", toString(): " + loadedTileEntityList);
+				warnedWrongList = true;
 			}
+			for (TileEntity tile : tileEntityRemovalSet) {
+				tile.onChunkUnload();
+			}
+			loadedTileEntityList.removeAll(tileEntityRemovalSet);
 			tileEntityRemovalSet.clear();
 		}
 
-		this.scanningTileEntities = false;
+		scanningTileEntities = false;
 
-		this.theProfiler.endStartSection("pendingTileEntities");
+		theProfiler.endStartSection("pendingTileEntities");
 
-		if (!this.addedTileEntityList.isEmpty()) {
-			for (TileEntity te : (Iterable<TileEntity>) this.addedTileEntityList) {
+		if (!addedTileEntityList.isEmpty()) {
+			for (TileEntity te : (Iterable<TileEntity>) addedTileEntityList) {
 				if (te.isInvalid()) {
-					Chunk var15 = this.getChunkIfExists(te.xCoord >> 4, te.zCoord >> 4);
+					Chunk var15 = getChunkIfExists(te.xCoord >> 4, te.zCoord >> 4);
 
 					if (var15 != null) {
 						var15.cleanChunkBlockTileEntity(te.xCoord & 15, te.yCoord, te.zCoord & 15);
 					}
 				} else {
-					if (!this.loadedTileEntityList.contains(te)) {
-						this.loadedTileEntityList.add(te);
+					if (!loadedTileEntityList.contains(te)) {
+						loadedTileEntityList.add(te);
 					}
 				}
 			}
 
-			this.addedTileEntityList.clear();
+			addedTileEntityList.clear();
 		}
 
-		this.theProfiler.endSection();
-		this.theProfiler.endSection();
+		theProfiler.endSection();
+		theProfiler.endSection();
 	}
 
 	@Override
 	public boolean isBlockProvidingPowerTo(int par1, int par2, int par3, int par4) {
-		int id = this.getBlockIdWithoutLoad(par1, par2, par3);
+		int id = getBlockIdWithoutLoad(par1, par2, par3);
 		return id > 0 && Block.blocksList[id].isProvidingStrongPower(this, par1, par2, par3, par4);
 	}
 
 	@Override
 	public boolean isBlockIndirectlyProvidingPowerTo(int x, int y, int z, int direction) {
-		int id = this.getBlockIdWithoutLoad(x, y, z);
+		int id = getBlockIdWithoutLoad(x, y, z);
 		if (id < 1) {
 			return false;
 		}
 		Block block = Block.blocksList[id];
-		return block != null && ((block.isBlockNormalCube(this, x, y, z) && this.isBlockGettingPowered(x, y, z)) || block.isProvidingWeakPower(this, x, y, z, direction));
+		return block != null && ((block.isBlockNormalCube(this, x, y, z) && isBlockGettingPowered(x, y, z)) || block.isProvidingWeakPower(this, x, y, z, direction));
 	}
 
 	@Override
@@ -884,7 +874,7 @@ public abstract class PatchWorld extends World {
 	@Override
 	@Declare
 	public Chunk getChunkFromBlockCoordsIfExists(int x, int z) {
-		return this.getChunkIfExists(x >> 4, z >> 4);
+		return getChunkIfExists(x >> 4, z >> 4);
 	}
 
 	@Override
@@ -913,16 +903,16 @@ public abstract class PatchWorld extends World {
 	@Declare
 	public boolean setBlockAndMetadataWithUpdateWithoutValidate(int x, int y, int z, int id, int meta, boolean update) {
 		if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000 && y >= 0 && y < 256) {
-			Chunk chunk = this.getChunkFromChunkCoords(x >> 4, z >> 4);
+			Chunk chunk = getChunkFromChunkCoords(x >> 4, z >> 4);
 			if (!chunk.setBlockIDWithMetadataWithoutValidate(x & 15, y, z & 15, id, meta)) {
 				return false;
 			}
-			this.theProfiler.startSection("checkLight");
-			this.updateAllLightTypes(x, y, z);
-			this.theProfiler.endSection();
+			theProfiler.startSection("checkLight");
+			updateAllLightTypes(x, y, z);
+			theProfiler.endSection();
 
 			if (update) {
-				this.markBlockForUpdate(x, y, z);
+				markBlockForUpdate(x, y, z);
 			}
 
 			return true;
@@ -1022,7 +1012,7 @@ public abstract class PatchWorld extends World {
 					double y = target.minY + (target.maxY - target.minY) * (double) var12;
 					double z = target.minZ + (target.maxZ - target.minZ) * (double) var13;
 
-					if (this.rayTraceBlocks(center.setComponents(x, y, z), start) == null) {
+					if (rayTraceBlocks(center.setComponents(x, y, z), start) == null) {
 						++hit;
 					}
 
