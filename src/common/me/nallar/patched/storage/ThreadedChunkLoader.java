@@ -25,7 +25,6 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.LongHashMap;
 import net.minecraft.world.ChunkCoordIntPair;
-import net.minecraft.world.MinecraftException;
 import net.minecraft.world.NextTickListEntry;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
@@ -201,13 +200,6 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 
 	@Override
 	public void saveChunk(World world, Chunk chunk) {
-		try {
-			world.checkSessionLock();
-		} catch (MinecraftException ex) {
-			// MCPC+ disable this for now.
-			//ex.printStackTrace();
-		}
-
 		try {
 			NBTTagCompound nbttagcompound = new NBTTagCompound();
 			NBTTagCompound nbttagcompound1 = new NBTTagCompound();
