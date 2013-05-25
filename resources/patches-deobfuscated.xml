@@ -1013,7 +1013,7 @@
 	<twilightForest>
 		<class id="twilightforest.entity.HydraHeadContainer">
 			<insertBefore code="{
-				if ($1.^field:Entity/boundingBox^ == null) {
+				if ($1 != null &amp;&amp; $1.^field:Entity/boundingBox^ == null) {
 					return;
 				}
 			}">faceEntity,setTargetEntity
