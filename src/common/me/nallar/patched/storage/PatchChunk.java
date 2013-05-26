@@ -61,7 +61,7 @@ public abstract class PatchChunk extends Chunk {
 
 	@Override
 	public String toString() {
-		return "chunk at " + xPosition + ',' + zPosition + " which is " + (partiallyUnloaded ? (alreadySavedAfterUnload ? "unloaded" : "unloading") : "loaded") + " and " + (isTerrainPopulated ? "" : "un") + "populated";
+		return "chunk at " + xPosition + ',' + zPosition + " which is " + (partiallyUnloaded ? (alreadySavedAfterUnload ? "unloaded and saved" : "unloading") : "loaded") + " and " + (isTerrainPopulated ? "" : "un") + "populated";
 	}
 
 	@Override

@@ -246,16 +246,15 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		if (chunk == null) {
 			return false;
 		}
-		try {
-			if (!chunk.partiallyUnloaded) {
+		if (!chunk.partiallyUnloaded) {
+			return false;
+		}
+		synchronized (chunk) {
+			if (chunk.alreadySavedAfterUnload) {
 				return false;
 			}
-			synchronized (chunk) {
-				if (chunk.alreadySavedAfterUnload) {
-					Log.severe("Chunk save may have failed for " + key + ": " + (int) key + ',' + (int) (key >> 32));
-					return false;
-				}
-				chunk.alreadySavedAfterUnload = true;
+			chunk.alreadySavedAfterUnload = true;
+			try {
 				boolean notInUnload = !inUnload.getAndSet(true);
 				boolean notWorldGen = !worldGenInProgress.getAndSet(true);
 				safeSaveChunk(chunk);
@@ -269,12 +268,13 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				if (chunks.containsItem(key)) {
 					Log.severe("Failed to unload chunk " + key + ", it was reloaded during unloading");
 				}
-			}
-		} finally {
-			if (unloadingChunks.remove(key) != chunk) {
-				Log.severe("While unloading " + chunk + " it was replaced/removed from the unloadingChunks map.");
+			} finally {
+				if (unloadingChunks.remove(key) != chunk) {
+					Log.severe("While unloading " + chunk + " it was replaced/removed from the unloadingChunks map.");
+				}
 			}
 		}
+
 		return true;
 	}
 
