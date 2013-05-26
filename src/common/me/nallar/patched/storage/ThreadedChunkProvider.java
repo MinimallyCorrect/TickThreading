@@ -241,6 +241,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	private boolean finalizeUnload(long key) {
 		Chunk chunk;
 		synchronized (unloadingChunks) {
+			// Don't remove here, as the chunk should be in the unloadingChunks map so that getChunkIfExists will still return it if used by a mod during chunk saving.
 			chunk = unloadingChunks.getValueByKey(key);
 		}
 		if (chunk == null) {
