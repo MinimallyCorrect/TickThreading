@@ -239,31 +239,40 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	}
 
 	private boolean finalizeUnload(long key) {
-		Chunk chunk = (Chunk) unloadingChunks.remove(key);
+		Chunk chunk;
+		synchronized (unloadingChunks) {
+			chunk = unloadingChunks.getValueByKey(key);
+		}
 		if (chunk == null) {
 			return false;
 		}
-		if (!chunk.partiallyUnloaded) {
-			return false;
-		}
-		synchronized (chunk) {
-			if (chunk.alreadySavedAfterUnload) {
-				Log.severe("Chunk save may have failed for " + key + ": " + (int) key + ',' + (int) (key >> 32));
+		try {
+			if (!chunk.partiallyUnloaded) {
 				return false;
 			}
-			chunk.alreadySavedAfterUnload = true;
-			boolean notInUnload = !inUnload.getAndSet(true);
-			boolean notWorldGen = !worldGenInProgress.getAndSet(true);
-			safeSaveChunk(chunk);
-			safeSaveExtraChunkData(chunk);
-			if (notWorldGen) {
-				worldGenInProgress.set(false);
+			synchronized (chunk) {
+				if (chunk.alreadySavedAfterUnload) {
+					Log.severe("Chunk save may have failed for " + key + ": " + (int) key + ',' + (int) (key >> 32));
+					return false;
+				}
+				chunk.alreadySavedAfterUnload = true;
+				boolean notInUnload = !inUnload.getAndSet(true);
+				boolean notWorldGen = !worldGenInProgress.getAndSet(true);
+				safeSaveChunk(chunk);
+				safeSaveExtraChunkData(chunk);
+				if (notWorldGen) {
+					worldGenInProgress.set(false);
+				}
+				if (notInUnload) {
+					inUnload.set(false);
+				}
+				if (chunks.containsItem(key)) {
+					Log.severe("Failed to unload chunk " + key + ", it was reloaded during unloading");
+				}
 			}
-			if (notInUnload) {
-				inUnload.set(false);
-			}
-			if (chunks.containsItem(key)) {
-				Log.severe("Failed to unload chunk " + key + ", it was reloaded during unloading");
+		} finally {
+			if (unloadingChunks.remove(key) != chunk) {
+				Log.severe("While unloading " + chunk + " it was replaced/removed from the unloadingChunks map.");
 			}
 		}
 		return true;
