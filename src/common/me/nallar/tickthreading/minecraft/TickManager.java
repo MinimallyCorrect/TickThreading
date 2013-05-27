@@ -1,10 +1,12 @@
 package me.nallar.tickthreading.minecraft;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -15,6 +17,7 @@ import java.util.concurrent.locks.Lock;
 
 import me.nallar.collections.ConcurrentIterableArrayList;
 import me.nallar.collections.ConcurrentUnsafeIterableArrayList;
+import me.nallar.collections.ContainedRemoveSet;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.commands.TPSCommand;
 import me.nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
@@ -30,7 +33,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.ChunkProviderServer;
-import org.omg.CORBA.IntHolder;
 
 public final class TickManager {
 	private static final byte lockXPlus = 1 << 1;
@@ -42,7 +44,7 @@ public final class TickManager {
 	private double averageTickLength = 0;
 	private long lastTickLength = 0;
 	private long lastStartTime = 0;
-	private static final int shuffleInterval = 800;
+	private static final int shuffleInterval = 12000;
 	private int shuffleCount;
 	private final boolean waitForCompletion;
 	public final EntityTickProfiler entityTickProfiler = new EntityTickProfiler();
@@ -145,7 +147,7 @@ public final class TickManager {
 	}
 
 	public boolean add(TileEntity tileEntity, boolean newEntity) {
-		if (newEntity && tileEntity.isInvalid()) {
+		if (tileEntity.isInvalid()) {
 			Log.warning("Tried to add invalid TileEntity " + Log.toString(tileEntity) + " to TickManager", new Throwable());
 			return false;
 		}
@@ -552,6 +554,11 @@ public final class TickManager {
 								Log.severe("Something broke, tickRegions for " + world.getName() + " contained null!");
 							}
 						}
+						StringBuilder sb = new StringBuilder();
+						fixDiscrepancies(sb);
+						if (sb.length() > 0) {
+							Log.warning(sb.toString());
+						}
 					}
 				}
 			});
@@ -571,20 +578,20 @@ public final class TickManager {
 		UnsafeUtil.clean(this);
 	}
 
-	public void fixDiscrepancies(TableFormatter tableFormatter) {
-		final IntHolder intHolder = new IntHolder();
+	public void fixDiscrepancies(StringBuilder sb) {
+		int fixed = 0;
 
 		{
 			Set<Entity> contained = new HashSet<Entity>();
-			Set<Entity> toRemove = new HashSet<Entity>();
+			Set<Entity> toRemove = new ContainedRemoveSet<Entity>();
 			synchronized (entityList) {
 				for (Entity e : entityList) {
 					if (add(e, false)) {
-						intHolder.value++;
+						fixed++;
 					}
 					if (!contained.add(e)) {
 						toRemove.add(e);
-						intHolder.value++;
+						fixed++;
 					}
 				}
 				entityList.removeAll(toRemove);
@@ -593,23 +600,31 @@ public final class TickManager {
 
 		{
 			Set<TileEntity> contained = new HashSet<TileEntity>();
-			Set<TileEntity> toRemove = new HashSet<TileEntity>();
+			Set<TileEntity> toRemove = new ContainedRemoveSet<TileEntity>();
+			List<TileEntity> invalid = new ArrayList<TileEntity>();
 			synchronized (tileEntityList) {
 				for (TileEntity te : tileEntityList) {
+					if (te.isInvalid()) {
+						fixed++;
+						invalid.add(te);
+					}
 					if (add(te, false)) {
-						intHolder.value++;
+						fixed++;
 					}
 					if (!contained.add(te)) {
 						toRemove.add(te);
-						intHolder.value++;
+						fixed++;
 					}
 				}
 				tileEntityList.removeAll(toRemove);
 			}
+			for (TileEntity tileEntity : invalid) {
+				remove(tileEntity);
+			}
 		}
 
-		if (intHolder.value != 0) {
-			tableFormatter.sb.append("Fixed ").append(intHolder.value).append(" discrepancies in tile/entity lists.");
+		if (fixed != 0) {
+			sb.append("Found and fixed ").append(fixed).append(" discrepancies in tile/entity lists in ").append(Log.name(world));
 		}
 	}
 

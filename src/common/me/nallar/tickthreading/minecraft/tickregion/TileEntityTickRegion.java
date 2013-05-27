@@ -10,7 +10,6 @@ import me.nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.gen.ChunkProviderServer;
 
 public class TileEntityTickRegion extends TickRegion {
 	private final LinkedHashSetTempSetNoClear<TileEntity> tileEntitySet = new LinkedHashSetTempSetNoClear<TileEntity>();
@@ -21,22 +20,21 @@ public class TileEntityTickRegion extends TickRegion {
 
 	@Override
 	public void doTick() {
-		final ChunkProviderServer chunkProvider = (ChunkProviderServer) world.getChunkProvider();
-		final World world = this.world;
+		final TickManager manager = this.manager;
 		final boolean profilingEnabled = manager.profilingEnabled || this.profilingEnabled;
-		Lock thisLock = null;
-		Lock xPlusLock = null;
-		Lock xMinusLock = null;
-		Lock zPlusLock = null;
-		Lock zMinusLock = null;
 		EntityTickProfiler entityTickProfiler = null;
-		long startTime = 0;
 		if (profilingEnabled) {
 			entityTickProfiler = manager.entityTickProfiler;
 			if (this.profilingEnabled) {
 				entityTickProfiler.tick();
 			}
 		}
+		Lock thisLock = null;
+		Lock xPlusLock = null;
+		Lock xMinusLock = null;
+		Lock zPlusLock = null;
+		Lock zMinusLock = null;
+		long startTime = 0;
 		// This code is performance critical.
 		// Locking calls are manipulated by the patcher,
 		// INVOKEVIRTUAL java.util.concurrent.locks.Lock.lock/unlock() calls are replaced with
@@ -57,6 +55,10 @@ public class TileEntityTickRegion extends TickRegion {
 				final int zPos = tileEntity.zCoord;
 				if (manager.getHashCode(xPos, zPos) != hashCode) {
 					tileEntitiesIterator.remove();
+					if (tileEntity.isInvalid()) {
+						invalidate(tileEntity);
+						continue;
+					}
 					manager.add(tileEntity, false);
 					if (hashCode != 0) {
 						Log.fine("A tile entity is in the wrong TickRegion - was it moved by a player, or did something break?"
@@ -92,12 +94,8 @@ public class TileEntityTickRegion extends TickRegion {
 					}
 					if (tileEntity.isInvalid()) {
 						tileEntitiesIterator.remove();
-						manager.removed(tileEntity);
-						Chunk chunk = world.getChunkIfExists(xPos >> 4, zPos >> 4);
-						if (chunk != null) {
-							chunk.cleanChunkBlockTileEntity(xPos, tileEntity.yCoord, zPos);
-						}
-					} else if (tileEntity.worldObj != null && chunkProvider.chunkExists(xPos >> 4, zPos >> 4)) {
+						invalidate(tileEntity);
+					} else {
 						tileEntity.tickTT();
 					}
 				} catch (Throwable throwable) {
@@ -126,6 +124,16 @@ public class TileEntityTickRegion extends TickRegion {
 			}
 		} finally {
 			tileEntitySet.done();
+		}
+	}
+
+	private void invalidate(TileEntity tileEntity) {
+		int xPos = tileEntity.xCoord;
+		int zPos = tileEntity.zCoord;
+		manager.removed(tileEntity);
+		Chunk chunk = world.getChunkIfExists(xPos >> 4, zPos >> 4);
+		if (chunk != null) {
+			chunk.cleanChunkBlockTileEntity(xPos, tileEntity.yCoord, zPos);
 		}
 	}
 

@@ -82,7 +82,7 @@ public class TicksCommand extends Command {
 			TickManager tickManager = TickThreading.instance.getManager(world);
 			tickManager.writeEntityStats(tf);
 			tf.sb.append('\n');
-			tickManager.fixDiscrepancies(tf);
+			tickManager.fixDiscrepancies(tf.sb);
 			sendChat(commandSender, String.valueOf(tf));
 		} else if ("b".equals(type)) {
 			sendChat(commandSender, String.valueOf(((WorldServer) world).writePendingBlockUpdatesStats(new TableFormatter(commandSender))));
