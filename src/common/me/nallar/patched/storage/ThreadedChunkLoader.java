@@ -335,8 +335,11 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 						par1Chunk.hasEntities = true;
 						nbttaglist1.appendTag(nbttagcompound1);
 					}
-				} catch (Exception e) {
-					FMLLog.log(Level.SEVERE, e,
+				} catch (Throwable t) {
+					if (t instanceof RuntimeException && t.getMessage().contains("missing a mapping")) {
+						continue;
+					}
+					FMLLog.log(Level.SEVERE, t,
 							"An Entity type %s at %s,%f,%f,%f has thrown an exception trying to write state. It will not persist. Report this to the mod author",
 							entity.getClass().getName(),
 							Log.name(entity.worldObj),
@@ -355,8 +358,11 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 			try {
 				tileentity.writeToNBT(nbttagcompound1);
 				nbttaglist2.appendTag(nbttagcompound1);
-			} catch (Exception e) {
-				FMLLog.log(Level.SEVERE, e,
+			} catch (Throwable t) {
+				if (t instanceof RuntimeException && t.getMessage().contains("missing a mapping")) {
+					continue; // TODO: Reset block to air? Recreate TE on next load?
+				}
+				FMLLog.log(Level.SEVERE, t,
 						"A TileEntity type %s at %s,%d,%d,%d has throw an exception trying to write state. It will not persist. Report this to the mod author",
 						tileentity.getClass().getName(),
 						Log.name(tileentity.worldObj),
