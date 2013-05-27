@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
+import me.nallar.collections.ConcurrentUnsafeIterableArrayList;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickManager;
 import net.minecraft.world.World;
@@ -15,10 +16,11 @@ import net.minecraft.world.World;
 * Used to override World.loadedTile/EntityList.
 * */
 public abstract class EntityList<T> extends ArrayList<T> {
+	private static boolean warnedIterateTransform = false;
 	public final TickManager manager;
-	public final ArrayList innerList;
+	public final ConcurrentUnsafeIterableArrayList<T> innerList;
 
-	EntityList(World world, Field overriddenField, TickManager manager, ArrayList innerList) {
+	EntityList(World world, Field overriddenField, TickManager manager, ConcurrentUnsafeIterableArrayList<T> innerList) {
 		if (innerList.getClass() != ArrayList.class) {
 			Log.severe("Another mod has replaced an entity list with an instance of " + innerList.getClass().getName());
 		}
@@ -61,9 +63,13 @@ public abstract class EntityList<T> extends ArrayList<T> {
 	@Override
 	public Iterator<T> iterator() {
 		if (!Thread.holdsLock(this)) {
-			throw new IllegalStateException("Must synchronize to iterate over EntityList.");
+			if (!warnedIterateTransform) {
+				Log.warning("Unsafe entity list iteration", new Throwable());
+				warnedIterateTransform = true;
+			}
+			return innerList.unsafeIterator();
 		}
-		return (Iterator<T>) innerList.iterator();
+		return innerList.iterator();
 	}
 
 	@Override
@@ -71,7 +77,7 @@ public abstract class EntityList<T> extends ArrayList<T> {
 		if (!Thread.holdsLock(this)) {
 			throw new IllegalStateException("Must synchronize to iterate over EntityList.");
 		}
-		return (ListIterator<T>) innerList.listIterator();
+		return innerList.listIterator();
 	}
 
 	@Override
@@ -79,7 +85,7 @@ public abstract class EntityList<T> extends ArrayList<T> {
 		if (!Thread.holdsLock(this)) {
 			throw new IllegalStateException("Must synchronize to iterate over EntityList.");
 		}
-		return (ListIterator<T>) innerList.listIterator(index);
+		return innerList.listIterator(index);
 	}
 
 	@Override
@@ -125,7 +131,7 @@ public abstract class EntityList<T> extends ArrayList<T> {
 
 	@Override
 	public <T1> T1[] toArray(final T1[] a) {
-		return (T1[]) innerList.toArray(a);
+		return innerList.toArray(a);
 	}
 
 	@Override
@@ -170,7 +176,7 @@ public abstract class EntityList<T> extends ArrayList<T> {
 
 	@Override
 	public T get(int index) {
-		return (T) innerList.get(index);
+		return innerList.get(index);
 	}
 
 	@Override

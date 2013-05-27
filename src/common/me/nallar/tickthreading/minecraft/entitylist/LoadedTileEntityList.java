@@ -6,15 +6,15 @@ import me.nallar.tickthreading.minecraft.TickManager;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 
-public class LoadedTileEntityList<T> extends EntityList<T> {
+public class LoadedTileEntityList extends EntityList<TileEntity> {
 	public LoadedTileEntityList(World world, Field overriddenField, TickManager manager) {
 		super(world, overriddenField, manager, manager.tileEntityList);
 		manager.tileEntityLock = this;
 	}
 
 	@Override
-	public boolean add(T t) {
-		manager.add((TileEntity) t, true);
+	public boolean add(TileEntity t) {
+		manager.add(t, true);
 		return true;
 	}
 
@@ -25,9 +25,9 @@ public class LoadedTileEntityList<T> extends EntityList<T> {
 	}
 
 	@Override
-	public T remove(int index) {
-		TileEntity removed = (TileEntity) get(index);
+	public TileEntity remove(int index) {
+		TileEntity removed = get(index);
 		manager.remove(removed);
-		return (T) removed;
+		return removed;
 	}
 }

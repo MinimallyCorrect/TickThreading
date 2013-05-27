@@ -205,9 +205,9 @@ public class TickThreading {
 		TickManager manager = new TickManager((WorldServer) world, regionSize, getThreadCount(), waitForEntityTickCompletion);
 		try {
 			Field loadedTileEntityField = FieldUtil.getFields(World.class, List.class)[loadedTileEntityFieldIndex];
-			new LoadedTileEntityList<TileEntity>(world, loadedTileEntityField, manager);
+			new LoadedTileEntityList(world, loadedTileEntityField, manager);
 			Field loadedEntityField = FieldUtil.getFields(World.class, List.class)[loadedEntityFieldIndex];
-			new LoadedEntityList<TileEntity>(world, loadedEntityField, manager);
+			new LoadedEntityList(world, loadedEntityField, manager);
 			Log.info("Threading initialised for world " + Log.name(world));
 			if (managers.put(world, manager) != null) {
 				Log.severe("World load fired twice for world " + world.getName());

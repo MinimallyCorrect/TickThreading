@@ -1,6 +1,5 @@
 package me.nallar.tickthreading.minecraft;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -15,6 +14,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.locks.Lock;
 
 import me.nallar.collections.ConcurrentIterableArrayList;
+import me.nallar.collections.ConcurrentUnsafeIterableArrayList;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.commands.TPSCommand;
 import me.nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
@@ -47,8 +47,8 @@ public final class TickManager {
 	private final boolean waitForCompletion;
 	public final EntityTickProfiler entityTickProfiler = new EntityTickProfiler();
 	private final WorldServer world;
-	public final ArrayList<TileEntity> tileEntityList = new ArrayList<TileEntity>();
-	public final ArrayList<Entity> entityList = new ArrayList<Entity>();
+	public final ConcurrentUnsafeIterableArrayList<TileEntity> tileEntityList = new ConcurrentUnsafeIterableArrayList<TileEntity>();
+	public final ConcurrentUnsafeIterableArrayList<Entity> entityList = new ConcurrentUnsafeIterableArrayList<Entity>();
 	public Object tileEntityLock = new Object();
 	public Object entityLock = new Object();
 	private final Map<Integer, TileEntityTickRegion> tileEntityCallables = new HashMap<Integer, TileEntityTickRegion>();

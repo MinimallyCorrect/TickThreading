@@ -5,7 +5,6 @@ import java.util.logging.Handler;
 
 import cpw.mods.fml.common.FMLLog;
 import me.nallar.tickthreading.Log;
-import net.minecraft.client.Minecraft;
 import net.minecraft.server.MinecraftServer;
 
 public class InsecurityManager extends java.lang.SecurityManager {
