@@ -19,6 +19,9 @@
 			<addAll fromClass="me.nallar.patched.PatchSpawnerAnimals"/>
 			<profile>findChunksForSpawning</profile>
 		</class>
+		<class id=" net.minecraft.world.storage.MapInfo">
+			<synchronize>^all^</synchronize>
+		</class>
 		<class id="net.minecraft.pathfinding.Path">
 			<newInitializer field="pathPoints" class="net.minecraft.pathfinding.PathPoint" arraySize="128"/>
 		</class>
