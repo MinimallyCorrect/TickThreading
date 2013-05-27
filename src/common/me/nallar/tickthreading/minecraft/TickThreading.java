@@ -60,7 +60,6 @@ import net.minecraftforge.event.world.WorldEvent;
 public class TickThreading {
 	@Mod.Instance
 	public static TickThreading instance;
-	private static final Metrics metrics = new Metrics("TickThreading", VersionUtil.TTVersionNumber());
 	private static final int loadedEntityFieldIndex = 0;
 	private static final int loadedTileEntityFieldIndex = 2;
 	final Map<World, TickManager> managers = new LinkedHashMap<World, TickManager>();
@@ -94,6 +93,10 @@ public class TickThreading {
 	private int targetTPS = 20;
 	private final LeakDetector leakDetector = new LeakDetector(1200);
 	public static int recentSpawnedItems;
+
+	static {
+		new Metrics("TickThreading", VersionUtil.TTVersionNumber());
+	}
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load
