@@ -47,7 +47,7 @@ public abstract class PatchNetServerHandler extends NetServerHandler {
 		lastPosX = tpPosX = x;
 		lastPosY = tpPosY = y;
 		lastPosZ = tpPosZ = z;
-		playerEntity.fallDistance = 0;
+		playerEntity.fallDistance = -1;
 	}
 
 	@Override
@@ -62,6 +62,7 @@ public abstract class PatchNetServerHandler extends NetServerHandler {
 		lastPosX = x;
 		lastPosY = y;
 		lastPosZ = z;
+		playerEntity.fallDistance = -1;
 		playerEntity.setPositionAndRotation(x, y, z, yaw, pitch);
 		sendPacketToPlayer(new Packet13PlayerLookMove(x, y + 1.6200000047683716D, y, z, yaw, pitch, false));
 		((WorldServer) playerEntity.worldObj).getPlayerManager().updateMountedMovingPlayer(playerEntity);

@@ -52,22 +52,22 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 				teleported = nsh.teleported = -21;
 			}
 			double yPosition = this.yPosition;
-			if (yPosition < -5 && entityPlayerMP.worldObj.getDimension() == 0) {
-				nsh.setPlayerLocation(xPosition, entityPlayerMP.worldObj.getHeightValue((int) xPosition, (int) zPosition) + 1, zPosition, entityPlayerMP.rotationYaw, entityPlayerMP.rotationPitch);
-				return;
+			if (yPosition > -100 && yPosition < -5 && entityPlayerMP.worldObj.getDimension() == 0) {
+				int newY = entityPlayerMP.worldObj.getHeightValue((int) xPosition, (int) zPosition) + 1;
+				if (newY > 1) {
+					nsh.setPlayerLocation(xPosition, newY, zPosition, entityPlayerMP.rotationYaw, entityPlayerMP.rotationPitch);
+					return;
+				}
 			}
 			if ((yPosition == -999.0D && stance == -999.0D) || (finishedTeleporting && (teleported < -20 || (nsh.tpPosY < yPosition + 0.02)))) {
 				nsh.tpPosX = Double.NaN;
 				nsh.setHasMoved();
 				nsh.tpPosY = -256;
 				nsh.handleFlying(this);
-			} else {
-				entityPlayerMP.fallDistance = 0;
-				if (teleported <= 7) {
-					nsh.updatePositionAfterTP(yaw, pitch);
-					if (teleported == 1) {
-						MinecraftServer.addPlayerToCheckWorld(entityPlayerMP);
-					}
+			} else if (teleported <= 7) {
+				nsh.updatePositionAfterTP(yaw, pitch);
+				if (teleported == 1) {
+					MinecraftServer.addPlayerToCheckWorld(entityPlayerMP);
 				}
 			}
 			sendChunks(entityPlayerMP);
