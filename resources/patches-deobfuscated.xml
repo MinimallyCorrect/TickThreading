@@ -462,8 +462,10 @@
 		<class id="net.minecraftforge.common.ForgeChunkManager$Ticket">
 			<public all="true"/>
 		</class>
-		<class id="net.minecraftforge.common.ForgeChunkManager">
+		<class id="net.minecraftforge.common.ForgeChunkManager" env="mcpc">
 			<removeFieldAndInitializers field="forcedChunks"/>
+		</class>
+		<class id="net.minecraftforge.common.ForgeChunkManager">
 			<addAll fromClass="me.nallar.patched.forge.PatchForgeChunkManager"/>
 			<insertAfter
 							code="if ($1 != null &amp;&amp; $2 != null) { $1.world.^method:World/getChunkProvider^().^method:IChunkProvider/loadChunk^($2.^field:ChunkCoordIntPair/chunkXPos^, $2.^field:ChunkCoordIntPair/chunkZPos^); }">
@@ -518,6 +520,29 @@
 		</class>
 	</forgeModLoader>
 	<factorization>
+		<class id="factorization.common.TileEntityBarrel">
+			<replaceMethod code="{
+				^class:ItemStack^ i = this.item;
+				^class:ItemStack^ t = this.topStack;
+				^class:ItemStack^ b = this.bottomStack;
+				if (i == null) {
+					return 0;
+				}
+				if ((t == null) || (!itemMatch(t))) {
+					t = i.l();
+					t.a = 0;
+					this.topStack = t;
+				}
+				if ((b == null) || (!itemMatch(b))) {
+					b = this.item.l();
+					b.a = 0;
+					this.bottomStack = b;
+				}
+				return t.a + this.middleCount + b.a;
+			}">getItemCount
+			</replaceMethod>
+			<synchronize>updateStacks,changeItemCount,setItemCount</synchronize>
+		</class>
 		<class id="factorization.common.TileEntityWrathLamp">
 			<replaceInitializer field="airToUpdate" class="me.nallar.collections.SynchronizedPriorityQueue">^static^</replaceInitializer>
 			<threadLocal field="toVisit" type="java.util.HashSet" threadLocalField="javassist.is.faulty.ThreadLocals.factorizationFindLightAirParentToVisit"/>
