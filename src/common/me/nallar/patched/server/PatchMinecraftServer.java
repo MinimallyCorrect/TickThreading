@@ -155,6 +155,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		new ConcurrencyError("Just loading some exception classes.");
 		toSaveConfigurationSet = new HashSet<Configuration>();
 		FMLLog.info("Loaded " + RelaunchClassLoader.patchedClasses + " patched classes, cl: " + this.getClass().getClassLoader());
+		boolean isCrash = false;
 		try {
 			try {
 				InsecurityManager.init();
@@ -207,6 +208,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				this.finalTick(null);
 			}
 		} catch (Throwable throwable) {
+			isCrash = true;
 			try {
 				if (serverRunning && serverIsRunning) {
 					DeadLockDetector.sendChatSafely("The server has crashed due to an unexpected exception during the main tick loop: " + throwable.getClass().getSimpleName());
@@ -243,6 +245,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				this.finalTick(crashReport);
 			}
 		} finally {
+			Log.info("Stopping the server. serverRunning: " + serverRunning + ", serverIsRunning: " + serverIsRunning + ", is crash: " + isCrash);
 			try {
 				this.stopServer();
 				this.serverStopped = true;
