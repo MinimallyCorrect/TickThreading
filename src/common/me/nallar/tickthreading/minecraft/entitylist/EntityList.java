@@ -21,18 +21,23 @@ public abstract class EntityList<T> extends ArrayList<T> {
 	public final ConcurrentUnsafeIterableArrayList<T> innerList;
 
 	EntityList(World world, Field overriddenField, TickManager manager, ConcurrentUnsafeIterableArrayList<T> innerList) {
-		if (innerList.getClass() != ArrayList.class) {
-			Log.severe("Another mod has replaced an entity list with an instance of " + innerList.getClass().getName());
-		}
 		this.manager = manager;
 		this.innerList = innerList;
 		overriddenField.setAccessible(true);
+		try {
+			ArrayList worldList = (ArrayList) overriddenField.get(world);
+			if (worldList.getClass() != ArrayList.class) {
+				Log.severe("Another mod has replaced an entity list with " + Log.toString(worldList));
+			}
+		} catch (Throwable t) {
+			Log.severe("Failed to get " + overriddenField.getName() + " in world " + world.getName());
+		}
 		try {
 			//This should hopefully avoid leaving the world in a bad state if something goes wrong.
 			this.addAll((Collection<? extends T>) overriddenField.get(world));
 			overriddenField.set(world, this);
 		} catch (Exception e) {
-			throw new RuntimeException("Failed to override " + overriddenField.getName() + " in world " + world.getWorldInfo().getWorldName(), e);
+			throw new RuntimeException("Failed to override " + overriddenField.getName() + " in world " + world.getName(), e);
 		}
 	}
 

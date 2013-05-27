@@ -44,7 +44,6 @@ import net.minecraft.network.NetServerHandler;
 import net.minecraft.network.packet.Packet3Chat;
 import net.minecraft.network.packet.PacketCount;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.Configuration;
