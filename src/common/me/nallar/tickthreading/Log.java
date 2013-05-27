@@ -284,6 +284,9 @@ public class Log {
 	}
 
 	public static String toString(Object o) {
+		if (o instanceof World) {
+			return name((World) o);
+		}
 		String cS = classString(o);
 		String s = o.toString();
 		if (!s.startsWith(cS)) {

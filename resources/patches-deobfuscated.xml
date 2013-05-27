@@ -29,13 +29,15 @@
 			<addAll fromClass="me.nallar.patched.server.PatchMinecraftServer"/>
 			<insertBefore code="{
 				if (this.^field:MinecraftServer/serverStopped^) {
-					Log.severe(&quot;stop&quot;, new Throwable());
+					return;
 				}
-				this.^field:MinecraftServer/serverStopped^ = true;
 			}">stopServer</insertBefore>
+			<insertAfter code="{ this.^field:MinecraftServer/serverStopped^ = true; }">stopServer</insertAfter>
+			<synchronize>stopServer</synchronize>
 			<public field="mcServer"/>
 			<volatile field="serverRunning"/>
 			<volatile field="serverIsRunning"/>
+			<replaceInitializer field="worlds" class="me.nallar.collections.ListSet"/>
 		</class>
 		<class id="net.minecraft.server.MinecraftServer" env="mcpc">
 			<replaceMethod code="{
