@@ -2,12 +2,14 @@ package me.nallar.patched.storage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import cpw.mods.fml.common.FMLLog;
 import me.nallar.collections.SynchronizedList;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.patcher.Declare;
+import me.nallar.tickthreading.util.BlockInfo;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.command.IEntitySelector;
@@ -46,6 +48,12 @@ public abstract class PatchChunk extends Chunk {
 			entityLists[i] = new SynchronizedList();
 		}
 		toInvalidate = new ArrayList<TileEntity>();
+	}
+
+	@Override
+	@Declare
+	public boolean isNormallyLoaded() {
+		return !this.alreadySavedAfterUnload && !this.partiallyUnloaded && this.isChunkLoaded;
 	}
 
 	@Override
@@ -197,6 +205,21 @@ public abstract class PatchChunk extends Chunk {
 			tileEntity.invalidate();
 		}
 		toInvalidate.clear();
+		for (Map.Entry<ChunkPosition, TileEntity> entry : ((Map<ChunkPosition, TileEntity>) chunkTileEntityMap).entrySet()) {
+			TileEntity tileEntity = entry.getValue();
+			if ((!tileEntity.canUpdate() && tileEntity.isInvalid()) || tileEntity.getClass() == TileEntity.class) {
+				tileEntity.invalidate();
+				ChunkPosition position = entry.getKey();
+				chunkTileEntityMap.remove(position);
+				worldObj.loadedTileEntityList.remove(tileEntity);
+				int x = position.x, y = position.y, z = position.z;
+				int id = getBlockID(x, y, z);
+				int meta = getBlockMetadata(x, y, z);
+				Log.info("Resetting invalid TileEntity " + Log.toString(tileEntity) + " for block: " + new BlockInfo(id, meta) + " at within chunk coords " + x + ',' + y + ',' + z + " in chunk " + this);
+				setBlockID(x, y, z, 0);
+				setBlockIDWithMetadata(x, y, z, id, meta);
+			}
+		}
 	}
 
 	@SuppressWarnings ("FieldRepeatedlyAccessedInMethod") // Patcher makes worldObj final

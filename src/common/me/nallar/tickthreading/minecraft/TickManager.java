@@ -145,6 +145,10 @@ public final class TickManager {
 	}
 
 	public boolean add(TileEntity tileEntity, boolean newEntity) {
+		if (tileEntity.isInvalid()) {
+			Log.warning("Tried to add invalid TileEntity " + Log.toString(tileEntity) + " to TickManager", new Throwable());
+			return false;
+		}
 		TileEntityTickRegion tileEntityTickRegion = getOrCreateRegion(tileEntity);
 		if (tileEntityTickRegion.add(tileEntity)) {
 			tileEntity.tickRegion = tileEntityTickRegion;

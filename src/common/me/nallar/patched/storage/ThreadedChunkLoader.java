@@ -210,7 +210,7 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 			} catch (Throwable t) {
 				FMLLog.log(Level.SEVERE, t, "A mod failed to handle a ChunkDataEvent.Save event for " + chunk.xPosition + ',' + chunk.zPosition);
 			}
-			this.addToSaveQueue(chunk.getChunkCoordIntPair(), nbttagcompound, chunk.alreadySavedAfterUnload || chunk.partiallyUnloaded || !chunk.isChunkLoaded);
+			this.addToSaveQueue(chunk.getChunkCoordIntPair(), nbttagcompound, !chunk.isNormallyLoaded());
 		} catch (Exception exception) {
 			Log.severe("Failed to save chunk " + Log.pos(world, chunk.xPosition, chunk.zPosition));
 		}
@@ -336,9 +336,6 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 						nbttaglist1.appendTag(nbttagcompound1);
 					}
 				} catch (Throwable t) {
-					if (t instanceof RuntimeException && t.getMessage().contains("missing a mapping")) {
-						continue;
-					}
 					FMLLog.log(Level.SEVERE, t,
 							"An Entity type %s at %s,%f,%f,%f has thrown an exception trying to write state. It will not persist. Report this to the mod author",
 							entity.getClass().getName(),
@@ -359,8 +356,8 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 				tileentity.writeToNBT(nbttagcompound1);
 				nbttaglist2.appendTag(nbttagcompound1);
 			} catch (Throwable t) {
-				if (t instanceof RuntimeException && t.getMessage().contains("missing a mapping")) {
-					continue; // TODO: Reset block to air? Recreate TE on next load?
+				if (t instanceof RuntimeException && t.getMessage().contains("any is missing a mapping")) {
+					continue;
 				}
 				FMLLog.log(Level.SEVERE, t,
 						"A TileEntity type %s at %s,%d,%d,%d has throw an exception trying to write state. It will not persist. Report this to the mod author",
