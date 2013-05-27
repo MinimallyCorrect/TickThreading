@@ -356,8 +356,11 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 				tileentity.writeToNBT(nbttagcompound1);
 				nbttaglist2.appendTag(nbttagcompound1);
 			} catch (Throwable t) {
-				if (t instanceof RuntimeException && t.getMessage().contains("any is missing a mapping")) {
-					continue;
+				if (t instanceof RuntimeException) {
+					String message = t.getMessage();
+					if (message != null && message.contains("any is missing a mapping")) {
+						continue;
+					}
 				}
 				FMLLog.log(Level.SEVERE, t,
 						"A TileEntity type %s at %s,%d,%d,%d has throw an exception trying to write state. It will not persist. Report this to the mod author",
