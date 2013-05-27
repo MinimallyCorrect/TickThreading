@@ -1,14 +1,24 @@
 package me.nallar.collections;
 
+import me.nallar.tickthreading.Log;
+
 public class SynchronizedList<T> extends ConcurrentUnsafeIterableArrayList<T> {
 	@Override
 	public synchronized boolean add(final T t) {
+		if (t == null) {
+			Log.severe("Tried to add null to SynchronizedList", new Throwable());
+		}
 		return super.add(t);
 	}
 
 	@Override
-	public T remove(final int index) {
+	public synchronized T remove(final int index) {
 		return super.remove(index);
+	}
+
+	@Override
+	public synchronized boolean remove(final Object o) {
+		return super.remove(o);
 	}
 
 	@Override
