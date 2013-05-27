@@ -122,6 +122,9 @@ public class DeadLockDetector {
 			return true;
 		}
 		final MinecraftServer minecraftServer = MinecraftServer.getServer();
+		if (!minecraftServer.isServerRunning() || !minecraftServer.serverIsInRunLoop() || minecraftServer.isServerStopped()) {
+			return false;
+		}
 		boolean spikeDetector = this.spikeDetector && deadTime < 45000000000l;
 		if (!spikeDetector && minecraftServer.currentlySaving.get() != 0) {
 			Log.severe("The server seems to have frozen while saving - Waiting for two minutes to give it time to complete.");

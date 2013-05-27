@@ -145,7 +145,7 @@ public final class TickManager {
 	}
 
 	public boolean add(TileEntity tileEntity, boolean newEntity) {
-		if (tileEntity.isInvalid()) {
+		if (newEntity && tileEntity.isInvalid()) {
 			Log.warning("Tried to add invalid TileEntity " + Log.toString(tileEntity) + " to TickManager", new Throwable());
 			return false;
 		}

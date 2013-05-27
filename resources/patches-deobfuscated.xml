@@ -27,6 +27,12 @@
 		</class>
 		<class id="net.minecraft.server.MinecraftServer">
 			<addAll fromClass="me.nallar.patched.server.PatchMinecraftServer"/>
+			<insertBefore code="{
+				if (this.^field:MinecraftServer/serverStopped^) {
+					Log.severe(&quot;stop&quot;, new Throwable());
+				}
+				this.^field:MinecraftServer/serverStopped^ = true;
+			}">stopServer</insertBefore>
 			<public field="mcServer"/>
 			<volatile field="serverRunning"/>
 			<volatile field="serverIsRunning"/>
