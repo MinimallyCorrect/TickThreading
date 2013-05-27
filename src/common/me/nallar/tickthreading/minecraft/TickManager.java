@@ -683,6 +683,7 @@ public final class TickManager {
 			stats.append("\nMax tick time: ").append(maxTickTime).append("ms");
 			stats.append("\nEffective tick time: ").append(lastTickLength / 1000000f).append("ms");
 			stats.append("\nAverage effective tick time: ").append((float) averageTickLength / 1000000).append("ms");
+			stats.append("\nGlobal TPS: ").append(TableFormatter.formatDoubleWithPrecision(MinecraftServer.getTPS(), 2)).append("ms");
 		}
 		return tf;
 	}
