@@ -44,7 +44,7 @@ public class LogFormatter extends Formatter {
 				// No need to close this - StringWriter.close() does nothing, and PrintWriter.close() just calls it.
 				//noinspection IOResourceOpenedButNotSafelyClosed
 				throwable.printStackTrace(new PrintWriter(stackTraceWriter));
-				formattedMessage.append(stackTraceWriter.toString());
+				formattedMessage.append(throwable.getClass() == Throwable.class ? stackTraceWriter.toString().replace("java.lang.Throwable\n", "") : stackTraceWriter.toString());
 			}
 		}
 

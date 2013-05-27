@@ -446,7 +446,10 @@ public abstract class PatchWorld extends World {
 		}
 		for (int var2 = 0; var2 < par1List.size(); ++var2) {
 			Entity entity = (Entity) par1List.get(var2);
-			if (MinecraftForge.EVENT_BUS.post(new EntityJoinWorldEvent(entity, this))) {
+			if (entity == null) {
+				Log.warning("Null entity in chunk during world load", new Throwable());
+				par1List.remove(var2--);
+			} else if (MinecraftForge.EVENT_BUS.post(new EntityJoinWorldEvent(entity, this))) {
 				par1List.remove(var2--);
 			} else if (entityTracker == null || !entityTracker.isTracking(entity.entityId)) {
 				loadedEntityList.add(entity);
