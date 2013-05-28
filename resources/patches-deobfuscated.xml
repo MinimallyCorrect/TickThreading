@@ -933,7 +933,10 @@
 		<class id="codechicken.chunkloader.ChunkLoaderManager$ChunkLoaderOrganiser">
 			<replaceMethodCall newMethod="getTEWithLoad" method="^class:World^.^method:World/getBlockTileEntity^">^all^</replaceMethodCall>
 			<replaceMethodCall newMethod="getBlockIdWithLoad" method="^class:World^.^method:World/getBlockId^">^all^</replaceMethodCall>
-			<synchronize>revive(^class:World^)V</synchronize>
+			<synchronize>revive(^class:World^)V,devive,revive,load,save</synchronize>
+			<replaceInitializer field="dormantLoaders" class="me.nallar.collections.CHashMap"/>
+			<replaceInitializer field="forcedChunksByChunk" class="me.nallar.collections.CHashMap"/>
+			<replaceInitializer field="forcedChunksByLoader" class="me.nallar.collections.CHashMap"/>
 			<replaceInitializer field="timedUnloadQueue" class="me.nallar.collections.LinkedTimedHashMapQueue"/>
 		</class>
 		<class id="codechicken.core.world.WorldExtension">
