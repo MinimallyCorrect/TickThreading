@@ -122,7 +122,7 @@ public class DeadLockDetector {
 			return true;
 		}
 		final MinecraftServer minecraftServer = MinecraftServer.getServer();
-		if (!minecraftServer.isServerRunning() || !minecraftServer.serverIsInRunLoop() || minecraftServer.isServerStopped()) {
+		if (!minecraftServer.isServerRunning() || minecraftServer.isServerStopped()) {
 			return false;
 		}
 		boolean spikeDetector = this.spikeDetector && deadTime < 45000000000l;

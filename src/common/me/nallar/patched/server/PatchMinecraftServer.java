@@ -189,7 +189,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 						continue;
 					}
 					lastTick = curTime;
-					currentTick = tickCounter++;
+					currentTick = ++tickCounter;
 					try {
 						this.tick();
 					} catch (Exception e) {
@@ -389,6 +389,9 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				}
 			}
 			this.dimensionIdsToTick = dimensionIdsToTickOrdered;
+			if (tickCounter == 1) {
+				Log.checkWorlds();
+			}
 			doWorldTick();
 		}
 

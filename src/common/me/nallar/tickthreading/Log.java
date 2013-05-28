@@ -6,7 +6,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.text.Normalizer;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -22,6 +28,7 @@ import net.minecraft.server.gui.GuiLogOutputHandler;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.minecraftforge.common.DimensionManager;
 
 @SuppressWarnings ({"UnusedDeclaration", "UseOfSystemOutOrSystemErr"})
 public class Log {
@@ -306,7 +313,7 @@ public class Log {
 	}
 
 	public static String pos(final World world, final int x, final int z) {
-		return "in " + world.getName() + " " + pos(x, z);
+		return "in " + world.getName() + ' ' + pos(x, z);
 	}
 
 	public static String pos(final int x, final int z) {
@@ -314,10 +321,68 @@ public class Log {
 	}
 
 	public static String pos(final World world, final int x, final int y, final int z) {
-		return "in " + world.getName() + " " + pos(x, y, z);
+		return "in " + world.getName() + ' ' + pos(x, y, z);
 	}
 
 	public static String pos(final int x, final int y, final int z) {
 		return "at " + x + ", " + y + ", " + z;
+	}
+
+	public static String dumpWorld(World world) {
+		boolean unloaded = world.unloaded;
+		return (unloaded ? "un" : "") + "loaded world " + name(world) + '@' + System.identityHashCode(world) + ", dimension: " + world.getDimension() + ", provider dimension: " + (unloaded ? "unknown" : world.provider.dimensionId) + ", original dimension: " + world.originalDimension;
+	}
+
+	public static void checkWorlds() {
+		MinecraftServer minecraftServer = MinecraftServer.getServer();
+		List<WorldServer> bukkitWorldList = minecraftServer.worlds;
+		int a = bukkitWorldList == null ? -1 : bukkitWorldList.size();
+		int b = minecraftServer.worldServers.length;
+		int c = DimensionManager.getWorlds().length;
+		if ((a != -1 && a != b) || b != c) {
+			Log.severe("World counts mismatch.\n" + dumpWorlds());
+		} else if (hasDuplicates(bukkitWorldList) || hasDuplicates(minecraftServer.worldServers) || hasDuplicates(DimensionManager.getWorlds())) {
+			Log.severe("Duplicate worlds.\n" + dumpWorlds());
+		}
+	}
+
+	public static String dumpWorlds() {
+		StringBuilder sb = new StringBuilder();
+		List<World> dimensionManagerWorlds = new ArrayList<World>(Arrays.asList(DimensionManager.getWorlds()));
+		MinecraftServer minecraftServer = MinecraftServer.getServer();
+		List<World> minecraftServerWorlds = new ArrayList<World>(Arrays.asList(minecraftServer.worldServers));
+		List<WorldServer> bukkitWorldList = minecraftServer.worlds;
+		List<World> bukkitWorlds = bukkitWorldList == null ? null : new ArrayList<World>(bukkitWorldList);
+		if (bukkitWorlds != null) {
+			sb.append("Worlds in bukkitWorlds: \n").append(dumpWorlds(bukkitWorlds));
+		}
+		sb.append("Worlds in dimensionManager: \n").append(dumpWorlds(dimensionManagerWorlds));
+		sb.append("Worlds in minecraftServer: \n").append(dumpWorlds(minecraftServerWorlds));
+		return sb.toString();
+	}
+
+	private static boolean hasDuplicates(Object[] array) {
+		return hasDuplicates(Arrays.asList(array));
+	}
+
+	private static boolean hasDuplicates(List list) {
+		if (list == null) {
+			return false;
+		}
+		Set<Object> set = Collections.newSetFromMap(new IdentityHashMap<Object, Boolean>());
+		for (Object o : list) {
+			if (!set.add(o)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static String dumpWorlds(final Collection<World> worlds) {
+		StringBuilder sb = new StringBuilder();
+		for (World world : worlds) {
+			sb.append(dumpWorld(world)).append('\n');
+		}
+		return sb.toString();
 	}
 }

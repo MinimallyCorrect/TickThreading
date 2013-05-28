@@ -19,6 +19,7 @@ import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.relauncher.RelaunchClassLoader;
 import javassist.is.faulty.Timings;
+import me.nallar.collections.IntSet;
 import me.nallar.reporting.LeakDetector;
 import me.nallar.reporting.Metrics;
 import me.nallar.tickthreading.Log;
@@ -64,6 +65,7 @@ public class TickThreading {
 	private static final int loadedTileEntityFieldIndex = 2;
 	final Map<World, TickManager> managers = new LinkedHashMap<World, TickManager>();
 	private final Runtime runtime = Runtime.getRuntime();
+	private final IntSet worlds = new IntSet();
 	public String messageDeadlockDetected = "The server appears to have frozen and will restart soon if it does not recover. :(";
 	public String messageDeadlockRecovered = "The server has recovered and will not need to restart. :)";
 	public String messageDeadlockSavingExiting = "The server is saving the world and restarting - be right back!";
@@ -203,6 +205,9 @@ public class TickThreading {
 			Log.severe("World " + world.getName() + "'s world load event was fired twice.", new Throwable());
 			return;
 		}
+		if (!worlds.add(world.provider.dimensionId)) {
+			Log.severe("World " + world.getName() + " has a duplicate provider dimension ID.\n" + Log.dumpWorlds());
+		}
 		world.loadEventFired = true;
 		TickManager manager = new TickManager((WorldServer) world, regionSize, getThreadCount(), waitForEntityTickCompletion);
 		try {
@@ -225,6 +230,9 @@ public class TickThreading {
 	@ForgeSubscribe
 	public synchronized void onWorldUnload(WorldEvent.Unload event) {
 		World world = event.world;
+		if (!worlds.remove(world.provider.dimensionId)) {
+			Log.severe("When removing " + world.getName() + ", its provider dimension ID was not already in the world dimension ID set.\n" + Log.dumpWorlds());
+		}
 		try {
 			TickManager tickManager = managers.remove(world);
 			if (tickManager == null) {

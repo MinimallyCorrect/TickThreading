@@ -18,6 +18,9 @@ public abstract class PatchDimensionManager extends DimensionManager {
 			Hashtable<Integer, long[]> worldTickTimes) {
 		//noinspection SynchronizationOnStaticField
 		synchronized (unloadQueue) {
+			if (unloadQueue.isEmpty()) {
+				return;
+			}
 			for (int id : unloadQueue) {
 				WorldServer w = worlds.get(id);
 				if (w == null) {
@@ -48,6 +51,8 @@ public abstract class PatchDimensionManager extends DimensionManager {
 				}
 			}
 			unloadQueue.clear();
+			Log.checkWorlds();
+			weakWorldMap.clear(); // We do our own leak checking.
 		}
 	}
 
