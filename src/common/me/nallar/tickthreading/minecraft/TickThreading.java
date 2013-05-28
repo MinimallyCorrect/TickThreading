@@ -281,7 +281,7 @@ public class TickThreading {
 		EntityLiving livingEntity = event.entityLiving;
 		if (livingEntity.fallDistance > 2 && Log.debug && livingEntity instanceof EntityPlayerMP) {
 			EntityPlayerMP entityPlayerMP = (EntityPlayerMP) livingEntity;
-			Log.debug(entityPlayerMP.username + " fell " + entityPlayerMP.fallDistance + " blocks.", new Throwable());
+			Log.debug(entityPlayerMP.username + " fell " + entityPlayerMP.fallDistance + " blocks. Teleported counter: " + entityPlayerMP.playerNetServerHandler.teleported, new Throwable());
 		}
 	}
 
