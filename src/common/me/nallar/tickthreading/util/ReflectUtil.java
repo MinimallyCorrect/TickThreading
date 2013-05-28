@@ -2,6 +2,9 @@ package me.nallar.tickthreading.util;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import me.nallar.tickthreading.Log;
 import me.nallar.unsafe.UnsafeUtil;
@@ -62,5 +65,16 @@ public enum ReflectUtil {
 		} catch (IllegalAccessException e) {
 			throw UnsafeUtil.throwIgnoreChecked(e);
 		}
+	}
+
+	public static Field[] getFields(Class<?> clazz, Class<?> fieldType) {
+		List<Field> listFields = new ArrayList<Field>();
+		List<Field> fields = Arrays.asList(clazz.getDeclaredFields());
+		for (Field field : fields) {
+			if (fieldType.isAssignableFrom(field.getType())) {
+				listFields.add(field);
+			}
+		}
+		return listFields.toArray(new Field[listFields.size()]);
 	}
 }

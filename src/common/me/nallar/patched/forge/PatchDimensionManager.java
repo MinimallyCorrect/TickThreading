@@ -1,5 +1,6 @@
 package me.nallar.patched.forge;
 
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.logging.Level;
@@ -45,7 +46,7 @@ public abstract class PatchDimensionManager extends DimensionManager {
 						setWorld(id, null);
 						List<WorldServer> worlds = MinecraftServer.getServer().worlds;
 						if (worlds != null) {
-							worlds.remove(w);
+							worlds.removeAll(Collections.singletonList(worlds));
 						}
 					}
 				}

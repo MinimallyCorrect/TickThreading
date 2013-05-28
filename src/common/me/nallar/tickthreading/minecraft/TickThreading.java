@@ -31,9 +31,9 @@ import me.nallar.tickthreading.minecraft.commands.TicksCommand;
 import me.nallar.tickthreading.minecraft.entitylist.EntityList;
 import me.nallar.tickthreading.minecraft.entitylist.LoadedEntityList;
 import me.nallar.tickthreading.minecraft.entitylist.LoadedTileEntityList;
-import me.nallar.tickthreading.util.FieldUtil;
 import me.nallar.tickthreading.util.LocationUtil;
 import me.nallar.tickthreading.util.PatchUtil;
+import me.nallar.tickthreading.util.ReflectUtil;
 import me.nallar.tickthreading.util.TableFormatter;
 import me.nallar.tickthreading.util.VersionUtil;
 import net.minecraft.command.ServerCommandManager;
@@ -211,9 +211,9 @@ public class TickThreading {
 		world.loadEventFired = true;
 		TickManager manager = new TickManager((WorldServer) world, regionSize, getThreadCount(), waitForEntityTickCompletion);
 		try {
-			Field loadedTileEntityField = FieldUtil.getFields(World.class, List.class)[loadedTileEntityFieldIndex];
+			Field loadedTileEntityField = ReflectUtil.getFields(World.class, List.class)[loadedTileEntityFieldIndex];
 			new LoadedTileEntityList(world, loadedTileEntityField, manager);
-			Field loadedEntityField = FieldUtil.getFields(World.class, List.class)[loadedEntityFieldIndex];
+			Field loadedEntityField = ReflectUtil.getFields(World.class, List.class)[loadedEntityFieldIndex];
 			new LoadedEntityList(world, loadedEntityField, manager);
 			Log.info("Threading initialised for world " + Log.name(world));
 			if (managers.put(world, manager) != null) {
@@ -230,9 +230,6 @@ public class TickThreading {
 	@ForgeSubscribe
 	public synchronized void onWorldUnload(WorldEvent.Unload event) {
 		World world = event.world;
-		if (!worlds.remove(world.provider.dimensionId)) {
-			Log.severe("When removing " + world.getName() + ", its provider dimension ID was not already in the world dimension ID set.\n" + Log.dumpWorlds());
-		}
 		try {
 			TickManager tickManager = managers.remove(world);
 			if (tickManager == null) {
@@ -240,18 +237,21 @@ public class TickThreading {
 				return;
 			}
 			tickManager.unload();
-			Field loadedTileEntityField = FieldUtil.getFields(World.class, List.class)[loadedTileEntityFieldIndex];
+			Field loadedTileEntityField = ReflectUtil.getFields(World.class, List.class)[loadedTileEntityFieldIndex];
 			Object loadedTileEntityList = loadedTileEntityField.get(world);
 			if (!(loadedTileEntityList instanceof EntityList)) {
 				Log.severe("Looks like another mod broke TT's replacement tile entity list in world: " + Log.name(world));
 			}
-			Field loadedEntityField = FieldUtil.getFields(World.class, List.class)[loadedEntityFieldIndex];
+			Field loadedEntityField = ReflectUtil.getFields(World.class, List.class)[loadedEntityFieldIndex];
 			Object loadedEntityList = loadedEntityField.get(world);
 			if (!(loadedEntityList instanceof EntityList)) {
 				Log.severe("Looks like another mod broke TT's replacement entity list in world: " + Log.name(world));
 			}
 		} catch (Exception e) {
 			Log.severe("Probable memory leak, failed to unload threading for world " + Log.name(world), e);
+		}
+		if (!worlds.remove(world.provider.dimensionId)) {
+			Log.severe("When removing " + world.getName() + ", its provider dimension ID was not already in the world dimension ID set.\n" + Log.dumpWorlds());
 		}
 		if (world instanceof WorldServer) {
 			((WorldServer) world).stopChunkTickThreads();
