@@ -37,6 +37,7 @@ import me.nallar.tickthreading.util.ReflectUtil;
 import me.nallar.tickthreading.util.TableFormatter;
 import me.nallar.tickthreading.util.VersionUtil;
 import net.minecraft.command.ServerCommandManager;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
@@ -52,6 +53,7 @@ import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.EventPriority;
 import net.minecraftforge.event.ForgeSubscribe;
+import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.WorldEvent;
 
@@ -271,6 +273,15 @@ public class TickThreading {
 					event.setCanceled(true);
 				}
 			}
+		}
+	}
+
+	@ForgeSubscribe
+	public void onPlayerFall(LivingFallEvent event) {
+		EntityLiving livingEntity = event.entityLiving;
+		if (livingEntity.fallDistance > 2 && Log.debug && livingEntity instanceof EntityPlayerMP) {
+			EntityPlayerMP entityPlayerMP = (EntityPlayerMP) livingEntity;
+			Log.debug(entityPlayerMP.username + " fell " + entityPlayerMP.fallDistance + " blocks.", new Throwable());
 		}
 	}
 
