@@ -17,7 +17,7 @@ public class IntSet {
 	}
 
 	public boolean contains(int key) {
-		int index = keyIndex(key) & (BUCKET_SIZE - 1);
+		int index = keyIndex(key);
 		int[] inner = keys[index];
 		if (inner == null) {
 			return false;
@@ -36,7 +36,7 @@ public class IntSet {
 	}
 
 	public synchronized boolean add(int key) {
-		int index = keyIndex(key) & (BUCKET_SIZE - 1);
+		int index = keyIndex(key);
 		int[] innerKeys = keys[index];
 
 		if (innerKeys == null) {
@@ -51,9 +51,9 @@ public class IntSet {
 				int currentKey = innerKeys[i];
 				if (currentKey == EMPTY_KEY) {
 					size++;
+					return true;
 				}
-				if (currentKey == EMPTY_KEY || currentKey == key) {
-					innerKeys[i] = key;
+				if (currentKey == key) {
 					return false;
 				}
 			}
@@ -67,7 +67,7 @@ public class IntSet {
 	}
 
 	public synchronized boolean remove(int key) {
-		int index = keyIndex(key) & (BUCKET_SIZE - 1);
+		int index = keyIndex(key);
 		int[] inner = keys[index];
 		if (inner == null) {
 			return false;
@@ -102,9 +102,6 @@ public class IntSet {
 		key ^= key >> 13;
 		key *= 0xc2b2ae35;
 		key ^= key >> 16;
-		if (key == EMPTY_KEY) {
-			throw new IllegalArgumentException(key + " collides with EMPTY_KEY");
-		}
-		return key;
+		return key & (BUCKET_SIZE - 1);
 	}
 }
