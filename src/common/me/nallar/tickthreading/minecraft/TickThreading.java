@@ -54,7 +54,6 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.NetServerHandler;
-import net.minecraft.network.packet.Packet3Chat;
 import net.minecraft.network.packet.PacketCount;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
@@ -103,7 +102,6 @@ public class TickThreading {
 	private int regionSize = 16;
 	private int profilingInterval = 0;
 	public boolean variableTickRate = true;
-	private boolean appliedEnergisticsLoaded = false;
 	private DeadLockDetector deadLockDetector;
 	private HashSet<Integer> disabledFastMobSpawningDimensions = new HashSet<Integer>();
 	private boolean waitForEntityTickCompletion = true;
@@ -138,7 +136,6 @@ public class TickThreading {
 		if (!enableBugWarningMessage) {
 			return;
 		}
-		appliedEnergisticsLoaded = Loader.isModLoaded("AppliedEnergistics");
 		GameRegistry.registerPlayerTracker(new LoginWarningHandler());
 	}
 
@@ -349,10 +346,7 @@ public class TickThreading {
 		public void onPlayerLogin(final EntityPlayer player) {
 			if (player instanceof EntityPlayerMP) {
 				NetServerHandler netServerHandler = ((EntityPlayerMP) player).playerNetServerHandler;
-				if (appliedEnergisticsLoaded) {
-					netServerHandler.sendPacketToPlayer(new Packet3Chat("You're using TickThreading with Applied Energistics. This is currently a bad idea, and you may lose items."));
-					netServerHandler.sendPacketToPlayer(new Packet3Chat("See https://github.com/nallar/TickThreading/issues/246"));
-				}
+				// Warnings for severe issues go here.
 			}
 		}
 
