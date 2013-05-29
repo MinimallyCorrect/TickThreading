@@ -50,6 +50,7 @@ public class IntSet {
 			for (i = 0; i < innerKeys.length; i++) {
 				int currentKey = innerKeys[i];
 				if (currentKey == EMPTY_KEY) {
+					innerKeys[i] = key;
 					size++;
 					return true;
 				}
