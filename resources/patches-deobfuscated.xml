@@ -31,7 +31,8 @@
 				if (this.^field:MinecraftServer/serverStopped^) {
 					return;
 				}
-			}">stopServer</insertBefore>
+			}">stopServer
+			</insertBefore>
 			<insertAfter code="{ this.^field:MinecraftServer/serverStopped^ = true; }">stopServer</insertAfter>
 			<synchronize>stopServer</synchronize>
 			<public field="mcServer"/>
@@ -145,6 +146,7 @@
 		</class>
 		<class id="net.minecraft.world.gen.ChunkProviderServer">
 			<replace class="me.nallar.patched.storage.ThreadedChunkProvider"/>
+			<lockToSynchronized>getChunkAtInternal</lockToSynchronized>
 		</class>
 		<class id="net.minecraft.world.gen.ChunkProviderServer" env="mcpc">
 			<replaceMethod code="{

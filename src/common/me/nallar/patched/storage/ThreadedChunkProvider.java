@@ -556,7 +556,9 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 			// Lock the generation lock - ChunkProviderGenerate isn't threadsafe at all
 
-			synchronized (generateLock) {
+			boolean locked = true;
+			generateLock.lock();
+			try {
 				synchronized (lock) {
 					chunk = chunks.getValueByKey(key);
 					if (chunk != null) {
@@ -592,13 +594,18 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 							loadingChunks.put(key, chunk);
 						}
 
-						// TODO: Redo this using NativeMutex.lock/unlock and the lockToSynchronize patch so that we can unlock generateLock before the chunk lock.
+						locked = false;
+						generateLock.unlock();
 						chunk.threadUnsafeChunkLoad();
 
 						chunks.put(key, chunk);
 					} finally {
 						worldGenInProgress.set(Boolean.FALSE);
 					}
+				}
+			} finally {
+				if (locked) {
+					generateLock.unlock();
 				}
 			}
 		} finally {
