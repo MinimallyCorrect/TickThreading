@@ -18,30 +18,34 @@ public class LeakDetector {
 		waitTime = waitTimeSeconds * 1000;
 	}
 
-	public void scheduleLeakCheck(Object o, String oDescription_, final boolean clean) {
-		if (clean) {
-			timer.schedule(new CleanerTask(o), Math.min(waitTime / 2, 20000));
-		}
-		final long id = UnsafeUtil.addressOf(o);
-		final String oDescription = (oDescription_ == null ? "" : oDescription_ + " : ") + o.getClass() + '@' + System.identityHashCode(o) + ':' + id;
-		scheduledObjects.put(id, new LeakCheckEntry(o, oDescription));
-		timer.schedule(new TimerTask() {
-			@Override
-			public void run() {
-				LeakCheckEntry leakCheckEntry = scheduledObjects.remove(id);
-				Object o = leakCheckEntry.o.get();
-				if (o == null) {
-					Log.fine("Object " + leakCheckEntry.description + " has been removed normally.");
-				} else {
-					String warning = "Probable memory leak detected. \"" + leakCheckEntry.description + "\" has not been garbage collected after " + waitTime / 1000 + "s.";
-					if (clean) {
-						Log.fine(warning);
+	public synchronized void scheduleLeakCheck(Object o, String oDescription_, final boolean clean) {
+		try {
+			if (clean) {
+				timer.schedule(new CleanerTask(o), Math.min(waitTime / 2, 20000));
+			}
+			final long id = UnsafeUtil.addressOf(o);
+			final String oDescription = (oDescription_ == null ? "" : oDescription_ + " : ") + o.getClass() + '@' + System.identityHashCode(o) + ':' + id;
+			scheduledObjects.put(id, new LeakCheckEntry(o, oDescription));
+			timer.schedule(new TimerTask() {
+				@Override
+				public void run() {
+					LeakCheckEntry leakCheckEntry = scheduledObjects.remove(id);
+					Object o = leakCheckEntry.o.get();
+					if (o == null) {
+						Log.fine("Object " + leakCheckEntry.description + " has been removed normally.");
 					} else {
-						Log.warning(warning);
+						String warning = "Probable memory leak detected. \"" + leakCheckEntry.description + "\" has not been garbage collected after " + waitTime / 1000 + "s.";
+						if (clean) {
+							Log.fine(warning);
+						} else {
+							Log.warning(warning);
+						}
 					}
 				}
-			}
-		}, waitTime);
+			}, waitTime);
+		} catch (Throwable t) {
+			Log.severe("Failed to schedule leak check for " + oDescription_, t);
+		}
 	}
 
 	private static class CleanerTask extends TimerTask {
