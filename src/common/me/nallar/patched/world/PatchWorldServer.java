@@ -168,7 +168,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 
 	@Override
 	public void flush() {
-		DeadLockDetector.tick(System.nanoTime() + 30000000000L);
+		DeadLockDetector.tickAhead(60);
 		if (saveHandler != null) {
 			this.saveHandler.flush();
 

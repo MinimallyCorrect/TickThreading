@@ -1,7 +1,6 @@
 package me.nallar.tickthreading.minecraft;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -182,7 +181,7 @@ public final class TickManager {
 		return false;
 	}
 
-	public void batchRemoveEntities(Collection<Entity> entities) {
+	public void batchRemoveEntities(HashSet<Entity> entities) {
 		entities = safeCopyClear(entities);
 		if (entities == null) {
 			return;
@@ -224,7 +223,7 @@ public final class TickManager {
 		}
 	}
 
-	public void batchRemoveTileEntities(Collection<TileEntity> tileEntities) {
+	public void batchRemoveTileEntities(HashSet<TileEntity> tileEntities) {
 		tileEntities = safeCopyClear(tileEntities);
 		if (tileEntities == null) {
 			return;
@@ -243,12 +242,12 @@ public final class TickManager {
 		}
 	}
 
-	private static <T> Collection<T> safeCopyClear(Collection<T> c) {
+	private static <T> HashSet<T> safeCopyClear(HashSet<T> c) {
 		synchronized (c) {
 			if (c.isEmpty()) {
 				return null;
 			}
-			Collection<T> copy = (Collection<T>) Arrays.asList(c.toArray());
+			HashSet<T> copy = new HashSet<T>(c);
 			c.clear();
 			return copy;
 		}

@@ -42,7 +42,7 @@ public class DeadLockDetector {
 		Thread deadlockThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				trySleep(10000);
+				trySleep(60000);
 				while (checkForDeadlocks()) {
 					trySleep(sleepTime);
 				}
