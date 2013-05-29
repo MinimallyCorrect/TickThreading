@@ -1132,6 +1132,7 @@ public class Patches {
 		CodeAttribute codeAttribute = methodInfo.getCodeAttribute();
 		CodeIterator iterator = codeAttribute.iterator();
 		ConstPool constPool = codeAttribute.getConstPool();
+		int done = 0;
 		while (iterator.hasNext()) {
 			int pos = iterator.next();
 			int op = iterator.byteAt(pos);
@@ -1148,6 +1149,7 @@ public class Patches {
 						iterator.writeByte(Opcode.MONITOREXIT, pos);
 					}
 					if (remove) {
+						done++;
 						iterator.writeByte(Opcode.NOP, pos + 1);
 						iterator.writeByte(Opcode.NOP, pos + 2);
 						iterator.writeByte(Opcode.NOP, pos + 3);
@@ -1156,7 +1158,7 @@ public class Patches {
 				}
 			} else if (op == Opcode.INVOKEVIRTUAL) {
 				int mref = iterator.u16bitAt(pos + 1);
-				if ("NativeMutex".equals(constPool.getMethodrefClassName(mref))) {
+				if (constPool.getMethodrefClassName(mref).endsWith("NativeMutex")) {
 					String name = constPool.getMethodrefName(mref);
 					boolean remove = false;
 					if ("lock".equals(name)) {
@@ -1167,6 +1169,7 @@ public class Patches {
 						iterator.writeByte(Opcode.MONITOREXIT, pos);
 					}
 					if (remove) {
+						done++;
 						iterator.writeByte(Opcode.NOP, pos + 1);
 						iterator.writeByte(Opcode.NOP, pos + 2);
 					}
@@ -1174,6 +1177,7 @@ public class Patches {
 			}
 		}
 		methodInfo.rebuildStackMapIf6(ctClass.getClassPool(), ctClass.getClassFile2());
+		Log.fine("Replaced " + done + " lock/unlock calls.");
 	}
 
 	@Patch (

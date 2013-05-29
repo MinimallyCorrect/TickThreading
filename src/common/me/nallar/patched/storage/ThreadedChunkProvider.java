@@ -766,8 +766,9 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		boolean saveAll = fullSaveRequired;
 		if (saveTicks++ % 512 == 0) {
 			int loadedChunks = chunks.getNumHashElements();
-			if (loadedChunks > 4096) {
-				DeadLockDetector.sendChatSafely("Saving world " + world.getName() + " with " + loadedChunks + " chunks, expect a short lag spike.");
+			if (loadedChunks > 2048) {
+				DeadLockDetector.tickAhead(5);
+				DeadLockDetector.sendChatSafely("Fully saving world " + world.getName() + " with " + loadedChunks + " chunks, expect a short lag spike.");
 			}
 			saveAll = true;
 		}
