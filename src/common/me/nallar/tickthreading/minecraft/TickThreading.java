@@ -389,7 +389,7 @@ public class TickThreading {
 		public void tickStart(final EnumSet<TickType> type, final Object... tickData) {
 			final EntityTickProfiler entityTickProfiler = EntityTickProfiler.ENTITY_TICK_PROFILER;
 			entityTickProfiler.tick();
-			if (counter++ % profilingInterval * 60 * 20 != 0) {
+			if (counter++ % (profilingInterval * 60 * 20) != 0) {
 				return;
 			}
 			entityTickProfiler.startProfiling(new Runnable() {
