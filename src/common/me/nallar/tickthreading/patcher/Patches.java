@@ -1157,7 +1157,7 @@ public class Patches {
 			} else if (op == Opcode.INVOKEVIRTUAL) {
 				int mref = iterator.u16bitAt(pos + 1);
 				if ("NativeMutex".equals(constPool.getMethodrefClassName(mref))) {
-					String name = constPool.getInterfaceMethodrefName(mref);
+					String name = constPool.getMethodrefName(mref);
 					boolean remove = false;
 					if ("lock".equals(name)) {
 						remove = true;
