@@ -32,7 +32,7 @@ public class ProfileCommand extends Command {
 	public void processCommand(final ICommandSender commandSender, List<String> arguments) {
 		World world = null;
 		int time_ = 7;
-		boolean entity_ = false;
+		boolean entity_;
 		boolean location_ = false;
 		Integer x = null;
 		Integer z = null;
