@@ -403,7 +403,7 @@ public class TickThreading {
 						Log.severe("Failed to save periodic profiling data to " + profilingFile, t);
 					}
 				}
-			}, ProfileCommand.ProfilingState.GLOBAL, 20, Arrays.<World>asList(DimensionManager.getWorlds()));
+			}, ProfileCommand.ProfilingState.GLOBAL, 10, Arrays.<World>asList(DimensionManager.getWorlds()));
 		}
 
 		@Override
