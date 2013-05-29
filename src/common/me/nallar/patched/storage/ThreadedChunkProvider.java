@@ -592,6 +592,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 							loadingChunks.put(key, chunk);
 						}
 
+						// TODO: Redo this using NativeMutex.lock/unlock and the lockToSynchronize patch so that we can unlock generateLock before the chunk lock.
 						chunk.threadUnsafeChunkLoad();
 
 						chunks.put(key, chunk);
