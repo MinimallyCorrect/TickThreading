@@ -984,6 +984,9 @@
 		<class id="ee.lutsu.alpha.mc.mytown.event.ProtectionEvents">
 			<synchronize>tickStart</synchronize>
 		</class>
+		<class id="ee.lutsu.alpha.mc.mytown.MyTownDatasource">
+			<synchronize field="$1.intern()">getOrMakeResident(Ljava.lang.String;)Lee.lutsu.alpha.mc.mytown.entities.Resident;</synchronize>
+		</class>
 	</myTown>
 	<soulShards>
 		<class id="com.shadwdrgn.soulshards.CommonProxy">
