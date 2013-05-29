@@ -62,13 +62,13 @@ public class ProfileCommand extends Command {
 			sendChat(commandSender, "Usage: /profile [type=a/e/(c [x] [z])] [time=7] [dimensionid=current dimension]");
 			return;
 		}
-		final TickManager manager = TickThreading.instance.getManager(world);
 		final int time = time_;
 		final boolean entity = entity_;
 		final boolean location = location_;
 		if (location) {
 			world = commandSender instanceof Entity ? ((Entity) commandSender).worldObj : DimensionManager.getWorld(0);
 		}
+		final TickManager manager = TickThreading.instance.getManager(world == null ? DimensionManager.getWorld(0) : world);
 		final List<World> worlds = new ArrayList<World>();
 		if (world == null) {
 			Collections.addAll(worlds, DimensionManager.getWorlds());
