@@ -26,6 +26,7 @@ public class EntityTickProfiler {
 	public static ProfileCommand.ProfilingState profilingState = ProfileCommand.ProfilingState.NONE;
 	private int ticks;
 	private final AtomicLong totalTime = new AtomicLong();
+	private volatile long startTime;
 
 	private EntityTickProfiler() {
 	}
@@ -80,6 +81,7 @@ public class EntityTickProfiler {
 		Thread profilingThread = new Thread(profilingRunnable);
 		profilingThread.setName("TickProfiler");
 		profilingThread.start();
+		startTime = System.currentTimeMillis();
 		return true;
 	}
 
@@ -111,6 +113,9 @@ public class EntityTickProfiler {
 	}
 
 	public TableFormatter writeData(TableFormatter tf) {
+		long timeProfiled = System.currentTimeMillis() - startTime;
+		float tps = ticks * 1000f / timeProfiled;
+		tf.sb.append("TPS: ").append(tps).append('\n').append(tf.tableSeparator);
 		Map<Class<?>, Long> time = new HashMap<Class<?>, Long>();
 		for (Map.Entry<Class<?>, AtomicLong> entry : this.time.entrySet()) {
 			time.put(entry.getKey(), entry.getValue().get());
