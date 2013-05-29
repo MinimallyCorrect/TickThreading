@@ -1154,6 +1154,23 @@ public class Patches {
 						iterator.writeByte(Opcode.NOP, pos + 4);
 					}
 				}
+			} else if (op == Opcode.INVOKEVIRTUAL) {
+				int mref = iterator.u16bitAt(pos + 1);
+				if ("NativeMutex".equals(constPool.getMethodrefClassName(mref))) {
+					String name = constPool.getInterfaceMethodrefName(mref);
+					boolean remove = false;
+					if ("lock".equals(name)) {
+						remove = true;
+						iterator.writeByte(Opcode.MONITORENTER, pos);
+					} else if ("unlock".equals(name)) {
+						remove = true;
+						iterator.writeByte(Opcode.MONITOREXIT, pos);
+					}
+					if (remove) {
+						iterator.writeByte(Opcode.NOP, pos + 1);
+						iterator.writeByte(Opcode.NOP, pos + 2);
+					}
+				}
 			}
 		}
 		methodInfo.rebuildStackMapIf6(ctClass.getClassPool(), ctClass.getClassFile2());
