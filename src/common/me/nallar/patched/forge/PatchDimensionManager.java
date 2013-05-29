@@ -46,7 +46,7 @@ public abstract class PatchDimensionManager extends DimensionManager {
 						setWorld(id, null);
 						List<WorldServer> worlds = MinecraftServer.getServer().worlds;
 						if (worlds != null) {
-							worlds.removeAll(Collections.singletonList(worlds));
+							worlds.removeAll(Collections.singletonList(w));
 						}
 					}
 				}
