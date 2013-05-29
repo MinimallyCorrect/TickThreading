@@ -22,13 +22,7 @@ public class TileEntityTickRegion extends TickRegion {
 	public void doTick() {
 		final TickManager manager = this.manager;
 		final boolean profilingEnabled = manager.profilingEnabled || this.profilingEnabled;
-		EntityTickProfiler entityTickProfiler = null;
-		if (profilingEnabled) {
-			entityTickProfiler = manager.entityTickProfiler;
-			if (this.profilingEnabled) {
-				entityTickProfiler.tick();
-			}
-		}
+		EntityTickProfiler entityTickProfiler = profilingEnabled ? EntityTickProfiler.ENTITY_TICK_PROFILER : null;
 		Lock thisLock = null;
 		Lock xPlusLock = null;
 		Lock xMinusLock = null;

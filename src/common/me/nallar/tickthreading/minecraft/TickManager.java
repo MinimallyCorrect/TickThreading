@@ -19,7 +19,6 @@ import me.nallar.collections.ConcurrentUnsafeIterableArrayList;
 import me.nallar.collections.ContainedRemoveSet;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.commands.TPSCommand;
-import me.nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
 import me.nallar.tickthreading.minecraft.tickregion.EntityTickRegion;
 import me.nallar.tickthreading.minecraft.tickregion.TickRegion;
 import me.nallar.tickthreading.minecraft.tickregion.TileEntityTickRegion;
@@ -46,7 +45,6 @@ public final class TickManager {
 	private static final int shuffleInterval = 12000;
 	private int shuffleCount;
 	private final boolean waitForCompletion;
-	public final EntityTickProfiler entityTickProfiler = new EntityTickProfiler();
 	private final WorldServer world;
 	public final ConcurrentUnsafeIterableArrayList<TileEntity> tileEntityList = new ConcurrentUnsafeIterableArrayList<TileEntity>();
 	public final ConcurrentUnsafeIterableArrayList<Entity> entityList = new ConcurrentUnsafeIterableArrayList<Entity>();
@@ -522,9 +520,6 @@ public final class TickManager {
 		}
 		if (previousProfiling) {
 			world.theProfiler.profilingEnabled = true;
-		}
-		if (profilingEnabled) {
-			entityTickProfiler.tick();
 		}
 	}
 

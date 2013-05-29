@@ -16,6 +16,7 @@ public class TableFormatter {
 	public String headingSplitter = " | ";
 	public String headingColour = "";
 	public String rowColour = "";
+	public String tableSeparator = "";
 
 	public TableFormatter(ICommandSender commandSender) {
 		boolean chat = commandSender instanceof Entity;
@@ -78,6 +79,7 @@ public class TableFormatter {
 				cSplit = "";
 			}
 		}
+		sb.append(tableSeparator);
 		currentHeadings.clear();
 		currentData.clear();
 	}
@@ -99,6 +101,9 @@ public class TableFormatter {
 	 * http://stackoverflow.com/a/10554128/250076
 	 */
 	public static String formatDoubleWithPrecision(double val, int precision) {
+		if (Double.isInfinite(val) || Double.isNaN(val)) {
+			return Double.toString(val);
+		}
 		StringBuilder sb = new StringBuilder();
 		if (val < 0) {
 			sb.append('-');

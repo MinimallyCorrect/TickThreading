@@ -1,5 +1,7 @@
 package me.nallar.tickthreading.minecraft.profiling;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,15 +11,77 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.google.common.base.Functions;
 import com.google.common.collect.Ordering;
 
+import me.nallar.tickthreading.minecraft.TickManager;
+import me.nallar.tickthreading.minecraft.TickThreading;
+import me.nallar.tickthreading.minecraft.commands.ProfileCommand;
 import me.nallar.tickthreading.util.MappingUtil;
 import me.nallar.tickthreading.util.TableFormatter;
 import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.World;
 import org.cliffc.high_scale_lib.NonBlockingHashMap;
 
 public class EntityTickProfiler {
+	public static final EntityTickProfiler ENTITY_TICK_PROFILER = new EntityTickProfiler();
+	public static ProfileCommand.ProfilingState profilingState = ProfileCommand.ProfilingState.NONE;
 	private int ticks;
 	private final AtomicLong totalTime = new AtomicLong();
+
+	private EntityTickProfiler() {
+	}
+
+	public static synchronized boolean startProfiling(ProfileCommand.ProfilingState profilingState_) {
+		if (profilingState != ProfileCommand.ProfilingState.NONE) {
+			return false;
+		}
+		profilingState = profilingState_;
+		return true;
+	}
+
+	public static synchronized void endProfiling() {
+		profilingState = ProfileCommand.ProfilingState.NONE;
+	}
+
+	public boolean startProfiling(final Runnable runnable, ProfileCommand.ProfilingState state, final int time, final Collection<World> worlds_) {
+		if (time <= 0) {
+			throw new IllegalArgumentException("time must be > 0");
+		}
+		final Collection<World> worlds = new ArrayList<World>(worlds_);
+		synchronized (EntityTickProfiler.class) {
+			if (!startProfiling(state)) {
+				return false;
+			}
+			for (World world_ : worlds) {
+				TickThreading.instance.getManager(world_).profilingEnabled = true;
+			}
+		}
+
+		Runnable profilingRunnable = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					Thread.sleep(1000 * time);
+				} catch (InterruptedException ignored) {
+				}
+
+				synchronized (EntityTickProfiler.class) {
+					endProfiling();
+					runnable.run();
+					clear();
+					for (World world_ : worlds) {
+						TickManager tickManager = TickThreading.instance.getManager(world_);
+						if (tickManager != null) {
+							tickManager.profilingEnabled = false;
+						}
+					}
+				}
+			}
+		};
+		Thread profilingThread = new Thread(profilingRunnable);
+		profilingThread.setName("TickProfiler");
+		profilingThread.start();
+		return true;
+	}
 
 	public void record(Object o, long time) {
 		if (time < 0) {
@@ -41,7 +105,9 @@ public class EntityTickProfiler {
 	}
 
 	public void tick() {
-		ticks++;
+		if (profilingState != ProfileCommand.ProfilingState.NONE) {
+			ticks++;
+		}
 	}
 
 	public TableFormatter writeData(TableFormatter tf) {
@@ -53,6 +119,7 @@ public class EntityTickProfiler {
 		for (Map.Entry<Object, AtomicLong> entry : this.singleTime.entrySet()) {
 			singleTime.put(entry.getKey(), entry.getValue().get());
 		}
+		double totalTime = this.totalTime.get();
 		final List<Object> sortedSingleKeysByTime = Ordering.natural().reverse().onResultOf(Functions.forMap(singleTime)).immutableSortedCopy(singleTime.keySet());
 		tf
 				.heading("Obj")
@@ -62,7 +129,48 @@ public class EntityTickProfiler {
 			tf
 					.row(niceName(sortedSingleKeysByTime.get(i)))
 					.row(singleTime.get(sortedSingleKeysByTime.get(i)) / (1000000d * singleInvocationCount.get(sortedSingleKeysByTime.get(i)).get()))
-					.row((singleTime.get(sortedSingleKeysByTime.get(i)) / (double) totalTime.get()) * 100);
+					.row((singleTime.get(sortedSingleKeysByTime.get(i)) / totalTime) * 100);
+		}
+		tf.finishTable();
+		tf.sb.append('\n');
+		final Map<ChunkCoords, ComparableLongHolder> chunkTimeMap = new HashMap<ChunkCoords, ComparableLongHolder>() {
+			@Override
+			public ComparableLongHolder get(Object key_) {
+				ChunkCoords key = (ChunkCoords) key_;
+				ComparableLongHolder value = super.get(key);
+				if (value == null) {
+					value = new ComparableLongHolder();
+					put(key, value);
+				}
+				return value;
+			}
+		};
+		for (Object o : sortedSingleKeysByTime) {
+			int x = Integer.MIN_VALUE;
+			int z = Integer.MIN_VALUE;
+			if (o instanceof Entity) {
+				x = ((Entity) o).chunkCoordX;
+				z = ((Entity) o).chunkCoordZ;
+			} else if (o instanceof TileEntity) {
+				x = ((TileEntity) o).xCoord >> 4;
+				z = ((TileEntity) o).zCoord >> 4;
+			}
+			if (x != Integer.MIN_VALUE) {
+				chunkTimeMap.get(new ChunkCoords(x, z)).value += singleTime.get(o);
+			}
+		}
+		final List<ChunkCoords> sortedChunkCoordsByTime = Ordering.natural().reverse().onResultOf(Functions.forMap(chunkTimeMap)).immutableSortedCopy(chunkTimeMap.keySet());
+		tf
+				.heading("Chunk")
+				.heading("Time/Tick")
+				.heading("%");
+		for (int i = 0; i < 5 && i < sortedChunkCoordsByTime.size(); i++) {
+			ChunkCoords chunkCoordIntPair = sortedChunkCoordsByTime.get(i);
+			long chunkTime = chunkTimeMap.get(chunkCoordIntPair).value;
+			tf
+					.row(chunkCoordIntPair.chunkXPos + ", " + chunkCoordIntPair.chunkZPos)
+					.row(chunkTime / (1000000d * ticks))
+					.row((chunkTime / totalTime) * 100);
 		}
 		tf.finishTable();
 		tf.sb.append('\n');
@@ -75,7 +183,7 @@ public class EntityTickProfiler {
 			tf
 					.row(niceName(sortedKeysByTime.get(i)))
 					.row(time.get(sortedKeysByTime.get(i)) / (1000000d * ticks))
-					.row((time.get(sortedKeysByTime.get(i)) / (double) totalTime.get()) * 100);
+					.row((time.get(sortedKeysByTime.get(i)) / totalTime) * 100);
 		}
 		tf.finishTable();
 		tf.sb.append('\n');
@@ -182,5 +290,38 @@ public class EntityTickProfiler {
 			}
 		}
 		return t;
+	}
+
+	private class ComparableLongHolder implements Comparable<ComparableLongHolder> {
+		public long value;
+
+		ComparableLongHolder() {
+		}
+
+		@Override
+		public int compareTo(final ComparableLongHolder comparableLongHolder) {
+			long otherValue = comparableLongHolder.value;
+			return (value < otherValue) ? -1 : ((value == otherValue) ? 0 : 1);
+		}
+	}
+
+	private static final class ChunkCoords {
+		public final int chunkXPos;
+		public final int chunkZPos;
+
+		ChunkCoords(final int chunkXPos, final int chunkZPos) {
+			this.chunkXPos = chunkXPos;
+			this.chunkZPos = chunkZPos;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			return o instanceof ChunkCoords && ((ChunkCoords) o).chunkXPos == this.chunkXPos && ((ChunkCoords) o).chunkZPos == this.chunkZPos;
+		}
+
+		@Override
+		public int hashCode() {
+			return (chunkXPos * 7907) + chunkXPos;
+		}
 	}
 }

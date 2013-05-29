@@ -25,11 +25,8 @@ public class EntityTickRegion extends TickRegion {
 	public void doTick() {
 		ChunkProviderServer chunkProvider = (ChunkProviderServer) world.getChunkProvider();
 		boolean profilingEnabled = manager.profilingEnabled || this.profilingEnabled;
-		EntityTickProfiler entityTickProfiler = null;
+		EntityTickProfiler entityTickProfiler = profilingEnabled ? EntityTickProfiler.ENTITY_TICK_PROFILER : null;
 		long startTime = 0;
-		if (profilingEnabled) {
-			entityTickProfiler = manager.entityTickProfiler;
-		}
 		Iterator<Entity> entitiesIterator = entitySet.startIteration();
 		try {
 			while (entitiesIterator.hasNext()) {

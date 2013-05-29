@@ -1,23 +1,33 @@
 package me.nallar.tickthreading.minecraft;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
+
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.IPlayerTracker;
+import cpw.mods.fml.common.IScheduledTickHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
+import cpw.mods.fml.common.TickType;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.common.registry.GameRegistry;
+import cpw.mods.fml.common.registry.TickRegistry;
 import cpw.mods.fml.relauncher.RelaunchClassLoader;
+import cpw.mods.fml.relauncher.Side;
 import javassist.is.faulty.Timings;
 import me.nallar.collections.IntSet;
 import me.nallar.reporting.LeakDetector;
@@ -31,6 +41,7 @@ import me.nallar.tickthreading.minecraft.commands.TicksCommand;
 import me.nallar.tickthreading.minecraft.entitylist.EntityList;
 import me.nallar.tickthreading.minecraft.entitylist.LoadedEntityList;
 import me.nallar.tickthreading.minecraft.entitylist.LoadedTileEntityList;
+import me.nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
 import me.nallar.tickthreading.util.LocationUtil;
 import me.nallar.tickthreading.util.PatchUtil;
 import me.nallar.tickthreading.util.ReflectUtil;
@@ -71,6 +82,7 @@ public class TickThreading {
 	public String messageDeadlockDetected = "The server appears to have frozen and will restart soon if it does not recover. :(";
 	public String messageDeadlockRecovered = "The server has recovered and will not need to restart. :)";
 	public String messageDeadlockSavingExiting = "The server is saving the world and restarting - be right back!";
+	private String profilingFileName = "profile.txt";
 	public boolean exitOnDeadlock = false;
 	public boolean requireOpForTicksCommand = true;
 	public boolean requireOpForProfileCommand = true;
@@ -89,6 +101,7 @@ public class TickThreading {
 	public int chunkGCInterval = 1200;
 	private int tickThreads = 0;
 	private int regionSize = 16;
+	private int profilingInterval = 0;
 	public boolean variableTickRate = true;
 	private boolean appliedEnergisticsLoaded = false;
 	private DeadLockDetector deadLockDetector;
@@ -121,11 +134,20 @@ public class TickThreading {
 	@Mod.Init
 	public void init(FMLInitializationEvent event) {
 		MinecraftForge.EVENT_BUS.register(this);
+		initPeriodicProfiling();
 		if (!enableBugWarningMessage) {
 			return;
 		}
 		appliedEnergisticsLoaded = Loader.isModLoaded("AppliedEnergistics");
 		GameRegistry.registerPlayerTracker(new LoginWarningHandler());
+	}
+
+	private void initPeriodicProfiling() {
+		final int profilingInterval = this.profilingInterval;
+		if (profilingInterval == 0) {
+			return;
+		}
+		TickRegistry.registerScheduledTickHandler(new ProfilingScheduledTickHandler(profilingInterval, MinecraftServer.getServer().getFile(profilingFileName)), Side.SERVER);
 	}
 
 	@SuppressWarnings ("FieldRepeatedlyAccessedInMethod")
@@ -163,6 +185,8 @@ public class TickThreading {
 		cleanWorlds = config.get(GENERAL, "cleanWorlds", cleanWorlds, "Whether to clean worlds on unload - this should fix some memory leaks due to mods holding on to world objects").getBoolean(cleanWorlds);
 		allowWorldUnloading = config.get(GENERAL, "allowWorldUnloading", allowWorldUnloading, "Whether worlds should be allowed to unload.").getBoolean(allowWorldUnloading);
 		enableBugWarningMessage = config.get(GENERAL, "enableBugWarningMessage", enableBugWarningMessage, "Whether to enable warning if there are severe known compatibility issues with the current TT build you are using and your installed mods. Highly recommend leaving this enabled, if you disable it chances are you'll get users experiencing these issues annoying mod authors, which I really don't want to happen.").getBoolean(enableBugWarningMessage);
+		profilingInterval = config.get(GENERAL, "profilingInterval", profilingInterval, "Interval, in minutes, to record profiling information to disk. 0 = never. Recommended >= 5.").getInt();
+		profilingFileName = config.get(GENERAL, "profilingFileName", profilingFileName, "Location to store profiling information to. For example, why not store it in a computercraft computer's folder?").value;
 		config.save();
 		int[] disabledDimensions = config.get(GENERAL, "disableFastMobSpawningDimensions", new int[]{-1}, "List of dimensions not to enable fast spawning in.").getIntList();
 		disabledFastMobSpawningDimensions = new HashSet<Integer>(disabledDimensions.length);
@@ -342,6 +366,58 @@ public class TickThreading {
 
 		@Override
 		public void onPlayerRespawn(final EntityPlayer player) {
+		}
+	}
+
+	private static class ProfilingScheduledTickHandler implements IScheduledTickHandler {
+		private static final EnumSet<TickType> TICKS = EnumSet.of(TickType.SERVER);
+		private final int profilingInterval;
+		private final File profilingFile;
+		private int counter = 0;
+
+		public ProfilingScheduledTickHandler(final int profilingInterval, final File profilingFile) {
+			this.profilingInterval = profilingInterval;
+			this.profilingFile = profilingFile;
+		}
+
+		@Override
+		public int nextTickSpacing() {
+			return 1;
+		}
+
+		@Override
+		public void tickStart(final EnumSet<TickType> type, final Object... tickData) {
+			final EntityTickProfiler entityTickProfiler = EntityTickProfiler.ENTITY_TICK_PROFILER;
+			entityTickProfiler.tick();
+			if (counter++ % profilingInterval * 60 * 20 != 0) {
+				return;
+			}
+			entityTickProfiler.startProfiling(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						TableFormatter tf = new TableFormatter(MinecraftServer.getServer());
+						tf.tableSeparator = "\n";
+						Files.write(entityTickProfiler.writeData(tf).toString(), profilingFile, Charsets.UTF_8);
+					} catch (Throwable t) {
+						Log.severe("Failed to save periodic profiling data to " + profilingFile, t);
+					}
+				}
+			}, ProfileCommand.ProfilingState.GLOBAL, 20, Arrays.<World>asList(DimensionManager.getWorlds()));
+		}
+
+		@Override
+		public void tickEnd(final EnumSet<TickType> type, final Object... tickData) {
+		}
+
+		@Override
+		public EnumSet<TickType> ticks() {
+			return TICKS;
+		}
+
+		@Override
+		public String getLabel() {
+			return "TickThreading scheduled profiling handler";
 		}
 	}
 }
