@@ -477,7 +477,7 @@
 			<public all="true"/>
 		</class>
 		<class id="net.minecraftforge.common.ForgeChunkManager" env="mcpc">
-			<removeFieldAndInitializers field="forcedChunks"/>
+			<removeFieldAndInitializers field="forcedChunks" silent="true"/>
 		</class>
 		<class id="net.minecraftforge.common.ForgeChunkManager">
 			<addAll fromClass="me.nallar.patched.forge.PatchForgeChunkManager"/>
@@ -779,8 +779,33 @@
 		</class>
 	</gregTech>
 	<chickenChunks>
+		<class id="codechicken.chunkloader.ChunkLoaderManager">
+			<disable>cleanChunks</disable>
+			<disable>tickEnd</disable>
+			<newMethod code="
+			public static void serverTick() {
+        if (^class:MinecraftServer^.^method:MinecraftServer/getServer^().currentTick % 1200 == 0) {
+        	updateLoginTimes();
+        }
+      	tickDownUnloads();
+      	revivePlayerLoaders();
+			}
+			"/>
+			<replaceMethodCall newMethod="getTEWithLoad" method="^class:World^.^method:World/getBlockTileEntity^">^all^</replaceMethodCall>
+			<replaceMethodCall newMethod="getBlockIdWithLoad" method="^class:World^.^method:World/getBlockId^">^all^</replaceMethodCall>
+		</class>
 		<class id="codechicken.chunkloader.ChunkLoaderEventHandler">
 			<replaceMethod code="return java.util.EnumSet.of(cpw.mods.fml.common.TickType.SERVER, cpw.mods.fml.common.TickType.WORLD);">ticks</replaceMethod>
+			<replaceMethod code="{
+			if($1.contains(cpw.mods.fml.common.TickType.SERVER)) {
+			   codechicken.chunkloader.ChunkLoaderManager.serverTick();
+         codechicken.chunkloader.PlayerChunkViewerManager.instance().update();
+      }
+
+      if($1.contains(cpw.mods.fml.common.TickType.WORLD)) {
+         codechicken.chunkloader.PlayerChunkViewerManager.instance().calculateChunkChanges((^class:WorldServer^)$2[0]);
+      }
+			}">tickEnd</replaceMethod>
 		</class>
 		<class id="codechicken.chunkloader.PlayerChunkViewerManager">
 			<replaceInitializer field="ticketIDs" class="me.nallar.collections.CHashMap"/>
@@ -927,11 +952,6 @@
 			</replaceMethod>
 			<synchronize>update</synchronize>
 			<synchronize field="$1.b.g">calculateChunkChanges</synchronize>
-		</class>
-		<class id="codechicken.chunkloader.ChunkLoaderManager">
-			<disable>cleanChunks</disable>
-			<replaceMethodCall newMethod="getTEWithLoad" method="^class:World^.^method:World/getBlockTileEntity^">^all^</replaceMethodCall>
-			<replaceMethodCall newMethod="getBlockIdWithLoad" method="^class:World^.^method:World/getBlockId^">^all^</replaceMethodCall>
 		</class>
 		<class id="codechicken.chunkloader.ChunkLoaderManager$ChunkLoaderOrganiser">
 			<replaceMethodCall newMethod="getTEWithLoad" method="^class:World^.^method:World/getBlockTileEntity^">^all^</replaceMethodCall>

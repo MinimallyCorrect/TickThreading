@@ -1190,8 +1190,16 @@ public class Patches {
 	@Patch (
 			requiredAttributes = "field"
 	)
-	public void removeFieldAndInitializers(CtClass ctClass, Map<String, String> attributes) throws NotFoundException, CannotCompileException {
-		CtField ctField = ctClass.getDeclaredField(attributes.get("field"));
+	public void removeFieldAndInitializers(CtClass ctClass, Map<String, String> attributes) throws CannotCompileException, NotFoundException {
+		CtField ctField;
+		try {
+			ctField = ctClass.getDeclaredField(attributes.get("field"));
+		} catch (NotFoundException e) {
+			if (!attributes.containsKey("silent")) {
+				Log.severe("Couldn't find field " + attributes.get("field"));
+			}
+			return;
+		}
 		for (CtBehavior ctBehavior : ctClass.getDeclaredConstructors()) {
 			removeInitializers(ctBehavior, ctField);
 		}

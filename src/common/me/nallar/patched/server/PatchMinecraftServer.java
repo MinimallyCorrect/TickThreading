@@ -57,7 +57,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	private Integer[] dimensionIdsToTick;
 	private Runnable tickRunnable;
 	@SuppressWarnings ("FieldCanBeLocal") // Used by Spigot.
-	private static int currentTick;
+	public static int currentTick;
 	private static int TARGET_TPS;
 	private static int TARGET_TICK_TIME;
 	private static int NETWORK_TPS;
