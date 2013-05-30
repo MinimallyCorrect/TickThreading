@@ -19,8 +19,19 @@ import cpw.mods.fml.common.DuplicateModsFoundException;
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
+import me.nallar.tickthreading.patcher.Declare;
 
 public abstract class PatchLoader extends Loader {
+	public static boolean isModLoaded(String modname) {
+		return instance().isModLoadedFast(modname);
+	}
+
+	@Override
+	@Declare
+	public boolean isModLoadedFast(String modname) {
+		return namedMods.containsKey(modname);
+	}
+
 	@Override
 	protected void identifyDuplicates(List<ModContainer> mods) {
 		Map<String, List<ModContainer>> modsMap = new HashMap<String, List<ModContainer>>();
