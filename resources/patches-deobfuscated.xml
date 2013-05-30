@@ -1005,7 +1005,35 @@
 			<synchronize>tickStart</synchronize>
 		</class>
 		<class id="ee.lutsu.alpha.mc.mytown.MyTownDatasource">
-			<synchronize field="$1.intern()">getOrMakeResident(Ljava.lang.String;)Lee.lutsu.alpha.mc.mytown.entities.Resident;</synchronize>
+			<replaceInitializer field="residents" class="me.nallar.collections.SynchronizedSet"/>
+			<replaceInitializer field="towns" class="me.nallar.collections.SynchronizedSet"/>
+			<replaceInitializer field="blocks" class="me.nallar.collections.SynchronizedSet"/>
+			<replaceInitializer field="nations" class="me.nallar.collections.SynchronizedSet"/>
+			<newField field="residentsMap" class="java.util.concurrent.ConcurrentHashMap"/>
+			<replaceMethod code="return (ee.lutsu.alpha.mc.mytown.entities.Resident) residentsMap.get($1.^field:EntityPlayer/username^);">getResident(L^class:EntityPlayer^;)Lee.lutsu.alpha.mc.mytown.entities.Resident;</replaceMethod>
+			<replaceMethod code="return (ee.lutsu.alpha.mc.mytown.entities.Resident) residentsMap.get($1);">getResident(Ljava.lang.String;)Lee.lutsu.alpha.mc.mytown.entities.Resident;</replaceMethod>
+			<replaceMethod code="{
+				ee.lutsu.alpha.mc.mytown.entities.Resident resident = getOrMakeResident($1.^field:EntityPlayer/username^);
+				resident.onlinePlayer = $1;
+				return resident;
+			}">getOrMakeResident(L^class:EntityPlayer^;)Lee.lutsu.alpha.mc.mytown.entities.Resident;</replaceMethod>
+			<replaceMethod code="{
+				ee.lutsu.alpha.mc.mytown.entities.Resident resident = (ee.lutsu.alpha.mc.mytown.entities.Resident) residentsMap.get($1);
+				if (resident != null) {
+					return resident;
+				}
+				synchronized(this) {
+					resident = (ee.lutsu.alpha.mc.mytown.entities.Resident) residentsMap.get($1);
+					if (resident != null) {
+						return resident;
+					}
+					resident = new ee.lutsu.alpha.mc.mytown.entities.Resident($1);
+					residents.add(resident);
+					residentsMap.put($1, resident);
+				}
+
+				return resident;
+			}">getOrMakeResident(Ljava.lang.String;)Lee.lutsu.alpha.mc.mytown.entities.Resident;</replaceMethod>
 		</class>
 	</myTown>
 	<soulShards>
