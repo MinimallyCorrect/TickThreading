@@ -280,7 +280,9 @@ public class Log {
 	}
 
 	public static String name(World world) {
-		if (world.provider == null) {
+		if (world == null) {
+			return "null world.";
+		} else if (world.provider == null) {
 			return "Broken world with ID " + MinecraftServer.getServer().getId((WorldServer) world);
 		}
 		return world.getName();
@@ -291,21 +293,26 @@ public class Log {
 	}
 
 	public static String toString(Object o) {
-		if (o instanceof World) {
-			return name((World) o);
-		}
-		String cS = classString(o);
-		String s = o.toString();
-		if (!s.startsWith(cS)) {
-			s = cS + s;
-		}
-		if (o instanceof TileEntity) {
-			TileEntity tE = (TileEntity) o;
-			if (!s.contains(" x, y, z: ")) {
-				s += " x, y, z: " + tE.xCoord + ", " + tE.yCoord + ", " + tE.zCoord;
+		try {
+			if (o instanceof World) {
+				return name((World) o);
 			}
+			String cS = classString(o);
+			String s = o.toString();
+			if (!s.startsWith(cS)) {
+				s = cS + s;
+			}
+			if (o instanceof TileEntity) {
+				TileEntity tE = (TileEntity) o;
+				if (!s.contains(" x, y, z: ")) {
+					s += " x, y, z: " + tE.xCoord + ", " + tE.yCoord + ", " + tE.zCoord;
+				}
+			}
+			return s;
+		} catch (Throwable t) {
+			Log.severe("Failed to perform toString on object of class " + o.getClass(), t);
+			return "unknown";
 		}
-		return s;
 	}
 
 	public static void log(Level level, Throwable throwable, String s) {
