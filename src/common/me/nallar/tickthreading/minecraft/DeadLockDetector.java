@@ -105,7 +105,6 @@ public class DeadLockDetector {
 		Log.flush();
 		long deadTime = System.nanoTime() - lastTickTime;
 		if (lastTickTime == 0 || (!MinecraftServer.getServer().isServerRunning() && deadTime < (TickThreading.instance.deadLockTime * 10000000000l))) {
-			attemptedToRecoverDeadlock = false;
 			return true;
 		}
 		if (TickThreading.instance.exitOnDeadlock) {
@@ -119,6 +118,7 @@ public class DeadLockDetector {
 			}
 		}
 		if (deadTime < (TickThreading.instance.deadLockTime * 1000000000l)) {
+			attemptedToRecoverDeadlock = false;
 			return true;
 		}
 		final MinecraftServer minecraftServer = MinecraftServer.getServer();
