@@ -349,6 +349,13 @@ public abstract class PatchWorld extends World {
 
 	@Override
 	public void updateEntityWithOptionalForce(Entity entity, boolean notForced) {
+		Chunk chunk = entity.chunk;
+		if (chunk != null && chunk.queuedUnload) {
+			return;
+		}
+		if (chunk.partiallyUnloaded) {
+			entity.chunk = chunk = null;
+		}
 		int x = MathHelper.floor_double(entity.posX);
 		int z = MathHelper.floor_double(entity.posZ);
 		boolean periodicUpdate = forcedUpdateCount++ % 19 == 0;
@@ -362,7 +369,7 @@ public abstract class PatchWorld extends World {
 			byte range = isForced ? (byte) 0 : 48;
 			entity.canUpdate = canUpdate_ = !notForced || this.checkChunksExist(x - range, 0, z - range, x + range, 0, z + range);
 		} else if (canUpdate_) {
-			entity.canUpdate = canUpdate_ = !notForced || chunkExists(x >> 4, z >> 4);
+			entity.canUpdate = canUpdate_ = !notForced || chunk != null || chunkExists(x >> 4, z >> 4);
 		}
 		boolean canUpdate = canUpdate_;
 		if (canUpdate) {
@@ -409,19 +416,22 @@ public abstract class PatchWorld extends World {
 
 			if (!entity.addedToChunk || entity.chunkCoordX != cX || entity.chunkCoordY != cY || entity.chunkCoordZ != cZ) {
 				if (entity.addedToChunk) {
-					Chunk chunk = getChunkIfExists(entity.chunkCoordX, entity.chunkCoordZ);
+					if (chunk == null) {
+						chunk = getChunkIfExists(entity.chunkCoordX, entity.chunkCoordZ);
+					}
 					if (chunk != null) {
 						chunk.removeEntityAtIndex(entity, entity.chunkCoordY);
 					}
 				}
 
-				Chunk chunk = getChunkIfExists(cX, cZ);
+				chunk = getChunkIfExists(cX, cZ);
 				if (chunk != null) {
 					entity.addedToChunk = true;
 					chunk.addEntity(entity);
 				} else {
 					entity.addedToChunk = false;
 				}
+				entity.chunk = chunk;
 			}
 
 			this.theProfiler.endSection();

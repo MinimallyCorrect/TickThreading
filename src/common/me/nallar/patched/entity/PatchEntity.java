@@ -10,6 +10,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
 
 public abstract class PatchEntity extends Entity {
 	@Declare
@@ -20,6 +21,8 @@ public abstract class PatchEntity extends Entity {
 	public me.nallar.tickthreading.minecraft.tickregion.EntityTickRegion tickRegion_;
 	@Declare
 	public int collisionSkipCounter_;
+	@Declare
+	public net.minecraft.world.chunk.Chunk chunk_;
 	private int lavaCheckTicks;
 	private boolean inLava;
 
