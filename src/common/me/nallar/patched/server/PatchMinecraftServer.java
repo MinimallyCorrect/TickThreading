@@ -24,6 +24,7 @@ import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.DeadLockDetector;
 import me.nallar.tickthreading.minecraft.ThreadManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
+import me.nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
 import me.nallar.tickthreading.patcher.Declare;
 import me.nallar.tickthreading.util.EnvironmentInfo;
 import me.nallar.tickthreading.util.FakeServerThread;
@@ -274,6 +275,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		TickThreading.recentSpawnedItems = 0;
 		DeadLockDetector.tick(startTime);
 		Timings.tick();
+		EntityTickProfiler.ENTITY_TICK_PROFILER.tick();
 
 		if (this.startProfiling) {
 			this.startProfiling = false;

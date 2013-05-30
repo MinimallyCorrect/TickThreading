@@ -367,7 +367,6 @@ public class TickThreading {
 		private static final EnumSet<TickType> TICKS = EnumSet.of(TickType.SERVER);
 		private final int profilingInterval;
 		private final File profilingFile;
-		private int counter = 0;
 
 		public ProfilingScheduledTickHandler(final int profilingInterval, final File profilingFile) {
 			this.profilingInterval = profilingInterval;
@@ -376,16 +375,12 @@ public class TickThreading {
 
 		@Override
 		public int nextTickSpacing() {
-			return 1;
+			return profilingInterval * 60 * 20;
 		}
 
 		@Override
 		public void tickStart(final EnumSet<TickType> type, final Object... tickData) {
 			final EntityTickProfiler entityTickProfiler = EntityTickProfiler.ENTITY_TICK_PROFILER;
-			entityTickProfiler.tick();
-			if (counter++ % (profilingInterval * 60 * 20) != 0) {
-				return;
-			}
 			entityTickProfiler.startProfiling(new Runnable() {
 				@Override
 				public void run() {
