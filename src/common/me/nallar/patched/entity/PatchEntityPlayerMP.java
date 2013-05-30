@@ -34,5 +34,9 @@ public abstract class PatchEntityPlayerMP extends EntityPlayerMP {
 
 			this.playerNetServerHandler.sendPacketToPlayer(new Packet29DestroyEntity(removedItems));
 		}
+
+		if (playerNetServerHandler.connectionClosed) {
+			worldObj.removePlayerEntityDangerously(this);
+		}
 	}
 }

@@ -352,9 +352,8 @@ public abstract class PatchWorld extends World {
 		Chunk chunk = entity.chunk;
 		if (notForced && chunk != null) {
 			if (chunk.partiallyUnloaded) {
-				Log.warning("Entity " + entity + " is in a partially unloaded chunk", new Throwable());
-				entity.chunk = null;
-				unloadedEntitySet.add(entity);
+				chunk.removeEntity(entity);
+				entity.addedToChunk = false;
 				return;
 			} else if (chunk.queuedUnload) {
 				return;

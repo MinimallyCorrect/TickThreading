@@ -200,6 +200,20 @@ public abstract class PatchChunk extends Chunk {
 	}
 
 	@Override
+	public void removeEntityAtIndex(Entity e, int index) {
+		if (index < 0) {
+			index = 0;
+		}
+
+		if (index >= this.entityLists.length) {
+			index = this.entityLists.length - 1;
+		}
+
+		this.entityLists[index].remove(e);
+		e.chunk = null;
+	}
+
+	@Override
 	public void onChunkLoad() {
 		for (TileEntity tileEntity : toInvalidate) {
 			tileEntity.invalidate();
