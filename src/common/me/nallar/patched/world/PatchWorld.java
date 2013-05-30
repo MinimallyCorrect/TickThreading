@@ -350,7 +350,7 @@ public abstract class PatchWorld extends World {
 	@Override
 	public void updateEntityWithOptionalForce(Entity entity, boolean notForced) {
 		Chunk chunk = entity.chunk;
-		if (chunk != null) {
+		if (notForced && chunk != null) {
 			if (chunk.partiallyUnloaded) {
 				Log.warning("Entity " + entity + " is in a partially unloaded chunk", new Throwable());
 				entity.chunk = null;
