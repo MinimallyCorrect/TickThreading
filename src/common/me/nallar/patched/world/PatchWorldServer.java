@@ -518,7 +518,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 			int cZ = chunkCoordIntPair.chunkZPos;
 
 			Chunk chunk = chunkProviderServer.getChunkFastUnsafe(cX, cZ);
-			if (chunk == null || !chunk.isTerrainPopulated || chunk.partiallyUnloaded) {
+			if (chunk == null || !chunk.isTerrainPopulated || chunk.partiallyUnloaded || chunk.queuedUnload) {
 				continue;
 			}
 
