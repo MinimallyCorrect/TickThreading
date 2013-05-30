@@ -66,7 +66,14 @@ public class ProfileCommand extends Command {
 		final boolean entity = entity_;
 		final boolean location = location_;
 		if (location) {
-			world = commandSender instanceof Entity ? ((Entity) commandSender).worldObj : DimensionManager.getWorld(0);
+			if (commandSender instanceof Entity) {
+				Entity e = (Entity) commandSender;
+				x = e.chunkCoordX;
+				z = e.chunkCoordZ;
+				world = e.worldObj;
+			} else {
+				world = DimensionManager.getWorld(0);
+			}
 		}
 		final TickManager manager = TickThreading.instance.getManager(world == null ? DimensionManager.getWorld(0) : world);
 		final List<World> worlds = new ArrayList<World>();
@@ -95,7 +102,7 @@ public class ProfileCommand extends Command {
 				manager.getEntityRegion(hashCode).profilingEnabled = true;
 				manager.getTileEntityRegion(hashCode).profilingEnabled = true;
 			}
-			sendChat(commandSender, "Profiling for " + time + " seconds in " + (world == null ? "all worlds " : Log.name(world)) + (location ? " at " + x + ',' + z : ""));
+			sendChat(commandSender, "Profiling for " + time + " seconds in " + (world == null ? "all worlds " : Log.name(world)) + (location ? " at chunk coords " + x + ',' + z : ""));
 			return;
 		}
 		if (Timings.enabled) {
