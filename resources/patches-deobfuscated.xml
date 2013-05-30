@@ -637,6 +637,31 @@
 			<synchronize>transferEnergy,removeNode,removeConduit,setNewGrid,changeMode,increaseTracker,addNode,addConduit</synchronize>
 		</class>
 	</thermalExpansionTransport>
+	<thremalExpansionFactory>
+		<class id="thermalexpansion.factory.tileentity.TilePortableTank">
+			<replaceMethod code="{
+				if (this.myTank.getLiquidAmount() &lt;= 0) {
+					return;
+				}
+
+				int[] coords = cofh.core.BlockUtils.getAdjacentCoordinatesForSide(this.l, this.m, this.n, 0);
+
+				any theTile = this.k.q(coords[0], coords[1], coords[2]);
+				if (theTile instanceof net.minecraftforge.liquids.ITankContainer) {
+					if (theTile instanceof thermalexpansion.factory.tileentity.TilePortableTank &amp;&amp;
+							!((((thermalexpansion.factory.tileentity.TilePortableTank)theTile).myTank.getLiquidID() &lt;= 0) ||
+							(((thermalexpansion.factory.tileentity.TilePortableTank)theTile).myTank.getLiquidAmount() != 8000))) {
+						return;
+					}
+					int fillQty = Math.min(this.myTank.getLiquidAmount(), 100);
+					int quantity = ((net.minecraftforge.liquids.ITankContainer)theTile).fill(net.minecraftforge.common.ForgeDirection.UP, new net.minecraftforge.liquids.LiquidStack(this.myTank.getLiquidID(), fillQty, this.myTank.getLiquidMeta()), true);
+					if (quantity &gt; 0) {
+						this.myTank.drain(quantity, true);
+					}
+				}
+			}">transferLiquid</replaceMethod>
+		</class>
+	</thremalExpansionFactory>
 	<redPowerCore>
 		<class id="com.eloraam.redpower.core.RedPowerLib">
 			<threadLocal field="blockUpdates" type="java.util.HashSet" threadLocalField="javassist.is.faulty.ThreadLocals.redPowerBlockUpdateSet"/>
