@@ -404,7 +404,7 @@
 							} "
 							>getLoadedChunks
 			</replaceMethod>
-			<replaceFieldUsage class="^class:WorldServer^" field="^field:World/loadedEntityList^" readCode="$_ = world.getEntities();">getLivingEntities,getEntities,getEntitiesByClass</replaceFieldUsage>
+			<replaceFieldUsage class="^class:WorldServer^" field="^field:World/loadedEntityList^" readCode="$_ = world.getEntities();">getLivingEntities,getEntities,getEntitiesByClass(Ljava.lang.Class;)Ljava.util.Collection;,getEntitiesByClasses</replaceFieldUsage>
 			<replaceFieldUsage class="^class:WorldServer^" field="^field:World/loadedEntityList^" readCode="$_ = world.getPlayerEntities();">getPlayers</replaceFieldUsage>
 			<replaceMethod
 							code=" {
@@ -653,7 +653,7 @@
 							(((thermalexpansion.factory.tileentity.TilePortableTank)theTile).myTank.getLiquidAmount() != 8000))) {
 						return;
 					}
-					int fillQty = Math.min(this.myTank.getLiquidAmount(), 100);
+					int fillQty = Math.min(this.myTank.getLiquidAmount(), 250);
 					int quantity = ((net.minecraftforge.liquids.ITankContainer)theTile).fill(net.minecraftforge.common.ForgeDirection.UP, new net.minecraftforge.liquids.LiquidStack(this.myTank.getLiquidID(), fillQty, this.myTank.getLiquidMeta()), true);
 					if (quantity &gt; 0) {
 						this.myTank.drain(quantity, true);
