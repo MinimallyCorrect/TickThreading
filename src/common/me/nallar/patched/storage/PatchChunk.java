@@ -279,6 +279,7 @@ public abstract class PatchChunk extends Chunk {
 		par1Entity.chunkCoordY = var4;
 		par1Entity.chunkCoordZ = zPosition;
 		entityLists[var4].add(par1Entity);
+		par1Entity.chunk = this;
 	}
 
 	@Override
