@@ -40,31 +40,42 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 				mainThreadProcess = true;
 			}
 		}
-		synchronized (nsh) {
-			int teleported = nsh.teleported--;
-			boolean finishedTeleporting = teleported < 0;
-			if (finishedTeleporting && mainThreadProcess) {
-				finishedTeleporting = false;
-				teleported = nsh.teleported = -21;
-			}
-			double yPosition = this.yPosition;
-			if (yPosition > -100 && yPosition < -5 && entityPlayerMP.worldObj.getDimension() == 0) {
-				int newY = entityPlayerMP.worldObj.getHeightValue((int) xPosition, (int) zPosition) + 1;
-				if (newY > 1) {
-					nsh.setPlayerLocation(xPosition, newY, zPosition, entityPlayerMP.rotationYaw, entityPlayerMP.rotationPitch);
-					return;
+		long st = 0;
+		boolean timings = Timings.enabled;
+		if (timings) {
+			st = System.nanoTime();
+		}
+		try {
+			synchronized (nsh) {
+				int teleported = nsh.teleported--;
+				boolean finishedTeleporting = teleported < 0;
+				if (finishedTeleporting && mainThreadProcess) {
+					finishedTeleporting = false;
+					teleported = nsh.teleported = -21;
+				}
+				double yPosition = this.yPosition;
+				if (yPosition > -100 && yPosition < -5 && entityPlayerMP.worldObj.getDimension() == 0) {
+					int newY = entityPlayerMP.worldObj.getHeightValue((int) xPosition, (int) zPosition) + 1;
+					if (newY > 1) {
+						nsh.setPlayerLocation(xPosition, newY, zPosition, entityPlayerMP.rotationYaw, entityPlayerMP.rotationPitch);
+						return;
+					}
+				}
+				if ((yPosition == -999.0D && stance == -999.0D) || (finishedTeleporting && (teleported < -20 || (nsh.tpPosY < yPosition + 0.02)))) {
+					nsh.tpPosX = Double.NaN;
+					nsh.setHasMoved();
+					nsh.tpPosY = -256;
+					nsh.handleFlying(this);
+				} else if (teleported <= 7) {
+					nsh.updatePositionAfterTP(yaw, pitch);
+					if (teleported == 1) {
+						MinecraftServer.addPlayerToCheckWorld(entityPlayerMP);
+					}
 				}
 			}
-			if ((yPosition == -999.0D && stance == -999.0D) || (finishedTeleporting && (teleported < -20 || (nsh.tpPosY < yPosition + 0.02)))) {
-				nsh.tpPosX = Double.NaN;
-				nsh.setHasMoved();
-				nsh.tpPosY = -256;
-				nsh.handleFlying(this);
-			} else if (teleported <= 7) {
-				nsh.updatePositionAfterTP(yaw, pitch);
-				if (teleported == 1) {
-					MinecraftServer.addPlayerToCheckWorld(entityPlayerMP);
-				}
+		} finally {
+			if (timings) {
+				Timings.record("playerMovement", System.nanoTime() - st);
 			}
 		}
 	}
@@ -72,11 +83,6 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 	private static void sendChunks(EntityPlayerMP entityPlayerMP) {
 		NetServerHandler netServerHandler = entityPlayerMP.playerNetServerHandler;
 		if (!entityPlayerMP.loadedChunks.isEmpty()) {
-			long st = 0;
-			boolean timings = Timings.enabled;
-			if (timings) {
-				st = System.nanoTime();
-			}
 			ArrayList<ChunkCoordIntPair> unpopulatedChunks = new ArrayList<ChunkCoordIntPair>();
 			ArrayList<Chunk> chunks = new ArrayList<Chunk>(5);
 			ArrayList<TileEntity> tileEntities = new ArrayList<TileEntity>();
@@ -131,9 +137,6 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 						Log.severe("A mod failed to handle a ChunkWatch event", t);
 					}
 				}
-			}
-			if (timings) {
-				Timings.record("onMovement/chunks", System.nanoTime() - st);
 			}
 		}
 	}

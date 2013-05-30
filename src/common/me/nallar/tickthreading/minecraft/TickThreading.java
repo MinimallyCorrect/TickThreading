@@ -17,7 +17,6 @@ import com.google.common.io.Files;
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.IPlayerTracker;
 import cpw.mods.fml.common.IScheduledTickHandler;
-import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.TickType;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
