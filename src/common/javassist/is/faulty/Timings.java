@@ -75,7 +75,7 @@ public enum Timings {
 
 	private static String niceName(String clazz) {
 		int slash = clazz.lastIndexOf('/');
-		String suffix = clazz.substring(slash);
+		String suffix = slash == -1 ? clazz : clazz.substring(slash);
 		String name = MappingUtil.debobfuscate(clazz.substring(0, slash));
 		if (name.contains(".")) {
 			return name.substring(name.lastIndexOf('.') + 1) + suffix;
