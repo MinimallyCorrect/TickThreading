@@ -805,6 +805,16 @@
 		<class id="gregtechmod.common.tileentities.GT_TileEntity_IDSU">
 			<replaceMethodCall method="remove" code="{ $_ = null; }">setEnergyVar</replaceMethodCall>
 		</class>
+		<class id="gregtechmod.api.BaseMetaTileEntityMJ">
+			<synchronize>updateStatus,getPowerProvider,setPowerProvider</synchronize>
+			<replaceMethod code="{
+				buildcraft.api.power.IPowerProvider powerProvider = getPowerProvider();
+				if (powerProvider == null) {
+					return 0;
+				}
+				return Math.min(powerProvider.getMaxEnergyReceived(), (int) (powerProvider.getMaxEnergyStored() - powerProvider.getEnergyStored() + 0.5f));
+			}">powerRequest</replaceMethod>
+		</class>
 	</gregTech>
 	<chickenChunks>
 		<class id="codechicken.chunkloader.ChunkLoaderManager">
