@@ -351,11 +351,13 @@ public abstract class PatchWorld extends World {
 	public void updateEntityWithOptionalForce(Entity entity, boolean notForced) {
 		Chunk chunk = entity.chunk;
 		if (chunk != null) {
-			if (chunk.queuedUnload) {
-				return;
-			}
 			if (chunk.partiallyUnloaded) {
-				entity.chunk = chunk = null;
+				Log.warning("Entity " + entity + " is in a partially unloaded chunk", new Throwable());
+				entity.chunk = null;
+				unloadedEntitySet.add(entity);
+				return;
+			} else if (chunk.queuedUnload) {
+				return;
 			}
 		}
 		int x = MathHelper.floor_double(entity.posX);
