@@ -127,7 +127,7 @@ public class EntityTickProfiler {
 		double totalTime = this.totalTime.get();
 		final List<Object> sortedSingleKeysByTime = Ordering.natural().reverse().onResultOf(Functions.forMap(singleTime)).immutableSortedCopy(singleTime.keySet());
 		tf
-				.heading("Obj")
+				.heading("Single Entity")
 				.heading("Time/Tick")
 				.heading("%");
 		for (int i = 0; i < 5 && i < sortedSingleKeysByTime.size(); i++) {
@@ -181,8 +181,8 @@ public class EntityTickProfiler {
 		tf.sb.append('\n');
 		final List<Class<?>> sortedKeysByTime = Ordering.natural().reverse().onResultOf(Functions.forMap(time)).immutableSortedCopy(time.keySet());
 		tf
-				.heading("Class")
-				.heading("Total Time/Tick")
+				.heading("All Entities of Type")
+				.heading("Time/Tick")
 				.heading("%");
 		for (int i = 0; i < 5 && i < sortedKeysByTime.size(); i++) {
 			tf
@@ -198,7 +198,7 @@ public class EntityTickProfiler {
 		}
 		final List<Class<?>> sortedKeysByTimePerTick = Ordering.natural().reverse().onResultOf(Functions.forMap(timePerTick)).immutableSortedCopy(timePerTick.keySet());
 		tf
-				.heading("Class")
+				.heading("Average Entity of Type")
 				.heading("Time/tick")
 				.heading("Calls");
 		for (int i = 0; i < 5 && i < sortedKeysByTimePerTick.size(); i++) {
