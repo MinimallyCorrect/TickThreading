@@ -316,7 +316,10 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		}
 
 		if (ticks % 6000 == 0) {
-			this.usageSnooper.addMemoryStatsToSnooper();
+			try {
+				this.usageSnooper.addMemoryStatsToSnooper();
+			} catch (NullPointerException ignored) {
+			}
 		}
 
 		if (ticks % 1200 == 0) {
