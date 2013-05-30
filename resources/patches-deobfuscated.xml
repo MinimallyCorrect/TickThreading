@@ -444,6 +444,9 @@
 		</class>
 	</spigot>
 	<forge>
+		<class id=" net.minecraftforge.liquids.LiquidContainerRegistry">
+			<replace class="me.nallar.patched.forge.PatchLiquidContainerRegistry"/>
+		</class>
 		<class id="net.minecraftforge.common.Configuration">
 			<addAll fromClass="me.nallar.patched.forge.PatchConfiguration"/>
 		</class>
