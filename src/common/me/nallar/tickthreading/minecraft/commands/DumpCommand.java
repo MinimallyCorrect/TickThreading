@@ -48,6 +48,7 @@ public class DumpCommand extends Command {
 		}
 		if (world == null) {
 			sendChat(commandSender, "Usage: /dump x y z [world=currentworld]");
+			return;
 		}
 		sendChat(commandSender, dump(new TableFormatter(commandSender), world, x, y, z, commandSender instanceof Entity ? 35 : 70).toString());
 	}
