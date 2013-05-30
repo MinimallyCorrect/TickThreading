@@ -10,13 +10,7 @@ import net.minecraft.world.WorldServer;
 
 public abstract class PatchNetServerHandler extends NetServerHandler {
 	@Declare
-	public double averageSpeed_;
-	@Declare
-	public long lastMovement_;
-	@Declare
 	public volatile int teleported_;
-	@Declare
-	public long lastNotify_;
 	@Declare
 	public double tpPosX_;
 	@Declare
@@ -26,8 +20,7 @@ public abstract class PatchNetServerHandler extends NetServerHandler {
 	private double tpPosZ;
 
 	public void construct() {
-		teleported = 10;
-		averageSpeed = -1000;
+		teleported = 25;
 	}
 
 	@Override

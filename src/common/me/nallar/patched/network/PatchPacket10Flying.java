@@ -29,8 +29,9 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 		}
 		NetServerHandler nsh = (NetServerHandler) par1NetHandler;
 		EntityPlayerMP entityPlayerMP = nsh.playerEntity;
+		sendChunks(entityPlayerMP);
 		boolean mainThreadProcess = false;
-		if (entityPlayerMP.ridingEntity != null) {
+		if (nsh.teleported > 22 || entityPlayerMP.ridingEntity != null) {
 			if (Thread.currentThread() instanceof TcpReaderThread) {
 				TcpConnection tcpConnection = (TcpConnection) nsh.netManager;
 				tcpConnection.addReadPacket(this);
@@ -65,7 +66,6 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 					MinecraftServer.addPlayerToCheckWorld(entityPlayerMP);
 				}
 			}
-			sendChunks(entityPlayerMP);
 		}
 	}
 
