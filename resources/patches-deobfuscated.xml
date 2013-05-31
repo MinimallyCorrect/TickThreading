@@ -267,7 +267,7 @@
 		</class>
 		<class id="net.minecraft.nbt.NBTTagCompound">
 			<addAll fromClass="me.nallar.patched.nbt.PatchNBTTagCompound"/>
-			<replaceInitializer field="tagMap" class="me.nallar.collections.SynchronizedMap"/>
+			<replaceInitializer field="tagMap" class="me.nallar.collections.PartiallySynchronizedMap"/>
 			<final field="tagMap"/>
 		</class>
 		<class id="net.minecraft.entity.Entity">

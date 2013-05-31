@@ -6,22 +6,22 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-public class SynchronizedMap<K, V> extends HashMap<K, V> {
+public class PartiallySynchronizedMap<K, V> extends HashMap<K, V> {
 	private KeySet ks;
 
-	public SynchronizedMap(final int initialCapacity, final float loadFactor) {
+	public PartiallySynchronizedMap(final int initialCapacity, final float loadFactor) {
 		super(initialCapacity, loadFactor);
 	}
 
-	public SynchronizedMap(final int initialCapacity) {
+	public PartiallySynchronizedMap(final int initialCapacity) {
 		super(initialCapacity);
 	}
 
-	public SynchronizedMap() {
+	public PartiallySynchronizedMap() {
 		super();
 	}
 
-	public SynchronizedMap(final Map<? extends K, ? extends V> m) {
+	public PartiallySynchronizedMap(final Map<? extends K, ? extends V> m) {
 		super(m);
 	}
 
@@ -41,7 +41,7 @@ public class SynchronizedMap<K, V> extends HashMap<K, V> {
 	}
 
 	@Override
-	public void clear() {
+	public synchronized void clear() {
 		super.clear();
 	}
 
@@ -64,7 +64,7 @@ public class SynchronizedMap<K, V> extends HashMap<K, V> {
 
 		@Override
 		public int size() {
-			return SynchronizedMap.this.size();
+			return PartiallySynchronizedMap.this.size();
 		}
 
 		@Override
@@ -74,12 +74,12 @@ public class SynchronizedMap<K, V> extends HashMap<K, V> {
 
 		@Override
 		public boolean remove(Object o) {
-			return SynchronizedMap.this.remove(o) != null;
+			return PartiallySynchronizedMap.this.remove(o) != null;
 		}
 
 		@Override
 		public void clear() {
-			SynchronizedMap.this.clear();
+			PartiallySynchronizedMap.this.clear();
 		}
 	}
 }
