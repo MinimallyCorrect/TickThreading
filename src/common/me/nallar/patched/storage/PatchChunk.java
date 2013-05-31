@@ -57,14 +57,22 @@ public abstract class PatchChunk extends Chunk {
 	}
 
 	@Override
-	public boolean needsSaving(boolean force) {
-		boolean hasTileEntities = !chunkTileEntityMap.isEmpty();
-		if (isModified || (force && (hasEntities || hasTileEntities))) {
+	@Declare
+	public boolean needsSaving(boolean force, long worldTime) {
+		if (force && (isModified || hasEntities || !chunkTileEntityMap.isEmpty() || lastSaveTime + 1000 < worldTime)) {
 			return true;
 		}
-		long nextSaveTime = lastSaveTime + 4000;
-		long time = worldObj.getTotalWorldTime();
-		return (hasEntities && nextSaveTime <= time) || (hasTileEntities && (nextSaveTime + 3000) < time);
+		long nextSaveTime;
+		if (isModified) {
+			nextSaveTime = 4000;
+		} else if (hasEntities) {
+			nextSaveTime = 6000;
+		} else if (!chunkTileEntityMap.isEmpty()) {
+			nextSaveTime = 9000;
+		} else {
+			return false;
+		}
+		return (nextSaveTime + lastSaveTime) < worldTime;
 	}
 
 	@Override
@@ -309,6 +317,7 @@ public abstract class PatchChunk extends Chunk {
 		if (block != null && block.hasTileEntity(getBlockMetadata(x, y, z))) {
 			chunkTileEntityMap.put(var5, tileEntity);
 		}
+		isModified = true;
 	}
 
 	@Override

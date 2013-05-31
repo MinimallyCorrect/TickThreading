@@ -776,10 +776,11 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		}
 		int savedChunks = 0;
 
+		long worldTime = worldObj.getTotalWorldTime();
 		List<Chunk> chunksToSave = new ArrayList<Chunk>();
 		synchronized (loadedChunks) {
 			for (Chunk chunk : loadedChunks) {
-				if (!chunk.partiallyUnloaded && chunk.needsSaving(saveAll)) {
+				if (!chunk.partiallyUnloaded && chunk.needsSaving(saveAll, worldTime)) {
 					chunk.isModified = false;
 					chunksToSave.add(chunk);
 				}
