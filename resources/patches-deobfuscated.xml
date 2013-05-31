@@ -247,9 +247,27 @@
 		<class id="net.minecraft.nbt.CompressedStreamTools">
 			<addAll fromClass="me.nallar.patched.nbt.PatchCompressedStreamTools"/>
 		</class>
+		<class id="net.minecraft.nbt.NBTBase">
+			<replaceMethod code="{
+				byte id = $1.^method:NBTBase/getId^();
+				$2.writeByte(id);
+
+				if (id != 0) {
+					$2.writeUTF($1.^method:NBTBase/getName^());
+					if (id == 10) {
+						synchronized ($1) {
+							$1.^method:NBTBase/write^($2);
+						}
+					} else {
+						$1.^method:NBTBase/write^($2);
+					}
+				}
+			}">writeNamedTag
+			</replaceMethod>
+		</class>
 		<class id="net.minecraft.nbt.NBTTagCompound">
 			<addAll fromClass="me.nallar.patched.nbt.PatchNBTTagCompound"/>
-			<replaceInitializer field="tagMap" class="java.util.concurrent.ConcurrentHashMap"/>
+			<replaceInitializer field="tagMap" class="me.nallar.collections.SynchronizedMap"/>
 			<final field="tagMap"/>
 		</class>
 		<class id="net.minecraft.entity.Entity">
@@ -404,7 +422,9 @@
 							} "
 							>getLoadedChunks
 			</replaceMethod>
-			<replaceFieldUsage class="^class:WorldServer^" field="^field:World/loadedEntityList^" readCode="$_ = world.getEntities();">getLivingEntities,getEntities,getEntitiesByClass(Ljava.lang.Class;)Ljava.util.Collection;,getEntitiesByClasses</replaceFieldUsage>
+			<replaceFieldUsage class="^class:WorldServer^" field="^field:World/loadedEntityList^" readCode="$_ = world.getEntities();">
+				getLivingEntities,getEntities,getEntitiesByClass(Ljava.lang.Class;)Ljava.util.Collection;,getEntitiesByClasses
+			</replaceFieldUsage>
 			<replaceFieldUsage class="^class:WorldServer^" field="^field:World/loadedEntityList^" readCode="$_ = world.getPlayerEntities();">getPlayers</replaceFieldUsage>
 			<replaceMethod
 							code=" {
@@ -656,7 +676,8 @@
 						this.myTank.drain(quantity, true);
 					}
 				}
-			}">transferLiquid</replaceMethod>
+			}">transferLiquid
+			</replaceMethod>
 		</class>
 	</thremalExpansionFactory>
 	<redPowerCore>
@@ -810,7 +831,8 @@
 					return 0;
 				}
 				return Math.min(powerProvider.getMaxEnergyReceived(), (int) (powerProvider.getMaxEnergyStored() - powerProvider.getEnergyStored() + 0.5f));
-			}">powerRequest</replaceMethod>
+			}">powerRequest
+			</replaceMethod>
 		</class>
 	</gregTech>
 	<chickenChunks>
@@ -840,7 +862,8 @@
       if($1.contains(cpw.mods.fml.common.TickType.WORLD)) {
          codechicken.chunkloader.PlayerChunkViewerManager.instance().calculateChunkChanges((^class:WorldServer^)$2[0]);
       }
-			}">tickEnd</replaceMethod>
+			}">tickEnd
+			</replaceMethod>
 		</class>
 		<class id="codechicken.chunkloader.PlayerChunkViewerManager">
 			<replaceInitializer field="ticketIDs" class="me.nallar.collections.CHashMap"/>
