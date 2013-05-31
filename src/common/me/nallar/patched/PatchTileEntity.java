@@ -3,6 +3,7 @@ package me.nallar.patched;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.patcher.Declare;
 import me.nallar.tickthreading.util.concurrent.NativeMutex;
+import net.minecraft.block.Block;
 import net.minecraft.inventory.ICrafting;
 import net.minecraft.inventory.IInvBasic;
 import net.minecraft.inventory.IInventory;
@@ -52,7 +53,8 @@ public abstract class PatchTileEntity extends TileEntity {
 		if (worldServer == null) {
 			return;
 		}
-		worldServer.notifyBlocksOfNeighborChange(xCoord, yCoord, zCoord, getBlockType().blockID);
+		Block blockType = getBlockType();
+		worldServer.notifyBlocksOfNeighborChange(xCoord, yCoord, zCoord, blockType == null ? worldServer.getBlockId(xCoord, yCoord, zCoord) : blockType.blockID);
 		PlayerInstance p = worldServer.getPlayerManager().getOrCreateChunkWatcher(xCoord >> 4, zCoord >> 4, false);
 		if (p != null) {
 			p.updateTile(this);
