@@ -90,7 +90,7 @@ public class TileEntityTickRegion extends TickRegion {
 						tileEntitiesIterator.remove();
 						invalidate(tileEntity);
 					} else if (tileEntity.worldObj != null) {
-						tileEntity.tickTT();
+						tileEntity.updateEntity();
 					}
 				} catch (Throwable throwable) {
 					Log.severe("Exception ticking TileEntity " + Log.toString(tileEntity), throwable);
