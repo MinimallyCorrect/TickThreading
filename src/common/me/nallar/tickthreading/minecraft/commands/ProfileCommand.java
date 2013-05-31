@@ -9,6 +9,7 @@ import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
+import me.nallar.tickthreading.minecraft.tickregion.TickRegion;
 import me.nallar.tickthreading.util.TableFormatter;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
@@ -82,7 +83,7 @@ public class ProfileCommand extends Command {
 		} else {
 			worlds.add(world);
 		}
-		final int hashCode = x != null ? manager.getHashCode(x, z) : (commandSender instanceof Entity ? manager.getHashCode((Entity) commandSender) : 0);
+		final int hashCode = x != null ? manager.getHashCode(x, z) : 0;
 		if (entity) {
 			final EntityTickProfiler entityTickProfiler = EntityTickProfiler.ENTITY_TICK_PROFILER;
 			if (!entityTickProfiler.startProfiling(new Runnable() {
@@ -99,8 +100,14 @@ public class ProfileCommand extends Command {
 			}
 			if (location) {
 				manager.profilingEnabled = false;
-				manager.getEntityRegion(hashCode).profilingEnabled = true;
-				manager.getTileEntityRegion(hashCode).profilingEnabled = true;
+				TickRegion tickRegion = manager.getEntityRegion(hashCode);
+				if (tickRegion != null) {
+					tickRegion.profilingEnabled = true;
+				}
+				tickRegion = manager.getTileEntityRegion(hashCode);
+				if (tickRegion != null) {
+					tickRegion.profilingEnabled = true;
+				}
 			}
 			sendChat(commandSender, "Profiling for " + time + " seconds in " + (world == null ? "all worlds " : Log.name(world)) + (location ? " at chunk coords " + x + ',' + z : ""));
 			return;
