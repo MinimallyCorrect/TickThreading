@@ -107,6 +107,7 @@ public class DeadLockDetector {
 		if (lastTickTime == 0 || (!MinecraftServer.getServer().isServerRunning() && deadTime < (TickThreading.instance.deadLockTime * 10000000000l))) {
 			return true;
 		}
+		boolean spikeDetector = this.spikeDetector && deadTime < 45000000000l;
 		if (TickThreading.instance.exitOnDeadlock) {
 			if (sentWarningRecently && deadTime < 10000000000l) {
 				sentWarningRecently = false;
@@ -114,7 +115,9 @@ public class DeadLockDetector {
 			} else if (deadTime >= 10000000000l && !sentWarningRecently) {
 				sentWarningRecently = true;
 				sendChatSafely(String.valueOf(ChatFormat.RED) + ChatFormat.BOLD + TickThreading.instance.messageDeadlockDetected);
-				return true;
+				if (!spikeDetector) {
+					return true;
+				}
 			}
 		}
 		if (deadTime < (TickThreading.instance.deadLockTime * 1000000000l)) {
@@ -125,7 +128,6 @@ public class DeadLockDetector {
 		if (!minecraftServer.isServerRunning() || minecraftServer.isServerStopped()) {
 			return false;
 		}
-		boolean spikeDetector = this.spikeDetector && deadTime < 45000000000l;
 		if (!spikeDetector && minecraftServer.currentlySaving.get() != 0) {
 			Log.severe("The server seems to have frozen while saving - Waiting for two minutes to give it time to complete.");
 			Log.flush();
