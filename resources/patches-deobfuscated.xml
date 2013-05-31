@@ -1250,7 +1250,7 @@
 	</universalElectricity>
 	<appliedEnergistics>
 		<class id="appeng.me.basetiles.TileME">
-			<newMethod code="public void ttTick() {
+			<newMethod code="public void tickTT() {
 				Object sync = getGrid();
 				if (sync != null) {
 					synchronized(sync) {
