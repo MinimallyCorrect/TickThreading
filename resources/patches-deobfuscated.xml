@@ -1120,7 +1120,8 @@
 			</insertBefore>
 		</class>
 		<class id="twilightforest.TFFeatureCache">
-			<synchronize>save</synchronize>
+			<replaceInitializer field="cache" class="me.nallar.collections.SynchronizedList"/>
+			<synchronize field="cache">save</synchronize>
 		</class>
 		<class id="twilightforest.TFEventListener">
 			<synchronize>worldSave</synchronize>
