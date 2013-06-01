@@ -611,6 +611,13 @@
 			<insertBefore code="blocksToPump.clear();">initializePumpFromPosition</insertBefore>
 		</class>
 	</buildCraftFactory>
+	<buildCraftSilicon>
+		<class id="buildcraft.silicon.TileLaser">
+			<replaceInitializer field="nextNetworkUpdate" code="$_ = 6;"/>
+			<replaceInitializer field="nextLaserUpdate" code="$_ = 30;"/>
+			<replaceInitializer field="nextLaserSearch" code="$_ = 100;"/>
+		</class>
+	</buildCraftSilicon>
 	<buildCraftTransport>
 		<class id="buildcraft.transport.TileGenericPipe">
 			<newField field="staticLock" class="java.lang.Object" static=""/>
