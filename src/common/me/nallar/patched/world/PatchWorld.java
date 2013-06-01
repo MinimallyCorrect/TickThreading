@@ -76,8 +76,10 @@ public abstract class PatchWorld extends World {
 	public boolean loadEventFired_;
 	@Declare
 	public boolean forcedChunksInited_;
+	public Object auraLock;
 
 	public void construct() {
+		auraLock = new Object();
 		tickCount = rand.nextInt(240); // So when different worlds do every N tick actions,
 		// they won't all happen at the same time even if the worlds loaded at the same time
 		tileEntityRemovalSet = new SynchronizedSet<TileEntity>();

@@ -1198,10 +1198,13 @@
 			<replaceInitializer field="tags" class="me.nallar.collections.CHashMap"/>
 		</class>
 		<class id="thaumcraft.common.AuraManager">
-			<synchronize>registerAuraNode,generateNodeNeighbours</synchronize>
+			<synchronize>registerAuraNode,addToAuraUpdateList,getUpdateList</synchronize>
+		</class>
+		<class id="thaumcraft.common.AuraWorldTicker">
+			<synchronize field="((^class:WorldServer^)$2[0]).auraLock">tickEnd</synchronize>
 		</class>
 		<class id="thaumcraft.common.EventHandler">
-			<synchronize>chunkLoad</synchronize>
+			<synchronize field="$1.world.auraLock">chunkLoad</synchronize>
 		</class>
 		<class id="thaumcraft.common.blocks.TileCrystalCapacitor">
 			<replaceFieldUsage field="count" writeCode="{ }" readCode="{ $_ = null; }">^all^</replaceFieldUsage>
