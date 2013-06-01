@@ -1,8 +1,22 @@
 package me.nallar.collections;
 
+import java.util.Collection;
+
 import me.nallar.tickthreading.Log;
 
 public class SynchronizedList<T> extends ConcurrentUnsafeIterableArrayList<T> {
+	public SynchronizedList(final int initialCapacity) {
+		super(initialCapacity);
+	}
+
+	public SynchronizedList() {
+		super();
+	}
+
+	public SynchronizedList(final Collection<? extends T> c) {
+		super(c);
+	}
+
 	@Override
 	public synchronized boolean add(final T t) {
 		if (t == null) {

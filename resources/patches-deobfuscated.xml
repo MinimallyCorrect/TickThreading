@@ -1145,6 +1145,11 @@
 		<class id="twilightforest.TFFeatureCache">
 			<replaceInitializer field="cache" class="me.nallar.collections.SynchronizedList"/>
 			<synchronize field="cache">save</synchronize>
+			<insertAfter code="{
+				if (!(cache instanceof me.nallar.collections.SynchronizedList)) {
+					cache = new me.nallar.collections.SynchronizedList(cache);
+				}
+			}">load</insertAfter>
 		</class>
 		<class id="twilightforest.TFEventListener">
 			<synchronize>worldSave</synchronize>

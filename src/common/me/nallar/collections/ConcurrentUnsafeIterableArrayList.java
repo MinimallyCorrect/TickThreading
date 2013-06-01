@@ -1,6 +1,7 @@
 package me.nallar.collections;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 import me.nallar.tickthreading.util.ReflectUtil;
 import me.nallar.unsafe.UnsafeAccess;
@@ -9,6 +10,18 @@ import sun.misc.Unsafe;
 public class ConcurrentUnsafeIterableArrayList<T> extends ArrayList<T> {
 	private static final Unsafe $ = UnsafeAccess.$;
 	private static final long elementDataIndex = getIndex();
+
+	public ConcurrentUnsafeIterableArrayList(final int initialCapacity) {
+		super(initialCapacity);
+	}
+
+	public ConcurrentUnsafeIterableArrayList() {
+		super();
+	}
+
+	public ConcurrentUnsafeIterableArrayList(final Collection<? extends T> c) {
+		super(c);
+	}
 
 	private static long getIndex() {
 		return $.objectFieldOffset(ReflectUtil.getField(ArrayList.class, "elementData"));
