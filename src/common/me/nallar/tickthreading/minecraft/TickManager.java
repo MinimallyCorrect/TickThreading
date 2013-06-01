@@ -574,7 +574,7 @@ public final class TickManager {
 		{
 			Set<Entity> contained = new HashSet<Entity>();
 			Set<Entity> toRemove = new ContainedRemoveSet<Entity>();
-			synchronized (entityList) {
+			synchronized (entityLock) {
 				for (Entity e : entityList) {
 					if (add(e, false)) {
 						fixed++;
@@ -592,7 +592,7 @@ public final class TickManager {
 			Set<TileEntity> contained = new HashSet<TileEntity>();
 			Set<TileEntity> toRemove = new ContainedRemoveSet<TileEntity>();
 			List<TileEntity> invalid = new ArrayList<TileEntity>();
-			synchronized (tileEntityList) {
+			synchronized (tileEntityLock) {
 				for (TileEntity te : tileEntityList) {
 					if (te.isInvalid()) {
 						fixed++;
