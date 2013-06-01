@@ -272,6 +272,7 @@ public class DeadLockDetector {
 		minecraftServer.saveEverything(); // Save first
 		Log.info("Saved, now attempting to stop the server and disconnect players cleanly");
 		try {
+			minecraftServer.getConfigurationManager().disconnectAllPlayers("The server has frozen and must now restart.");
 			minecraftServer.stopServer();
 			FMLCommonHandler.instance().handleServerStopping(); // Try to get mods to save data - this may lock up, as we deadlocked.
 		} catch (Throwable throwable) {
