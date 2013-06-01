@@ -2,10 +2,8 @@ package me.nallar.patched.storage;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -17,6 +15,7 @@ import com.google.common.collect.ImmutableSetMultimap;
 
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.registry.GameRegistry;
+import me.nallar.collections.ConcurrentQueueSet;
 import me.nallar.patched.annotation.FakeExtend;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.ChunkGarbageCollector;
@@ -74,7 +73,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	private final LongHashMap<Chunk> chunks = new LongHashMap<Chunk>();
 	private final LongHashMap<Chunk> loadingChunks = new LongHashMap<Chunk>();
 	private final LongHashMap<Chunk> unloadingChunks = new LongHashMap<Chunk>();
-	private final Set<Long> unloadStage0 = Collections.newSetFromMap(new ConcurrentHashMap<Long, Boolean>());
+	private final ConcurrentQueueSet<Long> unloadStage0 = new ConcurrentQueueSet<Long>();
 	private final ConcurrentLinkedQueue<QueuedUnload> unloadStage1 = new ConcurrentLinkedQueue<QueuedUnload>();
 	private final IChunkProvider generator; // Mojang shouldn't use the same interface for  :(
 	private final IChunkLoader loader;
@@ -91,7 +90,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	private Chunk lastChunk;
 	// Mojang compatiblity fields.
 	public final IChunkProvider currentChunkProvider;
-	public final Set<Long> chunksToUnload = unloadStage0;
+	public final Set<Long> chunksToUnload = null;
 	public final List<Chunk> loadedChunks;
 	public final IChunkLoader currentChunkLoader;
 	@SuppressWarnings ("UnusedDeclaration")
@@ -130,12 +129,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	}
 
 	@Override
-	@Declare
-	public Set<Long> getChunksToUnloadSet() {
-		return unloadStage0;
-	}
-
-	@Override
 	public boolean unload100OldestChunks() {
 		return generator.unload100OldestChunks();
 	}
@@ -146,18 +139,15 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	public void tick() {
 		int ticks = world.tickCount;
 		// Handle unload requests
+		final ConcurrentQueueSet<Long> unloadStage0 = this.unloadStage0;
 		if (!unloadStage0.isEmpty()) {
 			ImmutableSetMultimap<ChunkCoordIntPair, ForgeChunkManager.Ticket> persistentChunks = world.getPersistentChunks();
 			PlayerManager playerManager = world.getPlayerManager();
 			ChunkCoordIntPair chunkCoordIntPair = new ChunkCoordIntPair(0, 0);
-			Iterator<Long> i$ = unloadStage0.iterator();
+			Long key_;
 			int done = 0;
-			while (i$.hasNext()) {
-				if (done++ > 100) {
-					break;
-				}
-				long key = i$.next();
-				i$.remove();
+			while (++done != 75 && (key_ = unloadStage0.take()) != null) {
+				long key = key_;
 				int x = (int) key;
 				int z = (int) (key >> 32);
 				chunkCoordIntPair.chunkXPos = x;
