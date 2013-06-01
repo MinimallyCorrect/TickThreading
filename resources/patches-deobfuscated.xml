@@ -1194,7 +1194,10 @@
 			<replaceInitializer field="tags" class="me.nallar.collections.CHashMap"/>
 		</class>
 		<class id="thaumcraft.common.AuraManager">
-			<synchronize>registerAuraNode</synchronize>
+			<synchronize>registerAuraNode,generateNodeNeighbours</synchronize>
+		</class>
+		<class id="thaumcraft.common.EventHandler">
+			<synchronize>chunkLoad</synchronize>
 		</class>
 		<class id="thaumcraft.common.blocks.TileCrystalCapacitor">
 			<replaceFieldUsage field="count" writeCode="{ }" readCode="{ $_ = null; }">^all^</replaceFieldUsage>
