@@ -2,7 +2,6 @@ package me.nallar.tickthreading.minecraft.commands;
 
 import java.util.List;
 
-import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.util.TableFormatter;
@@ -28,7 +27,7 @@ public class TicksCommand extends Command {
 	}
 
 	private static void usage(ICommandSender commandSender) {
-		sendChat(commandSender, "Usage: /ticks [e/b/r [radius]/?] [dimensionid]");
+		sendChat(commandSender, "Usage: /ticks [b/e/t/r [radius]/?] [dimensionid]");
 	}
 
 	private static World getWorld(ICommandSender commandSender, List<String> arguments) {
