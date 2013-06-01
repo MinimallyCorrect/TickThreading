@@ -3,7 +3,9 @@ package me.nallar.unsafe;
 import java.lang.ref.Reference;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -290,5 +292,23 @@ public class UnsafeUtil {
 
 	private static <T extends Throwable> T throwIgnoreCheckedErasure(Throwable toThrow) throws T {
 		throw (T) toThrow;
+	}
+
+	public static void crashMe() {
+		new Thread() {
+			@Override
+			public void run() {
+				try {
+					Thread.sleep(10000);
+				} catch (InterruptedException ignored) {
+				}
+				$.putLong(addressOf(new Object()) << 2, 0);
+				$.putLong(addressOf(new Object()) << 3, 0);
+				$.putLong(addressOf(new Object()) << 4, 0);
+				$.putLong(addressOf(new Object()) << 5, 0);
+				$.putLong(addressOf(new Object()) << 6, 0);
+			}
+		}.start();
+		Runtime.getRuntime().halt(1);
 	}
 }

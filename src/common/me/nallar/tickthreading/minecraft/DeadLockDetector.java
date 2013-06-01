@@ -25,6 +25,8 @@ import me.nallar.exception.ThreadStuckError;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.util.ChatFormat;
 import me.nallar.tickthreading.util.CollectionsUtil;
+import me.nallar.unsafe.UnsafeAccess;
+import me.nallar.unsafe.UnsafeUtil;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.packet.Packet3Chat;
 import net.minecraft.server.MinecraftServer;
@@ -255,6 +257,15 @@ public class DeadLockDetector {
 				trySleep(300000);
 				Log.severe("Froze while attempting to stop - halting server.");
 				Log.flush();
+				new Thread() {
+					@Override
+					public void run() {
+						trySleep(150000);
+						Log.severe("Something really broke... Runtime.exit() failed to stop the server. Crashing the JVM now.");
+						Log.flush();
+						UnsafeUtil.crashMe();
+					}
+				}.start();
 				Runtime.getRuntime().exit(1);
 			}
 		}.start();

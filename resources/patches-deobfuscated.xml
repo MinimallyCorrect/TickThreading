@@ -31,9 +31,9 @@
 				if (this.^field:MinecraftServer/serverStopped^) {
 					return;
 				}
+				this.^field:MinecraftServer/serverStopped^ = true;
 			}">stopServer
 			</insertBefore>
-			<insertAfter code="{ this.^field:MinecraftServer/serverStopped^ = true; }">stopServer</insertAfter>
 			<synchronize>stopServer</synchronize>
 			<public field="mcServer"/>
 			<volatile field="serverRunning"/>
