@@ -2,6 +2,7 @@ package me.nallar.tickthreading.minecraft.commands;
 
 import java.util.List;
 
+import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.util.TableFormatter;
@@ -34,8 +35,7 @@ public class TicksCommand extends Command {
 		World world = DimensionManager.getWorld(0);
 		if (!arguments.isEmpty()) {
 			try {
-				world = DimensionManager.getWorld(Integer.valueOf(arguments.get(arguments.size() - 1)));
-				arguments.remove(arguments.size() - 1);
+				world = DimensionManager.getWorld(Integer.valueOf(arguments.remove(arguments.size() - 1)));
 			} catch (Exception ignored) {
 			}
 		} else if (commandSender instanceof Entity) {
@@ -46,7 +46,14 @@ public class TicksCommand extends Command {
 
 	@Override
 	public void processCommand(ICommandSender commandSender, List<String> arguments) {
-		String type = arguments.isEmpty() ? "t" : arguments.remove(0);
+		String type = "t";
+		if (!arguments.isEmpty()) {
+			try {
+				Integer.parseInt(arguments.get(0));
+			} catch (NumberFormatException ignored) {
+				type = arguments.remove(0);
+			}
+		}
 		if ("r".equals(type)) {
 			EntityPlayerMP entityPlayerMP;
 			try {
@@ -74,6 +81,9 @@ public class TicksCommand extends Command {
 		try {
 			world = getWorld(commandSender, arguments);
 		} catch (Exception e) {
+			world = null;
+		}
+		if (world == null) {
 			usage(commandSender);
 			return;
 		}
