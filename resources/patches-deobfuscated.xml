@@ -1299,7 +1299,7 @@
 			<synchronize>getCellArray,resetCache</synchronize>
 		</class>
 		<class id="appeng.me.tile.TileStorageBus">
-			<synchronize>getCellArray,resetCache,getSharedTagCompound,signalInput</synchronize>
+			<synchronize>getCellArray,resetCache,getSharedTagCompound,signalInput,signalInput,^method:TileEntity/updateEntity^</synchronize>
 		</class>
 		<class id="appeng.me.MEInventoryArray">
 			<synchronize>^all^</synchronize>
