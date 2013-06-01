@@ -240,29 +240,39 @@ public class Patches {
 	}
 
 	@Patch
-	public void replaceAllInitializers(CtClass ctClass, Map<String, String> attributes) throws CannotCompileException, NotFoundException {
-		final String type = attributes.get("field");
+	public void replaceNew(Object o, Map<String, String> attributes) throws CannotCompileException, NotFoundException {
+		final String type = attributes.get("oldClass");
 		final String code = attributes.get("code");
-		final String clazz = attributes.get("class");
+		final String clazz = attributes.get("newClass");
 		if (code == null && clazz == null) {
 			throw new NullPointerException("Must give code or class");
 		}
-		final String newInitialiser = code == null ? "new " + clazz + "();" : code;
+		final String newInitialiser = code == null ? "$_ = new " + clazz + "();" : code;
 		final Set<CtBehavior> allBehaviours = new HashSet<CtBehavior>();
-		Collections.addAll(allBehaviours, ctClass.getDeclaredConstructors());
-		final CtBehavior initialiser = ctClass.getClassInitializer();
-		if (initialiser != null) {
-			allBehaviours.add(initialiser);
+		if (o instanceof CtClass) {
+			CtClass ctClass = (CtClass) o;
+			Collections.addAll(allBehaviours, ctClass.getDeclaredConstructors());
+			final CtBehavior initialiser = ctClass.getClassInitializer();
+			if (initialiser != null) {
+				allBehaviours.add(initialiser);
+			}
+		} else {
+			allBehaviours.add((CtBehavior) o);
 		}
+		final IntHolder done = new IntHolder();
 		for (CtBehavior ctBehavior : allBehaviours) {
 			ctBehavior.instrument(new ExprEditor() {
 				@Override
 				public void edit(NewExpr e) throws CannotCompileException {
 					if (e.getClassName().equals(type)) {
 						e.replace(newInitialiser);
+						done.value++;
 					}
 				}
 			});
+		}
+		if (done.value == 0) {
+			Log.severe("No new expressions found for replacement.");
 		}
 	}
 
