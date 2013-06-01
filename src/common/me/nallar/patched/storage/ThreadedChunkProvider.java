@@ -801,6 +801,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			}
 
 			safeSaveChunk(chunk);
+			chunk.isModified = false; // Just in case a mod is managing to set the chunk as modified during saving, don't want pointless repeated saving.
 		}
 
 		lastChunksSaved = savedChunks;
