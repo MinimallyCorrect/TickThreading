@@ -3,6 +3,8 @@ package me.nallar.collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 
+import me.nallar.tickthreading.Log;
+
 public class LinkedHashSetTempSetNoClear<T> extends LinkedHashSet<T> {
 	private boolean iterating = false;
 	private final LinkedHashSet<T> toAdd = new LinkedHashSet<T>();
@@ -37,7 +39,8 @@ public class LinkedHashSetTempSetNoClear<T> extends LinkedHashSet<T> {
 
 	public synchronized Iterator<T> startIteration() {
 		if (iterating) {
-			throw new IllegalStateException("Already iterating.");
+			Log.severe("Started iterating when not previously done", new Throwable());
+			done();
 		}
 		iterating = true;
 		return super.iterator();
@@ -52,9 +55,5 @@ public class LinkedHashSetTempSetNoClear<T> extends LinkedHashSet<T> {
 		super.removeAll(toRemove);
 		toAdd.clear();
 		toRemove.clear();
-	}
-
-	public boolean isIterating() {
-		return iterating;
 	}
 }
