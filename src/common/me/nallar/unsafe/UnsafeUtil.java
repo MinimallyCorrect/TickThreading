@@ -22,6 +22,9 @@ public class UnsafeUtil {
 	private static final long baseOffset = $.arrayBaseOffset(Object[].class);
 	private static final long headerSize = baseOffset - 8;
 
+	/**
+	 * Smalltalk's `become` for java.
+	 */
 	public static void swap(Object a, Object b) {
 		// I'm sorry.
 		// Really.
@@ -155,6 +158,9 @@ public class UnsafeUtil {
 		return sizeOf(o.getClass());
 	}
 
+	/**
+	 * *Very* quickly compares two arrays.
+	 */
 	public static boolean arrayEquals(Object a, Object b) {
 		if (a == b) {
 			return true;
@@ -188,6 +194,12 @@ public class UnsafeUtil {
 		return p.getAddress();
 	}
 
+	/**
+	 * Creates an instance of class c without calling any constructors - all fields will be null/default primitive values, INCLUDING FINAL FIELDS.
+	 * This kinda' breaks the java memory model.
+	 * @param c Class to instantiate
+	 * @return the instance of c
+	 */
 	public static <T> T createUninitialisedObject(Class<T> c) {
 		try {
 			return (T) $.allocateInstance(c);
@@ -266,6 +278,11 @@ public class UnsafeUtil {
 		Log.info(compare(a, b));
 	}
 
+	/**
+	 * Sets all non-primitive/array fields of o to null. For use when you know some stupid mod/plugin is going to leak this object,
+	 * and want to leak only the size of the object, not everything it references.
+	 * @param o Object to clean.
+	 */
 	public static void clean(Object o) {
 		//Log.info("Clearing " + o.getClass() + '@' + System.identityHashCode(o));
 		Class c = o.getClass();
@@ -294,6 +311,9 @@ public class UnsafeUtil {
 		throw (T) toThrow;
 	}
 
+	/**
+	 * Should only be used if you have already attempted to stop the server properly, called Runtime.exit after that failed, and then waited a reasonable time.
+	 */
 	public static void crashMe() {
 		new Thread() {
 			@Override
@@ -302,6 +322,7 @@ public class UnsafeUtil {
 					Thread.sleep(10000);
 				} catch (InterruptedException ignored) {
 				}
+				// If the JVM refuses to die, may as well just segfault instead.
 				$.putLong(addressOf(new Object()) << 2, 0);
 				$.putLong(addressOf(new Object()) << 3, 0);
 				$.putLong(addressOf(new Object()) << 4, 0);
