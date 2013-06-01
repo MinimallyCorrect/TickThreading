@@ -771,6 +771,14 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		synchronized (loadedChunks) {
 			for (Chunk chunk : loadedChunks) {
 				if (!chunk.partiallyUnloaded && chunk.needsSaving(saveAll, worldTime)) {
+					if (++savedChunks == maxChunksToSave && !saveAll) {
+						if ((++overloadCount) > 50) {
+							Log.warning("Partial save queue overloaded in " + Log.name(world) + ". You should consider decreasing saveInterval. Only saved " + savedChunks + " out of " + chunksToSave.size());
+							maxChunksToSave = (maxChunksToSave * 3) / 2;
+							overloadCount -= 2;
+						}
+						break;
+					}
 					chunk.isModified = false;
 					chunksToSave.add(chunk);
 				}
@@ -793,21 +801,11 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			}
 
 			safeSaveChunk(chunk);
-
-			if (++savedChunks == maxChunksToSave && !saveAll) {
-				if ((++overloadCount) > 50) {
-					Log.warning("Partial save queue overloaded in " + Log.name(world) + ". You should consider decreasing saveInterval. Only saved " + savedChunks + " out of " + chunksToSave.size());
-					maxChunksToSave = (maxChunksToSave * 3) / 2;
-					overloadCount -= 2;
-				}
-				lastChunksSaved = savedChunks;
-				return true;
-			}
 		}
 
 		lastChunksSaved = savedChunks;
 
-		if (overloadCount > 0) {
+		if (overloadCount > 0 && savedChunks != maxChunksToSave) {
 			overloadCount--;
 		}
 
