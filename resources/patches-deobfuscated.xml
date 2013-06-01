@@ -319,8 +319,7 @@
 			<lock field="playerUpdateLock">saveAllPlayerData,getPlayerList</lock>
 			<replaceInitializer field="playerEntityList" class="me.nallar.collections.LockArrayList"/>
 			<insertAfter code="((me.nallar.collections.LockArrayList)^field:ServerConfigurationManager/playerEntityList^).lock = playersUpdateLock;"/>
-			<synchronize field="$1.loadedChunks">respawnPlayer</synchronize>
-			<synchronize field="$1.loadedChunks">transferPlayerToDimension(Lnet.minecraft.entity.player.EntityPlayerMP;ILnet.minecraft.world.Teleporter;)V</synchronize>
+			<synchronize field="$1.playerNetServerHandler">respawnPlayer</synchronize>
 			<synchronize field="$1.playerNetServerHandler">transferPlayerToDimension(Lnet.minecraft.entity.player.EntityPlayerMP;ILnet.minecraft.world.Teleporter;)V</synchronize>
 		</class>
 		<class id="net.minecraft.server.management.ServerConfigurationManager" env="forge">
