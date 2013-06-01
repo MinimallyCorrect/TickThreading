@@ -122,7 +122,8 @@ public class TickThreading {
 		if (PatchUtil.shouldPatch(LocationUtil.getJarLocations())) {
 			Log.severe("TickThreading is disabled, because your server has not been patched" +
 					" or the patches are out of date" +
-					"\nTo patch your server, simply run the PATCHME.bat/sh file in your server directory");
+					"\nTo patch your server, simply run the PATCHME.bat/sh file in your server directory" +
+					"\n\nAlso, make a full backup of your server if you haven't already!");
 			MinecraftServer.getServer().initiateShutdown();
 			Runtime.getRuntime().exit(1);
 		}
@@ -198,7 +199,8 @@ public class TickThreading {
 				+ "\nIf anything breaks, check if it is still broken without TickThreading"
 				+ "\nWe don't want to annoy mod devs with issue reports caused by TickThreading."
 				+ "\nSeriously, please don't."
-				+ "\nIf it's only broken with TickThreading, report it at http://github.com/nallar/TickThreading");
+				+ "\nIf it's only broken with TickThreading, report it at http://github.com/nallar/TickThreading"
+				+ "\n\nAlso, you really should be making regular backups. (You should be doing that even when not using TT.)");
 		ServerCommandManager serverCommandManager = (ServerCommandManager) event.getServer().getCommandManager();
 		serverCommandManager.registerCommand(new TicksCommand());
 		serverCommandManager.registerCommand(new TPSCommand());
