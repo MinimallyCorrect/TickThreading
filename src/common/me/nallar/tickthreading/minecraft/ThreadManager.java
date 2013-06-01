@@ -101,7 +101,6 @@ public final class ThreadManager {
 				while ((r = tasks.next()) != null) {
 					r.run();
 				}
-				AxisAlignedBB.getAABBPool().cleanPool();
 			}
 		};
 		for (int i = 0, len = workThreads.size(); i < len; i++) {

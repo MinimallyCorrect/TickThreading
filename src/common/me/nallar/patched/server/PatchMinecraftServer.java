@@ -287,7 +287,6 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 		theProfiler.startSection("forgePreServerTick");
 		FMLCommonHandler.instance().rescheduleTicks(Side.SERVER);
-		AxisAlignedBB.getAABBPool().cleanPool();
 		FMLCommonHandler.instance().onPreServerTick();
 		theProfiler.endSection();
 
@@ -494,7 +493,8 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				world.getWorldVec3Pool().clear();
 				profiler.endSection();
 
-				if (world.tickCount % 30 == 0) {
+				int tickCount = world.tickCount;
+				if (tickCount % 30 == 0) {
 					profiler.startSection("timeSync");
 					long totalTime = world.getTotalWorldTime();
 					for (EntityPlayerMP entityPlayerMP : (Iterable<EntityPlayerMP>) world.playerEntities) {
@@ -516,10 +516,10 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				profiler.startSection("tracker");
 				world.getEntityTracker().updateTrackedEntities();
 				profiler.endSection();
-				if (world.tickCount % 14 == 0) {
+				if (tickCount % 14 == 0) {
 					exceptionCount.put(id, 0);
 				}
-				if (world.tickCount % TickThreading.instance.saveInterval == 0) {
+				if (tickCount % TickThreading.instance.saveInterval == 0) {
 					theProfiler.startSection("save");
 					try {
 						currentlySaving.getAndIncrement();
@@ -569,7 +569,6 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				exceptionCount.put(id, c);
 			}
 		}
-		AxisAlignedBB.getAABBPool().cleanPool();
 	}
 
 	@Override
