@@ -136,13 +136,12 @@ public abstract class PatchWorld extends World {
 			return name;
 		}
 		int dimensionId = getDimension();
-		if (multiverseWorld) {
-			name = worldInfo.getWorldName();
-			if (name.startsWith("world_")) {
-				name = name.substring(6);
-			}
-		} else {
+		name = worldInfo.getWorldName();
+		if (name.equals("DIM" + dimensionId) || "world".equals(name)) {
 			name = provider.getDimensionName();
+		}
+		if (name.startsWith("world_") && name.length() != 6) {
+			name = name.substring(6);
 		}
 		cachedName = name = (name + '/' + dimensionId + (isRemote ? "-r" : ""));
 		return name;
