@@ -55,8 +55,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	public long ticksPerMonsterSpawns;
 	private Iterator chunkCoordIterator;
 	private ThreadManager threadManager;
-	private ThreadLocal<Random> randoms;
-	private ArrayList<NextTickListEntry> runningTickListEntries;
+	private static final ThreadLocalRandom randoms = new ThreadLocalRandom();
 	@Declare
 	public me.nallar.tickthreading.util.BooleanThreadLocal worldGenInProgress_;
 	@Declare
@@ -77,7 +76,6 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		if (ticksPerMonsterSpawns == 0) {
 			ticksPerMonsterSpawns = 1;
 		}
-		randoms = new ThreadLocalRandom();
 		threadManager = new ThreadManager(TickThreading.instance.getThreadCount(), "Chunk Updates for " + Log.name(this));
 		try {
 			field_73064_N = null;
@@ -85,7 +83,6 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 			//MCPC+ compatibility - they also remove this.
 		}
 		pendingTickListEntries = new TreeHashSet();
-		runningTickListEntries = new ArrayList<NextTickListEntry>();
 		try {
 			chunkTickSet = (HashSet<ChunkCoordIntPair>) activeChunkSet;
 		} catch (NoSuchFieldError ignored) {
@@ -309,28 +306,31 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 
 	@Override
 	public boolean tickUpdates(boolean runAll) {
-		boolean result;
-		final ArrayList<NextTickListEntry> runningTickListEntries = this.runningTickListEntries;
+		final ArrayList<NextTickListEntry> runningTickListEntries;
 		final TreeSet pendingTickListEntries = this.pendingTickListEntries;
 		final Random rand = this.rand;
 		final WorldInfo worldInfo = this.worldInfo;
 		synchronized (pendingTickListEntries) {
 			int max = pendingTickListEntries.size();
 
-			runningTickListEntries.ensureCapacity(max);
+			if (max == 0) {
+				return false;
+			}
 
-			for (int var3 = 0; var3 < max; ++var3) {
+			runningTickListEntries = new ArrayList<NextTickListEntry>(max);
+
+			final long worldTime = worldInfo.getWorldTotalTime();
+
+			for (int i = 0; i < max; ++i) {
 				NextTickListEntry nextTickListEntry = (NextTickListEntry) pendingTickListEntries.first();
 
-				if (!runAll && nextTickListEntry.scheduledTime > worldInfo.getWorldTotalTime()) {
+				if (!runAll && nextTickListEntry.scheduledTime > worldTime) {
 					break;
 				}
 
 				pendingTickListEntries.remove(nextTickListEntry);
 				runningTickListEntries.add(nextTickListEntry);
 			}
-
-			result = !pendingTickListEntries.isEmpty();
 		}
 
 		ImmutableSetMultimap<ChunkCoordIntPair, ForgeChunkManager.Ticket> persistentChunks = getPersistentChunks();
@@ -350,8 +350,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 				}
 			}
 		}
-		runningTickListEntries.clear();
-		return result;
+		return true;
 	}
 
 	@Override
