@@ -1313,7 +1313,7 @@
 		</class>
 		<class id="appeng.me.tile.TileStorageBus">
 			<replaceNew oldClass="java.util.ArrayList" newClass="me.nallar.collections.ArrayListTempSetNoClear">^method:TileEntity/updateEntity^</replaceNew>
-			<replaceMethodCall method="iterator" code="$_ = ((me.nallar.collections.ArrayListTempSetNoClear) $0).startIteration();">^method:TileEntity/updateEntity^</replaceMethodCall>
+			<replaceMethodCall method="iterator" index="0" code="$_ = ((me.nallar.collections.ArrayListTempSetNoClear) $0).startIteration();">^method:TileEntity/updateEntity^</replaceMethodCall>
 			<insertAfter code="((me.nallar.collections.ArrayListTempSetNoClear) this.oldList).done();">^method:TileEntity/updateEntity^</insertAfter>
 			<synchronize>getCellArray,resetCache,getSharedTagCompound,signalInput</synchronize>
 		</class>
