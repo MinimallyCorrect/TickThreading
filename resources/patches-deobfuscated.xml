@@ -1182,6 +1182,9 @@
 		</class>
 	</additionalPipes>
 	<MFFS>
+		<class id="chb.mods.mffs.network.server.ForceFieldServerUpdatehandler">
+			<synchronize>tickEnd</synchronize>
+		</class>
 		<class id="chb.mods.mffs.common.item.ItemCardPowerLink">
 			<synchronize/>
 		</class>
