@@ -56,6 +56,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	private Iterator chunkCoordIterator;
 	private ThreadManager threadManager;
 	private static final ThreadLocalRandom randoms = new ThreadLocalRandom();
+	private int lastTickEntries;
 	@Declare
 	public me.nallar.tickthreading.util.BooleanThreadLocal worldGenInProgress_;
 	@Declare
@@ -317,7 +318,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 				return false;
 			}
 
-			runningTickListEntries = new ArrayList<NextTickListEntry>(max);
+			runningTickListEntries = new ArrayList<NextTickListEntry>(Math.min(lastTickEntries, max));
 
 			final long worldTime = worldInfo.getWorldTotalTime();
 
@@ -350,6 +351,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 				}
 			}
 		}
+		lastTickEntries = runningTickListEntries.size();
 		return true;
 	}
 
