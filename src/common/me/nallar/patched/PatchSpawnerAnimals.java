@@ -155,7 +155,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 			int z = (int) hash;
 			int sX = x * 16 + worldServer.rand.nextInt(16);
 			int sZ = z * 16 + worldServer.rand.nextInt(16);
-			boolean surface = creatureType.getPeacefulCreature() || (dayTime ? surfaceChance++ % 5 != 0 : surfaceChance++ % 5 == 0);
+			boolean surface = creatureType.getPeacefulCreature() || (dayTime ? surfaceChance++ % 5 == 0 : surfaceChance++ % 5 != 0);
 			int gap = gapChance++;
 			int sY;
 			if (creatureType == EnumCreatureType.waterCreature) {
