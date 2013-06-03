@@ -60,7 +60,7 @@ public class ProfileCommand extends Command {
 				}
 			}
 		} catch (Exception e) {
-			sendChat(commandSender, "Usage: /profile [type=a/e/(c [x] [z])] [time=7] [dimensionid=current dimension]");
+			sendChat(commandSender, "Usage: /profile [type=a/e/(c [chunk x] [chunk z])] [time=7] [dimensionid=current dimension]");
 			return;
 		}
 		final int time = time_;
@@ -83,7 +83,7 @@ public class ProfileCommand extends Command {
 		} else {
 			worlds.add(world);
 		}
-		final int hashCode = x != null ? manager.getHashCode(x, z) : 0;
+		final int hashCode = x != null ? manager.getHashCode(x * 16, z * 16) : 0;
 		if (entity) {
 			final EntityTickProfiler entityTickProfiler = EntityTickProfiler.ENTITY_TICK_PROFILER;
 			if (location) {
@@ -96,8 +96,14 @@ public class ProfileCommand extends Command {
 				@Override
 				public void run() {
 					if (location) {
-						manager.getEntityRegion(hashCode).profilingEnabled = false;
-						manager.getTileEntityRegion(hashCode).profilingEnabled = false;
+						TickRegion tickRegion = manager.getEntityRegion(hashCode);
+						if (tickRegion != null) {
+							tickRegion.profilingEnabled = false;
+						}
+						tickRegion = manager.getTileEntityRegion(hashCode);
+						if (tickRegion != null) {
+							tickRegion.profilingEnabled = false;
+						}
 					}
 					sendChat(commandSender, entityTickProfiler.writeData(new TableFormatter(commandSender)).toString());
 				}
