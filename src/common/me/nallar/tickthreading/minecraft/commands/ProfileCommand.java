@@ -86,6 +86,12 @@ public class ProfileCommand extends Command {
 		final int hashCode = x != null ? manager.getHashCode(x, z) : 0;
 		if (entity) {
 			final EntityTickProfiler entityTickProfiler = EntityTickProfiler.ENTITY_TICK_PROFILER;
+			if (location) {
+				if (!world.getChunkProvider().chunkExists(x, z)) {
+					sendChat(commandSender, "The chunk coords " + x + ',' + z + " are not loaded, can not profile.");
+					return;
+				}
+			}
 			if (!entityTickProfiler.startProfiling(new Runnable() {
 				@Override
 				public void run() {
