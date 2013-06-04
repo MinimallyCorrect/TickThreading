@@ -5,6 +5,8 @@ import java.util.Iterator;
 
 import javassist.is.faulty.Timings;
 import me.nallar.tickthreading.Log;
+import me.nallar.tickthreading.minecraft.TickThreading;
+import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.NetServerHandler;
 import net.minecraft.network.TcpConnection;
@@ -21,6 +23,12 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.ChunkWatchEvent;
 
 public abstract class PatchPacket10Flying extends Packet10Flying {
+	@Override
+	@Declare
+	public boolean canProcessAsync() {
+		return TickThreading.instance.concurrentMovementUpdates;
+	}
+
 	@Override
 	public void processPacket(NetHandler par1NetHandler) {
 		if (!(par1NetHandler instanceof NetServerHandler)) {
