@@ -18,7 +18,7 @@ import net.minecraft.util.ReportedException;
 
 public abstract class PatchNBTTagCompound extends NBTTagCompound {
 	@Override
-	public NBTBase copy() {
+	public synchronized NBTBase copy() {
 		NBTTagCompound var1 = new NBTTagCompound(this.getName());
 
 		for (Map.Entry<String, NBTBase> o : ((Map<String, NBTBase>) this.tagMap).entrySet()) {
