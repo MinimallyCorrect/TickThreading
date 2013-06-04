@@ -73,7 +73,6 @@
 			<synchronize>setPlayerLocation</synchronize>
 		</class>
 		<class id="net.minecraft.network.packet.Packet10Flying">
-			<addAll fromClass="me.nallar.patched.network.PatchPacketAsync"/>
 			<addAll fromClass="me.nallar.patched.network.PatchPacket10Flying"/>
 		</class>
 		<class id="net.minecraft.network.packet.Packet14BlockDig">
