@@ -707,12 +707,14 @@ public abstract class PatchWorld extends World {
 			} catch (Throwable var6) {
 				var4 = CrashReport.makeCrashReport(var6, "Ticking entity");
 				var5 = var4.makeCategory("Entity being ticked");
-				var2.func_85029_a(var5);
+				if (var2 != null) {
+					var2.func_85029_a(var5);
+				}
 
 				throw new ReportedException(var4);
 			}
 
-			if (var2.isDead) {
+			if (var2 == null || var2.isDead) {
 				weatherEffects.remove(var1--);
 			}
 		}
