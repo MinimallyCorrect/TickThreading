@@ -570,6 +570,14 @@ public final class TickManager {
 
 	public void fixDiscrepancies(StringBuilder sb) {
 		int fixed = 0;
+		int missingEntities = 0;
+		int missingTiles = 0;
+		int duplicateEntities = 0;
+		int duplicateTiles = 0;
+		int invalidTiles = 0;
+		int unloadedTiles = 0;
+
+		long startTime = System.nanoTime();
 
 		{
 			Set<Entity> contained = new HashSet<Entity>();
@@ -577,10 +585,12 @@ public final class TickManager {
 			synchronized (entityLock) {
 				for (Entity e : entityList) {
 					if (add(e, false)) {
+						missingEntities++;
 						fixed++;
 					}
 					if (!contained.add(e)) {
 						toRemove.add(e);
+						duplicateEntities++;
 						fixed++;
 					}
 				}
@@ -591,30 +601,42 @@ public final class TickManager {
 		{
 			Set<TileEntity> contained = new HashSet<TileEntity>();
 			Set<TileEntity> toRemove = new ContainedRemoveSet<TileEntity>();
-			List<TileEntity> invalid = new ArrayList<TileEntity>();
+			List<TileEntity> copy = new ArrayList<TileEntity>(tileEntityList.size());
+			ChunkProviderServer chunkProviderServer = world.theChunkProviderServer;
 			synchronized (tileEntityLock) {
 				for (TileEntity te : tileEntityList) {
-					if (te.isInvalid()) {
-						fixed++;
-						invalid.add(te);
-					}
+					copy.add(te);
 					if (add(te, false)) {
+						missingTiles++;
 						fixed++;
 					}
 					if (!contained.add(te)) {
 						toRemove.add(te);
+						duplicateTiles++;
 						fixed++;
 					}
 				}
 				tileEntityList.removeAll(toRemove);
 			}
-			for (TileEntity tileEntity : invalid) {
-				remove(tileEntity);
+			for (TileEntity te : copy) {
+				Chunk chunk = chunkProviderServer.getChunkIfExists(te.xCoord >> 4, te.zCoord >> 4);
+				if (te.isInvalid()) {
+					invalidTiles++;
+					remove(te);
+					fixed++;
+				} else if (chunk == null || !chunk.chunkTileEntityMap.containsValue(te)) {
+					unloadedTiles++;
+					fixed++;
+					te.invalidate();
+				}
 			}
 		}
 
 		if (fixed != 0) {
-			sb.append("Found and fixed ").append(fixed).append(" discrepancies in tile/entity lists in ").append(Log.name(world));
+			sb.append("Found and fixed ").append(fixed).append(" discrepancies in tile/entity lists in ").append(Log.name(world))
+					.append("\ntiles - invalid: ").append(invalidTiles).append(", missing: ").append(missingTiles).append(", duplicate: ").append(duplicateTiles).append(", unloaded: ").append(unloadedTiles)
+					.append("\nentities -  missing: ").append(missingEntities).append(", duplicate: ").append(duplicateEntities)
+					.append("\nTook ").append((System.nanoTime() - startTime) / 1000000l).append("ms");
 		}
 	}
 
