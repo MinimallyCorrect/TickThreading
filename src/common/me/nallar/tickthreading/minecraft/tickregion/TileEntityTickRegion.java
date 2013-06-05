@@ -23,11 +23,11 @@ public class TileEntityTickRegion extends TickRegion {
 		final TickManager manager = this.manager;
 		final boolean profilingEnabled = manager.profilingEnabled || this.profilingEnabled;
 		EntityTickProfiler entityTickProfiler = profilingEnabled ? EntityTickProfiler.ENTITY_TICK_PROFILER : null;
-		Lock thisLock = null;
-		Lock xPlusLock = null;
-		Lock xMinusLock = null;
-		Lock zPlusLock = null;
-		Lock zMinusLock = null;
+		Lock thisLock;
+		Lock xPlusLock;
+		Lock xMinusLock;
+		Lock zPlusLock;
+		Lock zMinusLock;
 		long startTime = 0;
 		// This code is performance critical.
 		// Locking calls are manipulated by the patcher,
@@ -65,27 +65,27 @@ public class TileEntityTickRegion extends TickRegion {
 					manager.lock(tileEntity);
 					continue;
 				}
+				xPlusLock = tileEntity.xPlusLock;
+				zPlusLock = tileEntity.zPlusLock;
+				thisLock = tileEntity.thisLock;
+				xMinusLock = tileEntity.xMinusLock;
+				zMinusLock = tileEntity.zMinusLock;
+				if (xPlusLock != null) {
+					xPlusLock.lock();
+				}
+				if (zPlusLock != null) {
+					zPlusLock.lock();
+				}
+				if (thisLock != null) {
+					thisLock.lock();
+				}
+				if (zMinusLock != null) {
+					zMinusLock.lock();
+				}
+				if (xMinusLock != null) {
+					xMinusLock.lock();
+				}
 				try {
-					xPlusLock = tileEntity.xPlusLock;
-					zPlusLock = tileEntity.zPlusLock;
-					thisLock = tileEntity.thisLock;
-					xMinusLock = tileEntity.xMinusLock;
-					zMinusLock = tileEntity.zMinusLock;
-					if (xPlusLock != null) {
-						xPlusLock.lock();
-					}
-					if (zPlusLock != null) {
-						zPlusLock.lock();
-					}
-					if (thisLock != null) {
-						thisLock.lock();
-					}
-					if (zMinusLock != null) {
-						zMinusLock.lock();
-					}
-					if (xMinusLock != null) {
-						xMinusLock.lock();
-					}
 					if (tileEntity.isInvalid()) {
 						tileEntitiesIterator.remove();
 						invalidate(tileEntity);
