@@ -26,6 +26,7 @@ import me.nallar.tickthreading.util.TableFormatter;
 import me.nallar.unsafe.UnsafeUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.WorldServer;
@@ -42,7 +43,7 @@ public final class TickManager {
 	private double averageTickLength = 0;
 	private long lastTickLength = 0;
 	private long lastStartTime = 0;
-	private static final int shuffleInterval = 12000;
+	private static final int shuffleInterval = 3600;
 	private int shuffleCount;
 	private final boolean waitForCompletion;
 	private final WorldServer world;
@@ -569,15 +570,17 @@ public final class TickManager {
 	}
 
 	public void fixDiscrepancies(StringBuilder sb) {
+		long startTime = System.nanoTime();
 		int fixed = 0;
 		int missingEntities = 0;
 		int missingTiles = 0;
 		int duplicateEntities = 0;
 		int duplicateTiles = 0;
 		int invalidTiles = 0;
+		int unloadedEntities = 0;
 		int unloadedTiles = 0;
 
-		long startTime = System.nanoTime();
+		ChunkProviderServer chunkProviderServer = world.theChunkProviderServer;
 
 		{
 			Set<Entity> contained = new HashSet<Entity>();
@@ -587,11 +590,18 @@ public final class TickManager {
 					if (add(e, false)) {
 						missingEntities++;
 						fixed++;
-					}
-					if (!contained.add(e)) {
+					} else if (!contained.add(e)) {
 						toRemove.add(e);
 						duplicateEntities++;
 						fixed++;
+					} else if (!(e instanceof EntityPlayerMP)) {
+						synchronized (e) {
+							Chunk chunk = world.getChunkIfExists(e.chunkCoordX, e.chunkCoordZ);
+							if (chunk == null || !chunk.entityLists[e.chunkCoordY].contains(e)) {
+								remove(e);
+								unloadedEntities++;
+							}
+						}
 					}
 				}
 				entityList.removeAll(toRemove);
@@ -602,7 +612,6 @@ public final class TickManager {
 			Set<TileEntity> contained = new HashSet<TileEntity>();
 			Set<TileEntity> toRemove = new ContainedRemoveSet<TileEntity>();
 			List<TileEntity> copy = new ArrayList<TileEntity>(tileEntityList.size());
-			ChunkProviderServer chunkProviderServer = world.theChunkProviderServer;
 			synchronized (tileEntityLock) {
 				for (TileEntity te : tileEntityList) {
 					copy.add(te);
@@ -635,7 +644,7 @@ public final class TickManager {
 		if (fixed != 0) {
 			sb.append("Found and fixed ").append(fixed).append(" discrepancies in tile/entity lists in ").append(Log.name(world))
 					.append("\ntiles - invalid: ").append(invalidTiles).append(", missing: ").append(missingTiles).append(", duplicate: ").append(duplicateTiles).append(", unloaded: ").append(unloadedTiles)
-					.append("\nentities -  missing: ").append(missingEntities).append(", duplicate: ").append(duplicateEntities)
+					.append("\nentities -  missing: ").append(missingEntities).append(", duplicate: ").append(duplicateEntities).append(", unloaded: ").append(unloadedEntities)
 					.append("\nTook ").append((System.nanoTime() - startTime) / 1000000l).append("ms");
 		}
 	}

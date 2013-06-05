@@ -419,23 +419,25 @@ public abstract class PatchWorld extends World {
 			int cZ = MathHelper.floor_double(entity.posZ / 16.0D);
 
 			if (!entity.addedToChunk || entity.chunkCoordX != cX || entity.chunkCoordY != cY || entity.chunkCoordZ != cZ) {
-				if (entity.addedToChunk) {
-					if (chunk == null) {
-						chunk = getChunkIfExists(entity.chunkCoordX, entity.chunkCoordZ);
+				synchronized (entity) {
+					if (entity.addedToChunk) {
+						if (chunk == null) {
+							chunk = getChunkIfExists(entity.chunkCoordX, entity.chunkCoordZ);
+						}
+						if (chunk != null) {
+							chunk.removeEntityAtIndex(entity, entity.chunkCoordY);
+						}
 					}
-					if (chunk != null) {
-						chunk.removeEntityAtIndex(entity, entity.chunkCoordY);
-					}
-				}
 
-				chunk = getChunkIfExists(cX, cZ);
-				if (chunk != null) {
-					entity.addedToChunk = true;
-					chunk.addEntity(entity);
-				} else {
-					entity.addedToChunk = false;
+					chunk = getChunkIfExists(cX, cZ);
+					if (chunk != null) {
+						entity.addedToChunk = true;
+						chunk.addEntity(entity);
+					} else {
+						entity.addedToChunk = false;
+					}
+					entity.chunk = chunk;
 				}
-				entity.chunk = chunk;
 			}
 
 			this.theProfiler.endSection();
