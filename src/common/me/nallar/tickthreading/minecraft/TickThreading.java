@@ -80,7 +80,7 @@ public class TickThreading {
 	public String messageDeadlockDetected = "The server appears to have frozen and will restart soon if it does not recover. :(";
 	public String messageDeadlockRecovered = "The server has recovered and will not need to restart. :)";
 	public String messageDeadlockSavingExiting = "The server is saving the world and restarting - be right back!";
-	private String profilingFileName = "profile.txt";
+	private String profilingFileName = "world/computer/<computer id>/profile.txt";
 	public boolean exitOnDeadlock = false;
 	public boolean requireOpForTicksCommand = true;
 	public boolean requireOpForProfileCommand = true;
@@ -101,6 +101,7 @@ public class TickThreading {
 	private int tickThreads = 0;
 	private int regionSize = 16;
 	private int profilingInterval = 0;
+	private boolean profilingJson = false;
 	public boolean variableTickRate = true;
 	private DeadLockDetector deadLockDetector;
 	private HashSet<Integer> disabledFastMobSpawningDimensions = new HashSet<Integer>();
@@ -145,7 +146,7 @@ public class TickThreading {
 		if (profilingInterval == 0) {
 			return;
 		}
-		TickRegistry.registerScheduledTickHandler(new ProfilingScheduledTickHandler(profilingInterval, MinecraftServer.getServer().getFile(profilingFileName)), Side.SERVER);
+		TickRegistry.registerScheduledTickHandler(new ProfilingScheduledTickHandler(profilingInterval, MinecraftServer.getServer().getFile(profilingFileName), profilingJson), Side.SERVER);
 	}
 
 	@SuppressWarnings ("FieldRepeatedlyAccessedInMethod")
@@ -184,8 +185,9 @@ public class TickThreading {
 		cleanWorlds = config.get(GENERAL, "cleanWorlds", cleanWorlds, "Whether to clean worlds on unload - this should fix some memory leaks due to mods holding on to world objects").getBoolean(cleanWorlds);
 		allowWorldUnloading = config.get(GENERAL, "allowWorldUnloading", allowWorldUnloading, "Whether worlds should be allowed to unload.").getBoolean(allowWorldUnloading);
 		enableBugWarningMessage = config.get(GENERAL, "enableBugWarningMessage", enableBugWarningMessage, "Whether to enable warning if there are severe known compatibility issues with the current TT build you are using and your installed mods. Highly recommend leaving this enabled, if you disable it chances are you'll get users experiencing these issues annoying mod authors, which I really don't want to happen.").getBoolean(enableBugWarningMessage);
-		profilingInterval = config.get(GENERAL, "profilingInterval", profilingInterval, "Interval, in minutes, to record profiling information to disk. 0 = never. Recommended >= 5.").getInt();
-		profilingFileName = config.get(GENERAL, "profilingFileName", profilingFileName, "Location to store profiling information to. For example, why not store it in a computercraft computer's folder?").value;
+		profilingInterval = config.get(GENERAL, "profilingInterval", profilingInterval, "Interval, in minutes, to record profiling information to disk. 0 = never. Recommended >= 2.").getInt();
+		profilingFileName = config.get(GENERAL, "profilingFileName", profilingFileName, "Location to store profiling information to, relative to the server folder. For example, why not store it in a computercraft computer's folder?").value;
+		profilingJson = config.get(GENERAL, "profilingJson", profilingJson, "Whether to write periodic profiling in JSON format").getBoolean(profilingJson);
 		config.save();
 		int[] disabledDimensions = config.get(GENERAL, "disableFastMobSpawningDimensions", new int[]{-1}, "List of dimensions not to enable fast spawning in.").getIntList();
 		disabledFastMobSpawningDimensions = new HashSet<Integer>(disabledDimensions.length);
@@ -370,10 +372,12 @@ public class TickThreading {
 		private static final EnumSet<TickType> TICKS = EnumSet.of(TickType.SERVER);
 		private final int profilingInterval;
 		private final File profilingFile;
+		private final boolean json;
 
-		public ProfilingScheduledTickHandler(final int profilingInterval, final File profilingFile) {
+		public ProfilingScheduledTickHandler(final int profilingInterval, final File profilingFile, final boolean json) {
 			this.profilingInterval = profilingInterval;
 			this.profilingFile = profilingFile;
+			this.json = json;
 		}
 
 		@Override
@@ -390,7 +394,11 @@ public class TickThreading {
 					try {
 						TableFormatter tf = new TableFormatter(MinecraftServer.getServer());
 						tf.tableSeparator = "\n";
-						Files.write(entityTickProfiler.writeData(tf).toString(), profilingFile, Charsets.UTF_8);
+						if (json) {
+							entityTickProfiler.writeJSONData(profilingFile);
+						} else {
+							Files.write(entityTickProfiler.writeStringData(tf, 6).toString(), profilingFile, Charsets.UTF_8);
+						}
 					} catch (Throwable t) {
 						Log.severe("Failed to save periodic profiling data to " + profilingFile, t);
 					}

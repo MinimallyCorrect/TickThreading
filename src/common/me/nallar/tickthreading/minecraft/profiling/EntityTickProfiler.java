@@ -1,5 +1,7 @@
 package me.nallar.tickthreading.minecraft.profiling;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -16,10 +18,12 @@ import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.minecraft.commands.ProfileCommand;
 import me.nallar.tickthreading.util.MappingUtil;
 import me.nallar.tickthreading.util.TableFormatter;
+import me.nallar.tickthreading.util.stringfillers.StringFiller;
 import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import org.cliffc.high_scale_lib.NonBlockingHashMap;
+import org.codehaus.jackson.map.ObjectMapper;
 
 public class EntityTickProfiler {
 	public static final EntityTickProfiler ENTITY_TICK_PROFILER = new EntityTickProfiler();
@@ -112,10 +116,31 @@ public class EntityTickProfiler {
 		}
 	}
 
-	public TableFormatter writeData(TableFormatter tf) {
+	public void writeJSONData(File file) throws IOException {
+		TableFormatter tf = new TableFormatter(StringFiller.FIXED_WIDTH);
+		tf.recordTables();
+		writeData(tf, 20);
+		ObjectMapper objectMapper = new ObjectMapper();
+		objectMapper.writeValue(file, tf.getTables());
+	}
+
+	private static <T> List<T> sortedKeys(Map<T, ? extends Comparable<?>> map, int elements) {
+		List<T> list = Ordering.natural().reverse().onResultOf(Functions.forMap(map)).immutableSortedCopy(map.keySet());
+		return list.size() > elements ? list.subList(0, elements) : list;
+	}
+
+	public TableFormatter writeStringData(TableFormatter tf) {
+		return writeStringData(tf, 5);
+	}
+
+	public TableFormatter writeStringData(TableFormatter tf, int elements) {
 		long timeProfiled = System.currentTimeMillis() - startTime;
 		float tps = ticks * 1000f / timeProfiled;
 		tf.sb.append("TPS: ").append(tps).append('\n').append(tf.tableSeparator);
+		return writeData(tf, elements);
+	}
+
+	public TableFormatter writeData(TableFormatter tf, int elements) {
 		Map<Class<?>, Long> time = new HashMap<Class<?>, Long>();
 		for (Map.Entry<Class<?>, AtomicLong> entry : this.time.entrySet()) {
 			time.put(entry.getKey(), entry.getValue().get());
@@ -125,16 +150,16 @@ public class EntityTickProfiler {
 			singleTime.put(entry.getKey(), entry.getValue().get());
 		}
 		double totalTime = this.totalTime.get();
-		final List<Object> sortedSingleKeysByTime = Ordering.natural().reverse().onResultOf(Functions.forMap(singleTime)).immutableSortedCopy(singleTime.keySet());
 		tf
 				.heading("Single Entity")
 				.heading("Time/Tick")
 				.heading("%");
-		for (int i = 0; i < 5 && i < sortedSingleKeysByTime.size(); i++) {
+		final List<Object> sortedSingleKeysByTime = sortedKeys(singleTime, elements);
+		for (Object o : sortedSingleKeysByTime) {
 			tf
-					.row(niceName(sortedSingleKeysByTime.get(i)))
-					.row(singleTime.get(sortedSingleKeysByTime.get(i)) / (1000000d * singleInvocationCount.get(sortedSingleKeysByTime.get(i)).get()))
-					.row((singleTime.get(sortedSingleKeysByTime.get(i)) / totalTime) * 100);
+					.row(niceName(o))
+					.row(singleTime.get(o) / (1000000d * singleInvocationCount.get(o).get()))
+					.row((singleTime.get(o) / totalTime) * 100);
 		}
 		tf.finishTable();
 		tf.sb.append('\n');
@@ -150,9 +175,10 @@ public class EntityTickProfiler {
 				return value;
 			}
 		};
-		for (Object o : sortedSingleKeysByTime) {
+		for (final Map.Entry<Object, Long> singleTimeEntry : singleTime.entrySet()) {
 			int x = Integer.MIN_VALUE;
 			int z = Integer.MIN_VALUE;
+			Object o = singleTimeEntry.getKey();
 			if (o instanceof Entity) {
 				x = ((Entity) o).chunkCoordX;
 				z = ((Entity) o).chunkCoordZ;
@@ -161,34 +187,31 @@ public class EntityTickProfiler {
 				z = ((TileEntity) o).zCoord >> 4;
 			}
 			if (x != Integer.MIN_VALUE) {
-				chunkTimeMap.get(new ChunkCoords(x, z)).value += singleTime.get(o);
+				chunkTimeMap.get(new ChunkCoords(x, z)).value += singleTimeEntry.getValue();
 			}
 		}
-		final List<ChunkCoords> sortedChunkCoordsByTime = Ordering.natural().reverse().onResultOf(Functions.forMap(chunkTimeMap)).immutableSortedCopy(chunkTimeMap.keySet());
 		tf
 				.heading("Chunk")
 				.heading("Time/Tick")
 				.heading("%");
-		for (int i = 0; i < 5 && i < sortedChunkCoordsByTime.size(); i++) {
-			ChunkCoords chunkCoordIntPair = sortedChunkCoordsByTime.get(i);
-			long chunkTime = chunkTimeMap.get(chunkCoordIntPair).value;
+		for (ChunkCoords chunkCoords : sortedKeys(chunkTimeMap, elements)) {
+			long chunkTime = chunkTimeMap.get(chunkCoords).value;
 			tf
-					.row(chunkCoordIntPair.chunkXPos + ", " + chunkCoordIntPair.chunkZPos)
+					.row(chunkCoords.chunkXPos + ", " + chunkCoords.chunkZPos)
 					.row(chunkTime / (1000000d * ticks))
 					.row((chunkTime / totalTime) * 100);
 		}
 		tf.finishTable();
 		tf.sb.append('\n');
-		final List<Class<?>> sortedKeysByTime = Ordering.natural().reverse().onResultOf(Functions.forMap(time)).immutableSortedCopy(time.keySet());
 		tf
 				.heading("All Entities of Type")
 				.heading("Time/Tick")
 				.heading("%");
-		for (int i = 0; i < 5 && i < sortedKeysByTime.size(); i++) {
+		for (Class c : sortedKeys(time, elements)) {
 			tf
-					.row(niceName(sortedKeysByTime.get(i)))
-					.row(time.get(sortedKeysByTime.get(i)) / (1000000d * ticks))
-					.row((time.get(sortedKeysByTime.get(i)) / totalTime) * 100);
+					.row(niceName(c))
+					.row(time.get(c) / (1000000d * ticks))
+					.row((time.get(c) / totalTime) * 100);
 		}
 		tf.finishTable();
 		tf.sb.append('\n');
@@ -196,20 +219,20 @@ public class EntityTickProfiler {
 		for (Map.Entry<Class<?>, AtomicLong> entry : this.time.entrySet()) {
 			timePerTick.put(entry.getKey(), entry.getValue().get() / invocationCount.get(entry.getKey()).get());
 		}
-		final List<Class<?>> sortedKeysByTimePerTick = Ordering.natural().reverse().onResultOf(Functions.forMap(timePerTick)).immutableSortedCopy(timePerTick.keySet());
 		tf
 				.heading("Average Entity of Type")
 				.heading("Time/tick")
 				.heading("Calls");
-		for (int i = 0; i < 5 && i < sortedKeysByTimePerTick.size(); i++) {
+		for (Class c : sortedKeys(timePerTick, elements)) {
 			tf
-					.row(niceName(sortedKeysByTimePerTick.get(i)))
-					.row(timePerTick.get(sortedKeysByTimePerTick.get(i)) / 1000000d)
-					.row(invocationCount.get(sortedKeysByTimePerTick.get(i)));
+					.row(niceName(c))
+					.row(timePerTick.get(c) / 1000000d)
+					.row(invocationCount.get(c));
 		}
 		tf.finishTable();
 		return tf;
 	}
+
 
 	private static Object niceName(Object o) {
 		if (o instanceof TileEntity) {
