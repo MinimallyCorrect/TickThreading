@@ -50,7 +50,12 @@ public class Log {
 			String sanitizedMessage = java.text.Normalizer.normalize(initialMessage, Normalizer.Form.NFC).replace("\r\n", "\n");
 			sanitizedMessage = pattern.matcher(sanitizedMessage).replaceAll("");
 			record.setMessage(sanitizedMessage);
-			wrappedHandler.publish(record);
+			synchronized (wrappedHandler) {
+				try {
+					wrappedHandler.publish(record);
+				} catch (Throwable ignored) {
+				}
+			}
 			record.setMessage(initialMessage);
 		}
 
