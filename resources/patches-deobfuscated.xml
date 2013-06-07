@@ -594,6 +594,35 @@
 			<synchronize>a(Ljava/lang/String;)V,b()V</synchronize>
 		</class>
 	</liteLoader>
+	<buildCraftCore>
+		<class id="buildcraft.core.inventory.TransactorSimple">
+			<replaceMethod code="{
+				int injected = 0;
+
+				int slotIndex = 0;
+				int slot = 0;
+				int size = inventory.^method:IInventory/getSizeInventory^();
+				while (slotIndex &lt; size &amp;&amp; injected &lt; $1.^field:ItemStack/stackSize^) {
+					slot = getPartialSlot($1, slotIndex, slotIndex++);
+					if (slot != -1){
+						injected += addToSlot(slot, $1, injected, $3);
+					}
+				}
+
+				slotIndex = 0;
+				while (slotIndex &lt; size &amp;&amp; injected &lt; $1.^field:ItemStack/stackSize^) {
+					slot = getEmptySlot(slotIndex, slotIndex++);
+					if (slot != -1){
+						injected += addToSlot(slot, $1, injected, $3);
+					}
+				}
+				if (injected > 0) {
+					inventory.^method:IInventory/onInventoryChanged^();
+				}
+				return injected;
+			}">inject</replaceMethod>
+		</class>
+	</buildCraftCore>
 	<buildCraftEnergy>
 		<class id="buildcraft.energy.TileEngine">
 			<synchronize>createEngineIfNeeded</synchronize>

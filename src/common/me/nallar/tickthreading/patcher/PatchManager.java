@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import javassist.CannotCompileException;
 import javassist.CtBehavior;
 import javassist.CtClass;
 import javassist.CtConstructor;
@@ -339,6 +340,9 @@ public class PatchManager {
 				if (e instanceof InvocationTargetException) {
 					e = (Exception) e.getCause();
 				}
+				if (e instanceof CannotCompileException && attributes.containsKey("code")) {
+					Log.severe("Code: " + attributes.get("code"));
+				}
 				Log.severe("Error patching " + ctClass.getName() + " with " + toString(), e);
 				return null;
 			}
@@ -354,6 +358,9 @@ public class PatchManager {
 			} catch (Exception e) {
 				if (e instanceof InvocationTargetException) {
 					e = (Exception) e.getCause();
+				}
+				if (e instanceof CannotCompileException && attributes.containsKey("code")) {
+					Log.severe("Code: " + attributes.get("code"));
 				}
 				Log.severe("Error patching " + ctBehavior.getName() + " in " + ctBehavior.getDeclaringClass().getName() + " with " + toString(), e);
 				return null;
