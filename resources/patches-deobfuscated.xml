@@ -637,6 +637,7 @@
 		<class id="buildcraft.factory.TilePump">
 			<replaceInitializer field="blocksToPump" class="me.nallar.collections.TreeMapHashMap"/>
 			<insertBefore code="blocksToPump.clear();">initializePumpFromPosition</insertBefore>
+			<synchronize>isActive,getNextIndexToPump</synchronize>
 		</class>
 	</buildCraftFactory>
 	<buildCraftSilicon>
