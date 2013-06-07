@@ -14,7 +14,7 @@ public enum VersionUtil {
 			}
 		} catch (NoClassDefFoundError ignored) {
 		}
-		return TTVersionString() + version;
+		return TTVersionString() + version + " - " + System.getProperty("java.runtime.version");
 	}
 
 	public static String TTVersionString() {

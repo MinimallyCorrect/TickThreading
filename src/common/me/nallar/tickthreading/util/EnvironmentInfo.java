@@ -8,6 +8,10 @@ import com.sun.management.UnixOperatingSystemMXBean;
 import me.nallar.tickthreading.Log;
 
 public class EnvironmentInfo {
+	public static String getJavaVersion() {
+		return ManagementFactory.getRuntimeMXBean().getSpecVersion();
+	}
+
 	public static String getOpenFileHandles() {
 		OperatingSystemMXBean osMxBean = ManagementFactory.getOperatingSystemMXBean();
 		if (osMxBean instanceof UnixOperatingSystemMXBean) {

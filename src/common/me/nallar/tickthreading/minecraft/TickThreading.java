@@ -41,6 +41,7 @@ import me.nallar.tickthreading.minecraft.entitylist.EntityList;
 import me.nallar.tickthreading.minecraft.entitylist.LoadedEntityList;
 import me.nallar.tickthreading.minecraft.entitylist.LoadedTileEntityList;
 import me.nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
+import me.nallar.tickthreading.util.EnvironmentInfo;
 import me.nallar.tickthreading.util.LocationUtil;
 import me.nallar.tickthreading.util.PatchUtil;
 import me.nallar.tickthreading.util.ReflectUtil;
@@ -214,6 +215,16 @@ public class TickThreading {
 		FMLLog.info("Loaded " + RelaunchClassLoader.patchedClasses + " patched classes" +
 				"\nUsed " + RelaunchClassLoader.usedPatchedClasses + '.');
 		Command.checkForPermissions();
+		String javaVersion = System.getProperty("java.runtime.version");
+		if (javaVersion.startsWith("1.6.0_")) {
+			boolean old = Integer.parseInt(javaVersion.substring(6)) < 34;
+			String warning = "It is recommended to use a Java 7 JRE. " + (old ? ", or if that is not possible, at least use the latest Java 6 JRE. " : "") + "Current version: " + javaVersion;
+			if (old) {
+				Log.severe(warning);
+			} else {
+				Log.info(warning);
+			}
+		}
 	}
 
 	@ForgeSubscribe (
