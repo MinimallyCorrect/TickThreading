@@ -9,7 +9,7 @@ import sun.misc.Unsafe;
 
 public class ConcurrentUnsafeIterableArrayList<T> extends ArrayList<T> {
 	private static final Unsafe $ = UnsafeAccess.$;
-	private static final long elementDataIndex = getIndex();
+	private static final long elementDataIndex = $.objectFieldOffset(ReflectUtil.getField(ArrayList.class, "elementData"));
 
 	public ConcurrentUnsafeIterableArrayList(final int initialCapacity) {
 		super(initialCapacity);
@@ -21,10 +21,6 @@ public class ConcurrentUnsafeIterableArrayList<T> extends ArrayList<T> {
 
 	public ConcurrentUnsafeIterableArrayList(final Collection<? extends T> c) {
 		super(c);
-	}
-
-	private static long getIndex() {
-		return $.objectFieldOffset(ReflectUtil.getField(ArrayList.class, "elementData"));
 	}
 
 	public Object[] elementData() {
