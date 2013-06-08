@@ -603,7 +603,7 @@
 				int slot = 0;
 				int size = inventory.^method:IInventory/getSizeInventory^();
 				while (slotIndex &lt; size &amp;&amp; injected &lt; $1.^field:ItemStack/stackSize^) {
-					slot = getPartialSlot($1, slotIndex, ++slotIndex);
+					slot = getPartialSlot($1, $2, slotIndex++);
 					if (slot != -1){
 						injected += addToSlot(slot, $1, injected, $3);
 					}
@@ -611,7 +611,8 @@
 
 				slotIndex = 0;
 				while (slotIndex &lt; size &amp;&amp; injected &lt; $1.^field:ItemStack/stackSize^) {
-					slot = getEmptySlot(slotIndex, ++slotIndex);
+					slotIndex++;
+					slot = getEmptySlot($2);
 					if (slot != -1){
 						injected += addToSlot(slot, $1, injected, $3);
 					}
