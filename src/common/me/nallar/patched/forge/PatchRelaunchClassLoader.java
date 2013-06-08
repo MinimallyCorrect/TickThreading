@@ -33,7 +33,6 @@ import sun.misc.URLClassPath;
 public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 	private static final ThreadLocal<byte[]> buffer = new ThreadLocal<byte[]>();
 	private static final PrintStream err = new PrintStream(new FileOutputStream(FileDescriptor.err));
-	;
 	@Declare
 	public static int patchedClasses_;
 	@Declare
@@ -285,7 +284,6 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 			} catch (Throwable throwable) {
 				String message = throwable.getMessage();
 				if (message != null && message.contains("for invalid side")) {
-					invalidClasses.add(name);
 					throw UnsafeUtil.throwIgnoreChecked(throwable);
 				} else if (basicClass != null || DEBUG_CLASSLOADING) {
 					FMLRelaunchLog.log((DEBUG_CLASSLOADING && basicClass != null) ? Level.WARNING : Level.FINE, throwable, "Failed to transform " + name);
