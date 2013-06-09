@@ -7,7 +7,6 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableSetMultimap;
 
-import me.nallar.collections.ForcedChunksRedirectMap;
 import me.nallar.collections.SynchronizedSet;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickThreading;
@@ -314,7 +313,8 @@ public abstract class PatchWorld extends World {
 
 	@Override
 	public ImmutableSetMultimap<ChunkCoordIntPair, ForgeChunkManager.Ticket> getPersistentChunks() {
-		return forcedChunks == null ? ForcedChunksRedirectMap.emptyMap : forcedChunks;
+		ImmutableSetMultimap<ChunkCoordIntPair, ForgeChunkManager.Ticket> forcedChunks = this.forcedChunks;
+		return forcedChunks == null ? ImmutableSetMultimap.<ChunkCoordIntPair, ForgeChunkManager.Ticket>of() : forcedChunks;
 	}
 
 	@Override
