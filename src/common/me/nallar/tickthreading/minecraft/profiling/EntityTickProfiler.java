@@ -233,7 +233,6 @@ public class EntityTickProfiler {
 		return tf;
 	}
 
-
 	private static Object niceName(Object o) {
 		if (o instanceof TileEntity) {
 			return niceName(o.getClass()) + ' ' + ((TileEntity) o).xCoord + ',' + ((TileEntity) o).yCoord + ',' + ((TileEntity) o).zCoord;

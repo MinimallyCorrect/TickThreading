@@ -14,7 +14,6 @@ import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.util.FakeServerThread;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.AxisAlignedBB;
 
 public final class ThreadManager {
 	public static final Map<Long, String> threadIdToManager = new ConcurrentHashMap<Long, String>();

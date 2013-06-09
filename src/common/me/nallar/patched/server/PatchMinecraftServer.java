@@ -39,7 +39,6 @@ import net.minecraft.network.packet.Packet4UpdateTime;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.gui.IUpdatePlayerListBox;
-import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.ReportedException;
 import net.minecraft.world.MinecraftException;
 import net.minecraft.world.World;

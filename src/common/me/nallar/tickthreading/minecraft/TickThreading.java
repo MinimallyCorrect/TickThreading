@@ -41,7 +41,6 @@ import me.nallar.tickthreading.minecraft.entitylist.EntityList;
 import me.nallar.tickthreading.minecraft.entitylist.LoadedEntityList;
 import me.nallar.tickthreading.minecraft.entitylist.LoadedTileEntityList;
 import me.nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
-import me.nallar.tickthreading.util.EnvironmentInfo;
 import me.nallar.tickthreading.util.LocationUtil;
 import me.nallar.tickthreading.util.PatchUtil;
 import me.nallar.tickthreading.util.ReflectUtil;

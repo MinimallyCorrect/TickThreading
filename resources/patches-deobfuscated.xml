@@ -319,7 +319,7 @@
 			<replaceInitializer field="playerEntityList" class="me.nallar.collections.LockArrayList"/>
 			<insertAfter code="((me.nallar.collections.LockArrayList)^field:ServerConfigurationManager/playerEntityList^).lock = playersUpdateLock;"/>
 			<synchronize field="$1.playerNetServerHandler">respawnPlayer</synchronize>
-			<synchronize field="$1.playerNetServerHandler">transferPlayerToDimension(Lnet.minecraft.entity.player.EntityPlayerMP;ILnet.minecraft.world.Teleporter;)V</synchronize>
+			<synchronize field="$1.^field:EntityPlayerMP/playerNetServerHandler^">transferPlayerToDimension(L^class:EntityPlayerMP^;IL^class:Teleporter^;)V</synchronize>
 		</class>
 		<class id="net.minecraft.server.management.ServerConfigurationManager" env="forge">
 			<addAll fromClass="me.nallar.patched.server.PatchServerConfigurationManagerForge"/>
@@ -397,6 +397,37 @@
 			<synchronize>publish</synchronize>
 		</class>
 	</minecraftCommon>
+	<forge>
+		<class id="net.minecraftforge.common.DimensionManager" env="mcpc">
+			<replaceMethod code="{
+				org.bukkit.event.world.WorldUnloadEvent e = new org.bukkit.event.world.WorldUnloadEvent($1.getWorld());
+				org.bukkit.Bukkit.getServer().getPluginManager().callEvent(e);
+				return e.isCancelled();
+			}
+			">fireBukkitWorldUnload
+			</replaceMethod>
+			<replaceMethod code="{
+				org.bukkit.Bukkit.getServer().getPluginManager().callEvent(new org.bukkit.event.world.WorldSaveEvent($1.getWorld()));
+			}
+			">fireBukkitWorldSave
+			</replaceMethod>
+			<replaceMethod code="{
+				java.lang.reflect.Field field = org.bukkit.Bukkit.getServer().getClass().getDeclaredField(&quot;worlds&quot;);
+				field.setAccessible(true);
+				((java.util.Map) field.get(org.bukkit.Bukkit.getServer())).values().remove($1.getWorld());
+			}
+			">removeBukkitWorld
+			</replaceMethod>
+			<removeUntilOpcode opcode="return" index="1">initDimension</removeUntilOpcode>
+		</class>
+		<class id="net.minecraftforge.common.DimensionManager">
+			<addAll fromClass="me.nallar.patched.forge.PatchDimensionManager"/>
+			<synchronize field="unloadQueue">unloadWorld</synchronize>
+			<insertBefore code="if (getWorld($1) != null) { return; }">initDimension</insertBefore>
+			<synchronize>unloadWorlds,initDimension,setWorld</synchronize>
+			<insertAfter code="if ($2 != null) { $2.setDimension($1); }">setWorld</insertAfter>
+		</class>
+	</forge>
 	<bukkit>
 		<class id="org.bukkit.plugin.SimplePluginManager">
 			<synchronize>subscribeToPermission,unsubscribeFromPermission,subscribeToDefaultPerms,unsubscribeFromDefaultPerms,getPermissionSubscriptions,getDefaultPermSubscriptions</synchronize>
@@ -407,6 +438,9 @@
 			<ignoreExceptions code="System.err.println(&quot;Loading world failed&quot; + $e); $e.printStackTrace(); throw new java.lang.Error($e);">
 				createWorld(Lorg.bukkit.WorldCreator;)Lorg.bukkit.World;
 			</ignoreExceptions>
+			<replaceMethod code="{
+				return net.minecraftforge.common.DimensionManager.unloadWorld(((org.bukkit.craftbukkit.v1_4_R1.CraftWorld) $1).getHandle(), $2);
+			}">unloadWorld(Lorg.bukkit.World;Z)V</replaceMethod>
 		</class>
 		<class id="org.bukkit.craftbukkit.v1_4_R1.CraftWorld">
 			<replaceMethod
@@ -473,24 +507,6 @@
 			<removeField field="annotationMap"/>
 			<addAll fromClass="me.nallar.patched.forge.PatchEvent"/>
 		</class>
-		<class id="net.minecraftforge.common.DimensionManager">
-			<addAll fromClass="me.nallar.patched.forge.PatchDimensionManager"/>
-			<synchronize field="unloadQueue">unloadWorld</synchronize>
-			<insertBefore code="if (getWorld($1) != null) { return; }">initDimension</insertBefore>
-			<synchronize>unloadWorlds,initDimension,setWorld</synchronize>
-			<insertAfter code="if ($2 != null) { $2.setDimension($1); }">setWorld</insertAfter>
-		</class>
-		<class id="net.minecraftforge.common.DimensionManager" env="mcpc">
-			<replaceMethod code="{
-				org.bukkit.Bukkit.getServer().getPluginManager().callEvent(new org.bukkit.event.world.WorldUnloadEvent($1.getWorld()));
-				java.lang.reflect.Field field = org.bukkit.Bukkit.getServer().getClass().getDeclaredField(&quot;worlds&quot;);
-				field.setAccessible(true);
-				((java.util.Map) field.get(org.bukkit.Bukkit.getServer())).values().remove($1.getWorld());
-			}
-			">fireBukkitWorldUnload
-			</replaceMethod>
-			<removeUntilOpcode opcode="return" index="1">initDimension</removeUntilOpcode>
-		</class>
 		<class id="net.minecraftforge.common.ForgeChunkManager$Ticket">
 			<public all="true"/>
 		</class>
@@ -499,11 +515,6 @@
 		</class>
 		<class id="net.minecraftforge.common.ForgeChunkManager">
 			<addAll fromClass="me.nallar.patched.forge.PatchForgeChunkManager"/>
-			<insertAfter
-							code="if ($1 != null &amp;&amp; $2 != null) { $1.world.^method:World/getChunkProvider^().^method:IChunkProvider/loadChunk^($2.^field:ChunkCoordIntPair/chunkXPos^, $2.^field:ChunkCoordIntPair/chunkZPos^); }">
-				forceChunk
-			</insertAfter>
-			<replaceMethodCall newMethod="getChunkFromChunkCoordsWithLoad" method="^class:World^.^method:World/getChunkFromChunkCoords^">loadWorld</replaceMethodCall>
 		</class>
 	</forge>
 	<forgeModLoader>
@@ -531,7 +542,6 @@
 		<class id="cpw.mods.fml.common.FMLModContainer">
 			<replaceMethodCall index="0" code="{ $_ = null; }" method="log">constructMod</replaceMethodCall>
 			<replaceFieldUsage field="fingerprintNotPresent" readCode="$_ = false;">constructMod</replaceFieldUsage>
-			<replaceFieldUsage field="expectedFingerprint" readCode="$_ = null;">constructMod</replaceFieldUsage>
 		</class>
 		<class id="cpw.mods.fml.common.registry.BlockTracker">
 			<synchronize>getNextBlockId,doReserveId</synchronize>
@@ -641,13 +651,6 @@
 			<synchronize>isActive,getNextIndexToPump</synchronize>
 		</class>
 	</buildCraftFactory>
-	<buildCraftSilicon>
-		<class id="buildcraft.silicon.TileLaser">
-			<replaceInitializer field="nextNetworkUpdate" code="$_ = 6;"/>
-			<replaceInitializer field="nextLaserUpdate" code="$_ = 30;"/>
-			<replaceInitializer field="nextLaserSearch" code="$_ = 100;"/>
-		</class>
-	</buildCraftSilicon>
 	<buildCraftTransport>
 		<class id="buildcraft.transport.TileGenericPipe">
 			<newField field="staticLock" class="java.lang.Object" static=""/>
@@ -1050,7 +1053,7 @@
 		<class id="codechicken.chunkloader.ChunkLoaderManager$ChunkLoaderOrganiser">
 			<replaceMethodCall newMethod="getTEWithLoad" method="^class:World^.^method:World/getBlockTileEntity^">^all^</replaceMethodCall>
 			<replaceMethodCall newMethod="getBlockIdWithLoad" method="^class:World^.^method:World/getBlockId^">^all^</replaceMethodCall>
-			<synchronize>revive(^class:World^)V,devive,revive,load,save</synchronize>
+			<synchronize>revive(L^class:World^;)V,devive,revive()V,load,save</synchronize>
 			<replaceInitializer field="dormantLoaders" class="me.nallar.collections.CHashMap"/>
 			<replaceInitializer field="forcedChunksByChunk" class="me.nallar.collections.CHashMap"/>
 			<replaceInitializer field="forcedChunksByLoader" class="me.nallar.collections.CHashMap"/>
@@ -1239,7 +1242,7 @@
 			<replaceInitializer field="tags" class="me.nallar.collections.CHashMap"/>
 		</class>
 		<class id="thaumcraft.common.AuraManager">
-			<synchronize>registerAuraNode,addToAuraUpdateList,getUpdateList</synchronize>
+			<synchronize>registerAuraNode</synchronize>
 		</class>
 		<class id="thaumcraft.common.AuraWorldTicker">
 			<synchronize field="((^class:WorldServer^)$2[0]).auraLock">tickEnd</synchronize>
@@ -1334,7 +1337,7 @@
 		<class id="appeng.me.tile.TileController">
 			<replaceInitializer field="WaitingQueue" class="me.nallar.collections.ConcurrentLinkedQueueList"/>
 			<replaceInitializer field="CraftingQueue" class="me.nallar.collections.ConcurrentLinkedQueueList"/>
-			<synchronize>getCellArray,resetCache,^method:TileEntity/updateEntity^,advanceCraftingCursor,resetWaitingQueue</synchronize>
+			<synchronize>getCellArray,^method:TileEntity/updateEntity^,advanceCraftingCursor,resetWaitingQueue</synchronize>
 		</class>
 		<class id="appeng.me.tile.TileDrive">
 			<synchronize>getCellArray,resetCache</synchronize>
@@ -1349,7 +1352,7 @@
 				$_ = $0.signalInput($$);
 				((me.nallar.collections.ArrayListTempSetNoClear) this.oldList).done();
 			}">^method:TileEntity/updateEntity^</replaceMethodCall>
-			<synchronize>getCellArray,resetCache,getSharedTagCompound,signalInput</synchronize>
+			<synchronize>getCellArray,getSharedTagCompound,signalInput</synchronize>
 		</class>
 		<class id="appeng.me.MEInventoryArray">
 			<synchronize>^all^</synchronize>

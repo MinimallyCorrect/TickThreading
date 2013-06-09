@@ -25,7 +25,6 @@ import me.nallar.exception.ThreadStuckError;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.util.ChatFormat;
 import me.nallar.tickthreading.util.CollectionsUtil;
-import me.nallar.unsafe.UnsafeAccess;
 import me.nallar.unsafe.UnsafeUtil;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.packet.Packet3Chat;

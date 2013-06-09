@@ -5,28 +5,31 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import me.nallar.tickthreading.Log;
 import me.nallar.unsafe.UnsafeUtil;
 
 public class LeakDetector {
+	private final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(0);
 	private final Timer timer = new Timer("Leak Detector", true);
-	private final long waitTime;
+	private final long waitTimeSeconds;
 	private final Map<Long, LeakCheckEntry> scheduledObjects = new ConcurrentHashMap<Long, LeakCheckEntry>();
 
 	public LeakDetector(final long waitTimeSeconds) {
-		waitTime = waitTimeSeconds * 1000;
+		this.waitTimeSeconds = waitTimeSeconds;
 	}
 
 	public synchronized void scheduleLeakCheck(Object o, String oDescription_, final boolean clean) {
 		try {
 			if (clean) {
-				timer.schedule(new CleanerTask(o), Math.min(waitTime / 2, 20000));
+				timer.schedule(new CleanerTask(o), Math.min(waitTimeSeconds / 2, 20000));
 			}
 			final long id = UnsafeUtil.addressOf(o);
 			final String oDescription = (oDescription_ == null ? "" : oDescription_ + " : ") + o.getClass() + '@' + System.identityHashCode(o) + ':' + id;
 			scheduledObjects.put(id, new LeakCheckEntry(o, oDescription));
-			timer.schedule(new TimerTask() {
+			scheduledThreadPoolExecutor.schedule(new Runnable() {
 				@Override
 				public void run() {
 					LeakCheckEntry leakCheckEntry = scheduledObjects.remove(id);
@@ -34,15 +37,15 @@ public class LeakDetector {
 					if (o == null) {
 						Log.fine("Object " + leakCheckEntry.description + " has been removed normally.");
 					} else {
-						String warning = "Probable memory leak detected. \"" + leakCheckEntry.description + "\" has not been garbage collected after " + waitTime / 1000 + "s.";
-						if (clean) {
+						String warning = "Probable memory leak detected. \"" + leakCheckEntry.description + "\" has not been garbage collected after " + waitTimeSeconds / 1000 + "s.";
+						if (clean && !Log.debug) {
 							Log.fine(warning);
 						} else {
 							Log.warning(warning);
 						}
 					}
 				}
-			}, waitTime);
+			}, waitTimeSeconds, TimeUnit.SECONDS);
 		} catch (Throwable t) {
 			Log.severe("Failed to schedule leak check for " + oDescription_, t);
 		}

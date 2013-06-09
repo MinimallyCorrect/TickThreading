@@ -22,7 +22,7 @@ public abstract class PatchServerConfigurationManagerForge extends ServerConfigu
 	@Declare
 	public void disconnectAllPlayers(String reason) {
 		while (!this.playerEntityList.isEmpty()) {
-			((EntityPlayerMP)this.playerEntityList.get(0)).playerNetServerHandler.kickPlayerFromServer(reason);
+			((EntityPlayerMP) this.playerEntityList.get(0)).playerNetServerHandler.kickPlayerFromServer(reason);
 		}
 	}
 
