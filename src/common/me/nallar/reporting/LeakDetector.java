@@ -2,7 +2,6 @@ package me.nallar.reporting;
 
 import java.lang.ref.WeakReference;
 import java.util.Map;
-import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -13,7 +12,6 @@ import me.nallar.unsafe.UnsafeUtil;
 
 public class LeakDetector {
 	private final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(0);
-	private final Timer timer = new Timer("Leak Detector", true);
 	private final long waitTimeSeconds;
 	private final Map<Long, LeakCheckEntry> scheduledObjects = new ConcurrentHashMap<Long, LeakCheckEntry>();
 
@@ -24,7 +22,7 @@ public class LeakDetector {
 	public synchronized void scheduleLeakCheck(Object o, String oDescription_, final boolean clean) {
 		try {
 			if (clean) {
-				timer.schedule(new CleanerTask(o), Math.min(waitTimeSeconds / 2, 20000));
+				scheduledThreadPoolExecutor.schedule(new CleanerTask(o), Math.min(waitTimeSeconds / 2, 20), TimeUnit.SECONDS);
 			}
 			final long id = UnsafeUtil.addressOf(o);
 			final String oDescription = (oDescription_ == null ? "" : oDescription_ + " : ") + o.getClass() + '@' + System.identityHashCode(o) + ':' + id;
