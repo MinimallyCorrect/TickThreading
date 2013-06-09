@@ -16,10 +16,12 @@ import com.google.common.collect.Ordering;
 import me.nallar.tickthreading.minecraft.TickManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.minecraft.commands.ProfileCommand;
+import me.nallar.tickthreading.util.CollectionsUtil;
 import me.nallar.tickthreading.util.MappingUtil;
 import me.nallar.tickthreading.util.TableFormatter;
 import me.nallar.tickthreading.util.stringfillers.StringFiller;
 import net.minecraft.entity.Entity;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import org.cliffc.high_scale_lib.NonBlockingHashMap;
@@ -121,7 +123,14 @@ public class EntityTickProfiler {
 		tf.recordTables();
 		writeData(tf, 20);
 		ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.writeValue(file, tf.getTables());
+		List<Object> tables = tf.getTables();
+		long timeProfiled = System.currentTimeMillis() - startTime;
+		float tps = ticks * 1000f / timeProfiled;
+		tables.add(0, CollectionsUtil.map(
+				"TPS", tps,
+				"Load", TableFormatter.formatDoubleWithPrecision((MinecraftServer.getTickTime() * 100) / MinecraftServer.getTargetTickTime(), 2)
+		));
+		objectMapper.writeValue(file, tables);
 	}
 
 	private static <T> List<T> sortedKeys(Map<T, ? extends Comparable<?>> map, int elements) {
