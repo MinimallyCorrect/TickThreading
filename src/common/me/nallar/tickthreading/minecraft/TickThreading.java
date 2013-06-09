@@ -217,12 +217,20 @@ public class TickThreading {
 		Command.checkForPermissions();
 		String javaVersion = System.getProperty("java.runtime.version");
 		if (javaVersion.startsWith("1.6.0_")) {
-			boolean old = Integer.parseInt(javaVersion.substring(6)) < 34;
-			String warning = "It is recommended to use a Java 7 JRE. " + (old ? ", or if that is not possible, at least use the latest Java 6 JRE. " : "") + "Current version: " + javaVersion;
-			if (old) {
-				Log.severe(warning);
-			} else {
-				Log.info(warning);
+			int extrasIndex = javaVersion.indexOf('-');
+			if (extrasIndex != -1) {
+				javaVersion = javaVersion.substring(0, extrasIndex);
+			}
+			try {
+				boolean old = Integer.parseInt(javaVersion.substring(6)) < 34;
+				String warning = "It is recommended to use a Java 7 JRE. " + (old ? ", or if that is not possible, at least use the latest Java 6 JRE. " : "") + "Current version: " + javaVersion;
+				if (old) {
+					Log.severe(warning);
+				} else {
+					Log.info(warning);
+				}
+			} catch (NumberFormatException e) {
+				Log.warning("Unknown JRE version format, " + System.getProperty("java.runtime.version") + " -> " + javaVersion, e);
 			}
 		}
 	}
