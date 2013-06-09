@@ -130,7 +130,7 @@ public class EntityTickProfiler {
 				"TPS", tps,
 				"Load", TableFormatter.formatDoubleWithPrecision((MinecraftServer.getTickTime() * 100) / MinecraftServer.getTargetTickTime(), 2)
 		));
-		objectMapper.writeValue(file, tables);
+		objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, tables);
 	}
 
 	private static <T> List<T> sortedKeys(Map<T, ? extends Comparable<?>> map, int elements) {
