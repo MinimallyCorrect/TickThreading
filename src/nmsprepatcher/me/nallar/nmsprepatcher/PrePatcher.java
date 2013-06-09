@@ -94,7 +94,7 @@ class PrePatcher {
 			Matcher matcher = declareMethodPattern.matcher(contents);
 			while (matcher.find()) {
 				String type = matcher.group(2);
-				String ret = "null"; // TODO: Add more types.
+				String ret = "null";
 				if ("static".equals(type)) {
 					type = matcher.group(3);
 				}
@@ -139,7 +139,6 @@ class PrePatcher {
 				String body = sourceString.substring(index, endIndex);
 				sourceString = sourceString.replace(body, body.replace(withoutGenerics, original).replace("return ", "return (" + generic + ") "));
 			}
-			// TODO: Fix package -> public properly later.
 			sourceString = sourceString.replace("\nfinal ", " ");
 			sourceString = sourceString.replace(" final ", " ");
 			sourceString = sourceString.replace("\nclass", "\npublic class");
