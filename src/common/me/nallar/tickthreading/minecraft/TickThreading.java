@@ -205,6 +205,9 @@ public class TickThreading {
 				+ "\nSeriously, please don't."
 				+ "\nIf it's only broken with TickThreading, report it at http://github.com/nallar/TickThreading"
 				+ "\n\nAlso, you really should be making regular backups. (You should be doing that even when not using TT.)");
+		if (Log.debug) {
+			Log.severe("TickThreading is running in debug mode.");
+		}
 		ServerCommandManager serverCommandManager = (ServerCommandManager) event.getServer().getCommandManager();
 		serverCommandManager.registerCommand(new TicksCommand());
 		serverCommandManager.registerCommand(new TPSCommand());
