@@ -440,7 +440,8 @@
 			</ignoreExceptions>
 			<replaceMethod code="{
 				return net.minecraftforge.common.DimensionManager.unloadWorld(((org.bukkit.craftbukkit.v1_4_R1.CraftWorld) $1).getHandle(), $2);
-			}">unloadWorld(Lorg.bukkit.World;Z)V</replaceMethod>
+			}">unloadWorld(Lorg.bukkit.World;Z)V
+			</replaceMethod>
 		</class>
 		<class id="org.bukkit.craftbukkit.v1_4_R1.CraftWorld">
 			<replaceMethod
@@ -631,7 +632,8 @@
 					inventory.^method:IInventory/onInventoryChanged^();
 				}
 				return injected;
-			}">inject</replaceMethod>
+			}">inject
+			</replaceMethod>
 		</class>
 	</buildCraftCore>
 	<buildCraftEnergy>
@@ -1188,7 +1190,8 @@
 				if (!(cache instanceof me.nallar.collections.SynchronizedList)) {
 					cache = new me.nallar.collections.SynchronizedList(cache);
 				}
-			}">load</insertAfter>
+			}">load
+			</insertAfter>
 		</class>
 		<class id="twilightforest.TFEventListener">
 			<synchronize>worldSave</synchronize>
@@ -1351,7 +1354,8 @@
 			<replaceMethodCall method="signalInput" code="{
 				$_ = $0.signalInput($$);
 				((me.nallar.collections.ArrayListTempSetNoClear) this.oldList).done();
-			}">^method:TileEntity/updateEntity^</replaceMethodCall>
+			}">^method:TileEntity/updateEntity^
+			</replaceMethodCall>
 			<synchronize>getCellArray,getSharedTagCompound,signalInput</synchronize>
 		</class>
 		<class id="appeng.me.MEInventoryArray">
