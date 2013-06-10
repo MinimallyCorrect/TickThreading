@@ -107,7 +107,7 @@ public class TickThreading {
 	private HashSet<Integer> disabledFastMobSpawningDimensions = new HashSet<Integer>();
 	private boolean waitForEntityTickCompletion = true;
 	private int targetTPS = 20;
-	private final LeakDetector leakDetector = new LeakDetector(1200);
+	private final LeakDetector leakDetector = new LeakDetector(1800);
 	public static int recentSpawnedItems;
 
 	static {

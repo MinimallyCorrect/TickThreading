@@ -35,7 +35,7 @@ public class LeakDetector {
 					if (o == null) {
 						Log.fine("Object " + leakCheckEntry.description + " has been removed normally.");
 					} else {
-						String warning = "Probable memory leak detected. \"" + leakCheckEntry.description + "\" has not been garbage collected after " + waitTimeSeconds / 1000 + "s.";
+						String warning = "Probable memory leak detected. \"" + leakCheckEntry.description + "\" has not been garbage collected after " + waitTimeSeconds + "s.";
 						if (clean && !Log.debug) {
 							Log.fine(warning);
 						} else {
