@@ -401,6 +401,13 @@
 		</class>
 	</minecraftCommon>
 	<forge>
+		<class id="net.minecraftforge.common.DimensionManager">
+			<addAll fromClass="me.nallar.patched.forge.PatchDimensionManager"/>
+			<synchronize field="unloadQueue">unloadWorld</synchronize>
+			<insertBefore code="if (getWorld($1) != null) { return; }">initDimension</insertBefore>
+			<synchronize>unloadWorlds,initDimension,setWorld</synchronize>
+			<insertAfter code="if ($2 != null) { $2.setDimension($1); }">setWorld</insertAfter>
+		</class>
 		<class id="net.minecraftforge.common.DimensionManager" env="mcpc">
 			<replaceMethod code="{
 				org.bukkit.event.world.WorldUnloadEvent e = new org.bukkit.event.world.WorldUnloadEvent($1.getWorld());
@@ -422,13 +429,6 @@
 			">removeBukkitWorld
 			</replaceMethod>
 			<removeUntilOpcode opcode="return" index="1">initDimension</removeUntilOpcode>
-		</class>
-		<class id="net.minecraftforge.common.DimensionManager">
-			<addAll fromClass="me.nallar.patched.forge.PatchDimensionManager"/>
-			<synchronize field="unloadQueue">unloadWorld</synchronize>
-			<insertBefore code="if (getWorld($1) != null) { return; }">initDimension</insertBefore>
-			<synchronize>unloadWorlds,initDimension,setWorld</synchronize>
-			<insertAfter code="if ($2 != null) { $2.setDimension($1); }">setWorld</insertAfter>
 		</class>
 	</forge>
 	<bukkit>
