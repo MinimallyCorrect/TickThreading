@@ -1,10 +1,8 @@
 package me.nallar.patched.nbt;
 
-import java.util.ConcurrentModificationException;
 import java.util.Map;
 
 import me.nallar.tickthreading.patcher.Declare;
-import me.nallar.unsafe.UnsafeAccess;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagByte;
 import net.minecraft.nbt.NBTTagByteArray;
@@ -18,7 +16,6 @@ import net.minecraft.nbt.NBTTagLong;
 import net.minecraft.nbt.NBTTagShort;
 import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.ReportedException;
-import sun.misc.Unsafe;
 
 public abstract class PatchNBTTagCompound extends NBTTagCompound {
 	@Override
@@ -150,9 +147,9 @@ public abstract class PatchNBTTagCompound extends NBTTagCompound {
 
 	public boolean equals(Object o) {
 		if (o instanceof NBTTagCompound) {
-			NBTBase var2 = (NBTBase)o;
+			NBTBase var2 = (NBTBase) o;
 			if (this.getId() == var2.getId() && ((this.name != null || var2.getName() == null) && (this.name == null || var2.getName() != null) && (this.name == null || this.name.equals(var2.getName())))) {
-				NBTTagCompound nbttagcompound = (NBTTagCompound)o;
+				NBTTagCompound nbttagcompound = (NBTTagCompound) o;
 				Map map = tagMap;
 				Map other = nbttagcompound.getTagMap();
 				if (map.size() == other.size()) {

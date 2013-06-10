@@ -356,6 +356,12 @@ public class Log {
 			Log.severe("World counts mismatch.\n" + dumpWorlds());
 		} else if (hasDuplicates(bukkitWorldList) || hasDuplicates(minecraftServer.worldServers) || hasDuplicates(DimensionManager.getWorlds())) {
 			Log.severe("Duplicate worlds.\n" + dumpWorlds());
+		} else {
+			for (WorldServer worldServer : minecraftServer.worldServers) {
+				if (worldServer.unloaded || worldServer.provider == null) {
+					Log.severe("Broken/unloaded world in worlds list.\n" + dumpWorlds());
+				}
+			}
 		}
 	}
 
