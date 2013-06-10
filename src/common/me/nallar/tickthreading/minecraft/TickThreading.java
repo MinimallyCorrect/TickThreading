@@ -67,7 +67,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.WorldEvent;
 
 @SuppressWarnings ("WeakerAccess")
-@Mod (modid = "TickThreading", name = "TickThreading", version = "@MOD_VERSION@")
+@Mod (modid = "TickThreading", name = "TickThreading", version = "@MOD_VERSION@", acceptedMinecraftVersions = "[1.4.7]")
 @NetworkMod (clientSideRequired = false, serverSideRequired = false)
 public class TickThreading {
 	@Mod.Instance
