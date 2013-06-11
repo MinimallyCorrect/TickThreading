@@ -18,8 +18,8 @@ import org.cliffc.high_scale_lib.NonBlockingHashMap;
 
 public class PacketProfiler {
 	private static boolean profiling = false;
-	private static final Map<Integer, AtomicInteger> size = new NonBlockingHashMap<Integer, AtomicInteger>();
-	private static final Map<Integer, AtomicInteger> count = new NonBlockingHashMap<Integer, AtomicInteger>();
+	private static final Map<String, AtomicInteger> size = new NonBlockingHashMap<String, AtomicInteger>();
+	private static final Map<String, AtomicInteger> count = new NonBlockingHashMap<String, AtomicInteger>();
 
 	public static synchronized boolean startProfiling(final ICommandSender commandSender, final int time) {
 		if (profiling) {
@@ -56,12 +56,12 @@ public class PacketProfiler {
 	}
 
 	private static TableFormatter writeStats(final TableFormatter tf, int elements) {
-		Map<Integer, Integer> count = new HashMap<Integer, Integer>();
-		for (Map.Entry<Integer, AtomicInteger> entry : PacketProfiler.count.entrySet()) {
+		Map<String, Integer> count = new HashMap<String, Integer>();
+		for (Map.Entry<String, AtomicInteger> entry : PacketProfiler.count.entrySet()) {
 			count.put(entry.getKey(), entry.getValue().get());
 		}
-		Map<Integer, Integer> size = new HashMap<Integer, Integer>();
-		for (Map.Entry<Integer, AtomicInteger> entry : PacketProfiler.size.entrySet()) {
+		Map<String, Integer> size = new HashMap<String, Integer>();
+		for (Map.Entry<String, AtomicInteger> entry : PacketProfiler.size.entrySet()) {
 			size.put(entry.getKey(), entry.getValue().get());
 		}
 
@@ -69,8 +69,8 @@ public class PacketProfiler {
 				.heading("Packet")
 				.heading("Count")
 				.heading("Size");
-		final List<Integer> sortedIdsByCount = sortedKeys(count, elements);
-		for (Integer id : sortedIdsByCount) {
+		final List<String> sortedIdsByCount = sortedKeys(count, elements);
+		for (String id : sortedIdsByCount) {
 			tf
 					.row(getName(id))
 					.row(count.get(id))
@@ -82,8 +82,8 @@ public class PacketProfiler {
 				.heading("Packet")
 				.heading("Count")
 				.heading("Size");
-		final List<Integer> sortedIdsBySize = sortedKeys(size, elements);
-		for (Integer id : sortedIdsBySize) {
+		final List<String> sortedIdsBySize = sortedKeys(size, elements);
+		for (String id : sortedIdsBySize) {
 			tf
 					.row(getName(id))
 					.row(count.get(id))
@@ -93,7 +93,13 @@ public class PacketProfiler {
 		return tf;
 	}
 
-	private static String getName(int id) {
+	private static String getName(String name) {
+		int id;
+		try {
+			id = Integer.parseInt(name);
+		} catch (NumberFormatException ignored) {
+			return name;
+		}
 		return MappingUtil.debobfuscate(((Class) Packet.packetIdToClassMap.lookup(id)).getName()).replace("net.minecraft.network.packet.Packet", "");
 	}
 
@@ -101,17 +107,17 @@ public class PacketProfiler {
 		if (!profiling) {
 			return;
 		}
-		Integer id;
-		if (false && packet instanceof Packet250CustomPayload) {
-			// TODO: Separate packet250s into their own IDs.
+		String id;
+		if (packet instanceof Packet250CustomPayload) {
+			id = ((Packet250CustomPayload) packet).channel;
 		} else {
-			id = packet.getPacketId();
+			id = String.valueOf(packet.getPacketId());
 		}
 		getCount(id).getAndIncrement();
 		getSize(id).addAndGet(packet.getPacketSize());
 	}
 
-	private static AtomicInteger getCount(Integer id) {
+	private static AtomicInteger getCount(String id) {
 		AtomicInteger t = count.get(id);
 		if (t == null) {
 			synchronized (count) {
@@ -125,7 +131,7 @@ public class PacketProfiler {
 		return t;
 	}
 
-	private static AtomicInteger getSize(Integer id) {
+	private static AtomicInteger getSize(String id) {
 		AtomicInteger t = size.get(id);
 		if (t == null) {
 			synchronized (size) {
