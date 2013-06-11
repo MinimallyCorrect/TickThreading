@@ -264,6 +264,9 @@
 			}">writeNamedTag
 			</replaceMethod>
 		</class>
+		<class id="net.minecraft.nbt.NBTBase">
+			<addAll fromClass="me.nallar.patched.nbt.PatchNBTBase"/>
+		</class>
 		<class id="net.minecraft.nbt.NBTTagCompound">
 			<addAll fromClass="me.nallar.patched.nbt.PatchNBTTagCompound"/>
 			<replaceInitializer field="tagMap" class="me.nallar.collections.PartiallySynchronizedMap"/>
