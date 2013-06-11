@@ -87,7 +87,7 @@ public class TickThreading {
 	public boolean shouldLoadSpawn = false;
 	public boolean concurrentNetworkTicks = false;
 	public boolean antiCheatKick = false;
-	public boolean antiCheatNotify = true;
+	public boolean antiCheatNotify = false;
 	public boolean cleanWorlds = true;
 	public boolean allowWorldUnloading = true;
 	public boolean requireOpForDumpCommand = true;
