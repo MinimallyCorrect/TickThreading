@@ -25,6 +25,11 @@ import me.nallar.tickthreading.minecraft.tickregion.TileEntityTickRegion;
 import me.nallar.tickthreading.util.TableFormatter;
 import me.nallar.unsafe.UnsafeUtil;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityCreature;
+import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.IProjectile;
+import net.minecraft.entity.monster.EntityMob;
+import net.minecraft.entity.passive.EntityWaterMob;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
@@ -585,6 +590,7 @@ public final class TickManager {
 		{
 			Set<Entity> contained = new HashSet<Entity>();
 			Set<Entity> toRemove = new ContainedRemoveSet<Entity>();
+			List<Entity> unloaded = new ArrayList<Entity>();
 			synchronized (entityLock) {
 				for (Entity e : entityList) {
 					if (add(e, false)) {
@@ -594,15 +600,18 @@ public final class TickManager {
 						toRemove.add(e);
 						duplicateEntities++;
 						fixed++;
-					} else if (!(e instanceof EntityPlayerMP)) {
+					} else if (e instanceof IProjectile || e instanceof EntityCreature || e instanceof EntityMob) {
 						synchronized (e) {
 							Chunk chunk = world.getChunkIfExists(e.chunkCoordX, e.chunkCoordZ);
 							if (chunk == null || !chunk.entityLists[e.chunkCoordY].contains(e)) {
-								remove(e);
+								unloaded.add(e);
 								unloadedEntities++;
 							}
 						}
 					}
+				}
+				for (Entity e : unloaded) {
+					remove(e);
 				}
 				entityList.removeAll(toRemove);
 			}
