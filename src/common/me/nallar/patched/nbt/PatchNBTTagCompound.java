@@ -147,13 +147,16 @@ public abstract class PatchNBTTagCompound extends NBTTagCompound {
 
 	@Override
 	public boolean equals(Object o) {
-		if (o instanceof NBTTagCompound) {
-			NBTBase other = (NBTBase) o;
+		if (o == this) {
+			return true;
+		} else if (o instanceof NBTTagCompound) {
+			NBTTagCompound other = (NBTTagCompound) o;
 			if (this.getId() == other.getId() && ((this.getRawName() != null || other.getRawName() == null) && (this.getRawName() == null || other.getRawName() != null) && (this.getRawName() == null || this.getRawName().equals(other.getRawName())))) {
-				NBTTagCompound nbttagcompound = (NBTTagCompound) o;
 				Map map = tagMap;
-				Map otherMap = nbttagcompound.getTagMap();
-				if (map.size() == otherMap.size()) {
+				Map otherMap = other.getTagMap();
+				if (map == otherMap) {
+					return true;
+				} else if (map.size() == otherMap.size()) {
 					synchronized (this) {
 						for (Map.Entry entry : (Iterable<Map.Entry>) map.entrySet()) {
 							Object value = entry.getValue();
