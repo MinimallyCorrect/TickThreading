@@ -13,6 +13,7 @@ import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet51MapChunk;
 import net.minecraft.network.packet.Packet52MultiBlockChange;
 import net.minecraft.network.packet.Packet53BlockChange;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.PlayerInstance;
 import net.minecraft.server.management.PlayerManager;
 import net.minecraft.tileentity.TileEntity;
@@ -31,6 +32,8 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 	private boolean watched;
 	@Declare
 	public net.minecraft.world.chunk.Chunk chunk_;
+	private int startTime;
+	private int sentUpdates;
 
 	public PatchPlayerInstance(PlayerManager par1PlayerManager, int par2, int par3) {
 		super(par1PlayerManager, par2, par3);
@@ -39,6 +42,7 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 	public void construct() {
 		tilesToUpdate = new ConcurrentLinkedQueue<TileEntity>();
 		myManager.getWorldServer().theChunkProviderServer.getChunkAt(chunkLocation.chunkXPos, chunkLocation.chunkZPos, new LoadRunnable(this));
+		startTime = MinecraftServer.currentTick + 30;
 	}
 
 	@Override
@@ -191,11 +195,23 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 	}
 
 	@Override
+	@Declare
+	public boolean shouldPostPone(boolean squash, int currentTick) {
+		int runningTicks = currentTick - startTime;
+		if (squash) {
+			startTime = currentTick - (runningTicks /= 2);
+			sentUpdates /= 2;
+		}
+		return (sentUpdates / (float) runningTicks) > 0.1f;
+	}
+
+	@Override
 	public void sendChunkUpdate() {
 		watched = false;
 		if (noUpdateRequired()) {
 			return;
 		}
+		sentUpdates++;
 		sendTiles();
 		synchronized (this) {
 			int numberOfTilesToUpdate = this.numberOfTilesToUpdate;

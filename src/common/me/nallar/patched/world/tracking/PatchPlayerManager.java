@@ -1,8 +1,11 @@
 package me.nallar.patched.world.tracking;
 
+import java.util.ArrayList;
+
 import me.nallar.collections.ConcurrentLinkedQueueList;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.patcher.Declare;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.PlayerInstance;
 import net.minecraft.server.management.PlayerManager;
 import net.minecraft.world.WorldServer;
@@ -20,8 +23,6 @@ public abstract class PatchPlayerManager extends PlayerManager {
 		}
 	}
 
-	private int unloadAllChunksCounter;
-
 	@Override
 	@Declare
 	public net.minecraft.util.LongHashMap getChunkWatchers() {
@@ -30,17 +31,26 @@ public abstract class PatchPlayerManager extends PlayerManager {
 
 	@Override
 	public void updatePlayerInstances() {
+		int currentTick = MinecraftServer.currentTick;
+		boolean squash = currentTick % 800 == 0;
+		ArrayList<PlayerInstance> postponed = new ArrayList<PlayerInstance>();
 		PlayerInstance playerInstance;
 		while ((playerInstance = chunkWatcherWithPlayersQ.poll()) != null) {
 			try {
-				playerInstance.sendChunkUpdate();
+				if (playerInstance.shouldPostPone(squash, currentTick)) {
+					postponed.add(playerInstance);
+				} else {
+					playerInstance.sendChunkUpdate();
+				}
 			} catch (Exception e) {
 				Log.severe("Failed to send " + playerInstance, e);
 				playerInstance.clearTileCount();
 			}
 		}
 
-		if (unloadAllChunksCounter++ % 300 == 0 && this.players.isEmpty()) {
+		chunkWatcherWithPlayersQ.addAll(postponed);
+
+		if (currentTick % 300 == 0 && this.players.isEmpty()) {
 			this.theWorldServer.theChunkProviderServer.unloadAllChunks();
 		}
 	}
