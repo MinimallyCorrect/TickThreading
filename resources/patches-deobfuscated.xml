@@ -226,7 +226,7 @@
 			<replace class="me.nallar.patched.collection.PatchLongHashMap"/>
 		</class>
 		<class id="net.minecraft.util.IntHashMap">
-			<replace class="me.nallar.patched.collection.IntHashMap"/>
+			<replace class="me.nallar.patched.collection.PatchIntHashMap"/>
 		</class>
 		<class id="net.minecraft.entity.passive.EntitySquid">
 			<removeMethod>isInWater</removeMethod>

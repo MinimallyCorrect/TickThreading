@@ -9,6 +9,7 @@ import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickManager;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
+import me.nallar.tickthreading.minecraft.profiling.PacketProfiler;
 import me.nallar.tickthreading.minecraft.tickregion.TickRegion;
 import me.nallar.tickthreading.util.TableFormatter;
 import net.minecraft.command.ICommandSender;
@@ -41,6 +42,10 @@ public class ProfileCommand extends Command {
 			if (arguments.isEmpty()) {
 				throw new Exception();
 			}
+			if ("p".equals(arguments.get(0))) {
+				PacketProfiler.startProfiling(commandSender, 10);
+				return;
+			}
 			entity_ = "e".equals(arguments.get(0));
 			if ("c".equals(arguments.get(0))) {
 				entity_ = true;
@@ -60,7 +65,7 @@ public class ProfileCommand extends Command {
 				}
 			}
 		} catch (Exception e) {
-			sendChat(commandSender, "Usage: /profile [type=a/e/(c [chunk x] [chunk z])] [time=7] [dimensionid=current dimension]");
+			sendChat(commandSender, "Usage: /profile [type=a/e/p/(c [chunk x] [chunk z])] [time=7] [dimensionid=current dimension]");
 			return;
 		}
 		final int time = time_;

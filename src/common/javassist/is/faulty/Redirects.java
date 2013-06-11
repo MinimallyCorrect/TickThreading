@@ -5,6 +5,7 @@ import com.google.common.hash.Hashing;
 import cpw.mods.fml.common.network.Player;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickThreading;
+import me.nallar.tickthreading.minecraft.profiling.PacketProfiler;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.INetworkManager;
 import net.minecraft.network.NetServerHandler;
@@ -41,6 +42,7 @@ public class Redirects {
 	}
 
 	public static boolean interceptPacket(Packet packet, NetServerHandler handler) {
+		PacketProfiler.record(packet);
 		if (packet instanceof Packet9Respawn) {
 			Packet9Respawn packet9Respawn = (Packet9Respawn) packet;
 			int dimension = packet9Respawn.respawnDimension;

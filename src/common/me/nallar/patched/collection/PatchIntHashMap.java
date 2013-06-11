@@ -12,10 +12,13 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import me.nallar.patched.annotation.FakeExtend;
+import me.nallar.patched.annotation.Generic;
+import me.nallar.tickthreading.patcher.Declare;
+import net.minecraft.util.IntHashMap;
 
 @SuppressWarnings ("unchecked")
 @FakeExtend
-public abstract class IntHashMap extends net.minecraft.util.IntHashMap {
+public abstract class PatchIntHashMap<V> extends IntHashMap<V> {
 	private static final int EMPTY_KEY = Integer.MIN_VALUE;
 	private static final int BUCKET_SIZE = 4096;
 	int[][] keys;
@@ -23,7 +26,7 @@ public abstract class IntHashMap extends net.minecraft.util.IntHashMap {
 	int size;
 	int modCount;
 
-	public IntHashMap() {
+	public PatchIntHashMap() {
 		initialize();
 	}
 
@@ -38,8 +41,9 @@ public abstract class IntHashMap extends net.minecraft.util.IntHashMap {
 	}
 
 	@Override
-	public Object lookup(int key) {
-		int index = (keyIndex(key) & (BUCKET_SIZE - 1));
+	@Generic
+	public V lookup(int key) {
+		int index = keyIndex(key) & (BUCKET_SIZE - 1);
 		int[] inner = keys[index];
 		if (inner == null) {
 			return null;
@@ -50,7 +54,10 @@ public abstract class IntHashMap extends net.minecraft.util.IntHashMap {
 			if (innerKey == EMPTY_KEY) {
 				return null;
 			} else if (innerKey == key) {
-				return values[index][i];
+				Object[] value = values[index];
+				if (value != null) {
+					return (V) value[i];
+				}
 			}
 		}
 
@@ -59,10 +66,15 @@ public abstract class IntHashMap extends net.minecraft.util.IntHashMap {
 
 	@Override
 	public void addKey(int key, Object value) {
-		int index = (keyIndex(key) & (BUCKET_SIZE - 1));
+		put(key, value);
+	}
+
+	@Override
+	@Declare
+	public synchronized V put(int key, Object value) {
+		int index = (int) (keyIndex(key) & (BUCKET_SIZE - 1));
 		int[] innerKeys = keys[index];
 		Object[] innerValues = values[index];
-		modCount++;
 
 		if (innerKeys == null) {
 			// need to make a new chain
@@ -81,9 +93,10 @@ public abstract class IntHashMap extends net.minecraft.util.IntHashMap {
 					size++;
 				}
 				if (currentKey == EMPTY_KEY || currentKey == key) {
+					Object old = innerValues[i];
 					innerKeys[i] = key;
 					innerValues[i] = value;
-					return;
+					return (V) old;
 				}
 			}
 
@@ -95,6 +108,7 @@ public abstract class IntHashMap extends net.minecraft.util.IntHashMap {
 			innerValues[i] = value;
 			size++;
 		}
+		return null;
 	}
 
 	@Override
@@ -166,22 +180,22 @@ public abstract class IntHashMap extends net.minecraft.util.IntHashMap {
 
 		@Override
 		public void clear() {
-			IntHashMap.this.clearMap();
+			PatchIntHashMap.this.clearMap();
 		}
 
 		@Override
 		public int size() {
-			return IntHashMap.this.size;
+			return PatchIntHashMap.this.size;
 		}
 
 		@Override
 		public boolean contains(Object key) {
-			return key instanceof Integer && IntHashMap.this.containsItem((Integer) key);
+			return key instanceof Integer && PatchIntHashMap.this.containsItem((Integer) key);
 		}
 
 		@Override
 		public boolean remove(Object key) {
-			return IntHashMap.this.removeObject((Integer) key) != null;
+			return PatchIntHashMap.this.removeObject((Integer) key) != null;
 		}
 
 		@Override
@@ -224,17 +238,17 @@ public abstract class IntHashMap extends net.minecraft.util.IntHashMap {
 		Object prevValue;
 
 		ValueIterator() {
-			expectedModCount = IntHashMap.this.modCount;
+			expectedModCount = PatchIntHashMap.this.modCount;
 		}
 
 		@Override
 		public boolean hasNext() {
-			return count < IntHashMap.this.size;
+			return count < PatchIntHashMap.this.size;
 		}
 
 		@Override
 		public void remove() {
-			if (IntHashMap.this.modCount != expectedModCount) {
+			if (PatchIntHashMap.this.modCount != expectedModCount) {
 				throw new ConcurrentModificationException();
 			}
 
@@ -243,14 +257,14 @@ public abstract class IntHashMap extends net.minecraft.util.IntHashMap {
 			}
 
 			count--;
-			IntHashMap.this.removeObject(lastReturned);
+			PatchIntHashMap.this.removeObject(lastReturned);
 			lastReturned = EMPTY_KEY;
-			expectedModCount = IntHashMap.this.modCount;
+			expectedModCount = PatchIntHashMap.this.modCount;
 		}
 
 		@Override
 		public Object next() {
-			if (IntHashMap.this.modCount != expectedModCount) {
+			if (PatchIntHashMap.this.modCount != expectedModCount) {
 				throw new ConcurrentModificationException();
 			}
 
@@ -258,7 +272,7 @@ public abstract class IntHashMap extends net.minecraft.util.IntHashMap {
 				throw new NoSuchElementException();
 			}
 
-			int[][] keys = IntHashMap.this.keys;
+			int[][] keys = PatchIntHashMap.this.keys;
 			count++;
 
 			if (prevKey != EMPTY_KEY) {
