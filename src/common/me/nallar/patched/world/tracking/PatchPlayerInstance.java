@@ -216,9 +216,6 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 		synchronized (this) {
 			int numberOfTilesToUpdate = this.numberOfTilesToUpdate;
 			if (numberOfTilesToUpdate != 0) {
-				int var1;
-				int var2;
-				int var3;
 				short[] locationOfBlockChange = this.locationOfBlockChange;
 				if (numberOfTilesToUpdate > locationOfBlockChange.length) {
 					Log.warning("numberOfTilesToUpdate set too high. Got " + numberOfTilesToUpdate + " should be <= " + locationOfBlockChange.length);
@@ -226,32 +223,23 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 				}
 
 				WorldServer worldServer = myManager.getWorldServer();
+				Chunk chunk = worldServer.getChunkIfExists(chunkLocation.chunkXPos, chunkLocation.chunkZPos);
 				if (numberOfTilesToUpdate == 1) {
-					var1 = chunkLocation.chunkXPos * 16 + (locationOfBlockChange[0] >> 12 & 15);
-					var2 = locationOfBlockChange[0] & 255;
-					var3 = chunkLocation.chunkZPos * 16 + (locationOfBlockChange[0] >> 8 & 15);
-					sendToAllPlayersWatchingChunk(new Packet53BlockChange(var1, var2, var3, worldServer));
+					int x = chunkLocation.chunkXPos * 16 + (locationOfBlockChange[0] >> 12 & 15);
+					int y = locationOfBlockChange[0] & 255;
+					int z = chunkLocation.chunkZPos * 16 + (locationOfBlockChange[0] >> 8 & 15);
+					sendToAllPlayersWatchingChunk(new Packet53BlockChange(x, y, z, worldServer));
 
-					if (worldServer.blockHasTileEntity(var1, var2, var3)) {
-						sendTileToAllPlayersWatchingChunk(worldServer.getBlockTileEntity(var1, var2, var3));
-					}
+					sendTileToAllPlayersWatchingChunk(chunk.getChunkBlockTileEntity(locationOfBlockChange[0] >> 12 & 15, locationOfBlockChange[0] & 255, locationOfBlockChange[0] >> 8 & 15));
 				} else {
-					int var4;
-
 					if (numberOfTilesToUpdate >= ForgeDummyContainer.clumpingThreshold) {
-						sendToAllPlayersWatchingChunk(new Packet51MapChunk(worldServer.getChunkFromChunkCoords(chunkLocation.chunkXPos, chunkLocation.chunkZPos), false, field_73260_f));
+						sendToAllPlayersWatchingChunk(new Packet51MapChunk(chunk, false, field_73260_f));
 					} else {
 						sendToAllPlayersWatchingChunk(new Packet52MultiBlockChange(chunkLocation.chunkXPos, chunkLocation.chunkZPos, locationOfBlockChange, numberOfTilesToUpdate, worldServer));
 					}
 
-					for (var1 = 0; var1 < numberOfTilesToUpdate; ++var1) {
-						var2 = chunkLocation.chunkXPos * 16 + (locationOfBlockChange[var1] >> 12 & 15);
-						var3 = locationOfBlockChange[var1] & 255;
-						var4 = chunkLocation.chunkZPos * 16 + (locationOfBlockChange[var1] >> 8 & 15);
-
-						if (worldServer.blockHasTileEntity(var2, var3, var4)) {
-							sendTileToAllPlayersWatchingChunk(worldServer.getBlockTileEntity(var2, var3, var4));
-						}
+					for (int i = 0; i < numberOfTilesToUpdate; ++i) {
+						sendTileToAllPlayersWatchingChunk(chunk.getChunkBlockTileEntity(locationOfBlockChange[i] >> 12 & 15, locationOfBlockChange[i] & 255, locationOfBlockChange[i] >> 8 & 15));
 					}
 				}
 
