@@ -7,6 +7,7 @@ import javassist.is.faulty.Timings;
 import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
+import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.NetServerHandler;
 import net.minecraft.network.TcpConnection;
@@ -18,6 +19,8 @@ import net.minecraft.network.packet.Packet56MapChunks;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.ChunkCoordIntPair;
+import net.minecraft.world.WorldProviderEnd;
+import net.minecraft.world.WorldProviderHell;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.ChunkWatchEvent;
@@ -62,7 +65,7 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 					teleported = nsh.teleported = -21;
 				}
 				double yPosition = this.yPosition;
-				if (yPosition > -100 && yPosition < -5 && entityPlayerMP.worldObj.getDimension() == 0) {
+				if (yPosition > -200 && yPosition < -10 && !entityPlayerMP.worldObj.isAirBlock((int) xPosition, 0, (int) zPosition)) {
 					int newY = entityPlayerMP.worldObj.getHeightValue((int) xPosition, (int) zPosition) + 1;
 					if (newY > 1) {
 						nsh.setPlayerLocation(xPosition, newY, zPosition, entityPlayerMP.rotationYaw, entityPlayerMP.rotationPitch);
