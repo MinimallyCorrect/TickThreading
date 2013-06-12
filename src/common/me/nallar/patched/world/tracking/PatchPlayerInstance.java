@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import me.nallar.tickthreading.Log;
+import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
 import me.nallar.tickthreading.util.ChunkLoadRunnable;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -26,6 +27,7 @@ import net.minecraftforge.event.world.ChunkWatchEvent;
 
 public abstract class PatchPlayerInstance extends PlayerInstance {
 	private ConcurrentLinkedQueue<TileEntity> tilesToUpdate;
+	private static final boolean rateLimitChunkUpdates = TickThreading.instance.rateLimitChunkUpdates;
 	private static final byte[] unloadSequence = {0x78, (byte) 0x9C, 0x63, 0x64, 0x1C, (byte) 0xD9, 0x00, 0x00, (byte) 0x81, (byte) 0x80, 0x01, 0x01};
 	@Declare
 	public boolean loaded_;
@@ -197,6 +199,9 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 	@Override
 	@Declare
 	public boolean shouldPostPone(boolean squash, int currentTick) {
+		if (!rateLimitChunkUpdates) {
+			return false;
+		}
 		int runningTicks = currentTick - startTime;
 		if (squash) {
 			startTime = currentTick - (runningTicks /= 2);

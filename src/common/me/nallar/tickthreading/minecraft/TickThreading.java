@@ -94,6 +94,7 @@ public class TickThreading {
 	public boolean enableFastMobSpawning = true;
 	public boolean enableBugWarningMessage = true;
 	public boolean concurrentMovementUpdates = true;
+	public boolean rateLimitChunkUpdates = true;
 	public int saveInterval = 180;
 	public int deadLockTime = 45;
 	public int chunkCacheSize = 2000;
@@ -188,6 +189,7 @@ public class TickThreading {
 		profilingInterval = config.get(GENERAL, "profilingInterval", profilingInterval, "Interval, in minutes, to record profiling information to disk. 0 = never. Recommended >= 2.").getInt();
 		profilingFileName = config.get(GENERAL, "profilingFileName", profilingFileName, "Location to store profiling information to, relative to the server folder. For example, why not store it in a computercraft computer's folder?").value;
 		profilingJson = config.get(GENERAL, "profilingJson", profilingJson, "Whether to write periodic profiling in JSON format").getBoolean(profilingJson);
+		rateLimitChunkUpdates = config.get(GENERAL, "rateLiitChunkUpdates", rateLimitChunkUpdates, "Whether to prevent repeated chunk updates which can cause rendering issues and disconnections for slow clients/connections.").getBoolean(rateLimitChunkUpdates);
 		config.save();
 		int[] disabledDimensions = config.get(GENERAL, "disableFastMobSpawningDimensions", new int[]{-1}, "List of dimensions not to enable fast spawning in.").getIntList();
 		disabledFastMobSpawningDimensions = new HashSet<Integer>(disabledDimensions.length);
