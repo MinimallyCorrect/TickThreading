@@ -20,6 +20,6 @@ Optional - these JVM flags may improve performance
 ==========
 
 - Your start.bat/sh should look something like this:
-- java -server -XX:UseSSE=4 -XX:+UseCMSCompactAtFullCollection -XX:ParallelGCThreads=6 -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:+DisableExplicitGC -XX:+CMSIncrementalMode -XX:+CMSIncrementalPacing -XX:+AggressiveOpts -Xmx8192M -jar server.jar nogui
+- java -server -XX:UseSSE=4 -XX:+UseCMSCompactAtFullCollection -Xincgc -XX:ParallelGCThreads=6 -XX:+UseParNewGC -XX:+DisableExplicitGC -XX:+CMSIncrementalPacing -XX:+AggressiveOpts -Xmx8192M -jar server.jar nogui
 - Replace the "6" in -XX:ParallelGCThreads=6 with the number of cores your server has.
 - Replace 8192 with the RAM the server should be allowed to use, in megabytes.
