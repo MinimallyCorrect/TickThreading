@@ -313,6 +313,7 @@
 			<disable>run</disable>
 		</class>
 		<class id="net.minecraft.server.management.ServerConfigurationManager">
+			<addAll fromClass="me.nallar.patched.server.PatchServerConfigurationManager"/>
 			<newField field="readWriteLock" class="me.nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock"/>
 			<newField field="playersUpdateLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>
 			<newField field="playerUpdateLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.readLock();"/>

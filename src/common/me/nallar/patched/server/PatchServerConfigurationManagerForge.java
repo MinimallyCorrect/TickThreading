@@ -19,14 +19,6 @@ public abstract class PatchServerConfigurationManagerForge extends ServerConfigu
 	public java.util.concurrent.locks.Lock playersUpdateLock_;
 
 	@Override
-	@Declare
-	public void disconnectAllPlayers(String reason) {
-		while (!this.playerEntityList.isEmpty()) {
-			((EntityPlayerMP) this.playerEntityList.get(0)).playerNetServerHandler.kickPlayerFromServer(reason);
-		}
-	}
-
-	@Override
 	public void transferPlayerToDimension(EntityPlayerMP entityPlayerMP, int toDimensionId, Teleporter teleporter) {
 		WorldServer fromDimension;
 		WorldServer toDimension;
