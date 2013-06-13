@@ -522,7 +522,9 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 					}
 					if (chunk == null) {
 						loadingChunks.put(key, defaultEmptyChunk);
-						if (!allowGenerate || generator == null) {
+						if (!allowGenerate) {
+							return null;
+						} else if (generator == null) {
 							return defaultEmptyChunk;
 						}
 					} else {
