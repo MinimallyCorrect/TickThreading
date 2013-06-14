@@ -633,6 +633,7 @@ public final class TickManager {
 				}
 				tileEntityList.removeAll(toRemove);
 			}
+			
 			for (TileEntity te : copy) {
 				Chunk chunk = chunkProviderServer.getChunkIfExists(te.xCoord >> 4, te.zCoord >> 4);
 				if (te.isInvalid()) {
@@ -647,6 +648,13 @@ public final class TickManager {
 			}
 		}
 
+		int totalSize = tickRegions.size();
+		int tESize = tileEntityCallables.size();
+		int eSize = entityCallables.size();
+		if (eSize + tESize != totalSize) {
+			sb.append("TickRegion list size mismatch, total: ").append(totalSize).append(", te: ").append(tESize).append(", e: ").append(eSize).append(", combined: ").append(tESize + eSize);
+		}
+		
 		if (fixed != 0) {
 			sb.append("Found and fixed ").append(fixed).append(" discrepancies in tile/entity lists in ").append(Log.name(world))
 					.append("\ntiles - invalid: ").append(invalidTiles).append(", missing: ").append(missingTiles).append(", duplicate: ").append(duplicateTiles).append(", unloaded: ").append(unloadedTiles)
