@@ -21,7 +21,7 @@ public abstract class PatchTileEntity extends TileEntity {
 	@Declare
 	public int lastTTZ_;
 	@Declare
-	public me.nallar.tickthreading.minecraft.tickregion.TileEntityTickRegion tickRegion_;
+	public volatile me.nallar.tickthreading.minecraft.tickregion.TileEntityTickRegion tickRegion_;
 	@Declare
 	public final java.util.concurrent.locks.Lock lockManagementLock_ = null;
 	@Declare

@@ -49,14 +49,20 @@ public class TileEntityTickRegion extends TickRegion {
 				final int zPos = tileEntity.zCoord;
 				if (manager.getHashCode(xPos, zPos) != hashCode) {
 					tileEntitiesIterator.remove();
-					if (tileEntity.isInvalid()) {
+					if (tileEntity.isInvalid() || !world.getChunkProvider().chunkExists(xPos >> 4, zPos >> 4)) {
+						if (Log.debug) {
+							Log.debug("A tile entity is invalid or unloaded."
+									+ "\n entity: " + Log.toString(tileEntity)
+									+ "\n In " + hashCode + "\t.tickRegion: " + tileEntity.tickRegion.hashCode + "\texpected: " + manager.getHashCode(xPos, zPos));
+						}
 						invalidate(tileEntity);
 						continue;
 					}
 					manager.add(tileEntity, false);
-					if (hashCode != 0) {
-						Log.fine("A tile entity is in the wrong TickRegion - was it moved by a player, or did something break?"
-								+ "\n entity: " + Log.toString(tileEntity));
+					if (Log.debug) {
+						Log.debug("A tile entity is in the wrong TickRegion - was it moved by a player, or did something break?"
+								+ "\n entity: " + Log.toString(tileEntity)
+								+ "\n In " + hashCode + "\t.tickRegion: " + tileEntity.tickRegion.hashCode + "\texpected: " + manager.getHashCode(xPos, zPos));
 					}
 					manager.lock(tileEntity);
 					continue;

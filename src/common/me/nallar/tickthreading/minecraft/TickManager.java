@@ -118,7 +118,7 @@ public final class TickManager {
 
 	@SuppressWarnings ("NumericCastThatLosesPrecision")
 	public int getHashCode(Entity entity) {
-		return getHashCode((int) entity.posX, (int) entity.posZ);
+		return getHashCode(entity.chunkCoordX, entity.chunkCoordZ);
 	}
 
 	public int getHashCode(int x, int z) {
@@ -653,6 +653,9 @@ public final class TickManager {
 		int eSize = entityCallables.size();
 		if (eSize + tESize != totalSize) {
 			sb.append("TickRegion list size mismatch, total: ").append(totalSize).append(", te: ").append(tESize).append(", e: ").append(eSize).append(", combined: ").append(tESize + eSize);
+			if (fixed != 0) {
+				sb.append('\n');
+			}
 		}
 
 		if (fixed != 0) {
