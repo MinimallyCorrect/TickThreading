@@ -1507,7 +1507,7 @@
 
 					this.freq += 1;
 				}
-			}"/>
+			}">^method:TileEntity/updateEntity^</replaceMethod>
 			<synchronize>getCellArray,getSharedTagCompound,signalInput</synchronize>
 		</class>
 		<class id="appeng.me.MEInventoryArray">
