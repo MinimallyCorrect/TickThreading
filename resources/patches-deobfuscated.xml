@@ -1476,10 +1476,10 @@
 								}
 
 								for (Iterator i1 = newList.iterator(); i1.hasNext();) {
-									ur x = i1.next();
+									ur x = (ur) i1.next();
 									boolean found = false;
 									for (Iterator i2 = oList.iterator(); i2.hasNext();) {
-										ur y = i2.next();
+										ur y = (ur) i2.next();
 										if (appeng.util.Platform.isSameItem(x, y))
 										{
 											found = true;
