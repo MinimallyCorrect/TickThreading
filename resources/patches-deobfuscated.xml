@@ -285,7 +285,7 @@
 			<addAll fromClass="me.nallar.patched.entity.PatchEntityItem"/>
 			<insertSuper>onUpdate</insertSuper>
 		</class>
-		<class id="net.minecraft.entity.item.EntityItem">
+		<class id="net.minecraft.entity.item.EntityXPOrb">
 			<addAll fromClass="me.nallar.patched.entity.PatchEntityXPOrb"/>
 		</class>
 		<class id="net.minecraft.tileentity.TileEntity">
