@@ -1,6 +1,7 @@
 package me.nallar.patched.entity;
 
 import me.nallar.tickthreading.patcher.Declare;
+import me.nallar.tickthreading.util.concurrent.SimpleMutex;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.item.EntityItem;
@@ -11,6 +12,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.item.ItemExpireEvent;
 
 public abstract class PatchEntityItem extends EntityItem {
+	private static final SimpleMutex lock = new SimpleMutex();
 	private static final double mergeRadius = 1.5D;
 	private static final double aggressiveMergeRadius = 5D;
 	private static final float aggressiveMergeRadiusSquared = 25f;
@@ -128,31 +130,35 @@ public abstract class PatchEntityItem extends EntityItem {
 		if (other == this) {
 			return false;
 		}
-		synchronized (EntityItem.class) {
-			if (this.isDead || other.isDead) {
-				return false;
-			}
-			ItemStack thisStack = this.getEntityItem();
-			ItemStack otherStack = other.getEntityItem();
+		lock.lock();
+		synchronized (this) {
+			synchronized (other) {
+				lock.unlock();
+				if (this.isDead || other.isDead) {
+					return false;
+				}
+				ItemStack thisStack = this.getEntityItem();
+				ItemStack otherStack = other.getEntityItem();
 
-			if (thisStack.getItem() != otherStack.getItem()) {
-				return false;
-			} else if (thisStack.hasTagCompound() ^ otherStack.hasTagCompound()) {
-				return false;
-			} else if (thisStack.hasTagCompound() && !thisStack.getTagCompound().equals(otherStack.getTagCompound())) {
-				return false;
-			} else if (thisStack.getItem().getHasSubtypes() && thisStack.getItemDamage() != otherStack.getItemDamage()) {
-				return false;
-			} else if (thisStack.stackSize + otherStack.stackSize > thisStack.getMaxStackSize()) {
-				return false;
-			} else {
-				thisStack.stackSize += otherStack.stackSize;
-				otherStack.stackSize = 0;
-				this.delayBeforeCanPickup = Math.max(other.delayBeforeCanPickup, this.delayBeforeCanPickup);
-				this.age = Math.min(other.age, this.age);
-				this.func_92058_a(thisStack);
-				other.setDead();
-				return true;
+				if (thisStack.getItem() != otherStack.getItem()) {
+					return false;
+				} else if (thisStack.hasTagCompound() ^ otherStack.hasTagCompound()) {
+					return false;
+				} else if (thisStack.hasTagCompound() && !thisStack.getTagCompound().equals(otherStack.getTagCompound())) {
+					return false;
+				} else if (thisStack.getItem().getHasSubtypes() && thisStack.getItemDamage() != otherStack.getItemDamage()) {
+					return false;
+				} else if (thisStack.stackSize + otherStack.stackSize > thisStack.getMaxStackSize()) {
+					return false;
+				} else {
+					thisStack.stackSize += otherStack.stackSize;
+					otherStack.stackSize = 0;
+					this.delayBeforeCanPickup = Math.max(other.delayBeforeCanPickup, this.delayBeforeCanPickup);
+					this.age = Math.min(other.age, this.age);
+					this.func_92058_a(thisStack);
+					other.setDead();
+					return true;
+				}
 			}
 		}
 	}
