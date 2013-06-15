@@ -20,6 +20,7 @@ import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityTracker;
 import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.item.EntityXPOrb;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.profiler.Profiler;
@@ -1057,6 +1058,14 @@ public abstract class PatchWorld extends World {
 			if (recentSpawnedItems > 200) {
 				if (((EntityItem) e).aggressiveCombine()) {
 					return true;
+				}
+			}
+		} else if (e instanceof EntityXPOrb) {
+			EntityXPOrb thisXP = (EntityXPOrb) e;
+			final double mergeRadius = 1d;
+			for (EntityXPOrb otherXP : (Iterable<EntityXPOrb>) selectEntitiesWithinAABB(EntityXPOrb.class, thisXP.boundingBox.expand(mergeRadius, mergeRadius, mergeRadius), null, 0.3D)) {
+				if (!otherXP.isDead) {
+					thisXP.addXPFrom(otherXP);
 				}
 			}
 		}
