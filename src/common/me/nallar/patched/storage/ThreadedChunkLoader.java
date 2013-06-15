@@ -105,7 +105,7 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 		if (!isChunkCacheFull()) {
 			long hash = hash(x, z);
 			if (chunkCache.getIfPresent(hash) == null && !world.getChunkProvider().chunkExists(x, z)) {
-				NBTTagCompound nbtTagCompound = readChunkNBT(world, x, z, false);
+				NBTTagCompound nbtTagCompound = readChunkNBT(world, x, z, true);
 				synchronized (syncLockObject) {
 					if (nbtTagCompound != null && chunkCache.getIfPresent(hash) == null && !world.getChunkProvider().chunkExists(x, z)) {
 						chunkCache.put(hash, nbtTagCompound);
