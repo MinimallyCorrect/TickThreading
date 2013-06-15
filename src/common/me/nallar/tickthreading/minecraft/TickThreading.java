@@ -48,6 +48,7 @@ import me.nallar.tickthreading.util.TableFormatter;
 import me.nallar.tickthreading.util.VersionUtil;
 import net.minecraft.command.ServerCommandManager;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
@@ -57,6 +58,7 @@ import net.minecraft.network.packet.PacketCount;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.Configuration;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
@@ -104,6 +106,7 @@ public class TickThreading {
 	private int tickThreads = 0;
 	private int regionSize = 16;
 	private int profilingInterval = 0;
+	private int maxItemsPerChunk = 0;
 	private boolean profilingJson = false;
 	public boolean variableTickRate = true;
 	private DeadLockDetector deadLockDetector;
@@ -112,6 +115,7 @@ public class TickThreading {
 	private int targetTPS = 20;
 	private final LeakDetector leakDetector = new LeakDetector(1800);
 	public static int recentSpawnedItems;
+	private int lastMaxItemWarnedTime;
 
 	static {
 		new Metrics("TickThreading", VersionUtil.TTVersionNumber());
@@ -173,6 +177,7 @@ public class TickThreading {
 		chunkCacheSize = Math.max(100, config.get(GENERAL, "chunkCacheSize", chunkCacheSize, "Number of unloaded chunks to keep cached. Replacement for Forge's dormant chunk cache, which tends to break. Minimum size of 100").getInt(chunkCacheSize));
 		chunkGCInterval = config.get(GENERAL, "chunkGCInterval", chunkGCInterval, "Interval between chunk garbage collections in ticks").getInt(chunkGCInterval);
 		targetTPS = config.get(GENERAL, "targetTPS", targetTPS, "TPS the server should try to run at.").getInt(targetTPS);
+		maxItemsPerChunk = config.get(GENERAL, "maxItemsPerChunk", maxItemsPerChunk, "Maximum number of entity items allowed per chunk. 0 = no limit.").getInt(maxItemsPerChunk);
 		maxEntitiesPerPlayer = config.get(GENERAL, "maxEntitiesPerPlayer", maxEntitiesPerPlayer, "If more entities than this are loaded per player in a world, mob spawning will be disabled in that world.").getInt(maxEntitiesPerPlayer);
 		mobSpawningMultiplier = (float) config.get(GENERAL, "mobSpawningMultiplier", mobSpawningMultiplier, "Mob spawning multiplier. Default is 1, can be a decimal.").getDouble(mobSpawningMultiplier);
 		variableTickRate = config.get(GENERAL, "variableRegionTickRate", variableTickRate, "Allows tick rate to vary per region so that each region uses at most 50ms on average per tick.").getBoolean(variableTickRate);
@@ -368,6 +373,32 @@ public class TickThreading {
 				Timings.record("server/EntityTickWait", System.nanoTime() - sT);
 			}
 		}
+	}
+
+	public boolean removeIfOverMaxItems(final EntityItem e) {
+		if (maxItemsPerChunk == 0) {
+			return false;
+		}
+		Chunk chunk = e.worldObj.getChunkIfExists(((int) e.posX) >> 4, ((int) e.posZ) >> 4);
+		ArrayList<EntityItem> entityItems = chunk.getEntitiesOfType(EntityItem.class);
+		if (entityItems.size() > maxItemsPerChunk) {
+			int remaining = 0;
+			for (EntityItem entityItem : entityItems) {
+				if (!entityItem.isDead) {
+					remaining++;
+					entityItem.combineList(entityItems);
+				}
+			}
+			if (remaining > maxItemsPerChunk) {
+				e.setDead();
+			}
+			if (lastMaxItemWarnedTime < MinecraftServer.currentTick - 10) {
+				lastMaxItemWarnedTime = MinecraftServer.currentTick;
+				Log.warning("Entity items in chunk " + chunk + " exceeded limit of " + maxItemsPerChunk);
+			}
+			return e.isDead;
+		}
+		return false;
 	}
 
 	private class LoginWarningHandler implements IPlayerTracker {

@@ -162,4 +162,22 @@ public abstract class PatchEntityItem extends EntityItem {
 			}
 		}
 	}
+
+	@Override
+	@Declare
+	public void combineList(java.util.ArrayList<EntityItem> list) {
+		if (this.isDead) {
+			return;
+		}
+		for (EntityItem entityItem : list) {
+			if (!entityItem.isDead) {
+				entityItem.combineItems(this);
+			}
+			// May be set true in combineItems.
+			//noinspection ConstantConditions
+			if (this.isDead) {
+				return;
+			}
+		}
+	}
 }

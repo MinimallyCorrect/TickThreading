@@ -81,6 +81,30 @@ public abstract class PatchChunk extends Chunk {
 	}
 
 	@Override
+	@Declare
+	public <T> ArrayList<T> getEntitiesOfType(Class<T> aClass) {
+		ArrayList<T> list = new ArrayList<T>();
+		int min = 0;
+		int max = entityLists.length;
+
+		for (int i = min; i <= max; ++i) {
+			SynchronizedList<Entity> entityList = (SynchronizedList<Entity>) this.entityLists[i];
+			Object[] entities = entityList.elementData();
+			int length = entityList.size() - 1;
+			for (; length >= 0; length--) {
+				Entity entity = (Entity) entities[length];
+				if (entity == null) {
+					continue;
+				}
+				if (entity.getClass().equals(aClass)) {
+					list.add((T) entity);
+				}
+			}
+		}
+		return list;
+	}
+
+	@Override
 	public void getEntitiesOfTypeWithinAAAB(Class aClass, AxisAlignedBB aabb, List list, IEntitySelector selector) {
 		int var5 = MathHelper.floor_double((aabb.minY - 2D) / 16.0D);
 		int var6 = MathHelper.floor_double((aabb.maxY + 2D) / 16.0D);

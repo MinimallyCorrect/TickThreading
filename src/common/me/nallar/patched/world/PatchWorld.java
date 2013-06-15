@@ -1055,7 +1055,7 @@ public abstract class PatchWorld extends World {
 				e.setDead();
 				return true;
 			}
-			if (recentSpawnedItems > 200) {
+			if (!TickThreading.instance.removeIfOverMaxItems((EntityItem) e) && recentSpawnedItems > 200) {
 				if (((EntityItem) e).aggressiveCombine()) {
 					return true;
 				}
