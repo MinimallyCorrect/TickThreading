@@ -62,6 +62,7 @@ public class ClassRegistry {
 		classes.importPackage("java.util");
 		classes.importPackage("java.io");
 		classes.importPackage("me.nallar.tickthreading");
+		classes.importPackage("me.nallar.collections");
 	}
 
 	public void clearClassInfo() {
