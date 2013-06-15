@@ -28,6 +28,7 @@ import me.nallar.tickthreading.util.ServerThreadFactory;
 import me.nallar.tickthreading.util.concurrent.NativeMutex;
 import me.nallar.unsafe.UnsafeUtil;
 import net.minecraft.entity.EnumCreatureType;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.PlayerManager;
 import net.minecraft.util.IProgressUpdate;
@@ -850,6 +851,12 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	@Override
 	public void recreateStructures(int x, int z) {
+	}
+
+	@Override
+	@Declare
+	public net.minecraft.nbt.NBTTagCompound readChunkNBT(int x, int z) {
+		return ((AnvilChunkLoader) loader).readChunkNBT(world, x, z);
 	}
 
 	private static long key(int x, int z) {

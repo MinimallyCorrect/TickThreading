@@ -1606,6 +1606,7 @@
 	<dynmap>
 		<class id="org.dynmap.forge.ForgeMapChunkCache">
 			<replaceMethod code="return this.cps.getChunkAt($1, $2, false, null);">loadChunkNoGenerate</replaceMethod>
+			<replaceMethod code="return this.cps.readChunkNBT($1, $2);">readChunk</replaceMethod>
 		</class>
 	</dynmap>
 </mods>

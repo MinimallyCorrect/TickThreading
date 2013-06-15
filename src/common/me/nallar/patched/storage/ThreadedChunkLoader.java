@@ -27,6 +27,7 @@ import net.minecraft.util.LongHashMap;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.NextTickListEntry;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.NibbleArray;
 import net.minecraft.world.chunk.storage.AnvilChunkLoader;
@@ -102,25 +103,23 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 	@Override
 	@Declare
 	public void cacheChunk(World world, int x, int z) {
-		DataInputStream dataInputStream = regionFileCache.getChunkInputStream(x, z);
-
-		if (dataInputStream == null) {
-			return;
+		if (!isChunkCacheFull()) {
+			long hash = hash(x, z);
+			if (chunkCache.getIfPresent(hash) == null && !world.getChunkProvider().chunkExists(x, z)) {
+				NBTTagCompound nbtTagCompound = readChunkNBT(world, x, z);
+				synchronized (syncLockObject) {
+					if (nbtTagCompound != null && chunkCache.getIfPresent(hash) == null && !world.getChunkProvider().chunkExists(x, z)) {
+						chunkCache.put(hash, nbtTagCompound);
+					}
+				}
+			}
 		}
-
-		NBTTagCompound nbttagcompound;
-		try {
-			nbttagcompound = CompressedStreamTools.read(dataInputStream);
-		} catch (Throwable t) {
-			Log.severe("Failed to cache chunk " + Log.pos(world, x, z), t);
-			return;
-		}
-		chunkCache.put(hash(x, z), nbttagcompound);
 	}
 
 	@Override
-	public Chunk loadChunk(World world, int x, int z) {
-		NBTTagCompound nbttagcompound;
+	@Declare
+	public NBTTagCompound readChunkNBT(World world, int x, int z) {
+		NBTTagCompound nbtTagCompound;
 		ChunkCoordIntPair chunkcoordintpair = new ChunkCoordIntPair(x, z);
 
 		synchronized (this.syncLockObject) {
@@ -129,19 +128,19 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 			long hash = hash(x, z);
 			if (pendingchunktosave == null) {
 
-				nbttagcompound = (NBTTagCompound) inProgressSaves.getValueByKey(hash);
-				if (nbttagcompound == null) {
-					nbttagcompound = chunkCache.getIfPresent(hash);
+				nbtTagCompound = (NBTTagCompound) inProgressSaves.getValueByKey(hash);
+				if (nbtTagCompound == null) {
+					nbtTagCompound = chunkCache.getIfPresent(hash);
 				}
 			} else {
-				nbttagcompound = pendingchunktosave.nbtTags;
+				nbtTagCompound = pendingchunktosave.nbtTags;
 			}
-			if (nbttagcompound != null) {
+			if (nbtTagCompound != null) {
 				chunkCache.invalidate(hash);
 			}
 		}
 
-		if (nbttagcompound == null) {
+		if (nbtTagCompound == null) {
 			DataInputStream dataInputStream = regionFileCache.getChunkInputStream(x, z);
 
 			if (dataInputStream == null) {
@@ -149,14 +148,19 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 			}
 
 			try {
-				nbttagcompound = CompressedStreamTools.read(dataInputStream);
+				nbtTagCompound = CompressedStreamTools.read(dataInputStream);
 			} catch (Throwable t) {
 				Log.severe("Failed to load chunk " + Log.pos(world, x, z), t);
 				return null;
 			}
 		}
 
-		return this.checkedReadChunkFromNBT(world, x, z, nbttagcompound);
+		return nbtTagCompound;
+	}
+
+	@Override
+	public Chunk loadChunk(World world, int x, int z) {
+		return this.checkedReadChunkFromNBT(world, x, z, readChunkNBT(world, x, z));
 	}
 
 	@Override
