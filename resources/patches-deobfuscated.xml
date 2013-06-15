@@ -1070,6 +1070,12 @@
 			<replaceInitializer field="forcedChunksByChunk" class="me.nallar.collections.CHashMap"/>
 			<replaceInitializer field="forcedChunksByLoader" class="me.nallar.collections.CHashMap"/>
 			<replaceInitializer field="timedUnloadQueue" class="me.nallar.collections.LinkedTimedHashMapQueue"/>
+			<replaceMethod code="{
+				Iterator iterator = this.timedUnloadQueue.keySet().iterator();
+				while (iterator.hasNext()) {
+					remChunk((codechicken.chunkloader.ChunkLoaderManager.DimChunkCoord)iterator.next());
+				}
+			}">tickDownUnloads</replaceMethod>
 		</class>
 		<class id="codechicken.core.world.WorldExtension">
 			<replaceInitializer field="chunkMap" class="me.nallar.collections.CHashMap"/>

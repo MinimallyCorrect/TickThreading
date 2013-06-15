@@ -1,11 +1,12 @@
 package me.nallar.collections;
 
+import java.util.AbstractSet;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,7 +14,7 @@ import me.nallar.tickthreading.Log;
 
 public class LinkedTimedHashMapQueue<K> extends HashMap<K, Integer> {
 	int ticks = Integer.MIN_VALUE;
-	private final Map<K, Integer> map;
+	private final Map<K, Integer> map = Collections.synchronizedMap(new LinkedHashMap<K, Integer>());
 	private static final long serialVersionUID = 7249069246763182397L;
 
 	public LinkedTimedHashMapQueue(int initialCapacity, float loadFactor) {
@@ -25,7 +26,6 @@ public class LinkedTimedHashMapQueue<K> extends HashMap<K, Integer> {
 	}
 
 	public LinkedTimedHashMapQueue() {
-		map = Collections.synchronizedMap(new LinkedHashMap<K, Integer>());
 	}
 
 	public LinkedTimedHashMapQueue(Map<? extends K, ? extends Integer> m) {
@@ -86,7 +86,33 @@ public class LinkedTimedHashMapQueue<K> extends HashMap<K, Integer> {
 
 	@Override
 	public Set<K> keySet() {
-		throw new UnsupportedOperationException("Doesn't make sense with this collection choice.");
+		return new AbstractSet<K>() {
+			@Override
+			public int size() {
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			public Iterator<K> iterator() {
+				ArrayList<K> list = new ArrayList<K>();
+				int ticks = LinkedTimedHashMapQueue.this.ticks++;
+				synchronized (map) {
+					if (map.size() > 2000) {
+						Log.severe("Too many items in map: " + map.size());
+					}
+					Iterator<Map.Entry<K, Integer>> i$ = map.entrySet().iterator();
+					while (i$.hasNext()) {
+						Map.Entry<K, Integer> entry = i$.next();
+						if (entry.getValue() > ticks) {
+							break;
+						}
+						i$.remove();
+						list.add(entry.getKey());
+					}
+				}
+				return list.iterator();
+			}
+		};
 	}
 
 	@Override
@@ -96,117 +122,7 @@ public class LinkedTimedHashMapQueue<K> extends HashMap<K, Integer> {
 
 	@Override
 	public Set<Map.Entry<K, Integer>> entrySet() {
-		return new Set<Map.Entry<K, Integer>>() {
-			private final Set<Map.Entry<K, Integer>> entrySet = LinkedTimedHashMapQueue.super.entrySet();
-
-			@Override
-			public int size() {
-				return entrySet.size();
-			}
-
-			@Override
-			public boolean isEmpty() {
-				return entrySet.isEmpty();
-			}
-
-			@Override
-			public boolean contains(final Object o) {
-				return entrySet.contains(o);
-			}
-
-			@Override
-			public Iterator<Map.Entry<K, Integer>> iterator() {
-				final LinkedList<Map.Entry<K, Integer>> list = new LinkedList<Map.Entry<K, Integer>>();
-				int ticks = LinkedTimedHashMapQueue.this.ticks++;
-				synchronized (map) {
-					if (map.size() > 2000) {
-						Log.severe("Too many items in map: " + map.size());
-					}
-					for (Map.Entry<K, Integer> entry : entrySet) {
-						if (entry.getValue() > ticks) {
-							break;
-						}
-						list.add(entry);
-					}
-				}
-				return new Iterator<Map.Entry<K, Integer>>() {
-					private final Iterator<Map.Entry<K, Integer>> iterator = list.iterator();
-					private Map.Entry<K, Integer> last;
-
-					@Override
-					public boolean hasNext() {
-						return iterator.hasNext();
-					}
-
-					@Override
-					public Map.Entry<K, Integer> next() {
-						return last = iterator.next();
-					}
-
-					@Override
-					public void remove() {
-						if (map.remove(last.getKey()) == null) {
-							Log.warning("Failed to remove " + last.getKey());
-						}
-					}
-				};
-			}
-
-			@Override
-			public Object[] toArray() {
-				return entrySet.toArray();
-			}
-
-			@Override
-			public <T> T[] toArray(final T[] a) {
-				return entrySet.toArray(a);
-			}
-
-			@Override
-			public boolean add(final Map.Entry<K, Integer> kIntegerEntry) {
-				return entrySet.add(kIntegerEntry);
-			}
-
-			@Override
-			public boolean remove(final Object o) {
-				return entrySet.remove(o);
-			}
-
-			@Override
-			public boolean containsAll(final Collection<?> c) {
-				return entrySet.containsAll(c);
-			}
-
-			@Override
-			public boolean addAll(final Collection<? extends Map.Entry<K, Integer>> c) {
-				return entrySet.addAll(c);
-			}
-
-			@Override
-			public boolean retainAll(final Collection<?> c) {
-				return entrySet.retainAll(c);
-			}
-
-			@Override
-			public boolean removeAll(final Collection<?> c) {
-				return entrySet.removeAll(c);
-			}
-
-			@Override
-			public void clear() {
-				entrySet.clear();
-			}
-
-			@Override
-			public boolean equals(final Object o) {
-				return entrySet.equals(o);
-			}
-
-			@Override
-			public int hashCode() {
-				return entrySet.hashCode();
-			}
-		};
+		throw new UnsupportedOperationException("Doesn't make sense with this collection choice.");
 	}
 
 	@SuppressWarnings ("EqualsWhichDoesntCheckParameterClass")
