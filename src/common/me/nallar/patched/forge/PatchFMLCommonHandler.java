@@ -22,6 +22,11 @@ public abstract class PatchFMLCommonHandler extends FMLCommonHandler {
 	}
 
 	@Override
+	public Side getEffectiveSide() {
+		return Side.SERVER;
+	}
+
+	@Override
 	public void rescheduleTicks(Side side) {
 		List<IScheduledTickHandler> scheduledTicks = side.isClient() ? scheduledClientTicks : scheduledServerTicks;
 		try {
