@@ -126,7 +126,6 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 
 			long hash = hash(x, z);
 			if (pendingchunktosave == null) {
-
 				nbtTagCompound = (NBTTagCompound) inProgressSaves.getValueByKey(hash);
 				if (nbtTagCompound == null) {
 					nbtTagCompound = chunkCache.getIfPresent(hash);
