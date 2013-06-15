@@ -1072,7 +1072,7 @@ public abstract class PatchWorld extends World {
 				}
 			}
 		}
-		return false;
+		return e.isDead;
 	}
 
 	@Declare
