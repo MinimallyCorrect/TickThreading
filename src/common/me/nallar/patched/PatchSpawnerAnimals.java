@@ -7,6 +7,7 @@ import java.util.Map;
 import me.nallar.collections.LongList;
 import me.nallar.collections.LongSet;
 import me.nallar.tickthreading.Log;
+import me.nallar.tickthreading.minecraft.TickThreading;
 import me.nallar.tickthreading.patcher.Declare;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityLiving;
@@ -86,7 +87,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 		if (loadFactor < 0.2f || loadFactor > 1f) {
 			loadFactor = 0.2f;
 		}
-		float entityMultiplier = worldServer.playerEntities.size() * loadFactor; // TODO: Make this configurable
+		float entityMultiplier = worldServer.playerEntities.size() * TickThreading.instance.mobSpawningMultiplier * loadFactor; // TODO: Make this configurable
 		if (entityMultiplier == 0) {
 			profiler.endSection();
 			return 0;

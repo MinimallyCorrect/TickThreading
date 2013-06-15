@@ -99,6 +99,8 @@ public class TickThreading {
 	public int deadLockTime = 45;
 	public int chunkCacheSize = 2000;
 	public int chunkGCInterval = 1200;
+	public int maxEntitiesPerPlayer = 1000;
+	public float mobSpawningMultiplier = 1;
 	private int tickThreads = 0;
 	private int regionSize = 16;
 	private int profilingInterval = 0;
@@ -171,6 +173,8 @@ public class TickThreading {
 		chunkCacheSize = Math.max(100, config.get(GENERAL, "chunkCacheSize", chunkCacheSize, "Number of unloaded chunks to keep cached. Replacement for Forge's dormant chunk cache, which tends to break. Minimum size of 100").getInt(chunkCacheSize));
 		chunkGCInterval = config.get(GENERAL, "chunkGCInterval", chunkGCInterval, "Interval between chunk garbage collections in ticks").getInt(chunkGCInterval);
 		targetTPS = config.get(GENERAL, "targetTPS", targetTPS, "TPS the server should try to run at.").getInt(targetTPS);
+		maxEntitiesPerPlayer = config.get(GENERAL, "maxEntitiesPerPlayer", maxEntitiesPerPlayer, "If more entities than this are loaded per player in a world, mob spawning will be disabled in that world.").getInt(maxEntitiesPerPlayer);
+		mobSpawningMultiplier = (float) config.get(GENERAL, "mobSpawningMultiplier", mobSpawningMultiplier, "Mob spawning multiplier. Default is 1, can be a decimal.").getDouble(mobSpawningMultiplier);
 		variableTickRate = config.get(GENERAL, "variableRegionTickRate", variableTickRate, "Allows tick rate to vary per region so that each region uses at most 50ms on average per tick.").getBoolean(variableTickRate);
 		exitOnDeadlock = config.get(GENERAL, "exitOnDeadlock", exitOnDeadlock, "If the server should shut down when a deadlock is detected").getBoolean(exitOnDeadlock);
 		enableFastMobSpawning = config.get(GENERAL, "enableFastMobSpawning", enableFastMobSpawning, "If enabled, TT's alternative mob spawning implementation will be used.").getBoolean(enableFastMobSpawning);
