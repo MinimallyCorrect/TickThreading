@@ -824,7 +824,14 @@
                      }
 
                      field.setAccessible(true);
-                     ic2.core.network.DataEncoder.encode(os, field.get(tef.te));
+                     try {
+                     	ic2.core.network.DataEncoder.encode(os, field.get(tef.te));
+                     } catch (Throwable t) {
+                     	Log.severe(&quot;IC2 network manager failed to write field data for &quot; + tef.field + &quot; of class &quot; + e1, t);
+                     	os.close();
+                     	gzip.close();
+                     	return new byte[0];
+                     }
                   } catch (Exception var15) {
                      throw new RuntimeException(var15);
                   }
