@@ -1065,7 +1065,10 @@ public abstract class PatchWorld extends World {
 			final double mergeRadius = 1d;
 			for (EntityXPOrb otherXP : (Iterable<EntityXPOrb>) selectEntitiesWithinAABB(EntityXPOrb.class, thisXP.boundingBox.expand(mergeRadius, mergeRadius, mergeRadius), null, 0.3D)) {
 				if (!otherXP.isDead) {
-					thisXP.addXPFrom(otherXP);
+					otherXP.addXPFrom(thisXP);
+				}
+				if (thisXP.isDead) {
+					break;
 				}
 			}
 		}
