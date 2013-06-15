@@ -1075,7 +1075,8 @@
 				while (iterator.hasNext()) {
 					remChunk((codechicken.chunkloader.ChunkLoaderManager.DimChunkCoord)iterator.next());
 				}
-			}">tickDownUnloads</replaceMethod>
+			}">tickDownUnloads
+			</replaceMethod>
 		</class>
 		<class id="codechicken.core.world.WorldExtension">
 			<replaceInitializer field="chunkMap" class="me.nallar.collections.CHashMap"/>
