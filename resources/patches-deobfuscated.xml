@@ -1228,7 +1228,68 @@
 		</class>
 	</additionalPipes>
 	<MFFS>
+		<class id="chb.mods.mffs.network.server.ForceFieldServerUpdatehandler$ForceFieldpacket">
+			<public all="true"/>
+			<synchronize field="queue">addto</synchronize>
+		</class>
 		<class id="chb.mods.mffs.network.server.ForceFieldServerUpdatehandler">
+			<replaceMethod code="{
+				yc[] worlds = net.minecraftforge.common.DimensionManager.getWorlds();
+				yc world;
+				for (int i = 0; i &lt; worlds.length; i++) {
+					world = worlds[i];
+					StringBuilder str = new StringBuilder();
+
+					Stack queue = getWorldMap(world).queue;
+					if (queue.isEmpty()) {
+						continue;
+					}
+					synchronized(queue) {
+						while (!queue.isEmpty()) {
+							str.append(queue.pop());
+							str.append(&quot;/&quot;);
+							str.append(queue.pop());
+							str.append(&quot;/&quot;);
+							str.append(queue.pop());
+							str.append(&quot;!&quot;);
+							str.append(queue.pop());
+							str.append(&quot;&lt;&quot;);
+							str.append(queue.pop());
+							str.append(&quot;/&quot;);
+							str.append(queue.pop());
+							str.append(&quot;/&quot;);
+							str.append(queue.pop());
+							str.append(&quot;>&quot;);
+							if (str.length() > 7500) {
+								break;
+							}
+						}
+					}
+					if (str.length() > 0) {
+						try {
+							ByteArrayOutputStream bos = new ByteArrayOutputStream(63000);
+							DataOutputStream dos = new DataOutputStream(bos);
+
+							dos.writeInt(0);
+							dos.writeInt(0);
+							dos.writeInt(0);
+							dos.writeInt(100);
+							dos.writeUTF(str.toString());
+
+							di pkt = new di();
+							pkt.a = &quot;MFFS&quot;;
+							pkt.c = bos.toByteArray();
+							pkt.b = bos.size();
+							pkt.r = true;
+
+							cpw.mods.fml.common.network.PacketDispatcher.sendPacketToAllInDimension(pkt, world.u.h);
+						} catch (Exception e) {
+							Log.severe(&quot;Failed to send MFFS force-field update&quot;, e);
+						}
+					}
+				}
+			}">tickEnd
+			</replaceMethod>
 			<synchronize>tickEnd</synchronize>
 		</class>
 		<class id="chb.mods.mffs.common.item.ItemCardPowerLink">

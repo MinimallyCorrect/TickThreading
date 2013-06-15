@@ -60,6 +60,7 @@ public class ClassRegistry {
 		MethodInfo.doPreverify = true;
 		classes.appendSystemPath();
 		classes.importPackage("java.util");
+		classes.importPackage("java.io");
 		classes.importPackage("me.nallar.tickthreading");
 	}
 
