@@ -856,7 +856,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	@Override
 	@Declare
 	public net.minecraft.nbt.NBTTagCompound readChunkNBT(int x, int z) {
-		NBTTagCompound nbtTagCompound = ((AnvilChunkLoader) loader).readChunkNBT(world, x, z);
+		NBTTagCompound nbtTagCompound = ((AnvilChunkLoader) loader).readChunkNBT(world, x, z, true);
 		if (nbtTagCompound == null) {
 			return null;
 		}

@@ -27,7 +27,6 @@ import net.minecraft.util.LongHashMap;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.NextTickListEntry;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.NibbleArray;
 import net.minecraft.world.chunk.storage.AnvilChunkLoader;
@@ -106,7 +105,7 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 		if (!isChunkCacheFull()) {
 			long hash = hash(x, z);
 			if (chunkCache.getIfPresent(hash) == null && !world.getChunkProvider().chunkExists(x, z)) {
-				NBTTagCompound nbtTagCompound = readChunkNBT(world, x, z);
+				NBTTagCompound nbtTagCompound = readChunkNBT(world, x, z, false);
 				synchronized (syncLockObject) {
 					if (nbtTagCompound != null && chunkCache.getIfPresent(hash) == null && !world.getChunkProvider().chunkExists(x, z)) {
 						chunkCache.put(hash, nbtTagCompound);
@@ -118,7 +117,7 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 
 	@Override
 	@Declare
-	public NBTTagCompound readChunkNBT(World world, int x, int z) {
+	public NBTTagCompound readChunkNBT(World world, int x, int z, boolean readOnly) {
 		NBTTagCompound nbtTagCompound;
 		ChunkCoordIntPair chunkcoordintpair = new ChunkCoordIntPair(x, z);
 
@@ -135,7 +134,7 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 			} else {
 				nbtTagCompound = pendingchunktosave.nbtTags;
 			}
-			if (nbtTagCompound != null) {
+			if (nbtTagCompound != null && !readOnly) {
 				chunkCache.invalidate(hash);
 			}
 		}
@@ -160,7 +159,7 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 
 	@Override
 	public Chunk loadChunk(World world, int x, int z) {
-		return this.checkedReadChunkFromNBT(world, x, z, readChunkNBT(world, x, z));
+		return this.checkedReadChunkFromNBT(world, x, z, readChunkNBT(world, x, z, false));
 	}
 
 	@Override
