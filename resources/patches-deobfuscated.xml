@@ -596,6 +596,14 @@
 			</replaceMethod>
 			<synchronize>updateStacks,changeItemCount,setItemCount</synchronize>
 		</class>
+		<class id="factorization.common.TileEntityMirror">
+			<replaceMethod code="{
+				this.next_check = (300 + rand.nextInt(60));
+			}">setNextCheck</replaceMethod>
+		</class>
+		<class id="factorization.common.TileEntitySolarTurbine">
+			<synchronize>addReflector</synchronize>
+		</class>
 		<class id="factorization.common.TileEntityWrathLamp">
 			<replaceInitializer field="airToUpdate" class="nallar.collections.SynchronizedPriorityQueue">^static^</replaceInitializer>
 			<threadLocal field="toVisit" type="java.util.HashSet" threadLocalField="nallar.tickthreading.global.ThreadLocals.factorizationFindLightAirParentToVisit"/>
