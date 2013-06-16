@@ -1047,13 +1047,24 @@ public abstract class PatchWorld extends World {
 	@Override
 	@Declare
 	public boolean preHandleSpawn(Entity e) {
+		if (e instanceof EntityPlayer) {
+			return false;
+		}
+		if (e.isDead) {
+			return true;
+		}
+		Chunk chunk = getChunkIfExists(((int) e.posX) >> 4, ((int) e.posZ) >> 4);
+		if (chunk == null) {
+			e.setDead();
+			return true;
+		}
 		if (e instanceof EntityItem) {
 			int recentSpawnedItems = TickThreading.recentSpawnedItems++;
 			if (recentSpawnedItems > 100000) {
 				e.setDead();
 				return true;
 			}
-			if (!TickThreading.instance.removeIfOverMaxItems((EntityItem) e) && recentSpawnedItems > 200) {
+			if (!TickThreading.instance.removeIfOverMaxItems((EntityItem) e, chunk) && recentSpawnedItems > 200) {
 				if (((EntityItem) e).aggressiveCombine()) {
 					return true;
 				}
