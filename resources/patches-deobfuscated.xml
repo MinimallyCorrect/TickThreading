@@ -601,6 +601,22 @@
 				this.next_check = (300 + rand.nextInt(60));
 			}">setNextCheck</replaceMethod>
 		</class>
+		<class id="factorization.common.TileEntityRouter">
+			<newField field="emptyUpdateCount" class="int" code="0" static=""/>
+			<replaceMethod code="{
+				if (this.k.A(this.l, this.m, this.n)) {
+					return false;
+				}
+				if (this.is_input) {
+					return this.buffer != null;
+				}
+				if (this.buffer == null) {
+					return ++emptyUpdateCount % 5 == 0;
+				}
+
+				return this.buffer.a &lt; this.buffer.d();
+			}">shouldUpdate</replaceMethod>
+		</class>
 		<class id="factorization.common.TileEntitySolarTurbine">
 			<synchronize>addReflector</synchronize>
 		</class>
