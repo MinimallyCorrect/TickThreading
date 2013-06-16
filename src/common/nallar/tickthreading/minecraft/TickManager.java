@@ -637,7 +637,7 @@ public final class TickManager {
 			for (TileEntity te : copy) {
 				Chunk chunk;
 				boolean invalid = te.isInvalid();
-				if (invalid || (chunk = chunkProviderServer.getChunkIfExists(te.xCoord >> 4, te.zCoord >> 4)) == null || chunk.getChunkBlockTileEntity(te.xCoord, te.yCoord, te.zCoord) == te) {
+				if (invalid || (chunk = chunkProviderServer.getChunkIfExists(te.xCoord >> 4, te.zCoord >> 4)) == null || chunk.getChunkBlockTileEntity(te.xCoord & 15, te.yCoord, te.zCoord & 15) != te) {
 					if (invalid) {
 						invalidTiles++;
 					} else {
