@@ -550,7 +550,7 @@ public final class TickManager {
 						StringBuilder sb = new StringBuilder();
 						fixDiscrepancies(sb);
 						if (sb.length() > 0) {
-							Log.warning(sb.toString());
+							Log.severe(sb.toString());
 						}
 					}
 				}
