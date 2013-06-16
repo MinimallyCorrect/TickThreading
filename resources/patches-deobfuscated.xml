@@ -616,6 +616,9 @@
 		</class>
 	</liteLoader>
 	<buildCraftCore>
+		<class id="buildcraft.core.EntityRobot">
+			<synchronize>build</synchronize>
+		</class>
 		<class id="buildcraft.core.inventory.TransactorSimple">
 			<replaceMethod code="{
 				int injected = 0;
