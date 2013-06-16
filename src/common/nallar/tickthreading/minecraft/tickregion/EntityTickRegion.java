@@ -65,10 +65,15 @@ public class EntityTickRegion extends TickRegion {
 						int entityX = entity.chunkCoordX;
 						int entityZ = entity.chunkCoordZ;
 
-						if (entity.addedToChunk) {
-							Chunk chunk = chunkProvider.getChunkIfExists(entityX, entityZ);
-							if (chunk != null) {
-								chunk.removeEntity(entity);
+						synchronized (entity) {
+							if (entity.addedToChunk) {
+								Chunk chunk = entity.chunk;
+								if (chunk == null) {
+									chunkProvider.getChunkIfExists(entityX, entityZ);
+								}
+								if (chunk != null) {
+									chunk.removeEntity(entity);
+								}
 							}
 						}
 
