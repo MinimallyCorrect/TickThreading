@@ -601,8 +601,11 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		if (this.isServerRunning() && currentlySaving.get() == 0) {
 			currentlySaving.getAndIncrement();
 			try {
+				Log.info("Saving all player data.");
 				this.serverConfigManager.saveAllPlayerData();
+				Log.info("Done saving player data, saving worlds.");
 				this.saveAllWorlds(false);
+				Log.info("Done saving worlds, flushing world data to disk.");
 				if (worlds == null) {
 					for (WorldServer world : this.worldServers) {
 						world.flush();
@@ -612,6 +615,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 						world.flush();
 					}
 				}
+				Log.info("Flushed world data to disk.");
 			} finally {
 				currentlySaving.getAndDecrement();
 			}
