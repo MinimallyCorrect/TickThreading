@@ -1654,6 +1654,21 @@
 		</class>
 	</stevesCarts>
 	<dynmap>
+		<class id="org.dynmap.forge.DynmapPlugin">
+			<newMethod code="
+			public void handleUnload(yc world) {
+				if (last_world == world) {
+					last_world = null;
+					last_fworld = null;
+				}
+			}"/>
+			<synchronize>handleUnload,</synchronize>
+		</class>
+		<class id="org.dynmap.forge.DynmapPlugin$WorldTracker">
+			<insertAfter code="{
+				this$0.handleUnload($1.world);
+			}">handleWorldUnload,getWorld(Lyc;Z)Lorg.dynmap.forge.ForgeWorld;</insertAfter>
+		</class>
 		<class id="org.dynmap.forge.SnapshotCache">
 			<synchronize/>
 		</class>
