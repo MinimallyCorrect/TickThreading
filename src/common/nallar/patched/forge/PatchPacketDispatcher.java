@@ -1,5 +1,7 @@
 package nallar.patched.forge;
 
+import cpw.mods.fml.common.network.Player;
+import nallar.tickthreading.patcher.Declare;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.server.MinecraftServer;
@@ -8,6 +10,23 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.world.WorldServer;
 
 public abstract class PatchPacketDispatcher {
+	private static int square(int a) {
+		return a * a;
+	}
+
+	@Declare
+	public static void sendPacketAroundPlayer(EntityPlayerMP player, Packet packet, int squaredDistance) {
+		EntityPlayerMP playerMP = (EntityPlayerMP) player;
+		WorldServer worldServer = ((WorldServer) playerMP.worldObj);
+		int cX = playerMP.chunkCoordX;
+		int cZ = playerMP.chunkCoordZ;
+		for (EntityPlayerMP entityPlayerMP : (Iterable<EntityPlayerMP>) worldServer.playerEntities) {
+			if (entityPlayerMP != playerMP && (square((entityPlayerMP.chunkCoordX - cX) << 4) + square((entityPlayerMP.chunkCoordZ - cZ) << 4)) < squaredDistance) {
+				entityPlayerMP.playerNetServerHandler.sendPacketToPlayer(packet);
+			}
+		}
+	}
+
 	public static void sendPacketToAllAround(double X, double Y, double Z, double range, int dimensionId, Packet packet) {
 		WorldServer worldServer = MinecraftServer.getServer().worldServerForDimension(dimensionId);
 		int x = MathHelper.floor_double(X);
