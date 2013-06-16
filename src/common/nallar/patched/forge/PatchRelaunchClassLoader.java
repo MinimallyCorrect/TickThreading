@@ -266,7 +266,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 	}
 
 	@Override
-	protected byte[] runTransformers(String name, byte[] basicClass) {
+	protected byte[] runTransformers(String name, String transformedName, byte[] basicClass) {
 		if (name.startsWith("nallar.patched") && !name.contains("$")) {
 			throw UnsafeUtil.throwIgnoreChecked(new ClassNotFoundException("Don't load these classes, they will slow down access to the classes they patch as the JVM will have to lookup methods"));
 		}
@@ -276,7 +276,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 		for (IClassTransformer transformer : transformers) {
 			try {
 				byte[] oldClass = basicClass;
-				basicClass = transformer.transform(name, basicClass);
+				basicClass = transformer.transform(name, transformedName, basicClass);
 				if (basicClass == null && oldClass != null) {
 					basicClass = oldClass;
 					FMLRelaunchLog.severe(transformer.getClass() + " returned a null class during transformation, ignoring.");

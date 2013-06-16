@@ -89,7 +89,7 @@ public abstract class PatchConfigCategory extends ConfigCategory {
 				out.newLine();
 				pad = getIndent(indent + 2);
 
-				for (String line : prop.valueList) {
+				for (String line : prop.getStringList()) {
 					out.write(pad);
 					out.write(line);
 					out.newLine();
@@ -103,14 +103,14 @@ public abstract class PatchConfigCategory extends ConfigCategory {
 				out.write(pad);
 				out.write(propName);
 				out.write('=');
-				out.write(prop.value);
+				out.write(prop.getString());
 			} else {
 				out.write(pad);
 				out.write(prop.getType().getID());
 				out.write(':');
 				out.write(propName);
 				out.write('=');
-				out.write(prop.value);
+				out.write(prop.getString());
 				out.newLine();
 			}
 		}

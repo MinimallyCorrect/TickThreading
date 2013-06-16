@@ -11,6 +11,7 @@ import nallar.collections.ConcurrentQueueList;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.patcher.Declare;
 import nallar.tickthreading.util.ReflectUtil;
+import net.minecraft.logging.ILogAgent;
 import net.minecraft.network.TcpConnection;
 import net.minecraft.network.packet.IPacketHandler;
 import net.minecraft.network.packet.NetHandler;
@@ -19,8 +20,8 @@ import net.minecraft.network.packet.Packet;
 public abstract class PatchTcpConnection extends TcpConnection {
 	private static List<IPacketHandler> packetHandlers;
 
-	public PatchTcpConnection(Socket par1Socket, String par2Str, NetHandler par3NetHandler) throws IOException {
-		super(par1Socket, par2Str, par3NetHandler);
+	public PatchTcpConnection(final ILogAgent par1ILogAgent, final Socket par2Socket, final String par3Str, final NetHandler par4NetHandler) throws IOException {
+		super(par1ILogAgent, par2Socket, par3Str, par4NetHandler);
 	}
 
 	public void construct() {

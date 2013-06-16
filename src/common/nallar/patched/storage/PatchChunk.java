@@ -138,13 +138,13 @@ public abstract class PatchChunk extends Chunk {
 	}
 
 	@Override
-	public void getEntitiesWithinAABBForEntity(Entity excludedEntity, AxisAlignedBB collisionArea, List collidingAABBs) {
-		getEntitiesWithinAABBForEntity(excludedEntity, collisionArea, collidingAABBs, 2000);
+	public void getEntitiesWithinAABBForEntity(Entity excludedEntity, AxisAlignedBB collisionArea, List collidingAABBs, IEntitySelector entitySelector) {
+		getEntitiesWithinAABBForEntity(excludedEntity, collisionArea, collidingAABBs, entitySelector, 2000);
 	}
 
 	@Override
 	@Declare
-	public int getEntitiesWithinAABBForEntity(Entity excludedEntity, AxisAlignedBB collisionArea, List collidingAABBs, int limit) {
+	public int getEntitiesWithinAABBForEntity(Entity excludedEntity, AxisAlignedBB collisionArea, List collidingAABBs, IEntitySelector entitySelector, int limit) {
 		int var4 = MathHelper.floor_double((collisionArea.minY - 2D) / 16.0D);
 		int var5 = MathHelper.floor_double((collisionArea.maxY + 2D) / 16.0D);
 
@@ -167,7 +167,7 @@ public abstract class PatchChunk extends Chunk {
 					continue;
 				}
 
-				if (entity != excludedEntity && entity.boundingBox.intersectsWith(collisionArea)) {
+				if (entity != excludedEntity && entity.boundingBox.intersectsWith(collisionArea) && (entitySelector == null || entitySelector.isEntityApplicable(entity))) {
 					collidingAABBs.add(entity);
 					if (--limit == 0) {
 						return limit;
@@ -176,7 +176,7 @@ public abstract class PatchChunk extends Chunk {
 
 					if (var10 != null) {
 						for (Entity part : var10) {
-							if (part != excludedEntity && part.boundingBox.intersectsWith(collisionArea)) {
+							if (part != excludedEntity && part.boundingBox.intersectsWith(collisionArea) && (entitySelector == null || entitySelector.isEntityApplicable(part))) {
 								collidingAABBs.add(part);
 								if (--limit == 0) {
 									return limit;
@@ -262,7 +262,7 @@ public abstract class PatchChunk extends Chunk {
 				int id = getBlockID(x, y, z);
 				int meta = getBlockMetadata(x, y, z);
 				Log.info("Resetting invalid TileEntity " + Log.toString(tileEntity) + " for block: " + new BlockInfo(id, meta) + " at within chunk coords " + x + ',' + y + ',' + z + " in chunk " + this);
-				setBlockID(x, y, z, 0);
+				setBlockIDWithMetadata(x, y, z, 0, 0);
 				setBlockIDWithMetadata(x, y, z, id, meta);
 			}
 		}

@@ -230,10 +230,10 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 
 			File var3 = new File(new File(this.getDataDirectory(), "crash-reports"), "crash-" + (new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss")).format(new Date()) + "-server.txt");
 
-			if (crashReport.saveToFile(var3)) {
-				logger.severe("This crash report has been saved to: " + var3.getAbsolutePath());
+			if (crashReport.saveToFile(var3, getLogAgent())) {
+				getLogAgent().logSevere("This crash report has been saved to: " + var3.getAbsolutePath());
 			} else {
-				logger.severe("We were unable to save this crash report to disk.");
+				getLogAgent().logSevere("We were unable to save this crash report to disk.");
 			}
 
 			if (!TickThreading.instance.exitOnDeadlock) {

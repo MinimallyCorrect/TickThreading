@@ -130,8 +130,8 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	}
 
 	@Override
-	public boolean unload100OldestChunks() {
-		return generator.unload100OldestChunks();
+	public boolean unloadQueuedChunks() {
+		return generator.unloadQueuedChunks();
 	}
 
 	@SuppressWarnings ({"ConstantConditions", "FieldRepeatedlyAccessedInMethod"})

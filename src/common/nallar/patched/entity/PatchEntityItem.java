@@ -48,7 +48,7 @@ public abstract class PatchEntityItem extends EntityItem {
 			}
 
 			if (forceUpdate && !this.worldObj.isRemote) {
-				this.func_85054_d();
+				this.searchForOtherItemsNearby();
 			}
 		}
 
@@ -117,7 +117,7 @@ public abstract class PatchEntityItem extends EntityItem {
 	}
 
 	@Override
-	protected void func_85054_d() {
+	protected void searchForOtherItemsNearby() {
 		for (EntityItem entityItem : (Iterable<EntityItem>) this.worldObj.selectEntitiesWithinAABB(EntityItem.class, this.boundingBox.expand(mergeRadius, mergeRadius, mergeRadius), null, 1D)) {
 			if (this.combineItems(entityItem)) {
 				return;
@@ -155,7 +155,7 @@ public abstract class PatchEntityItem extends EntityItem {
 					otherStack.stackSize = 0;
 					this.delayBeforeCanPickup = Math.max(other.delayBeforeCanPickup, this.delayBeforeCanPickup);
 					this.age = Math.min(other.age, this.age);
-					this.func_92058_a(thisStack);
+					this.setEntityItemStack(thisStack);
 					other.setDead();
 					return true;
 				}

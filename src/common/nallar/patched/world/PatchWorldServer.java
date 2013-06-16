@@ -24,6 +24,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockEventData;
 import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.logging.ILogAgent;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.IProgressUpdate;
@@ -66,8 +67,8 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	private int chunkTickWait;
 	private HashSet<ChunkCoordIntPair> chunkTickSet;
 
-	public PatchWorldServer(MinecraftServer par1MinecraftServer, ISaveHandler par2ISaveHandler, String par3Str, int par4, WorldSettings par5WorldSettings, Profiler par6Profiler) {
-		super(par1MinecraftServer, par2ISaveHandler, par3Str, par4, par5WorldSettings, par6Profiler);
+	public PatchWorldServer(final MinecraftServer par1MinecraftServer, final ISaveHandler par2ISaveHandler, final String par3Str, final int par4, final WorldSettings par5WorldSettings, final Profiler par6Profiler, final ILogAgent par7ILogAgent) {
+		super(par1MinecraftServer, par2ISaveHandler, par3Str, par4, par5WorldSettings, par6Profiler, par7ILogAgent);
 	}
 
 	public void construct() {
@@ -295,8 +296,9 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	}
 
 	@Override
-	public void scheduleBlockUpdateFromLoad(int x, int y, int z, int blockID, int timeOffset) {
+	public void scheduleBlockUpdateFromLoad(int x, int y, int z, int blockID, int timeOffset, int par6) {
 		NextTickListEntry nextTickListEntry = new NextTickListEntry(x, y, z, blockID);
+		nextTickListEntry.func_82753_a(par6);
 
 		if (blockID > 0) {
 			nextTickListEntry.setScheduledTime((long) timeOffset + worldInfo.getWorldTotalTime());
@@ -395,7 +397,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		}
 
 		profiler.endStartSection("chunkSource");
-		theChunkProviderServer.unload100OldestChunks();
+		theChunkProviderServer.unloadQueuedChunks();
 		theChunkProviderServer.tick();
 		this.skylightSubtracted = this.calculateSkylightSubtracted(1.0F);
 
@@ -412,9 +414,9 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		this.villageCollectionObj.tick();
 		this.villageSiegeObj.tick();
 		profiler.endStartSection("portalForcer");
-		this.field_85177_Q.func_85189_a(this.getTotalWorldTime());
+		this.field_85177_Q.removeStalePortalLocations(this.getTotalWorldTime());
 		for (Teleporter tele : customTeleporters) {
-			tele.func_85189_a(getTotalWorldTime());
+			tele.removeStalePortalLocations(getTotalWorldTime());
 		}
 		profiler.endSection();
 		this.sendAndApplyBlockEvents();
@@ -557,12 +559,12 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 				var11 = this.getPrecipitationHeight(var9 + xPos, var10 + zPos);
 
 				if (this.isBlockFreezableNaturally(var9 + xPos, var11 - 1, var10 + zPos)) {
-					this.setBlockWithNotify(var9 + xPos, var11 - 1, var10 + zPos, Block.ice.blockID);
+					this.setBlock(var9 + xPos, var11 - 1, var10 + zPos, Block.ice.blockID);
 				}
 
 				if (isRaining) {
 					if (this.canSnowAt(var9 + xPos, var11, var10 + zPos)) {
-						this.setBlockWithNotify(var9 + xPos, var11, var10 + zPos, Block.snow.blockID);
+						this.setBlock(var9 + xPos, var11, var10 + zPos, Block.snow.blockID);
 					}
 
 					BiomeGenBase var12 = this.getBiomeGenForCoords(var9 + xPos, var10 + zPos);

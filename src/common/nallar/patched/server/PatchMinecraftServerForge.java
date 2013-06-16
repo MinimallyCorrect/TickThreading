@@ -26,7 +26,7 @@ public abstract class PatchMinecraftServerForge extends MinecraftServer {
 		this.setUserMessage("menu.generatingTerrain");
 		byte dimension = 0;
 		long startTime = System.currentTimeMillis();
-		logger.info("Preparing start region for level " + dimension);
+		getLogAgent().logInfo("Loading spawn area for dimension " + dimension);
 		WorldServer worldServer = this.worldServers[dimension];
 		ChunkCoordinates spawnPoint = worldServer.getSpawnPoint();
 
@@ -35,7 +35,7 @@ public abstract class PatchMinecraftServerForge extends MinecraftServer {
 				long currentTime = System.currentTimeMillis();
 
 				if (currentTime - startTime > 1000L) {
-					this.outputPercentRemaining("Preparing spawn area", loadedChunks * 100 / 625);
+					this.outputPercentRemaining("Loading spawn chunks", loadedChunks * 100 / 625);
 					startTime = currentTime;
 				}
 

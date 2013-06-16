@@ -10,8 +10,8 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 
 public abstract class PatchBlockRedstoneTorch extends BlockRedstoneTorch {
-	protected PatchBlockRedstoneTorch(int par1, int par2, boolean par3) {
-		super(par1, par2, par3);
+	public PatchBlockRedstoneTorch(final int par1, final boolean par2) {
+		super(par1, par2);
 	}
 
 	private static long hash(int x, int y, int z) {
@@ -37,18 +37,20 @@ public abstract class PatchBlockRedstoneTorch extends BlockRedstoneTorch {
 		return checkForBurnout(world, hash(x, y, z), increment);
 	}
 
-	private static boolean isIndirectlyPowered(World world, int x, int y, int z, int metadata) {
-		return metadata == 5 && world.isBlockIndirectlyProvidingPowerTo(x, y - 1, z, 0) || (metadata == 3 && world.isBlockIndirectlyProvidingPowerTo(x, y, z - 1, 2) || (metadata == 4 && world.isBlockIndirectlyProvidingPowerTo(x, y, z + 1, 3) || (metadata == 1 && world.isBlockIndirectlyProvidingPowerTo(x - 1, y, z, 4) || metadata == 2 && world.isBlockIndirectlyProvidingPowerTo(x + 1, y, z, 5))));
+	@Override
+	protected boolean isIndirectlyPowered(World par1World, int par2, int par3, int par4) {
+		int l = par1World.getBlockMetadata(par2, par3, par4);
+		return l == 5 && par1World.getIndirectPowerOutput(par2, par3 - 1, par4, 0) || (l == 3 && par1World.getIndirectPowerOutput(par2, par3, par4 - 1, 2) || (l == 4 && par1World.getIndirectPowerOutput(par2, par3, par4 + 1, 3) || (l == 1 && par1World.getIndirectPowerOutput(par2 - 1, par3, par4, 4) || l == 2 && par1World.getIndirectPowerOutput(par2 + 1, par3, par4, 5))));
 	}
 
 	@Override
 	public void updateTick(World world, int x, int y, int z, Random rand) {
 		int metadata = world.getBlockMetadata(x, y, z);
-		boolean indirectlyPowered = isIndirectlyPowered(world, x, y, z, metadata);
+		boolean indirectlyPowered = isIndirectlyPowered(world, x, y, z);
 
 		if (this.torchActive) {
 			if (indirectlyPowered) {
-				world.setBlockAndMetadataWithNotify(x, y, z, Block.torchRedstoneIdle.blockID, metadata);
+				world.setBlock(x, y, z, Block.torchRedstoneIdle.blockID, metadata, 3);
 
 				if (this.checkForBurnout(world, x, y, z, true)) {
 					world.playSoundEffect((double) ((float) x + 0.5F), (double) ((float) y + 0.5F), (double) ((float) z + 0.5F), "random.fizz", 0.5F, 2.6F + (world.rand.nextFloat() - world.rand.nextFloat()) * 0.8F);
@@ -63,7 +65,7 @@ public abstract class PatchBlockRedstoneTorch extends BlockRedstoneTorch {
 				}
 			}
 		} else if (!indirectlyPowered && !this.checkForBurnout(world, x, y, z, false)) {
-			world.setBlockAndMetadataWithNotify(x, y, z, Block.torchRedstoneActive.blockID, metadata);
+			world.setBlock(x, y, z, Block.torchRedstoneActive.blockID, metadata, 3);
 		}
 	}
 }

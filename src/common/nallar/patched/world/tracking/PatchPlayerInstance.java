@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import nallar.patched.annotation.Public;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.minecraft.TickThreading;
 import nallar.tickthreading.patcher.Declare;
@@ -25,6 +26,7 @@ import net.minecraftforge.common.ForgeDummyContainer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.ChunkWatchEvent;
 
+@Public
 public abstract class PatchPlayerInstance extends PlayerInstance {
 	private ConcurrentLinkedQueue<TileEntity> tilesToUpdate;
 	private static final boolean rateLimitChunkUpdates = TickThreading.instance.rateLimitChunkUpdates;
@@ -43,7 +45,7 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 
 	public void construct() {
 		tilesToUpdate = new ConcurrentLinkedQueue<TileEntity>();
-		myManager.getWorldServer().theChunkProviderServer.getChunkAt(chunkLocation.chunkXPos, chunkLocation.chunkZPos, new LoadRunnable(this));
+		thePlayerManager.getWorldServer().theChunkProviderServer.getChunkAt(chunkLocation.chunkXPos, chunkLocation.chunkZPos, new LoadRunnable(this));
 		startTime = MinecraftServer.currentTick + 30;
 	}
 
@@ -59,7 +61,7 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 					loadedChunks.add(chunkLocation);
 				}
 			} else {
-				myManager.getWorldServer().theChunkProviderServer.getChunkAt(chunkLocation.chunkXPos, chunkLocation.chunkZPos, new AddToPlayerRunnable(entityPlayerMP, chunkLocation));
+				thePlayerManager.getWorldServer().theChunkProviderServer.getChunkAt(chunkLocation.chunkXPos, chunkLocation.chunkZPos, new AddToPlayerRunnable(entityPlayerMP, chunkLocation));
 			}
 		}
 	}
@@ -92,13 +94,13 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 
 			if (this.playersInChunk.isEmpty()) {
 				long var2 = (long) this.chunkLocation.chunkXPos + 2147483647L | (long) this.chunkLocation.chunkZPos + 2147483647L << 32;
-				this.myManager.getChunkWatchers().remove(var2);
+				this.thePlayerManager.getChunkWatchers().remove(var2);
 
 				if (watched) {
-					this.myManager.getChunkWatcherWithPlayers().remove(this);
+					this.thePlayerManager.getChunkWatcherWithPlayers().remove(this);
 				}
 
-				this.myManager.getWorldServer().theChunkProviderServer.unloadChunksIfNotNearSpawn(this.chunkLocation.chunkXPos, this.chunkLocation.chunkZPos);
+				this.thePlayerManager.getWorldServer().theChunkProviderServer.unloadChunksIfNotNearSpawn(this.chunkLocation.chunkXPos, this.chunkLocation.chunkZPos);
 			}
 		}
 	}
@@ -111,7 +113,7 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 	@Override
 	@Declare
 	public void forceUpdate() {
-		this.sendToAllPlayersWatchingChunk(new Packet51MapChunk(myManager.getWorldServer().getChunkFromChunkCoords(this.chunkLocation.chunkXPos, this.chunkLocation.chunkZPos), true, Integer.MAX_VALUE));
+		this.sendToAllPlayersWatchingChunk(new Packet51MapChunk(thePlayerManager.getWorldServer().getChunkFromChunkCoords(this.chunkLocation.chunkXPos, this.chunkLocation.chunkZPos), true, Integer.MAX_VALUE));
 	}
 
 	public void sendTiles() {
@@ -161,7 +163,7 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 			}
 		}
 		if (requiresWatch) {
-			this.myManager.getChunkWatcherWithPlayers().add(this);
+			this.thePlayerManager.getChunkWatcherWithPlayers().add(this);
 		}
 	}
 
@@ -176,7 +178,7 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 	}
 
 	@Override
-	protected void sendTileToAllPlayersWatchingChunk(TileEntity tileEntity) {
+	public void sendTileToAllPlayersWatchingChunk(TileEntity tileEntity) {
 		if (tileEntity != null) {
 			Packet descriptionPacket;
 			try {
@@ -227,7 +229,7 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 					numberOfTilesToUpdate = locationOfBlockChange.length;
 				}
 
-				WorldServer worldServer = myManager.getWorldServer();
+				WorldServer worldServer = thePlayerManager.getWorldServer();
 				Chunk chunk = worldServer.getChunkIfExists(chunkLocation.chunkXPos, chunkLocation.chunkZPos);
 				if (numberOfTilesToUpdate == 1) {
 					int x = chunkLocation.chunkXPos * 16 + (locationOfBlockChange[0] >> 12 & 15);
