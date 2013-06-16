@@ -169,6 +169,9 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 
 	@Override
 	protected Chunk checkedReadChunkFromNBT(World world, int x, int z, NBTTagCompound chunkTagCompound) {
+		if (chunkTagCompound == null) {
+			return null;
+		}
 		NBTTagCompound levelTag = (NBTTagCompound) chunkTagCompound.getTag("Level");
 		if (levelTag == null) {
 			FMLLog.severe("Chunk file at " + x + ',' + z + " is missing level data, skipping");
