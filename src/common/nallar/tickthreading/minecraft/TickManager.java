@@ -635,15 +635,17 @@ public final class TickManager {
 			}
 
 			for (TileEntity te : copy) {
-				Chunk chunk = chunkProviderServer.getChunkIfExists(te.xCoord >> 4, te.zCoord >> 4);
-				if (te.isInvalid()) {
-					invalidTiles++;
+				Chunk chunk;
+				boolean invalid = te.isInvalid();
+				if (invalid || (chunk = chunkProviderServer.getChunkIfExists(te.xCoord >> 4, te.zCoord >> 4)) == null || chunk.getChunkBlockTileEntity(te.xCoord, te.yCoord, te.zCoord) == te) {
+					if (invalid) {
+						invalidTiles++;
+					} else {
+						unloadedTiles++;
+						te.invalidate();
+					}
+					fixed++;
 					remove(te);
-					fixed++;
-				} else if (chunk == null || !chunk.chunkTileEntityMap.containsValue(te)) {
-					unloadedTiles++;
-					fixed++;
-					te.invalidate();
 				}
 			}
 		}
