@@ -380,6 +380,10 @@ public class TickThreading {
 			return false;
 		}
 		Chunk chunk = e.worldObj.getChunkIfExists(((int) e.posX) >> 4, ((int) e.posZ) >> 4);
+		if (chunk == null) {
+			e.setDead();
+			return true;
+		}
 		ArrayList<EntityItem> entityItems = chunk.getEntitiesOfType(EntityItem.class);
 		if (entityItems.size() > maxItemsPerChunk) {
 			int remaining = 0;
