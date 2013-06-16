@@ -637,7 +637,11 @@ public final class TickManager {
 			for (TileEntity te : copy) {
 				Chunk chunk;
 				boolean invalid = te.isInvalid();
-				if (invalid || te.yCoord < 0 || te.yCoord > 255 || (chunk = chunkProviderServer.getChunkIfExists(te.xCoord >> 4, te.zCoord >> 4)) == null || chunk.getChunkBlockTileEntity(te.xCoord & 15, te.yCoord, te.zCoord & 15) != te) {
+				if (te.yCoord < 0 || te.yCoord > 255) {
+					sb.append("TileEntity ").append(Log.toString(te)).append(" has an invalid y coordinate.\n");
+					invalid = true;
+				}
+				if (invalid || (chunk = chunkProviderServer.getChunkIfExists(te.xCoord >> 4, te.zCoord >> 4)) == null || chunk.getChunkBlockTileEntity(te.xCoord & 15, te.yCoord, te.zCoord & 15) != te) {
 					if (invalid) {
 						invalidTiles++;
 					} else {
