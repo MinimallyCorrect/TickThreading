@@ -1657,4 +1657,9 @@
 			}">handleServer</replaceMethod>
 		</class>
 	</mmmPowerSuits>
+	<gregsLighting>
+		<class id="gcewing.lighting.Floodlight">
+			<synchronize static="true"/>
+		</class>
+	</gregsLighting>
 </mods>
