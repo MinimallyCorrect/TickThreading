@@ -176,6 +176,22 @@
 			<arg value="recompile.sh"/>
 		</exec>
 
+		<!-- Reset src dir to post-forge-install state -->
+		<parallel>
+			<delete dir="${mcpsrc.dir}/minecraft/me/nallar"/>
+			<delete dir="${mcpsrc.dir}/minecraft/nallar"/>
+			<delete file="${mcpsrc.dir}/minecraft/net/minecraft/network/packet/IPacketHandler.java"/>
+		</parallel>
+
+		<fail message="MCP failed to build">
+			<condition>
+				<or>
+					<resourcecontains resource="${mcp.dir}/logs/client_compile.log" substring="error:"/>
+					<resourcecontains resource="${mcp.dir}/logs/client_compile.log" substring=" errors"/>
+				</or>
+			</condition>
+		</fail>
+
 		<!-- Reobfuscate -->
 		<exec dir="${mcp.dir}" executable="cmd" osfamily="windows">
 			<arg line="/c reobfuscate.bat"/>
@@ -200,21 +216,6 @@
 				<filter token="MOD_NAME" value="${ant.project.name}"/>
 			</filterset>
 		</copy>
-
-		<!-- Reset src dir to post-forge-install state -->
-		<parallel>
-			<delete dir="${mcpsrc.dir}/minecraft/nallar"/>
-			<delete file="${mcpsrc.dir}/minecraft/net/minecraft/network/packet/IPacketHandler.java"/>
-		</parallel>
-
-		<fail message="MCP failed to build">
-			<condition>
-				<or>
-					<resourcecontains resource="${mcp.dir}/logs/client_compile.log" substring="error:"/>
-					<resourcecontains resource="${mcp.dir}/logs/client_compile.log" substring=" errors"/>
-				</or>
-			</condition>
-		</fail>
 
 	</target>
 
