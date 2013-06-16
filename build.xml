@@ -136,12 +136,12 @@
 				<path refid="class.path"/>
 			</classpath>
 		</javac>
-		<java classname="me.nallar.nmsprepatcher.Main">
+		<java classname="nallar.nmsprepatcher.Main">
 			<classpath>
 				<path refid="class.path"/>
 				<pathelement location="${classes.dir}"/>
 			</classpath>
-			<arg value="${src.dir}/common/me/nallar/patched"/>
+			<arg value="${src.dir}/common/nallar/patched"/>
 			<arg value="${mcpsrc.dir}/minecraft"/>
 		</java>
 	</target>
@@ -203,8 +203,7 @@
 
 		<!-- Reset src dir to post-forge-install state -->
 		<parallel>
-			<delete dir="${mcpsrc.dir}/minecraft/me/nallar"/>
-			<delete dir="${mcpsrc.dir}/minecraft/javassist/is/faulty"/>
+			<delete dir="${mcpsrc.dir}/minecraft/nallar"/>
 			<delete file="${mcpsrc.dir}/minecraft/net/minecraft/network/packet/IPacketHandler.java"/>
 		</parallel>
 
@@ -238,7 +237,7 @@
 	<!-- Package the compiled files -->
 	<target name="package" depends="initialize-version">
 
-		<java classname="me.nallar.tickthreading.patcher.PatchMain">
+		<java classname="nallar.tickthreading.patcher.PatchMain">
 			<classpath>
 				<path refid="class.path"/>
 				<pathelement location="${classes.dir}"/>

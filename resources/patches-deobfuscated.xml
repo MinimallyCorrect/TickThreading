@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <mods>
 	<tickthreading>
-		<class id="me.nallar.tickthreading.minecraft.tickregion.TileEntityTickRegion">
+		<class id="nallar.tickthreading.minecraft.tickregion.TileEntityTickRegion">
 			<lockToSynchronized>doTick</lockToSynchronized>
 		</class>
-		<class id="me.nallar.tickthreading.minecraft.TickManager">
+		<class id="nallar.tickthreading.minecraft.TickManager">
 			<lockToSynchronized>unlock,lock</lockToSynchronized>
 		</class>
 	</tickthreading>
 	<minecraftCommon>
 		<class id="net.minecraft.world.SpawnerAnimals" env="forge">
-			<addAll fromClass="me.nallar.patched.PatchSpawnerAnimalsForge"/>
+			<addAll fromClass="nallar.patched.PatchSpawnerAnimalsForge"/>
 		</class>
 		<class id="net.minecraft.world.SpawnerAnimals" env="mcpc">
 			<synchronize>findChunksForSpawning</synchronize>
 		</class>
 		<class id="net.minecraft.world.SpawnerAnimals">
-			<addAll fromClass="me.nallar.patched.PatchSpawnerAnimals"/>
+			<addAll fromClass="nallar.patched.PatchSpawnerAnimals"/>
 			<profile>findChunksForSpawning</profile>
 		</class>
 		<class id=" net.minecraft.world.storage.MapInfo">
@@ -26,7 +26,7 @@
 			<newInitializer field="pathPoints" class="net.minecraft.pathfinding.PathPoint" arraySize="128"/>
 		</class>
 		<class id="net.minecraft.server.MinecraftServer">
-			<addAll fromClass="me.nallar.patched.server.PatchMinecraftServer"/>
+			<addAll fromClass="nallar.patched.server.PatchMinecraftServer"/>
 			<insertBefore code="{
 				if (this.^field:MinecraftServer/serverStopped^) {
 					return;
@@ -38,7 +38,7 @@
 			<public field="mcServer"/>
 			<volatile field="serverRunning"/>
 			<volatile field="serverIsRunning"/>
-			<replaceInitializer field="worlds" class="me.nallar.collections.ListSet"/>
+			<replaceInitializer field="worlds" class="nallar.collections.ListSet"/>
 		</class>
 		<class id="net.minecraft.server.MinecraftServer" env="mcpc">
 			<replaceMethod code="{
@@ -51,18 +51,18 @@
 			</replaceMethod>
 		</class>
 		<class id="net.minecraft.server.MinecraftServer" env="forge">
-			<addAll fromClass="me.nallar.patched.server.PatchMinecraftServerForge"/>
+			<addAll fromClass="nallar.patched.server.PatchMinecraftServerForge"/>
 		</class>
 		<class id="net.minecraft.profiler.Profiler">
-			<addAll fromClass="me.nallar.patched.PatchProfiler"/>
+			<addAll fromClass="nallar.patched.PatchProfiler"/>
 		</class>
 		<class id="net.minecraft.network.NetServerHandler">
-			<addAll fromClass="me.nallar.patched.network.PatchNetServerHandler"/>
+			<addAll fromClass="nallar.patched.network.PatchNetServerHandler"/>
 			<replaceMethodCall method="warning"
-												 code="{ javassist.is.faulty.Redirects.notifyAdmins($1); }"
+												 code="{ nallar.tickthreading.global.Redirects.notifyAdmins($1); }"
 							>handleFlying
 			</replaceMethodCall>
-			<insertBefore code="if (javassist.is.faulty.Redirects.interceptPacket($1, this)) { return; }">sendPacketToPlayer</insertBefore>
+			<insertBefore code="if (nallar.tickthreading.global.Redirects.interceptPacket($1, this)) { return; }">sendPacketToPlayer</insertBefore>
 		</class>
 		<class id="net.minecraft.network.NetServerHandler" env="mcpc">
 			<insertAfter code="handleTeleport($1.getX(), $1.getY(), $1.getZ());">teleport</insertAfter>
@@ -73,22 +73,22 @@
 			<synchronize>setPlayerLocation</synchronize>
 		</class>
 		<class id="net.minecraft.network.packet.Packet10Flying">
-			<addAll fromClass="me.nallar.patched.network.PatchPacket10Flying"/>
+			<addAll fromClass="nallar.patched.network.PatchPacket10Flying"/>
 		</class>
 		<class id="net.minecraft.network.packet.Packet14BlockDig">
-			<addAll fromClass="me.nallar.patched.network.PatchPacketAsync"/>
+			<addAll fromClass="nallar.patched.network.PatchPacketAsync"/>
 		</class>
 		<class id="net.minecraft.network.packet.Packet51MapChunk">
 			<volatile field="chunkData"/>
-			<addAll fromClass="me.nallar.patched.network.PatchPacket51MapChunk"/>
-			<threadLocal field="temp" type="byte[]" threadLocalField="javassist.is.faulty.ThreadLocals.mapChunkTempByteArray">getMapChunkData</threadLocal>
+			<addAll fromClass="nallar.patched.network.PatchPacket51MapChunk"/>
+			<threadLocal field="temp" type="byte[]" threadLocalField="nallar.tickthreading.global.ThreadLocals.mapChunkTempByteArray">getMapChunkData</threadLocal>
 			<synchronize field="$1">getMapChunkData</synchronize>
 		</class>
 		<class id="net.minecraft.network.packet.Packet56MapChunks">
 			<volatile field="chunkDataBuffer"/>
 		</class>
 		<class id="net.minecraft.network.packet.Packet254ServerPing">
-			<addAll fromClass="me.nallar.patched.network.PatchPacketAsync"/>
+			<addAll fromClass="nallar.patched.network.PatchPacketAsync"/>
 		</class>
 		<class id="net.minecraft.network.NetworkListenThread">
 			<synchronize>addPlayer,networkTick</synchronize>
@@ -98,7 +98,7 @@
 			<ignoreExceptions type="java.net.SocketException">run</ignoreExceptions>
 		</class>
 		<class id="net.minecraft.world.World">
-			<addAll fromClass="me.nallar.patched.world.PatchWorld"/>
+			<addAll fromClass="nallar.patched.world.PatchWorld"/>
 			<profile>updateEntities</profile>
 			<profile>setActivePlayerChunksAndCheckLight</profile>
 			<public>releaseEntitySkin</public>
@@ -121,7 +121,7 @@
 			<insertAfter field="tickEntryID" code="this.$field = this.nextEntryID_.getAndIncrement();"/>
 		</class>
 		<class id="net.minecraft.world.WorldServer">
-			<addAll fromClass="me.nallar.patched.world.PatchWorldServer"/>
+			<addAll fromClass="nallar.patched.world.PatchWorldServer"/>
 			<profile>tickBlocksAndAmbiance</profile>
 			<profile>tick</profile>
 			<insertSuper>initialize</insertSuper>
@@ -138,13 +138,13 @@
 			<synchronize>getBiomeCacheBlock,cleanupCache</synchronize>
 		</class>
 		<class id="net.minecraft.world.gen.layer.IntCache">
-			<replace class="me.nallar.patched.storage.IntCache"/>
+			<replace class="nallar.patched.storage.IntCache"/>
 		</class>
 		<class id="net.minecraft.world.gen.structure.MapGenStructure">
 			<replaceInitializer field="structureMap" class="java.util.concurrent.ConcurrentHashMap"/>
 		</class>
 		<class id="net.minecraft.world.gen.ChunkProviderServer">
-			<replace class="me.nallar.patched.storage.ThreadedChunkProvider"/>
+			<replace class="nallar.patched.storage.ThreadedChunkProvider"/>
 			<lockToSynchronized>getChunkAtInternal</lockToSynchronized>
 		</class>
 		<class id="net.minecraft.world.gen.ChunkProviderServer" env="mcpc">
@@ -179,20 +179,20 @@
 			<insertAfter field="chunksToUnload" code="$field = new org.bukkit.craftbukkit.v1_4_R1.util.LongHashSet();"/>
 		</class>
 		<class id="net.minecraft.world.chunk.NibbleArray" env="forge">
-			<addAll fromClass="me.nallar.patched.storage.PatchNibbleArrayForge"/>
+			<addAll fromClass="nallar.patched.storage.PatchNibbleArrayForge"/>
 		</class>
 		<class id="net.minecraft.world.chunk.storage.RegionFileCache">
 			<replaceMethod code="throw new UnsupportedOperationException();">createOrLoadRegionFile</replaceMethod>
 		</class>
 		<class id="net.minecraft.world.chunk.storage.AnvilChunkLoader">
-			<replace class="me.nallar.patched.storage.ThreadedChunkLoader"/>
+			<replace class="nallar.patched.storage.ThreadedChunkLoader"/>
 		</class>
 		<class id="net.minecraft.world.chunk.storage.AnvilChunkLoaderPending">
-			<addAll fromClass="me.nallar.patched.storage.PatchAnvilChunkLoaderPending"/>
+			<addAll fromClass="nallar.patched.storage.PatchAnvilChunkLoaderPending"/>
 		</class>
 		<class id="net.minecraft.world.chunk.Chunk">
 			<!-- The entity list could be accessed from multiple threads, as usual causes problems during iteration -->
-			<addAll fromClass="me.nallar.patched.storage.PatchChunk"/>
+			<addAll fromClass="nallar.patched.storage.PatchChunk"/>
 			<final field="xPosition"/>
 			<final field="zPosition"/>
 			<final field="entityLists"/>
@@ -211,40 +211,40 @@
 		</class>
 		<class id="net.minecraft.util.Vec3Pool">
 			<!-- This prevents entities in multiple threads using the same Vec3 for collisions. -->
-			<replace class="me.nallar.patched.PatchVec3Pool"/>
+			<replace class="nallar.patched.PatchVec3Pool"/>
 		</class>
 		<class id="net.minecraft.util.AABBPool">
 			<!-- This prevents entities in multiple threads using the same Vec3 for collisions. -->
-			<replace class="me.nallar.patched.PatchAABBPool"/>
+			<replace class="nallar.patched.PatchAABBPool"/>
 		</class>
 		<class id="net.minecraft.util.AxisAlignedBB">
 			<!-- Improves performance -->
-			<addAll fromClass="me.nallar.patched.PatchAxisAlignedBB"/>
+			<addAll fromClass="nallar.patched.PatchAxisAlignedBB"/>
 			<replaceInitializer field="theAABBLocalPool" code="$_ = null;">^static^</replaceInitializer>
 		</class>
 		<class id="net.minecraft.util.LongHashMap">
-			<replace class="me.nallar.patched.collection.PatchLongHashMap"/>
+			<replace class="nallar.patched.collection.PatchLongHashMap"/>
 		</class>
 		<class id="net.minecraft.util.IntHashMap">
-			<replace class="me.nallar.patched.collection.PatchIntHashMap"/>
+			<replace class="nallar.patched.collection.PatchIntHashMap"/>
 		</class>
 		<class id="net.minecraft.entity.passive.EntitySquid">
 			<removeMethod>isInWater</removeMethod>
 		</class>
 		<class id="net.minecraft.entity.player.EntityPlayerMP">
-			<addAll fromClass="me.nallar.patched.entity.PatchEntityPlayerMP"/>
+			<addAll fromClass="nallar.patched.entity.PatchEntityPlayerMP"/>
 			<!-- Concurrent access during iteration = boom -->
-			<replaceInitializer field="destroyedItemsNetCache" class="me.nallar.collections.ConcurrentQueueList"/>
-			<replaceInitializer field="loadedChunks" class="me.nallar.collections.ConcurrentQueueList"/>
+			<replaceInitializer field="destroyedItemsNetCache" class="nallar.collections.ConcurrentQueueList"/>
+			<replaceInitializer field="loadedChunks" class="nallar.collections.ConcurrentQueueList"/>
 		</class>
 		<class id="net.minecraft.entity.player.EntityPlayerMP">
-			<addAll fromClass="me.nallar.patched.entity.PatchEntityPlayerMPForge"/>
+			<addAll fromClass="nallar.patched.entity.PatchEntityPlayerMPForge"/>
 		</class>
 		<class id="net.minecraft.entity.Entity">
-			<addAll fromClass="me.nallar.patched.entity.PatchEntity"/>
+			<addAll fromClass="nallar.patched.entity.PatchEntity"/>
 		</class>
 		<class id="net.minecraft.nbt.CompressedStreamTools">
-			<addAll fromClass="me.nallar.patched.nbt.PatchCompressedStreamTools"/>
+			<addAll fromClass="nallar.patched.nbt.PatchCompressedStreamTools"/>
 		</class>
 		<class id="net.minecraft.nbt.NBTBase">
 			<replaceMethod code="{
@@ -265,11 +265,11 @@
 			</replaceMethod>
 		</class>
 		<class id="net.minecraft.nbt.NBTBase">
-			<addAll fromClass="me.nallar.patched.nbt.PatchNBTBase"/>
+			<addAll fromClass="nallar.patched.nbt.PatchNBTBase"/>
 		</class>
 		<class id="net.minecraft.nbt.NBTTagCompound">
-			<addAll fromClass="me.nallar.patched.nbt.PatchNBTTagCompound"/>
-			<replaceInitializer field="tagMap" class="me.nallar.collections.PartiallySynchronizedMap"/>
+			<addAll fromClass="nallar.patched.nbt.PatchNBTTagCompound"/>
+			<replaceInitializer field="tagMap" class="nallar.collections.PartiallySynchronizedMap"/>
 			<final field="tagMap"/>
 		</class>
 		<class id="net.minecraft.entity.Entity">
@@ -279,34 +279,34 @@
 			<insertBefore code="if ($1 == 0 &amp;&amp; $2 == 0 &amp;&amp; $3 == 0) { return; }">moveEntity</insertBefore>
 		</class>
 		<class id="net.minecraft.entity.EntityLiving">
-			<addAll fromClass="me.nallar.patched.entity.PatchEntityLiving"/>
+			<addAll fromClass="nallar.patched.entity.PatchEntityLiving"/>
 		</class>
 		<class id="net.minecraft.entity.item.EntityItem">
-			<addAll fromClass="me.nallar.patched.entity.PatchEntityItem"/>
+			<addAll fromClass="nallar.patched.entity.PatchEntityItem"/>
 			<insertSuper>onUpdate</insertSuper>
 		</class>
 		<class id="net.minecraft.entity.item.EntityXPOrb">
-			<addAll fromClass="me.nallar.patched.entity.PatchEntityXPOrb"/>
+			<addAll fromClass="nallar.patched.entity.PatchEntityXPOrb"/>
 		</class>
 		<class id="net.minecraft.tileentity.TileEntity">
-			<addAll fromClass="me.nallar.patched.PatchTileEntity"/>
+			<addAll fromClass="nallar.patched.PatchTileEntity"/>
 		</class>
 		<class id="net.minecraft.entity.EntityTracker">
 			<!-- Yet more comodification exceptions -->
-			<addAll fromClass="me.nallar.patched.entity.PatchEntityTracker"/>
-			<newField field="readWriteLock" class="me.nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock"/>
+			<addAll fromClass="nallar.patched.entity.PatchEntityTracker"/>
+			<newField field="readWriteLock" class="nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock"/>
 			<newField field="writeLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>
 			<newField field="readLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.readLock();"/>
 			<lock field="writeLock">addEntityToTracker(Lnet/minecraft/entity/Entity;)V,addEntityToTracker(Lnet/minecraft/entity/Entity;IIZ)V,removeEntityFromAllTrackingPlayers</lock>
 			<lock field="readLock">updateTrackedEntities,removeAllTrackingPlayers,func_85172_a</lock>
 		</class>
 		<class id="net.minecraft.village.Village">
-			<addAll fromClass="me.nallar.patched.PatchVillage"/>
+			<addAll fromClass="nallar.patched.PatchVillage"/>
 		</class>
 		<class id="net.minecraft.village.VillageCollection">
-			<addAll fromClass="me.nallar.patched.collection.PatchVillageCollection"/>
+			<addAll fromClass="nallar.patched.collection.PatchVillageCollection"/>
 			<!-- Literally the most useless collection. Locking instead of voiding in case it ever does something useful in future -->
-			<newField field="readWriteLock" class="me.nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock"/>
+			<newField field="readWriteLock" class="nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock"/>
 			<newField field="writeLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>
 			<newField field="readLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.readLock();"/>
 			<lock field="writeLock">addVillagerPosition</lock>
@@ -316,23 +316,23 @@
 			<disable>run</disable>
 		</class>
 		<class id="net.minecraft.server.management.ServerConfigurationManager">
-			<addAll fromClass="me.nallar.patched.server.PatchServerConfigurationManager"/>
-			<newField field="readWriteLock" class="me.nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock"/>
+			<addAll fromClass="nallar.patched.server.PatchServerConfigurationManager"/>
+			<newField field="readWriteLock" class="nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock"/>
 			<newField field="playersUpdateLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>
 			<newField field="playerUpdateLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.readLock();"/>
 			<lock field="playerUpdateLock">createPlayerForUser,sendPacketToAllPlayers,sendPlayerInfoToAllPlayers</lock>
 			<lock field="playerUpdateLock">sendPacketToAllPlayersInDimension,getPlayerListAsString,getAllUsernames,getPlayerForUsername,findPlayers,sendToAllNearExcept</lock>
 			<lock field="playerUpdateLock">saveAllPlayerData,getPlayerList</lock>
-			<replaceInitializer field="playerEntityList" class="me.nallar.collections.LockArrayList"/>
-			<insertAfter code="((me.nallar.collections.LockArrayList)^field:ServerConfigurationManager/playerEntityList^).lock = playersUpdateLock;"/>
+			<replaceInitializer field="playerEntityList" class="nallar.collections.LockArrayList"/>
+			<insertAfter code="((nallar.collections.LockArrayList)^field:ServerConfigurationManager/playerEntityList^).lock = playersUpdateLock;"/>
 			<synchronize field="$1.playerNetServerHandler">respawnPlayer</synchronize>
 			<synchronize field="$1.^field:EntityPlayerMP/playerNetServerHandler^">transferPlayerToDimension(L^class:EntityPlayerMP^;IL^class:Teleporter^;)V</synchronize>
 		</class>
 		<class id="net.minecraft.server.management.ServerConfigurationManager" env="forge">
-			<addAll fromClass="me.nallar.patched.server.PatchServerConfigurationManagerForge"/>
+			<addAll fromClass="nallar.patched.server.PatchServerConfigurationManagerForge"/>
 		</class>
 		<class id="net.minecraft.server.management.PlayerManager">
-			<addAll fromClass="me.nallar.patched.world.tracking.PatchPlayerManager"/>
+			<addAll fromClass="nallar.patched.world.tracking.PatchPlayerManager"/>
 			<replaceMethodCall method="sort" index="1" code="{ }">updateMountedMovingPlayer</replaceMethodCall>
 			<synchronize>addPlayer,removePlayer</synchronize>
 			<synchronize field="$1.loadedChunks">addPlayer,removePlayer,filterChunkLoadQueue</synchronize>
@@ -345,12 +345,12 @@
 		<class id="net.minecraft.server.management.PlayerInstance">
 			<replaceInitializer field="playersInChunk" code="$_ = Collections.synchronizedList(new ArrayList());"/>
 			<replaceMethodCall method="^class:PlayerManager^.^method:PlayerManager/getWorldServer^" removeAfter="true"/>
-			<addAll fromClass="me.nallar.patched.world.tracking.PatchPlayerInstance"/>
+			<addAll fromClass="nallar.patched.world.tracking.PatchPlayerInstance"/>
 			<public field="loaded"/>
 			<final field="chunkLocation"/>
 		</class>
 		<class id="net.minecraft.world.ChunkCoordIntPair">
-			<addAll fromClass="me.nallar.patched.storage.PatchChunkCoordIntPair"/>
+			<addAll fromClass="nallar.patched.storage.PatchChunkCoordIntPair"/>
 			<public field="chunkXPos"/>
 			<public field="chunkZPos"/>
 			<noFinal field="chunkXPos"/>
@@ -361,10 +361,10 @@
 			<replaceMethodCall newMethod="getBlockIdWithLoad" method="^class:WorldServer^.^method:World/getBlockId^">^all^</replaceMethodCall>
 		</class>
 		<class id="net.minecraft.crash.CrashReport">
-			<addAll fromClass="me.nallar.patched.server.PatchCrashReport"/>
+			<addAll fromClass="nallar.patched.server.PatchCrashReport"/>
 		</class>
 		<class id="net.minecraft.block.BlockRedstoneTorch">
-			<addAll fromClass="me.nallar.patched.block.PatchBlockRedstoneTorch"/>
+			<addAll fromClass="nallar.patched.block.PatchBlockRedstoneTorch"/>
 		</class>
 		<class id="net.minecraft.block.BlockRedstoneWire">
 			<synchronize>calculateCurrentChanges,updateAndPropagateCurrentStrength</synchronize>
@@ -380,10 +380,10 @@
 			</replaceMethodCall>
 		</class>
 		<class id="net.minecraft.network.TcpConnection">
-			<addAll fromClass="me.nallar.patched.network.PatchTcpConnection"/>
+			<addAll fromClass="nallar.patched.network.PatchTcpConnection"/>
 		</class>
 		<class id="net.minecraft.network.TcpReaderThread">
-			<replace class="me.nallar.patched.network.ReplaceTcpReaderThread"/>
+			<replace class="nallar.patched.network.ReplaceTcpReaderThread"/>
 		</class>
 		<class id="net.minecraft.entity.ai.EntityAITasks">
 			<synchronize>addTask,func_85156_a,onUpdateTasks,func_75775_b</synchronize>
@@ -392,7 +392,7 @@
 			<threadLocalBoolean field="callingPlaceEvent" threadLocalField="$0.inPlaceEvent"/>
 		</class>
 		<class id="net.minecraft.world.World" env="mcpc">
-			<insertBefore code="inPlaceEvent = new me.nallar.tickthreading.util.BooleanThreadLocal();"/>
+			<insertBefore code="inPlaceEvent = new nallar.tickthreading.util.BooleanThreadLocal();"/>
 			<final field="callingPlaceEvent"/>
 			<threadLocalBoolean field="callingPlaceEvent" threadLocalField="$0.inPlaceEvent"/>
 			<disable>loadChunkOnProvideBegin,loadChunkOnProvideEnd</disable>
@@ -409,7 +409,7 @@
 	</minecraftCommon>
 	<forge>
 		<class id="net.minecraftforge.common.DimensionManager">
-			<addAll fromClass="me.nallar.patched.forge.PatchDimensionManager"/>
+			<addAll fromClass="nallar.patched.forge.PatchDimensionManager"/>
 			<synchronize field="unloadQueue">unloadWorld</synchronize>
 			<insertBefore code="if (getWorld($1) != null) { return; }">initDimension</insertBefore>
 			<synchronize>unloadWorlds,initDimension,setWorld</synchronize>
@@ -508,15 +508,15 @@
 	</spigot>
 	<forge>
 		<class id="net.minecraftforge.common.Configuration">
-			<addAll fromClass="me.nallar.patched.forge.PatchConfiguration"/>
+			<addAll fromClass="nallar.patched.forge.PatchConfiguration"/>
 		</class>
 		<class id="net.minecraftforge.common.ConfigCategory">
-			<addAll fromClass="me.nallar.patched.forge.PatchConfigCategory"/>
+			<addAll fromClass="nallar.patched.forge.PatchConfigCategory"/>
 		</class>
 		<class id="net.minecraftforge.event.Event">
 			<final field="listeners"/>
 			<removeField field="annotationMap"/>
-			<addAll fromClass="me.nallar.patched.forge.PatchEvent"/>
+			<addAll fromClass="nallar.patched.forge.PatchEvent"/>
 		</class>
 		<class id="net.minecraftforge.common.ForgeChunkManager$Ticket">
 			<public all="true"/>
@@ -525,24 +525,24 @@
 			<removeFieldAndInitializers field="forcedChunks" silent="true"/>
 		</class>
 		<class id="net.minecraftforge.common.ForgeChunkManager">
-			<addAll fromClass="me.nallar.patched.forge.PatchForgeChunkManager"/>
+			<addAll fromClass="nallar.patched.forge.PatchForgeChunkManager"/>
 		</class>
 	</forge>
 	<forgeModLoader>
 		<class id="cpw.mods.fml.common.registry.GameRegistry">
-			<addAll fromClass="me.nallar.patched.forge.PatchGameRegistry"/>
+			<addAll fromClass="nallar.patched.forge.PatchGameRegistry"/>
 		</class>
 		<class id="cpw.mods.fml.common.registry.TickRegistry">
-			<addAll fromClass="me.nallar.patched.forge.PatchTickRegistry"/>
+			<addAll fromClass="nallar.patched.forge.PatchTickRegistry"/>
 		</class>
 		<class id="cpw.mods.fml.relauncher.FMLLogFormatter">
-			<replace class="me.nallar.tickthreading.LogFormatter"/>
+			<replace class="nallar.tickthreading.LogFormatter"/>
 		</class>
 		<class id="cpw.mods.fml.common.event.FMLInterModComms$IMCMessage">
-			<addAll fromClass="me.nallar.patched.forge.PatchIMCMessage"/>
+			<addAll fromClass="nallar.patched.forge.PatchIMCMessage"/>
 		</class>
 		<class id="cpw.mods.fml.common.Loader">
-			<addAll fromClass="me.nallar.patched.forge.PatchLoader"/>
+			<addAll fromClass="nallar.patched.forge.PatchLoader"/>
 		</class>
 		<class id="cpw.mods.fml.common.Loader$ModIdComparator">
 			<public/>
@@ -558,15 +558,15 @@
 			<synchronize>getNextBlockId,doReserveId</synchronize>
 		</class>
 		<class id="cpw.mods.fml.common.FMLCommonHandler">
-			<addAll fromClass="me.nallar.patched.forge.PatchFMLCommonHandler"/>
+			<addAll fromClass="nallar.patched.forge.PatchFMLCommonHandler"/>
 			<profile>onPreServerTick,onPostServerTick,onPreWorldTick,onPostWorldTick</profile>
 		</class>
 		<class id="cpw.mods.fml.relauncher.RelaunchClassLoader">
-			<addAll fromClass="me.nallar.patched.forge.PatchRelaunchClassLoader"/>
+			<addAll fromClass="nallar.patched.forge.PatchRelaunchClassLoader"/>
 			<synchronize>findClass</synchronize>
 		</class>
 		<class id="cpw.mods.fml.common.network.PacketDispatcher">
-			<addAll fromClass="me.nallar.patched.forge.PatchPacketDispatcher"/>
+			<addAll fromClass="nallar.patched.forge.PatchPacketDispatcher"/>
 		</class>
 		<class id="cpw.mods.fml.common.network.ModListResponsePacket">
 			<replaceMethodCall index="2" code="{ $_ = null; }" method="info">execute</replaceMethodCall>
@@ -597,8 +597,8 @@
 			<synchronize>updateStacks,changeItemCount,setItemCount</synchronize>
 		</class>
 		<class id="factorization.common.TileEntityWrathLamp">
-			<replaceInitializer field="airToUpdate" class="me.nallar.collections.SynchronizedPriorityQueue">^static^</replaceInitializer>
-			<threadLocal field="toVisit" type="java.util.HashSet" threadLocalField="javassist.is.faulty.ThreadLocals.factorizationFindLightAirParentToVisit"/>
+			<replaceInitializer field="airToUpdate" class="nallar.collections.SynchronizedPriorityQueue">^static^</replaceInitializer>
+			<threadLocal field="toVisit" type="java.util.HashSet" threadLocalField="nallar.tickthreading.global.ThreadLocals.factorizationFindLightAirParentToVisit"/>
 			<replaceMethodCall code="$_ = $0.getChunkFromBlockCoordsIfExists($$);" method="^class:World^.^method:World/getChunkFromBlockCoords^">findLightAirParent</replaceMethodCall>
 		</class>
 		<class id="factorization.api.Charge">
@@ -658,7 +658,7 @@
 			<replaceMethodCall newMethod="getBlockIdWithLoad" method="^class:World^.^method:World/getBlockId^">ticketsLoaded(Ljava.util.List;L^class:World^;I)Ljava.util.List;</replaceMethodCall>
 		</class>
 		<class id="buildcraft.factory.TilePump">
-			<replaceInitializer field="blocksToPump" class="me.nallar.collections.TreeMapHashMap"/>
+			<replaceInitializer field="blocksToPump" class="nallar.collections.TreeMapHashMap"/>
 			<insertBefore code="blocksToPump.clear();">initializePumpFromPosition</insertBefore>
 			<synchronize>isActive,getNextIndexToPump</synchronize>
 		</class>
@@ -671,7 +671,7 @@
 		</class>
 		<class id="buildcraft.transport.PipeTransportItems">
 			<replaceInitializer field="travelingEntities" class="java.util.concurrent.ConcurrentHashMap"/>
-			<replaceInitializer field="toRemove" class="me.nallar.collections.SynchronizedSet"/>
+			<replaceInitializer field="toRemove" class="nallar.collections.SynchronizedSet"/>
 			<replaceMethod code="{
 				synchronized(toRemove) {
 					java.util.Iterator i = toRemove.iterator();
@@ -733,10 +733,10 @@
 	</thremalExpansionFactory>
 	<redPowerCore>
 		<class id="com.eloraam.redpower.core.RedPowerLib">
-			<threadLocal field="blockUpdates" type="java.util.HashSet" threadLocalField="javassist.is.faulty.ThreadLocals.redPowerBlockUpdateSet"/>
-			<threadLocal field="powerSearchTest" type="java.util.HashSet" threadLocalField="javassist.is.faulty.ThreadLocals.redPowerPowerSearchTest"/>
-			<threadLocal field="powerSearch" type="java.util.LinkedList" threadLocalField="javassist.is.faulty.ThreadLocals.redPowerPowerSearch"/>
-			<threadLocalBoolean field="searching" threadLocalField="javassist.is.faulty.ThreadLocals.redPowerIsSearching"/>
+			<threadLocal field="blockUpdates" type="java.util.HashSet" threadLocalField="nallar.tickthreading.global.ThreadLocals.redPowerBlockUpdateSet"/>
+			<threadLocal field="powerSearchTest" type="java.util.HashSet" threadLocalField="nallar.tickthreading.global.ThreadLocals.redPowerPowerSearchTest"/>
+			<threadLocal field="powerSearch" type="java.util.LinkedList" threadLocalField="nallar.tickthreading.global.ThreadLocals.redPowerPowerSearch"/>
+			<threadLocalBoolean field="searching" threadLocalField="nallar.tickthreading.global.ThreadLocals.redPowerIsSearching"/>
 		</class>
 		<class id="com.eloraam.redpower.core.TileExtended">
 			<replaceMethod code="this.sendTile();">updateBlock</replaceMethod>
@@ -746,7 +746,7 @@
 			<synchronize>onRemove,pop,addNew,addNewColor,addBounce,addAll,getLast,readFromNBT,writeToNBT</synchronize>
 		</class>
 		<class id="com.eloraam.redpower.core.TubeFlow">
-			<replaceInitializer field="contents" class="me.nallar.collections.ConcurrentLinkedQueueList"/>
+			<replaceInitializer field="contents" class="nallar.collections.ConcurrentLinkedQueueList"/>
 			<replaceInitializer field="contents" code="contents.clear(); $_ = null;">readFromNBT</replaceInitializer>
 			<replaceFieldUsage field="contents" writeCode="{ }">readFromNBT</replaceFieldUsage>
 			<final field="contents"/>
@@ -781,10 +781,10 @@
 			<replaceMethodCall method="self.^method:TileEntity/onInventoryChanged^" code="{ }">^method:TileEntity/updateEntity^</replaceMethodCall>
 		</class>
 		<class id="ic2.core.network.NetworkManager">
-			<replaceMethodCall method="cpw.mods.fml.common.network.PacketDispatcher.sendPacketToPlayer" code="javassist.is.faulty.Redirects.interceptIC2Packet($$);">
+			<replaceMethodCall method="cpw.mods.fml.common.network.PacketDispatcher.sendPacketToPlayer" code="nallar.tickthreading.global.Redirects.interceptIC2Packet($$);">
 				announceBlockUpdate,initiateTileEntityEvent,initiateExplosionEffect
 			</replaceMethodCall>
-			<insertBefore code="javassist.is.faulty.Redirects.interceptIC2PacketIn($1, $2, $3);">onPacketData</insertBefore>
+			<insertBefore code="nallar.tickthreading.global.Redirects.interceptIC2PacketIn($1, $2, $3);">onPacketData</insertBefore>
 			<replaceMethod code="{
       byte[] var10000;
       try {
@@ -867,13 +867,13 @@
 			</replaceMethod>
 		</class>
 		<class id="ic2.core.WorldData">
-			<replaceInitializer field="networkedFieldsToUpdate" class="me.nallar.collections.SynchronizedSet"/>
+			<replaceInitializer field="networkedFieldsToUpdate" class="nallar.collections.SynchronizedSet"/>
 		</class>
 	</industrialCraft>
 	<gregTech>
 		<class id="gregtechmod.GT_Mod">
 			<synchronize>readIDSUData,writeIDSUData</synchronize>
-			<replaceInitializer fieldClass="gregtechmod.common.tileentities.GT_TileEntity_IDSU" field="sEnergyList" class="me.nallar.collections.CHashMap">readIDSUData</replaceInitializer>
+			<replaceInitializer fieldClass="gregtechmod.common.tileentities.GT_TileEntity_IDSU" field="sEnergyList" class="nallar.collections.CHashMap">readIDSUData</replaceInitializer>
 		</class>
 		<class id="gregtechmod.common.tileentities.GT_TileEntityMetaID_Machine">
 			<replaceMethodCall method="self.^method:TileEntity/onInventoryChanged^" code="{ }">^method:TileEntity/updateEntity^</replaceMethodCall>
@@ -924,17 +924,17 @@
 			</replaceMethod>
 		</class>
 		<class id="codechicken.chunkloader.PlayerChunkViewerManager">
-			<replaceInitializer field="ticketIDs" class="me.nallar.collections.CHashMap"/>
-			<replaceInitializer field="lastLoadedChunkMap" class="me.nallar.collections.CHashMap"/>
-			<replaceInitializer field="playerViewers" class="me.nallar.collections.ConcurrentLinkedQueueList"/>
-			<replaceInitializer field="chunkChanges" class="me.nallar.collections.LinkedListIterateClear"/>
-			<replaceInitializer field="ticketChanges" class="me.nallar.collections.LinkedListIterateClear"/>
-			<replaceInitializer field="dimChanges" class="me.nallar.collections.LinkedListIterateClear"/>
-			<replaceInitializer field="logouts" class="me.nallar.collections.LinkedListIterateClear"/>
-			<replaceInitializer field="addViewers" class="me.nallar.collections.LinkedListIterateClear"/>
+			<replaceInitializer field="ticketIDs" class="nallar.collections.CHashMap"/>
+			<replaceInitializer field="lastLoadedChunkMap" class="nallar.collections.CHashMap"/>
+			<replaceInitializer field="playerViewers" class="nallar.collections.ConcurrentLinkedQueueList"/>
+			<replaceInitializer field="chunkChanges" class="nallar.collections.LinkedListIterateClear"/>
+			<replaceInitializer field="ticketChanges" class="nallar.collections.LinkedListIterateClear"/>
+			<replaceInitializer field="dimChanges" class="nallar.collections.LinkedListIterateClear"/>
+			<replaceInitializer field="logouts" class="nallar.collections.LinkedListIterateClear"/>
+			<replaceInitializer field="addViewers" class="nallar.collections.LinkedListIterateClear"/>
 			<replaceMethod code="{
 				++time;
-				me.nallar.collections.LinkedListIterateClear logouts = (me.nallar.collections.LinkedListIterateClear) this.logouts;
+				nallar.collections.LinkedListIterateClear logouts = (nallar.collections.LinkedListIterateClear) this.logouts;
 				Iterator var2 = logouts.clearIterator();
 				ArrayList temp = new ArrayList(logouts.size() + 3);
 				while (var2.hasNext()) {
@@ -968,7 +968,7 @@
 					}
 				}
 
-				me.nallar.collections.LinkedListIterateClear dimChanges = (me.nallar.collections.LinkedListIterateClear) this.dimChanges;
+				nallar.collections.LinkedListIterateClear dimChanges = (nallar.collections.LinkedListIterateClear) this.dimChanges;
 				var2 = dimChanges.clearIterator();
 				ArrayList tempDim = new ArrayList(dimChanges.size() + 3);
 				while (var2.hasNext()) {
@@ -989,7 +989,7 @@
 					}
 				}
 
-				me.nallar.collections.LinkedListIterateClear chunkChanges = (me.nallar.collections.LinkedListIterateClear) this.chunkChanges;
+				nallar.collections.LinkedListIterateClear chunkChanges = (nallar.collections.LinkedListIterateClear) this.chunkChanges;
 
 				var2 = chunkChanges.clearIterator();
 
@@ -1003,7 +1003,7 @@
 					}
 				}
 
-				me.nallar.collections.LinkedListIterateClear ticketChanges = (me.nallar.collections.LinkedListIterateClear) this.ticketChanges;
+				nallar.collections.LinkedListIterateClear ticketChanges = (nallar.collections.LinkedListIterateClear) this.ticketChanges;
 				var2 = ticketChanges.clearIterator();
 
 				while(var2.hasNext()) {
@@ -1055,7 +1055,7 @@
 				}
 
 
-				var2 = ((me.nallar.collections.LinkedListIterateClear) this.addViewers).clearIterator();
+				var2 = ((nallar.collections.LinkedListIterateClear) this.addViewers).clearIterator();
 
 				while(var2.hasNext()) {
 					username = (String)var2.next();
@@ -1073,10 +1073,10 @@
 			<replaceMethodCall newMethod="getTEWithLoad" method="^class:World^.^method:World/getBlockTileEntity^">^all^</replaceMethodCall>
 			<replaceMethodCall newMethod="getBlockIdWithLoad" method="^class:World^.^method:World/getBlockId^">^all^</replaceMethodCall>
 			<synchronize>revive(L^class:World^;)V,devive,revive()V,load,save</synchronize>
-			<replaceInitializer field="dormantLoaders" class="me.nallar.collections.CHashMap"/>
-			<replaceInitializer field="forcedChunksByChunk" class="me.nallar.collections.CHashMap"/>
-			<replaceInitializer field="forcedChunksByLoader" class="me.nallar.collections.CHashMap"/>
-			<replaceInitializer field="timedUnloadQueue" class="me.nallar.collections.LinkedTimedHashMapQueue"/>
+			<replaceInitializer field="dormantLoaders" class="nallar.collections.CHashMap"/>
+			<replaceInitializer field="forcedChunksByChunk" class="nallar.collections.CHashMap"/>
+			<replaceInitializer field="forcedChunksByLoader" class="nallar.collections.CHashMap"/>
+			<replaceInitializer field="timedUnloadQueue" class="nallar.collections.LinkedTimedHashMapQueue"/>
 			<replaceMethod code="{
 				Iterator iterator = this.timedUnloadQueue.keySet().iterator();
 				while (iterator.hasNext()) {
@@ -1086,10 +1086,10 @@
 			</replaceMethod>
 		</class>
 		<class id="codechicken.core.world.WorldExtension">
-			<replaceInitializer field="chunkMap" class="me.nallar.collections.CHashMap"/>
+			<replaceInitializer field="chunkMap" class="nallar.collections.CHashMap"/>
 		</class>
 		<class id="codechicken.xycraftcopy.core.world.WorldExtension">
-			<replaceInitializer field="chunkMap" class="me.nallar.collections.CHashMap"/>
+			<replaceInitializer field="chunkMap" class="nallar.collections.CHashMap"/>
 		</class>
 		<class id="codechicken.core.world.WorldExtensionManager$WorldExtensionEventHandler">
 			<synchronize>onChunkLoad,onChunkUnLoad,onChunkDataLoad,onChunkDataSave</synchronize>
@@ -1113,7 +1113,7 @@
 	</chickenChunks>
 	<wirelessRedstone>
 		<class id="codechicken.wirelessredstone.core.RedstoneEther">
-			<replaceInitializer field="playerJammedMap" class="me.nallar.collections.CHashMap"/>
+			<replaceInitializer field="playerJammedMap" class="nallar.collections.CHashMap"/>
 			<final field="playerJammedMap"/>
 		</class>
 		<class id="codechicken.wirelessredstone.core.RedstoneEtherServer">
@@ -1173,12 +1173,12 @@
 	<portalGun>
 		<class id="portalgun.common.core.TickHandlerServer">
 			<synchronize field="$1.e">worldTick</synchronize>
-			<replaceInitializer field="grabMap" class="me.nallar.collections.CHashMap"/>
-			<replaceInitializer field="portals" class="me.nallar.collections.CHashMap"/>
-			<replaceInitializer field="moonPortals" class="me.nallar.collections.CHashMap"/>
-			<replaceInitializer field="potatosProgression" class="me.nallar.collections.CHashMap"/>
-			<replaceInitializer field="lastSeenEntity" class="me.nallar.collections.CHashMap"/>
-			<replaceInitializer field="hasFallen" class="me.nallar.collections.CHashMap"/>
+			<replaceInitializer field="grabMap" class="nallar.collections.CHashMap"/>
+			<replaceInitializer field="portals" class="nallar.collections.CHashMap"/>
+			<replaceInitializer field="moonPortals" class="nallar.collections.CHashMap"/>
+			<replaceInitializer field="potatosProgression" class="nallar.collections.CHashMap"/>
+			<replaceInitializer field="lastSeenEntity" class="nallar.collections.CHashMap"/>
+			<replaceInitializer field="hasFallen" class="nallar.collections.CHashMap"/>
 		</class>
 		<class id="portalgun.common.core.ChunkLoadHandler">
 			<replaceMethodCall newMethod="getTEWithLoad" method="^class:World^.^method:World/getBlockTileEntity^">
@@ -1208,11 +1208,11 @@
 			</insertBefore>
 		</class>
 		<class id="twilightforest.TFFeatureCache">
-			<replaceInitializer field="cache" class="me.nallar.collections.SynchronizedList"/>
+			<replaceInitializer field="cache" class="nallar.collections.SynchronizedList"/>
 			<synchronize field="cache">save</synchronize>
 			<insertAfter code="{
-				if (!(cache instanceof me.nallar.collections.SynchronizedList)) {
-					cache = new me.nallar.collections.SynchronizedList(cache);
+				if (!(cache instanceof nallar.collections.SynchronizedList)) {
+					cache = new nallar.collections.SynchronizedList(cache);
 				}
 			}">load
 			</insertAfter>
@@ -1327,19 +1327,20 @@
 	</MFFS>
 	<thaumcraft>
 		<class id="thaumcraft.api.ObjectTags">
-			<replaceInitializer field="tags" class="me.nallar.collections.CHashMap"/>
+			<replaceInitializer field="tags" class="nallar.collections.CHashMap"/>
 		</class>
 		<class id="thaumcraft.common.AuraManager">
 			<synchronize>registerAuraNode</synchronize>
 		</class>
 		<class id="thaumcraft.common.WorldTicker">
-			<newField code="me.nallar.tickthreading.util.contextaccess.ContextAccess.$" class="me.nallar.tickthreading.util.contextaccess.ContextAccess" field="context" static="true"/>
+			<newField code="nallar.tickthreading.util.contextaccess.ContextAccess.$" class="nallar.tickthreading.util.contextaccess.ContextAccess" field="context" static="true"/>
 			<insertBefore code="{
 				if (context.runningUnder(thaumcraft.common.WorldTicker.class)) {
 					Log.severe(&quot;Recursive TC add.&quot;, new Throwable());
 					return;
 				}
-			}">addSwapper,addBlockToRestore</insertBefore>
+			}">addSwapper,addBlockToRestore
+			</insertBefore>
 		</class>
 		<class id="thaumcraft.common.AuraWorldTicker">
 			<synchronize field="((^class:WorldServer^)$2[0]).auraLock">tickEnd</synchronize>
@@ -1385,8 +1386,8 @@
 			</replaceMethod>
 		</class>
 		<class id="thaumcraft.common.blocks.TileMarker">
-			<replaceInitializer field="markers" class="me.nallar.collections.CHashMap">^static^</replaceInitializer>
-			<replaceInitializer field="markedForDeletion" class="me.nallar.collections.ArrayListReplaceIterateTempListClear">^static^</replaceInitializer>
+			<replaceInitializer field="markers" class="nallar.collections.CHashMap">^static^</replaceInitializer>
+			<replaceInitializer field="markedForDeletion" class="nallar.collections.ArrayListReplaceIterateTempListClear">^static^</replaceInitializer>
 		</class>
 		<class id="thaumcraft.common.blocks.TileSensor">
 			<replaceMethod code="((ArrayList) noteBlockEvents.get($1)).addAll($1.getNoteBlockEvents());">getNoteBlockEvents</replaceMethod>
@@ -1395,28 +1396,28 @@
 	<universalElectricity>
 		<class id="universalelectricity.core.electricity.Electricity">
 			<newField field="cleanNetworkCount" class="int" code="0"/>
-			<newField field="readWriteLock" class="me.nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock"/>
+			<newField field="readWriteLock" class="nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock"/>
 			<newField field="writeLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>
 			<newField field="readLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.readLock();"/>
-			<replaceInitializer field="electricityNetworks" class="me.nallar.collections.LockArrayList"/>
-			<insertAfter code="((me.nallar.collections.LockArrayList)electricityNetworks).lock = writeLock;"/>
+			<replaceInitializer field="electricityNetworks" class="nallar.collections.LockArrayList"/>
+			<insertAfter code="((nallar.collections.LockArrayList)electricityNetworks).lock = writeLock;"/>
 			<lock field="readLock">unregister,cleanUpNetworks,resetConductors</lock>
 			<synchronize>mergeConnection,splitConnection,cleanUpNetworks</synchronize>
 			<insertBefore code="if (cleanNetworkCount++ % 15 != 0) { return; }">cleanUpNetworks</insertBefore>
 		</class>
 		<class id="universalelectricity.core.electricity.ElectricityConnections">
-			<replaceInitializer field="connectors" class="me.nallar.collections.CHashMap"/>
+			<replaceInitializer field="connectors" class="nallar.collections.CHashMap"/>
 		</class>
 		<class id="universalelectricity.core.electricity.ElectricityNetwork">
 			<replaceMethodCall code="$_ = $0.getTEWithoutLoad($$);" method="^class:World^.^method:World/getBlockTileEntity^">getProduced,getRequestWithoutReduction</replaceMethodCall>
 			<newField field="readLock" class="java.util.concurrent.locks.Lock" code="none"/>
 			<replaceMethod code="{
-				me.nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock readWriteLock = new me.nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock();
+				nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock readWriteLock = new nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock();
 				readLock = readWriteLock.readLock();
-				consumers = new me.nallar.collections.CHashMap();
-				producers = new me.nallar.collections.CHashMap();
-				conductors = new me.nallar.collections.LockArrayList();
-				((me.nallar.collections.LockArrayList)conductors).lock = readWriteLock.writeLock();
+				consumers = new nallar.collections.CHashMap();
+				producers = new nallar.collections.CHashMap();
+				conductors = new nallar.collections.LockArrayList();
+				((nallar.collections.LockArrayList)conductors).lock = readWriteLock.writeLock();
 				this.addConductor($1);
 			}"/>
 			<lock field="readLock">addConductor,cleanConductors,setNetwork,resetConductors,onOverCharge,getTotalResistance,refreshConductors</lock>
@@ -1432,8 +1433,8 @@
 			<synchronize field="$1">addStackToList</synchronize>
 		</class>
 		<class id="appeng.me.tile.TileController">
-			<replaceInitializer field="WaitingQueue" class="me.nallar.collections.ConcurrentLinkedQueueList"/>
-			<replaceInitializer field="CraftingQueue" class="me.nallar.collections.ConcurrentLinkedQueueList"/>
+			<replaceInitializer field="WaitingQueue" class="nallar.collections.ConcurrentLinkedQueueList"/>
+			<replaceInitializer field="CraftingQueue" class="nallar.collections.ConcurrentLinkedQueueList"/>
 			<synchronize>getCellArray,^method:TileEntity/updateEntity^,advanceCraftingCursor,resetWaitingQueue</synchronize>
 		</class>
 		<class id="appeng.me.tile.TileDrive">
@@ -1523,20 +1524,21 @@
 
 					this.freq += 1;
 				}
-			}">^method:TileEntity/updateEntity^</replaceMethod>
+			}">^method:TileEntity/updateEntity^
+			</replaceMethod>
 			<synchronize>getCellArray,getSharedTagCompound,signalInput</synchronize>
 		</class>
 		<class id="appeng.me.MEInventoryArray">
 			<synchronize>^all^</synchronize>
 		</class>
 		<class id="appeng.common.MEGridEvents">
-			<replaceInitializer field="requests" class="me.nallar.collections.ConcurrentQueueList">^static^</replaceInitializer>
+			<replaceInitializer field="requests" class="nallar.collections.ConcurrentQueueList">^static^</replaceInitializer>
 		</class>
 	</appliedEnergistics>
 	<xyCraft>
 		<class id="soaryn.xycraft.machines.block.XyCraftWorldExtension">
-			<replaceInitializer field="multiBlocks" class="me.nallar.collections.CHashMap"/>
-			<replaceInitializer field="deferredLoadSet" class="me.nallar.collections.HashSetReplaceIterateTempListNoClear"/>
+			<replaceInitializer field="multiBlocks" class="nallar.collections.CHashMap"/>
+			<replaceInitializer field="deferredLoadSet" class="nallar.collections.HashSetReplaceIterateTempListNoClear"/>
 			<synchronize>defer,remMultiBlock</synchronize>
 			<replaceFieldUsage field="useTemp" writeCode="$1 = false;">updateDeffered</replaceFieldUsage>
 			<insertAfter code="deferredLoadSet.clear();">updateDeffered</insertAfter>
@@ -1587,12 +1589,12 @@
 	</customOreGen>
 	<enderStorage>
 		<class id="codechicken.enderstorage.api.EnderStorageManager">
-			<insertAfter code="dirtyStorage = new me.nallar.collections.LinkedListReplaceIterateTempListClear();"/>
+			<insertAfter code="dirtyStorage = new nallar.collections.LinkedListReplaceIterateTempListClear();"/>
 		</class>
 	</enderStorage>
 	<millenaire>
 		<class id="org.millenaire.common.forge.Mill">
-			<replaceInitializer field="serverWorlds" class="me.nallar.collections.CopyOnWriteVector"/>
+			<replaceInitializer field="serverWorlds" class="nallar.collections.CopyOnWriteVector"/>
 		</class>
 		<class id="org.millenaire.common.MillVillager">
 			<replaceMethodCall method="error" code="{ }">registerInGlobalList</replaceMethodCall>

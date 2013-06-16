@@ -1,1 +1,1 @@
-"%JAVA%" -cp "%CP%" me.nallar.tickthreading.patcher.PatchMain patcher "%MS%"
+"%JAVA%" -cp "%CP%" nallar.tickthreading.patcher.PatchMain patcher "%MS%"
