@@ -69,7 +69,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.WorldEvent;
 
 @SuppressWarnings ("WeakerAccess")
-@Mod (modid = "TickThreading", name = "TickThreading", version = "@MOD_VERSION@", acceptedMinecraftVersions = "[1.4.7]")
+@Mod (modid = "TickThreading", name = "TickThreading", version = "@MOD_VERSION@", acceptedMinecraftVersions = "[@MC_VERSION@]")
 @NetworkMod (clientSideRequired = false, serverSideRequired = false)
 public class TickThreading {
 	@Mod.Instance
@@ -133,8 +133,8 @@ public class TickThreading {
 					" or the patches are out of date" +
 					"\nTo patch your server, simply run the PATCHME.bat/sh file in your server directory" +
 					"\n\nAlso, make a full backup of your server if you haven't already!");
-			MinecraftServer.getServer().initiateShutdown();
-			Runtime.getRuntime().exit(1);
+			Log.flush();
+			Runtime.getRuntime().halt(1);
 		}
 	}
 
