@@ -19,11 +19,13 @@ import net.minecraft.util.ReportedException;
 
 public abstract class PatchNBTTagCompound extends NBTTagCompound {
 	@Override
-	public synchronized NBTBase copy() {
+	public NBTBase copy() {
 		NBTTagCompound var1 = new NBTTagCompound(getName());
 
-		for (Map.Entry<String, NBTBase> o : ((Map<String, NBTBase>) tagMap).entrySet()) {
-			var1.setTag(o.getKey(), o.getValue().copy());
+		synchronized (tagMap) {
+			for (Map.Entry<String, NBTBase> o : ((Map<String, NBTBase>) tagMap).entrySet()) {
+				var1.setTag(o.getKey(), o.getValue().copy());
+			}
 		}
 
 		return var1;
@@ -158,7 +160,7 @@ public abstract class PatchNBTTagCompound extends NBTTagCompound {
 				if (map == otherMap) {
 					return true;
 				} else if (map.size() == otherMap.size()) {
-					synchronized (this) {
+					synchronized (map) {
 						for (Map.Entry entry : (Iterable<Map.Entry>) map.entrySet()) {
 							Object value = entry.getValue();
 							Object otherValue = otherMap.get(entry.getKey());
