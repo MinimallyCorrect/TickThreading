@@ -237,13 +237,11 @@ public abstract class PatchWorld extends World {
 		EntityPlayer target = null;
 
 		for (EntityPlayer playerEntity : (Iterable<EntityPlayer>) this.playerEntities) {
-			if (!playerEntity.capabilities.disableDamage && playerEntity.isEntityAlive()) {
-				double distanceSq = playerEntity.getDistanceSq(x, y, z);
+			double distanceSq = playerEntity.getDistanceSq(x, y, z);
 
-				if ((maxRange < 0.0D || distanceSq < (maxRange * maxRange)) && (distanceSq < closestRange)) {
-					closestRange = distanceSq;
-					target = playerEntity;
-				}
+			if ((maxRange < 0.0D || distanceSq < (maxRange * maxRange)) && (distanceSq < closestRange)) {
+				closestRange = distanceSq;
+				target = playerEntity;
 			}
 		}
 
