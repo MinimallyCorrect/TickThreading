@@ -8,7 +8,7 @@ public class ContextAccessReflection implements ContextAccess {
 
 	@Override
 	public boolean runningUnder(Class c) {
-		for (int i = 0; i < 15; i++) {
+		for (int i = 1; i < 15; i++) {
 			if (getContext(i) == c) {
 				return true;
 			}
