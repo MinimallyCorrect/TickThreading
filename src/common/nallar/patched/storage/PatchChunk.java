@@ -87,7 +87,7 @@ public abstract class PatchChunk extends Chunk {
 		int min = 0;
 		int max = entityLists.length;
 
-		for (int i = min; i <= max; ++i) {
+		for (int i = min; i < max; ++i) {
 			SynchronizedList<Entity> entityList = (SynchronizedList<Entity>) this.entityLists[i];
 			Object[] entities = entityList.elementData();
 			int length = entityList.size() - 1;
