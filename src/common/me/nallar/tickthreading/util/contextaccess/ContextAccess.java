@@ -3,5 +3,7 @@ package me.nallar.tickthreading.util.contextaccess;
 public interface ContextAccess {
 	public static final ContextAccess $ = ContextAccessProvider.getContextAccess();
 
-	public Class getContext(int depth);
+	Class getContext(int depth);
+
+	boolean runningUnder(Class c);
 }

@@ -1,6 +1,7 @@
 package me.nallar.tickthreading.patcher;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -49,6 +50,7 @@ import me.nallar.tickthreading.Log;
 import me.nallar.tickthreading.mappings.MethodDescription;
 import me.nallar.tickthreading.util.CollectionsUtil;
 import me.nallar.tickthreading.util.MappingUtil;
+import me.nallar.tickthreading.util.ReflectUtil;
 import me.nallar.unsafe.UnsafeUtil;
 import org.omg.CORBA.IntHolder;
 
@@ -120,6 +122,33 @@ public class Patches {
 					}
 				}
 			});
+		}
+	}
+
+	@Patch (
+			requiredAttributes = "from,to"
+	)
+	public void replaceConstants(CtClass ctClass, Map<String, String> attributes) {
+		String from = attributes.get("from");
+		String to = attributes.get("to");
+		ConstPool constPool = ctClass.getClassFile().getConstPool();
+		for (int i = 0; true; i++) {
+			String utf8Info;
+			try {
+				utf8Info = constPool.getUtf8Info(i);
+			} catch (ClassCastException ignored) {
+				continue;
+			} catch (NullPointerException e) {
+				break;
+			}
+			if (utf8Info.equals(from)) {
+				Object o = ReflectUtil.call(constPool, "getItem", i);
+				try {
+					ReflectUtil.getField(Class.forName("javassist.bytecode.ConstPool$Utf8Info"), "string").set(o, to);
+				} catch (Exception e) {
+					Log.severe("Couldn't set constant value", e);
+				}
+			}
 		}
 	}
 

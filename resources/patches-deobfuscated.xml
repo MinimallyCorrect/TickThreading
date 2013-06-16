@@ -1332,6 +1332,15 @@
 		<class id="thaumcraft.common.AuraManager">
 			<synchronize>registerAuraNode</synchronize>
 		</class>
+		<class id="thaumcraft.common.WorldTicker">
+			<newField code="me.nallar.tickthreading.util.contextaccess.ContextAccess.$" class="me.nallar.tickthreading.util.contextaccess.ContextAccess" field="context" static="true"/>
+			<insertBefore code="{
+				if (context.runningUnder(thaumcraft.common.WorldTicker.class)) {
+					Log.severe(&quot;Recursive TC add.&quot;, new Throwable());
+					return;
+				}
+			}">addSwapper,addBlockToRestore</insertBefore>
+		</class>
 		<class id="thaumcraft.common.AuraWorldTicker">
 			<synchronize field="((^class:WorldServer^)$2[0]).auraLock">tickEnd</synchronize>
 		</class>
