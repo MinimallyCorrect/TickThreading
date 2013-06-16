@@ -152,7 +152,7 @@ public class PacketProfiler {
 			return bytes + " B";
 		}
 		int exp = (int) (Math.log(bytes) / Math.log(unit));
-		String pre = ("KMGTPE").charAt(exp - 1) + ("i");
-		return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
+		char pre = ("KMGTPE").charAt(exp - 1);
+		return String.format("%.1f%cB", bytes / Math.pow(unit, exp), pre);
 	}
 }
