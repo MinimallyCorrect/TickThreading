@@ -572,7 +572,6 @@
 			<replaceMethodCall index="2" code="{ $_ = null; }" method="info">execute</replaceMethodCall>
 		</class>
 	</forgeModLoader>
-	<allowDeobfuscation/>
 	<factorization>
 		<class id="factorization.common.TileEntityBarrel">
 			<replaceMethod code="{
@@ -600,7 +599,8 @@
 		<class id="factorization.common.TileEntityMirror">
 			<replaceMethod code="{
 				this.next_check = (300 + rand.nextInt(60));
-			}">setNextCheck</replaceMethod>
+			}">setNextCheck
+			</replaceMethod>
 		</class>
 		<class id="factorization.common.TileEntityRouter">
 			<newField field="emptyUpdateCount" class="int" code="0" static=""/>
@@ -616,7 +616,8 @@
 				}
 
 				return this.buffer.a &lt; this.buffer.d();
-			}">shouldUpdate</replaceMethod>
+			}">shouldUpdate
+			</replaceMethod>
 		</class>
 		<class id="factorization.common.TileEntitySolarTurbine">
 			<synchronize>addReflector</synchronize>
@@ -1603,7 +1604,8 @@
 		<class id="org.dynmap.forge.DynmapPlugin$WorldTracker">
 			<insertAfter code="{
 				this$0.handleUnload($1.world);
-			}">handleWorldUnload,getWorld(Lyc;Z)Lorg.dynmap.forge.ForgeWorld;</insertAfter>
+			}">handleWorldUnload,getWorld(Lyc;Z)Lorg.dynmap.forge.ForgeWorld;
+			</insertAfter>
 		</class>
 		<class id="org.dynmap.forge.SnapshotCache">
 			<synchronize/>
@@ -1624,7 +1626,8 @@
 					$1.y = this.inputMap.motionZ;
 					cpw.mods.fml.common.network.PacketDispatcher.sendPacketAroundPlayer($1, updatePacket.getPacket250(), 4096);
 				}
-			}">handleServer</replaceMethod>
+			}">handleServer
+			</replaceMethod>
 		</class>
 	</mmmPowerSuits>
 	<gregsLighting>

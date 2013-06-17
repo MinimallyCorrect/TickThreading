@@ -15,7 +15,6 @@ import nallar.tickthreading.minecraft.TickThreading;
 import nallar.tickthreading.patcher.PatchMain;
 import nallar.tickthreading.patcher.PatchManager;
 import nallar.tickthreading.patcher.Patches;
-import sun.tools.jar.resources.jar;
 
 public enum PatchUtil {
 	;

@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -13,18 +14,18 @@ import nallar.tickthreading.Log;
 import nallar.tickthreading.util.IterableEnumerationWrapper;
 
 public class ByteSource {
-	public static final Map<String, byte[]> classes = new PartiallySynchronizedMap<String, byte[]>();
+	public static final Map<String, byte[]> classes = new HashMap<String, byte[]>();
 	private static final byte[] buffer = new byte[1048576];
 
-	public static void addFiles(File[] files) {
+	public static void addFiles(File... files) {
 		for (File file : files) {
 			if (file.isDirectory()) {
-				continue;
+				addFiles(file.listFiles());
 			}
 			try {
 				ZipFile zipFile = new ZipFile(file);
 				try {
-					addClasses(zipFile, classes);
+					addClasses(zipFile);
 				} finally {
 					zipFile.close();
 				}
@@ -34,7 +35,7 @@ public class ByteSource {
 		}
 	}
 
-	private static void addClasses(final ZipFile zipFile, final Map<String, byte[]> classes) {
+	private static void addClasses(final ZipFile zipFile) {
 		for (ZipEntry zipEntry : (Iterable<ZipEntry>) new IterableEnumerationWrapper(zipFile.entries())) {
 			if (zipEntry.isDirectory()) {
 				continue;
@@ -50,7 +51,9 @@ public class ByteSource {
 			}
 			try {
 				InputStream stream = zipFile.getInputStream(zipEntry);
-				classes.put(name, readFully(stream));
+				byte[] bytes = readFully(stream);
+				classes.put(name, bytes);
+				Log.info("Loaded " + bytes.length + " bytes for " + name);
 				stream.close();
 			} catch (Throwable t) {
 				Log.severe("Failed to open class " + name + " in " + zipFile, t);

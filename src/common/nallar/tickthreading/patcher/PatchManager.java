@@ -192,10 +192,8 @@ public class PatchManager {
 	public void runPatches() {
 		List<Element> modElements = DomUtil.elementList(configDocument.getDocumentElement().getChildNodes());
 		patchingClasses = new HashMap<String, CtClass>();
+		Map<String, Boolean> isSrg = new HashMap<String, Boolean>();
 		for (Element modElement : modElements) {
-			if ("allowDeobfuscation".equals(modElement.getTagName())) {
-				classRegistry.classes.allowDeobfuscation = true;
-			}
 			for (Element classElement : DomUtil.getElementsByTag(modElement, "class")) {
 				String className = classElement.getAttribute("id");
 				if (!classRegistry.shouldPatch(className)) {
@@ -205,6 +203,12 @@ public class PatchManager {
 				String environment = classElement.getAttribute("env");
 				if (!environment.isEmpty() && !environment.equals(patchEnvironment)) {
 					Log.info(className + " requires " + environment + ", not patched as we are using " + patchEnvironment);
+					continue;
+				}
+				Boolean isSrg_ = classRegistry.classes.setSrgFor(className);
+				Boolean previousSrg = isSrg.put(className, isSrg_);
+				if (previousSrg != null && previousSrg != isSrg_) {
+					Log.severe("Class " + className + " was previously marked as srg: " + previousSrg + ", now marked as " + isSrg_);
 					continue;
 				}
 				CtClass ctClass;
@@ -240,6 +244,8 @@ public class PatchManager {
 		for (Map.Entry<String, CtClass> entry : patchingClasses.entrySet()) {
 			String className = entry.getKey();
 			CtClass ctClass = entry.getValue();
+			Boolean isSrg_ = isSrg.get(className);
+			classRegistry.classes.isSrg = isSrg_ != null ? isSrg_ : classRegistry.classes.setSrgFor(className);
 			Patches.findUnusedFields(ctClass);
 			try {
 				ctClass.getClassFile().compact();

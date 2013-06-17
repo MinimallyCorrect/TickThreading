@@ -167,11 +167,11 @@
 		</copy>
 
 		<!-- Recompile -->
-		<exec dir="${mcp.dir}" executable="cmd" osfamily="windows">
+		<exec dir="${mcp.dir}" executable="cmd" osfamily="windows" failifexecutionfails="true">
 			<arg line="/c recompile.bat"/>
 		</exec>
 
-		<exec dir="${mcp.dir}" executable="sh" osfamily="unix">
+		<exec dir="${mcp.dir}" executable="sh" osfamily="unix" failifexecutionfails="true">
 			<arg value="recompile.sh"/>
 		</exec>
 
@@ -185,10 +185,7 @@
 
 		<fail message="MCP failed to build">
 			<condition>
-				<or>
-					<resourcecontains resource="${mcp.dir}/logs/client_compile.log" substring="error:"/>
-					<resourcecontains resource="${mcp.dir}/logs/client_compile.log" substring=" errors"/>
-				</or>
+				<resourcecontains resource="${mcp.dir}/logs/client_compile.log" substring=" error"/>
 			</condition>
 		</fail>
 

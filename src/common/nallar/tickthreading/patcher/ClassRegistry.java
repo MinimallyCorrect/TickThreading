@@ -22,7 +22,6 @@ import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 
 import javassist.ClassPath;
-import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.NotFoundException;
 import javassist.RemappingPool;
