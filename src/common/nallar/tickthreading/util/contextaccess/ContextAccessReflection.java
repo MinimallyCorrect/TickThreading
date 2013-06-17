@@ -8,8 +8,8 @@ public class ContextAccessReflection implements ContextAccess {
 
 	@Override
 	public boolean runningUnder(Class c) {
-		for (int i = 1; i < 15; i++) {
-			if (getContext(i) == c) {
+		for (int i = 3; i < 15; i++) {
+			if (sun.reflect.Reflection.getCallerClass(i) == c) {
 				return true;
 			}
 		}

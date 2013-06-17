@@ -9,7 +9,7 @@ public class ContextAccessSecurityManager extends SecurityManager implements Con
 	@Override
 	public boolean runningUnder(Class c) {
 		Class[] classes = getClassContext();
-		for (int i = 1; i < classes.length; i++) {
+		for (int i = 2; i < classes.length; i++) {
 			if (classes[i] == c) {
 				return true;
 			}
