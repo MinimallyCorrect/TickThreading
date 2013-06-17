@@ -12,6 +12,8 @@ import java.util.logging.Level;
 import javassist.NotFoundException;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.mappings.MCPMappings;
+import nallar.tickthreading.patcher.remapping.ByteSource;
+import nallar.tickthreading.patcher.remapping.Deobfuscator;
 import nallar.tickthreading.util.CollectionsUtil;
 import nallar.tickthreading.util.VersionUtil;
 import org.xml.sax.SAXException;
@@ -90,6 +92,8 @@ public class PatchMain {
 			for (int i = 0; i < filesToLoad.size(); i++) {
 				filesToLoad.set(i, filesToLoad.get(i).getAbsoluteFile());
 			}
+			ByteSource.addFiles(filesToLoad.toArray(new File[filesToLoad.size()]));
+			Deobfuscator.INSTANCE.setup(new File("lib/deobfuscation_data_1.5.2.zip"));
 			ClassRegistry classRegistry = patchManager.classRegistry;
 			classRegistry.writeAllClasses = argsList.contains("all");
 			classRegistry.serverFile = filesToLoad.get(0);

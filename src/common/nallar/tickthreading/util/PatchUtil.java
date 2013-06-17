@@ -15,6 +15,7 @@ import nallar.tickthreading.minecraft.TickThreading;
 import nallar.tickthreading.patcher.PatchMain;
 import nallar.tickthreading.patcher.PatchManager;
 import nallar.tickthreading.patcher.Patches;
+import sun.tools.jar.resources.jar;
 
 public enum PatchUtil {
 	;
@@ -31,7 +32,7 @@ public enum PatchUtil {
 
 		ZipFile zipFile = new ZipFile(new File(CP));
 		try {
-			CP += File.pathSeparator + new File(LocationUtil.getServerDirectory(), "lib/guava-14.0-rc3.jar");
+			CP += File.pathSeparator + new File(LocationUtil.getServerDirectory(), "lib/guava-14.0-rc3.jar") + File.pathSeparator + new File(LocationUtil.getServerDirectory(), "lib/asm-all-4.1.jar");
 			for (ZipEntry zipEntry : new IterableEnumerationWrapper<ZipEntry>((Enumeration<ZipEntry>) zipFile.entries())) {
 				if (zipEntry.getName().startsWith("patchrun/") && !(!zipEntry.getName().isEmpty() && zipEntry.getName().charAt(zipEntry.getName().length() - 1) == '/')) {
 					String data = new Scanner(zipFile.getInputStream(zipEntry), "UTF-8").useDelimiter("\\A").next();

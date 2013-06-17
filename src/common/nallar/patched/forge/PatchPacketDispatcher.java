@@ -1,6 +1,5 @@
 package nallar.patched.forge;
 
-import cpw.mods.fml.common.network.Player;
 import nallar.tickthreading.patcher.Declare;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.packet.Packet;

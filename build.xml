@@ -179,6 +179,7 @@
 		<parallel>
 			<delete dir="${mcpsrc.dir}/minecraft/me/nallar"/>
 			<delete dir="${mcpsrc.dir}/minecraft/nallar"/>
+			<delete dir="${mcpsrc.dir}/minecraft/javassist"/>
 			<delete file="${mcpsrc.dir}/minecraft/net/minecraft/network/packet/IPacketHandler.java"/>
 		</parallel>
 

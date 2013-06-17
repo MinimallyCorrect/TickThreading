@@ -572,6 +572,7 @@
 			<replaceMethodCall index="2" code="{ $_ = null; }" method="info">execute</replaceMethodCall>
 		</class>
 	</forgeModLoader>
+	<allowDeobfuscation/>
 	<factorization>
 		<class id="factorization.common.TileEntityBarrel">
 			<replaceMethod code="{
@@ -808,71 +809,6 @@
 			<replaceMethodCall method="self.^method:TileEntity/onInventoryChanged^" code="{ }">^method:TileEntity/updateEntity^</replaceMethodCall>
 		</class>
 		<class id="ic2.core.network.NetworkManager">
-			<replaceMethodCall method="cpw.mods.fml.common.network.PacketDispatcher.sendPacketToPlayer" code="nallar.tickthreading.global.Redirects.interceptIC2Packet($$);">
-				announceBlockUpdate,initiateTileEntityEvent,initiateExplosionEffect
-			</replaceMethodCall>
-			<insertBefore code="nallar.tickthreading.global.Redirects.interceptIC2PacketIn($1, $2, $3);">onPacketData</insertBefore>
-			<replaceMethod code="{
-      byte[] var10000;
-      try {
-         java.io.ByteArrayOutputStream e = new java.io.ByteArrayOutputStream();
-         e.write(0);
-         java.util.zip.GZIPOutputStream gzip = new java.util.zip.GZIPOutputStream(e);
-         java.io.DataOutputStream os = new java.io.DataOutputStream(gzip);
-         os.writeInt(((^class:EntityPlayerMP^) $2).^field:EntityPlayerMP/playerNetServerHandler^.clientDimension);
-         java.util.Iterator i$ = $1.iterator();
-         int done = 0;
-
-         do {
-            ic2.core.network.NetworkManager$TileEntityField tef = (ic2.core.network.NetworkManager$TileEntityField)i$.next();
-            if (!tef.te.r() &amp;&amp; tef.te.k == $2.p &amp;&amp; (tef.target == null || tef.target == $2)) {
-               int distance = Math.min(Math.abs(tef.te.l - (int)$2.t), Math.abs(tef.te.n - (int)$2.v));
-               if (distance &lt;= net.minecraft.server.MinecraftServer.D().ad().a() + 16) {
-                  os.writeInt(tef.te.l);
-                  os.writeInt(tef.te.m);
-                  os.writeInt(tef.te.n);
-                  os.writeShort(tef.field.length());
-                  os.writeChars(tef.field);
-                  java.lang.reflect.Field field = null;
-
-                  try {
-                     Class e1 = tef.te.getClass();
-
-                     do {
-                        try {
-                           field = e1.getDeclaredField(tef.field);
-                        } catch (NoSuchFieldException var14) {
-                           e1 = e1.getSuperclass();
-                        }
-                     } while(field == null &amp;&amp; e1 != Object.class);
-
-                     if (field == null) {
-                        throw new NoSuchFieldException(tef.field);
-                     }
-
-                     field.setAccessible(true);
-                     try {
-                     	ic2.core.network.DataEncoder.encode(os, field.get(tef.te));
-                     } catch (Throwable t) {
-                     	Log.severe(&quot;IC2 network manager failed to write field data for &quot; + tef.field + &quot; of class &quot; + e1, t);
-                     	os.close();
-                     	gzip.close();
-                     	return new byte[0];
-                     }
-                  } catch (Exception var15) {
-                     throw new RuntimeException(var15);
-                  }
-               }
-            }
-         } while (i$.hasNext() &amp;&amp; done++ &lt; 10000);
-         os.close();
-         gzip.close();
-         return e.toByteArray();
-      } catch (java.io.IOException var16) {
-         throw new RuntimeException(var16);
-      }
-   }">getFieldData
-			</replaceMethod>
 			<replaceMethod code="{
 				ic2.core.WorldData worldData = ic2.core.WorldData.get($1);
 				Collection networkedFieldsToUpdate = worldData.networkedFieldsToUpdate;

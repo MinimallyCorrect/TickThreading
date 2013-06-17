@@ -193,6 +193,9 @@ public class PatchManager {
 		List<Element> modElements = DomUtil.elementList(configDocument.getDocumentElement().getChildNodes());
 		patchingClasses = new HashMap<String, CtClass>();
 		for (Element modElement : modElements) {
+			if ("allowDeobfuscation".equals(modElement.getTagName())) {
+				classRegistry.classes.allowDeobfuscation = true;
+			}
 			for (Element classElement : DomUtil.getElementsByTag(modElement, "class")) {
 				String className = classElement.getAttribute("id");
 				if (!classRegistry.shouldPatch(className)) {
@@ -336,14 +339,14 @@ public class PatchManager {
 				} else {
 					return patchMethod.invoke(patchTypes, ctClass, attributes);
 				}
-			} catch (Exception e) {
-				if (e instanceof InvocationTargetException) {
-					e = (Exception) e.getCause();
+			} catch (Throwable t) {
+				if (t instanceof InvocationTargetException) {
+					t = t.getCause();
 				}
-				if (e instanceof CannotCompileException && attributes.containsKey("code")) {
+				if (t instanceof CannotCompileException && attributes.containsKey("code")) {
 					Log.severe("Code: " + attributes.get("code"));
 				}
-				Log.severe("Error patching " + ctClass.getName() + " with " + toString(), e);
+				Log.severe("Error patching " + ctClass.getName() + " with " + toString(), t);
 				return null;
 			}
 		}
@@ -355,14 +358,14 @@ public class PatchManager {
 				} else {
 					return patchMethod.invoke(patchTypes, ctBehavior, attributes);
 				}
-			} catch (Exception e) {
-				if (e instanceof InvocationTargetException) {
-					e = (Exception) e.getCause();
+			} catch (Throwable t) {
+				if (t instanceof InvocationTargetException) {
+					t = t.getCause();
 				}
-				if (e instanceof CannotCompileException && attributes.containsKey("code")) {
+				if (t instanceof CannotCompileException && attributes.containsKey("code")) {
 					Log.severe("Code: " + attributes.get("code"));
 				}
-				Log.severe("Error patching " + ctBehavior.getName() + " in " + ctBehavior.getDeclaringClass().getName() + " with " + toString(), e);
+				Log.severe("Error patching " + ctBehavior.getName() + " in " + ctBehavior.getDeclaringClass().getName() + " with " + toString(), t);
 				return null;
 			}
 		}
