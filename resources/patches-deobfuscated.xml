@@ -1511,6 +1511,7 @@
 							}
 							oList = this.oldList;
 							this.oldList = newList;
+							ArrayList toAdd = new ArrayList();
 
 							synchronized(oList) {
 								if (oList.size() != newList.size()) {
@@ -1529,13 +1530,11 @@
 											if (x.a != y.a)
 											{
 												this.freq = 0;
-												gi.onInventoryChange();
-
 												if (x.a &lt;= y.a)
 													break;
 												ur j = x.l();
 												j.a -= y.a;
-												gi.signalInput(null, j);
+												toAdd.add(j);
 												break;
 											}
 
@@ -1546,9 +1545,15 @@
 									if (!found)
 									{
 										this.freq = 0;
-										gi.onInventoryChange();
-										gi.signalInput(null, x);
+										toAdd.add(x);
 									}
+								}
+							}
+							if (!toAdd.isEmpty()) {
+								gi.onInventoryChange();
+								Iterator iterator = toAdd.iterator();
+								while (iterator.hasNext()) {
+									gi.signalInput(null, (ur) iterator.next());
 								}
 							}
 						}
