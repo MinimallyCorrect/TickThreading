@@ -771,21 +771,31 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 		long worldTime = world.getTotalWorldTime();
 		List<Chunk> chunksToSave = new ArrayList<Chunk>();
+		boolean overload = false;
+		boolean warnableOverload = false;
+		int fullChunksToSave = 0;
 		synchronized (loadedChunks) {
 			for (Chunk chunk : loadedChunks) {
 				if (!chunk.partiallyUnloaded && chunk.needsSaving(saveAll, worldTime)) {
-					if (++savedChunks == maxChunksToSave && !saveAll) {
-						if ((++overloadCount) > 50) {
-							Log.warning("Partial save queue overloaded in " + Log.name(world) + ". You should consider decreasing saveInterval. Only saved " + savedChunks + " out of " + chunksToSave.size());
-							maxChunksToSave = (maxChunksToSave * 3) / 2;
-							overloadCount -= 2;
+					if (!overload) {
+						if (++savedChunks == maxChunksToSave && !saveAll) {
+							if (++overloadCount > 25) {
+								warnableOverload = true;
+							}
+							overload = true;
 						}
-						break;
+						chunk.isModified = false;
+						chunksToSave.add(chunk);
 					}
-					chunk.isModified = false;
-					chunksToSave.add(chunk);
+					fullChunksToSave++;
 				}
 			}
+		}
+
+		if (warnableOverload) {
+			Log.warning("Partial save queue overloaded in " + Log.name(world) + ". You should probably decrease saveInterval to avoid lag spikes. Only saved " + (savedChunks - 1) + " out of " + fullChunksToSave);
+			maxChunksToSave = (maxChunksToSave * 3) / 2;
+			overloadCount -= 4;
 		}
 
 		for (Chunk chunk : chunksToSave) {
