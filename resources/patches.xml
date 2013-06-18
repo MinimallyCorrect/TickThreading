@@ -645,35 +645,6 @@
 		<class id="buildcraft.core.EntityRobot">
 			<synchronize>build</synchronize>
 		</class>
-		<class id="buildcraft.core.inventory.TransactorSimple">
-			<replaceMethod code="{
-				int injected = 0;
-
-				int slotIndex = 0;
-				int slot = 0;
-				int size = inventory.^method:IInventory/getSizeInventory^();
-				while (slotIndex &lt; size &amp;&amp; injected &lt; $1.^field:ItemStack/stackSize^) {
-					slot = getPartialSlot($1, $2, slotIndex++);
-					if (slot != -1){
-						injected += addToSlot(slot, $1, injected, $3);
-					}
-				}
-
-				slotIndex = 0;
-				while (slotIndex &lt; size &amp;&amp; injected &lt; $1.^field:ItemStack/stackSize^) {
-					slotIndex++;
-					slot = getEmptySlot($2);
-					if (slot != -1){
-						injected += addToSlot(slot, $1, injected, $3);
-					}
-				}
-				if (injected > 0) {
-					inventory.^method:IInventory/onInventoryChanged^();
-				}
-				return injected;
-			}">inject
-			</replaceMethod>
-		</class>
 	</buildCraftCore>
 	<buildCraftEnergy>
 		<class id="buildcraft.energy.TileEngine">
@@ -1136,7 +1107,7 @@
 	</extraBiomesXL>
 	<portalGun>
 		<class id="portalgun.common.core.TickHandlerServer">
-			<synchronize field="$1.e">worldTick</synchronize>
+			<synchronize field="$1.^field:World/loadedEntityList^">worldTick</synchronize>
 			<replaceInitializer field="grabMap" class="nallar.collections.CHashMap"/>
 			<replaceInitializer field="portals" class="nallar.collections.CHashMap"/>
 			<replaceInitializer field="moonPortals" class="nallar.collections.CHashMap"/>
@@ -1155,7 +1126,7 @@
 	</portalGun>
 	<graviGun>
 		<class id="gravigun.common.core.TickHandlerServer">
-			<synchronize field="$1.i">worldTick</synchronize>
+			<synchronize field="$1.^field:World/weatherEffects^">worldTick</synchronize>
 			<replaceInitializer field="grabMap" class="java.util.concurrent.ConcurrentHashMap"/>
 			<replaceInitializer field="tossedEntities" class="java.util.concurrent.ConcurrentHashMap"/>
 			<replaceInitializer field="tosser" class="java.util.concurrent.ConcurrentHashMap"/>
@@ -1555,8 +1526,8 @@
 		<class id="vswe.stevescarts.CommonProxy">
 			<replaceMethod code="{
 				^class:Entity^ entity = $2.getEntity($1);
-				if (entity instanceof vswe.stevescarts.Carts.entMCBase) {
-					return (vswe.stevescarts.Carts.entMCBase) entity;
+				if (entity instanceof vswe.stevescarts.Carts.MinecartModular) {
+					return (vswe.stevescarts.Carts.MinecartModular) entity;
 				}
 				return null;
 			}">getCart

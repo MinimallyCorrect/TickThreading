@@ -20,7 +20,6 @@ public class RemappingPool extends ClassPool {
 	public boolean setSrgFor(String className) {
 		byte[] bytes = getBytes(className);
 		if (bytes == null) {
-			Log.severe("Not found " + className);
 			return isSrg;
 		}
 		return isSrg = classIsSrgObfuscated(bytes, className);
@@ -32,14 +31,11 @@ public class RemappingPool extends ClassPool {
 		if (bytes == null) {
 			return false;
 		}
-		Log.info("setSRG for " + name);
 		for (String entry : StringExtractor.getStrings(bytes)) {
 			if (entry.contains(target) && !entry.contains("server/MinecraftServer") && !entry.contains("client/Minecraft") && !entry.contains("network/packet/IPacketHandler")) {
-				Log.info("setSRG true for " + entry);
 				return true;
 			}
 		}
-		Log.info("setSRG false");
 		return false;
 	}
 
@@ -66,8 +62,15 @@ public class RemappingPool extends ClassPool {
 		CtClass ctClass = super.getCached(name);
 		if (ctClass != null && ctClass.isModified()) {
 			try {
+				boolean oldSrg = isSrg;
+				if (oldSrg) {
+					isSrg = false;
+				}
 				byte[] bytes = ctClass.toBytecode();
 				ctClass.defrost();
+				if (oldSrg) {
+					isSrg = true;
+				}
 				return bytes;
 			} catch (Throwable t) {
 				Log.severe("Failed to get class bytes from modified class " + name, t);
@@ -91,12 +94,9 @@ public class RemappingPool extends ClassPool {
 				String remappedName = Transformer.unmapClassName(className);
 
 				byte[] bytes = getBytes(remappedName);
-				if (bytes == null) {
-					Log.severe("Couldn't find bytes " + remappedName + " for " + className);
-				} else {
+				if (bytes != null) {
 					bytes = Transformer.transform(bytes);
 					try {
-						Log.severe(className + " deobfuscated from file " + remappedName);
 						CtClass ctClass = new CtClassType(new ByteArrayInputStream(bytes), this);
 						if (!remappedName.equals(className)) {
 							ctClass.freeze();
