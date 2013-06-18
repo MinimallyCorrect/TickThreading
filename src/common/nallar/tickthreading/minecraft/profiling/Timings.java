@@ -9,7 +9,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.google.common.base.Functions;
 import com.google.common.collect.Ordering;
 
-import nallar.tickthreading.util.MappingUtil;
 import nallar.tickthreading.util.TableFormatter;
 import org.cliffc.high_scale_lib.NonBlockingHashMap;
 
@@ -79,7 +78,7 @@ public enum Timings {
 			return clazz;
 		}
 		String suffix = clazz.substring(slash);
-		String name = MappingUtil.debobfuscate(clazz.substring(0, slash));
+		String name = clazz.substring(0, slash);
 		if (name.contains(".")) {
 			return name.substring(name.lastIndexOf('.') + 1) + suffix;
 		}

@@ -206,6 +206,14 @@
 	</target>
 
 	<target name="packageDependencies">
+		<mkdir dir="${classes.dir}/mappings/"/>
+		<copy todir="${classes.dir}/mappings">
+			<fileset dir="${mcp.dir}/conf/">
+				<include name="methods.csv"/>
+				<include name="fields.csv"/>
+				<include name="packaged.srg"/>
+			</fileset>
+		</copy>
 		<unzip dest="${classes.dir}/" src="${lib.dir}/javassist.jar"/>
 		<unzip dest="${classes.dir}/" src="${lib.dir}/high-scale-lib.jar"/>
 		<unzip dest="${classes.dir}/" src="${lib.dir}/jackson-core-lgpl.jar"/>

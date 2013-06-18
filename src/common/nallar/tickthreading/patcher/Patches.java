@@ -48,7 +48,6 @@ import nallar.insecurity.ThisIsNotAnError;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.mappings.MethodDescription;
 import nallar.tickthreading.util.CollectionsUtil;
-import nallar.tickthreading.util.MappingUtil;
 import nallar.tickthreading.util.ReflectUtil;
 import nallar.unsafe.UnsafeUtil;
 import org.omg.CORBA.IntHolder;
@@ -1283,7 +1282,7 @@ public class Patches {
 					if (read && written) {
 						continue;
 					}
-					Log.fine("Field " + fieldName + " in " + MappingUtil.debobfuscate(ctClass.getName()) + " is read: " + read + ", written: " + written);
+					Log.fine("Field " + fieldName + " in " + ctClass.getName() + " is read: " + read + ", written: " + written);
 					if (!written && !read) {
 						ctClass.removeField(ctField);
 					}

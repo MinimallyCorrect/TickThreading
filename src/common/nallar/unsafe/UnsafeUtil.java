@@ -292,7 +292,7 @@ public class UnsafeUtil {
 				try {
 					field.setAccessible(true);
 					field.set(o, null);
-					//Log.info("Cleaned field " + MappingUtil.debobfuscate(field.getType().getName()) + ':' + field.getName());
+					//Log.info("Cleaned field " + field.getType().getName() + ':' + field.getName());
 				} catch (IllegalAccessException e) {
 					Log.warning("Exception cleaning " + o.getClass() + '@' + System.identityHashCode(o), e);
 				}

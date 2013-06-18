@@ -20,6 +20,7 @@ public class ByteSource {
 		for (File file : files) {
 			if (file.isDirectory()) {
 				addFiles(file.listFiles());
+				continue;
 			}
 			try {
 				ZipFile zipFile = new ZipFile(file);
@@ -52,7 +53,6 @@ public class ByteSource {
 				InputStream stream = zipFile.getInputStream(zipEntry);
 				byte[] bytes = readFully(stream);
 				classes.put(name, bytes);
-				Log.info("Loaded " + bytes.length + " bytes for " + name);
 				stream.close();
 			} catch (Throwable t) {
 				Log.severe("Failed to open class " + name + " in " + zipFile, t);

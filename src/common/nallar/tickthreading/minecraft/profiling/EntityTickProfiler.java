@@ -17,7 +17,6 @@ import nallar.tickthreading.minecraft.TickManager;
 import nallar.tickthreading.minecraft.TickThreading;
 import nallar.tickthreading.minecraft.commands.ProfileCommand;
 import nallar.tickthreading.util.CollectionsUtil;
-import nallar.tickthreading.util.MappingUtil;
 import nallar.tickthreading.util.TableFormatter;
 import nallar.tickthreading.util.stringfillers.StringFiller;
 import net.minecraft.entity.Entity;
@@ -252,7 +251,7 @@ public class EntityTickProfiler {
 	}
 
 	private static String niceName(Class<?> clazz) {
-		String name = MappingUtil.debobfuscate(clazz.getName());
+		String name = clazz.getName();
 		if (name.contains(".")) {
 			String cName = name.substring(name.lastIndexOf('.') + 1);
 			String pName = name.substring(0, name.lastIndexOf('.'));

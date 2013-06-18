@@ -8,6 +8,7 @@ import java.util.logging.Level;
 
 import javassist.NotFoundException;
 import nallar.tickthreading.Log;
+import nallar.tickthreading.mappings.MCPMappings;
 import nallar.tickthreading.patcher.remapping.ByteSource;
 import nallar.tickthreading.patcher.remapping.Deobfuscator;
 import nallar.tickthreading.util.CollectionsUtil;
@@ -62,7 +63,7 @@ public class PatchMain {
 			}
 			Log.info("Patching with " + VersionUtil.versionString());
 			Log.info("Patching in environment: " + patchManager.patchEnvironment);
-			patchManager.runPatches();
+			patchManager.runPatches(new MCPMappings());
 			try {
 				classRegistry.save(patchManager.backupDirectory);
 			} catch (IOException e) {

@@ -32,12 +32,23 @@ public class RemappingPool extends ClassPool {
 		if (bytes == null) {
 			return false;
 		}
+		Log.info("setSRG for " + name);
 		for (String entry : StringExtractor.getStrings(bytes)) {
 			if (entry.contains(target) && !entry.contains("server/MinecraftServer") && !entry.contains("client/Minecraft") && !entry.contains("network/packet/IPacketHandler")) {
+				Log.info("setSRG true for " + entry);
 				return true;
 			}
 		}
+		Log.info("setSRG false");
 		return false;
+	}
+
+	@Override
+	protected void cacheCtClass(String className, CtClass c, boolean dynamic) {
+		if (isSrg && !exclude(className)) {
+			return;
+		}
+		super.cacheCtClass(className, c, dynamic);
 	}
 
 	@Override
@@ -126,5 +137,9 @@ public class RemappingPool extends ClassPool {
 	@Override
 	protected CtClass createCtClass(String className, boolean useCache) {
 		return super.createCtClass(className, useCache);
+	}
+
+	public void markChanged(final String className) {
+		srgClasses.remove(className);
 	}
 }

@@ -32,6 +32,7 @@ import javassist.NotFoundException;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.mappings.ClassDescription;
 import nallar.tickthreading.mappings.FieldDescription;
+import nallar.tickthreading.mappings.MCPMappings;
 import nallar.tickthreading.mappings.Mappings;
 import nallar.tickthreading.mappings.MethodDescription;
 import nallar.tickthreading.util.CollectionsUtil;
@@ -96,9 +97,9 @@ public class PatchManager {
 		configDocument = DomUtil.readDocumentFromInputStream(configInputStream);
 	}
 
-	public void obfuscate(Mappings mappings) {
-		NodeList minecraftClassNodes = ((Element) configDocument.getElementsByTagName("minecraftCommon").item(0)).getElementsByTagName("class");
-		for (Element classElement : DomUtil.elementList(minecraftClassNodes)) {
+	static boolean minecraftCommonDeobfuscate(Element classElement, Mappings mappings) {
+		if ("minecraftCommon".equals(((Element) classElement.getParentNode()).getTagName())) {
+			((MCPMappings) mappings).seargeMappings = false;
 			String className = classElement.getAttribute("id");
 			ClassDescription deobfuscatedClass = new ClassDescription(className);
 			ClassDescription obfuscatedClass = mappings.map(deobfuscatedClass);
@@ -152,27 +153,30 @@ public class PatchManager {
 					}
 				}
 			}
+			return true;
 		}
-		for (Element classElement : DomUtil.getElementsByTag(configDocument.getDocumentElement(), "class")) {
-			for (Element patchElement : DomUtil.elementList(classElement.getChildNodes())) {
-				Map<String, String> attributes = DomUtil.getAttributes(patchElement);
-				for (String key : attributes.keySet()) {
-					String code = patchElement.getAttribute(key);
-					if (!code.isEmpty()) {
-						String obfuscatedCode = mappings.obfuscate(code);
-						if (!code.equals(obfuscatedCode)) {
-							patchElement.setAttribute(key, obfuscatedCode);
-							Log.info("Obfuscated " + code + " to " + obfuscatedCode);
-						}
+		return false;
+	}
+
+	static void postDeobfuscate(Element classElement, Mappings mappings) {
+		for (Element patchElement : DomUtil.elementList(classElement.getChildNodes())) {
+			Map<String, String> attributes = DomUtil.getAttributes(patchElement);
+			for (String key : attributes.keySet()) {
+				String code = patchElement.getAttribute(key);
+				if (!code.isEmpty()) {
+					String obfuscatedCode = mappings.obfuscate(code);
+					if (!code.equals(obfuscatedCode)) {
+						patchElement.setAttribute(key, obfuscatedCode);
+						Log.info("Obfuscated " + code + " to " + obfuscatedCode);
 					}
 				}
-				String textContent = patchElement.getTextContent();
-				if (textContent != null && !textContent.isEmpty()) {
-					String obfuscatedTextContent = mappings.obfuscate(textContent);
-					if (!textContent.equals(obfuscatedTextContent)) {
-						patchElement.setTextContent(obfuscatedTextContent);
-						Log.info("Obfuscated " + textContent + " to " + obfuscatedTextContent);
-					}
+			}
+			String textContent = patchElement.getTextContent();
+			if (textContent != null && !textContent.isEmpty()) {
+				String obfuscatedTextContent = mappings.obfuscate(textContent);
+				if (!textContent.equals(obfuscatedTextContent)) {
+					patchElement.setTextContent(obfuscatedTextContent);
+					Log.info("Obfuscated " + textContent + " to " + obfuscatedTextContent);
 				}
 			}
 		}
@@ -189,12 +193,13 @@ public class PatchManager {
 		return hashes;
 	}
 
-	public void runPatches() {
+	public void runPatches(Mappings mappings) {
 		List<Element> modElements = DomUtil.elementList(configDocument.getDocumentElement().getChildNodes());
 		patchingClasses = new HashMap<String, CtClass>();
 		Map<String, Boolean> isSrg = new HashMap<String, Boolean>();
 		for (Element modElement : modElements) {
 			for (Element classElement : DomUtil.getElementsByTag(modElement, "class")) {
+				boolean isMinecraft = minecraftCommonDeobfuscate(classElement, mappings);
 				String className = classElement.getAttribute("id");
 				if (!classRegistry.shouldPatch(className)) {
 					Log.info(className + " is already patched, skipping.");
@@ -205,7 +210,16 @@ public class PatchManager {
 					Log.info(className + " requires " + environment + ", not patched as we are using " + patchEnvironment);
 					continue;
 				}
-				Boolean isSrg_ = classRegistry.classes.setSrgFor(className);
+				Boolean isSrg_;
+				if (isMinecraft) {
+					isSrg_ = classRegistry.classes.isSrg = false;
+				} else {
+					isSrg_ = classRegistry.classes.setSrgFor(className);
+				}
+				if (mappings instanceof MCPMappings) {
+					((MCPMappings) mappings).seargeMappings = isSrg_;
+				}
+				postDeobfuscate(classElement, mappings);
 				Boolean previousSrg = isSrg.put(className, isSrg_);
 				if (previousSrg != null && previousSrg != isSrg_) {
 					Log.severe("Class " + className + " was previously marked as srg: " + previousSrg + ", now marked as " + isSrg_);
@@ -238,6 +252,9 @@ public class PatchManager {
 				}
 				if (patched) {
 					patchingClasses.put(className, ctClass);
+				}
+				if (!isSrg_) {
+					classRegistry.classes.markChanged(className);
 				}
 			}
 		}
