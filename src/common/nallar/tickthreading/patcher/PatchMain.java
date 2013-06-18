@@ -1,22 +1,17 @@
 package nallar.tickthreading.patcher;
 
-import javax.xml.transform.TransformerException;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 
 import javassist.NotFoundException;
 import nallar.tickthreading.Log;
-import nallar.tickthreading.mappings.MCPMappings;
 import nallar.tickthreading.patcher.remapping.ByteSource;
 import nallar.tickthreading.patcher.remapping.Deobfuscator;
 import nallar.tickthreading.util.CollectionsUtil;
 import nallar.tickthreading.util.VersionUtil;
-import org.xml.sax.SAXException;
 
 public class PatchMain {
 	public static void main(String[] argv) {
@@ -27,50 +22,10 @@ public class PatchMain {
 		}
 		String type = argv[0];
 		String[] args = Arrays.copyOfRange(argv, 1, argv.length);
-		if ("obfuscator".equalsIgnoreCase(type)) {
-			obfuscator(args);
-		} else if ("patcher".equalsIgnoreCase(type)) {
+		if ("patcher".equalsIgnoreCase(type)) {
 			patcher(args);
 		} else {
 			Log.severe(type + " is not a valid action.");
-		}
-	}
-
-	private static void obfuscator(String[] args) {
-		String mcpConfigPath = args.length > 0 ? args[0] : "build/forge/mcp/conf";
-		String inputPatchPath = args.length > 1 ? args[1] : "resources/patches-deobfuscated.xml";
-		String outputPatchPath = args.length > 2 ? args[2] : "build/classes/patches.xml";
-		String outputMappingsPath = args.length > 2 ? args[2] : "build/classes/mappings.obj";
-
-		Log.info("Obfuscating " + inputPatchPath + " to " + outputPatchPath + " via " + mcpConfigPath);
-
-		try {
-			MCPMappings mcpMappings = new MCPMappings(new File(mcpConfigPath));
-			PatchManager patchManager = new PatchManager(new File(inputPatchPath).toURI().toURL().openStream(), Patches.class);
-
-			try {
-				patchManager.obfuscate(mcpMappings);
-				patchManager.save(new File(outputPatchPath));
-			} catch (TransformerException e) {
-				Log.severe("Failed to save obfuscated patch");
-			}
-
-			try {
-				File file = new File(outputMappingsPath);
-				FileOutputStream f = new FileOutputStream(file);
-				ObjectOutputStream s = new ObjectOutputStream(f);
-				try {
-					s.writeObject(mcpMappings.getSimpleClassNameMappings());
-				} finally {
-					s.close();
-				}
-			} catch (IOException e) {
-				Log.severe("Failed to save class name mappings", e);
-			}
-		} catch (IOException e) {
-			Log.severe("Failed to read input file", e);
-		} catch (SAXException e) {
-			Log.severe("Failed to parse input file", e);
 		}
 	}
 

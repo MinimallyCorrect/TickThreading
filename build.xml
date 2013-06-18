@@ -203,17 +203,6 @@
 			<fileset dir="${mcp.dir}/reobf/minecraft"/>
 		</copy>
 
-		<!-- Copy resources -->
-		<copy todir="${classes.dir}">
-			<fileset dir="resources"/>
-			<filterset>
-				<filter token="MC_VERSION" value="${mc.version}"/>
-				<filter token="MOD_VERSION" value="${project.version.full}"/>
-				<filter token="MOD_ID" value="${ant.project.name}"/>
-				<filter token="MOD_NAME" value="${ant.project.name}"/>
-			</filterset>
-		</copy>
-
 	</target>
 
 	<target name="packageDependencies">
@@ -235,13 +224,16 @@
 	<!-- Package the compiled files -->
 	<target name="package" depends="initialize-version">
 
-		<java classname="nallar.tickthreading.patcher.PatchMain">
-			<classpath>
-				<path refid="class.path"/>
-				<pathelement location="${classes.dir}"/>
-			</classpath>
-			<arg value="obfuscator"/>
-		</java>
+		<!-- Copy resources -->
+		<copy todir="${classes.dir}">
+			<fileset dir="resources"/>
+			<filterset>
+				<filter token="MC_VERSION" value="${mc.version}"/>
+				<filter token="MOD_VERSION" value="${project.version.full}"/>
+				<filter token="MOD_ID" value="${ant.project.name}"/>
+				<filter token="MOD_NAME" value="${ant.project.name}"/>
+			</filterset>
+		</copy>
 
 		<delete dir="${jar.dir}"/>
 		<mkdir dir="${jar.dir}"/>

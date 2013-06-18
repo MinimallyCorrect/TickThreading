@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import nallar.collections.PartiallySynchronizedMap;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.util.IterableEnumerationWrapper;
 
