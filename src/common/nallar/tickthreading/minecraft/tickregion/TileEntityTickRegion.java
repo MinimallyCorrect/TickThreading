@@ -58,12 +58,12 @@ public class TileEntityTickRegion extends TickRegion {
 						invalidate(tileEntity);
 						continue;
 					}
-					manager.add(tileEntity, false);
 					if (Log.debug) {
 						Log.debug("A tile entity is in the wrong TickRegion - was it moved by a player, or did something break?"
 								+ "\n entity: " + Log.toString(tileEntity)
 								+ "\n In " + hashCode + "\t.tickRegion: " + tileEntity.tickRegion.hashCode + "\texpected: " + manager.getHashCode(xPos, zPos));
 					}
+					manager.add(tileEntity, false);
 					manager.lock(tileEntity);
 					continue;
 				}
