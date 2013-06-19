@@ -59,6 +59,9 @@ public abstract class PatchChunk extends Chunk {
 	@Override
 	@Declare
 	public boolean needsSaving(boolean force, long worldTime) {
+		if (lastSaveTime == worldTime) {
+			return false;
+		}
 		if (force && (isModified || hasEntities || !chunkTileEntityMap.isEmpty() || lastSaveTime + 1000 < worldTime)) {
 			return true;
 		}
