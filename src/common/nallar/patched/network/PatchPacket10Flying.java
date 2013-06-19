@@ -74,7 +74,7 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 					nsh.setHasMoved();
 					nsh.tpPosY = -256;
 					nsh.handleFlying(this);
-				} else if (teleported <= 7) {
+				} else if (teleported <= 1) {
 					nsh.updatePositionAfterTP(yaw, pitch);
 					if (teleported == 1) {
 						MinecraftServer.addPlayerToCheckWorld(entityPlayerMP);

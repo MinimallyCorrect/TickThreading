@@ -195,7 +195,14 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 	}
 
 	private boolean noUpdateRequired() {
-		return chunk == null || !chunk.isTerrainPopulated || playersInChunk.isEmpty();
+		Chunk chunk = this.chunk;
+		if (chunk == null || !chunk.isTerrainPopulated || playersInChunk.isEmpty()) {
+			return true;
+		}
+		if (chunk.partiallyUnloaded) {
+			Log.severe("Chunk for " + this + " has been unloaded without removing the PlayerInstance");
+		}
+		return false;
 	}
 
 	@Override
@@ -230,7 +237,7 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 				}
 
 				WorldServer worldServer = thePlayerManager.getWorldServer();
-				Chunk chunk = worldServer.getChunkIfExists(chunkLocation.chunkXPos, chunkLocation.chunkZPos);
+				Chunk chunk = this.chunk;
 				if (numberOfTilesToUpdate == 1) {
 					int x = chunkLocation.chunkXPos * 16 + (locationOfBlockChange[0] >> 12 & 15);
 					int y = locationOfBlockChange[0] & 255;
