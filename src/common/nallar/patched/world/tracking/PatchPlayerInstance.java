@@ -199,6 +199,8 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 		}
 		if (chunk.partiallyUnloaded) {
 			Log.severe("Chunk for " + this + " has been unloaded without removing the PlayerInstance");
+			this.chunk = null;
+			return true;
 		}
 		return false;
 	}
