@@ -68,11 +68,7 @@ public class MCPMappings extends Mappings {
 
 	@Override
 	public FieldDescription map(FieldDescription fieldDescription) {
-		FieldDescription obfuscated = (seargeMappings ? fieldSrgMappings : fieldMappings).get(fieldDescription);
-		if (obfuscated == null) {
-			Log.warning("Couldn't map field " + fieldDescription, new Throwable());
-		}
-		return obfuscated;
+		return (seargeMappings ? fieldSrgMappings : fieldMappings).get(fieldDescription);
 	}
 
 	private String classStringToClassName(String name) {
