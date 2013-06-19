@@ -47,6 +47,7 @@ import net.minecraftforge.common.Configuration;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.WorldEvent;
+import sun.misc.Unsafe;
 
 public abstract class PatchMinecraftServer extends MinecraftServer {
 	private ThreadManager threadManager;
@@ -245,6 +246,11 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				this.finalTick(crashReport);
 			}
 		} finally {
+			try {
+				saveEverything();
+			} catch (Throwable t) {
+				Log.severe("Failed to perform shutdown save.", t);
+			}
 			Log.info("Stopping the server. serverRunning: " + serverRunning + ", serverIsRunning: " + serverIsRunning + ", is crash: " + isCrash);
 			try {
 				this.stopServer();
@@ -604,7 +610,27 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				Log.info("Saving all player data.");
 				this.serverConfigManager.saveAllPlayerData();
 				Log.info("Done saving player data, saving worlds.");
-				this.saveAllWorlds(false);
+				if (worlds == null) {
+					for (WorldServer world : this.worldServers) {
+						world.canNotSave = false;
+						try {
+							world.saveAllChunks(true, null);
+						} catch (MinecraftException e) {
+							UnsafeUtil.throwIgnoreChecked(e);
+						}
+						world.theChunkProviderServer.saveChunks(true, null);
+					}
+				} else {
+					for (WorldServer world : worlds) {
+						world.canNotSave = false;
+						try {
+							world.saveAllChunks(true, null);
+						} catch (MinecraftException e) {
+							UnsafeUtil.throwIgnoreChecked(e);
+						}
+						world.theChunkProviderServer.saveChunks(true, null);
+					}
+				}
 				Log.info("Done saving worlds, flushing world data to disk.");
 				if (worlds == null) {
 					for (WorldServer world : this.worldServers) {
