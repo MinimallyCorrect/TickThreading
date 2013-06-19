@@ -106,8 +106,8 @@ public class RemappingPool extends ClassPool {
 					} catch (IOException e) {
 						Log.severe("Failed to make " + className + " from " + remappedName, e);
 					}
+					return null;
 				}
-				return null;
 			} else {
 				if (!Transformer.unmapClassName(className).equals(className)) {
 					Log.severe("Attempted to load SRG class " + className + " while patching a non-SRG class.", new Throwable());

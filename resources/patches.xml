@@ -582,12 +582,12 @@
 					return 0;
 				}
 				if ((t == null) || (!itemMatch(t))) {
-					t = i.l();
+					t = i.^method:ItemStack/getItem^();
 					t.a = 0;
 					this.topStack = t;
 				}
 				if ((b == null) || (!itemMatch(b))) {
-					b = this.item.l();
+					b = this.item.^method:ItemStack/getItem^();
 					b.a = 0;
 					this.bottomStack = b;
 				}
