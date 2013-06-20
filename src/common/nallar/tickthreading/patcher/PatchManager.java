@@ -167,7 +167,6 @@ public class PatchManager {
 					String obfuscatedCode = mappings.obfuscate(code);
 					if (!code.equals(obfuscatedCode)) {
 						patchElement.setAttribute(key, obfuscatedCode);
-						Log.info("Obfuscated " + code + " to " + obfuscatedCode);
 					}
 				}
 			}
@@ -176,7 +175,6 @@ public class PatchManager {
 				String obfuscatedTextContent = mappings.obfuscate(textContent);
 				if (!textContent.equals(obfuscatedTextContent)) {
 					patchElement.setTextContent(obfuscatedTextContent);
-					Log.info("Obfuscated " + textContent + " to " + obfuscatedTextContent);
 				}
 			}
 		}
@@ -207,7 +205,6 @@ public class PatchManager {
 				}
 				String environment = classElement.getAttribute("env");
 				if (!environment.isEmpty() && !environment.equals(patchEnvironment)) {
-					Log.info(className + " requires " + environment + ", not patched as we are using " + patchEnvironment);
 					continue;
 				}
 				Boolean isSrg_;
@@ -229,7 +226,6 @@ public class PatchManager {
 				try {
 					ctClass = classRegistry.getClass(className);
 				} catch (NotFoundException e) {
-					Log.info("Not patching " + className + ", not found.");
 					continue;
 				}
 				List<Element> patchElements = DomUtil.elementList(classElement.getChildNodes());
@@ -307,12 +303,14 @@ public class PatchManager {
 
 		public Object run(Element patchElement, CtClass ctClass) {
 			Map<String, String> attributes = DomUtil.getAttributes(patchElement);
-			Log.fine("Patching " + ctClass.getName() + " with " + this.name + '(' + CollectionsUtil.joinMap(attributes) + ')');
+			String textContent = patchElement.getTextContent().trim();
+			Map<String, String> attributesClean = new HashMap<String, String>(attributes);
+			attributesClean.remove("code");
+			Log.fine("Patching " + ctClass.getName() + " with " + this.name + '(' + CollectionsUtil.joinMap(attributesClean) + ')' + (textContent.isEmpty() ? "" : " {" + textContent + '}'));
 			if (requiredAttributes != null && !attributes.keySet().containsAll(requiredAttributes)) {
 				Log.severe("Missing required attributes " + requiredAttributes.toString() + " when patching " + ctClass.getName());
 				return null;
 			}
-			String textContent = patchElement.getTextContent().trim();
 			if ("^all^".equals(textContent)) {
 				attributes.put("silent", "true");
 				List<CtBehavior> ctBehaviors = new ArrayList<CtBehavior>();
@@ -340,7 +338,6 @@ public class PatchManager {
 				}
 			} else {
 				List<MethodDescription> methodDescriptions = MethodDescription.fromListString(ctClass.getName(), textContent);
-				Log.fine("Patching methods " + methodDescriptions.toString());
 				for (MethodDescription methodDescription : methodDescriptions) {
 					CtMethod ctMethod;
 					try {

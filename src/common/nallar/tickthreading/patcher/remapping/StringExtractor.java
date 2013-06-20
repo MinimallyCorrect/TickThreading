@@ -26,7 +26,9 @@ public enum StringExtractor {
 			}
 			int minor = dataInputStream.readUnsignedShort();
 			int major = dataInputStream.readUnsignedShort();
-			Log.info("Reading constPool entry for " + major + '.' + minor);
+			if (Log.debug) {
+				Log.debug("Reading constPool entry for " + major + '.' + minor);
+			}
 			ArrayList<String> strings = new ArrayList<String>();
 			ConstPool constPool = new ConstPool(dataInputStream);
 			for (int i = 1; true; i++) {
