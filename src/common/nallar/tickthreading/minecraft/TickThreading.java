@@ -46,6 +46,7 @@ import nallar.tickthreading.util.PatchUtil;
 import nallar.tickthreading.util.ReflectUtil;
 import nallar.tickthreading.util.TableFormatter;
 import nallar.tickthreading.util.VersionUtil;
+import nallar.tickthreading.util.contextaccess.ContextAccess;
 import net.minecraft.command.ServerCommandManager;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.item.EntityItem;
@@ -289,6 +290,9 @@ public class TickThreading {
 
 	@ForgeSubscribe
 	public synchronized void onWorldUnload(WorldEvent.Unload event) {
+		if (MinecraftServer.getServer().isServerRunning() && !ContextAccess.$.runningUnder(DimensionManager.class)) {
+			Log.severe("World unload event fired from unexpected location", new Throwable());
+		}
 		World world = event.world;
 		try {
 			TickManager tickManager = managers.remove(world);

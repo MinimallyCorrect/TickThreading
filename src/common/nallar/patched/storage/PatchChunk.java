@@ -216,9 +216,15 @@ public abstract class PatchChunk extends Chunk {
 		}
 	}
 
-	@SuppressWarnings ("FieldRepeatedlyAccessedInMethod") // Patcher makes worldObj final
 	@Override
 	public void onChunkUnload() {
+		throw new Error("Not supported with TT");
+	}
+
+	@SuppressWarnings ("FieldRepeatedlyAccessedInMethod") // Patcher makes worldObj final
+	@Override
+	@Declare
+	public void onChunkUnloadTT() {
 		isChunkLoaded = false;
 		Set<TileEntity> removalSet = worldObj.tileEntityRemovalSet;
 		for (TileEntity var2 : (Iterable<TileEntity>) chunkTileEntityMap.values()) {

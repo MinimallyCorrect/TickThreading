@@ -154,24 +154,29 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				chunkCoordIntPair.chunkXPos = x;
 				chunkCoordIntPair.chunkZPos = z;
 				Chunk chunk = chunks.getValueByKey(key);
-				if (chunk == null || chunk.partiallyUnloaded || !chunk.queuedUnload) {
+				if (chunk == null) {
 					continue;
 				}
-				if (persistentChunks.containsKey(chunkCoordIntPair) || unloadingChunks.containsItem(key) || playerManager.getOrCreateChunkWatcher(x, z, false) != null || !fireBukkitUnloadEvent(chunk)) {
-					chunk.queuedUnload = false;
-					continue;
-				}
-				if (lastChunk == chunk) {
-					lastChunk = null;
-				}
-				chunk.partiallyUnloaded = true;
-				chunk.onChunkUnload();
-				chunk.pendingBlockUpdates = world.getPendingBlockUpdates(chunk, false);
-				loadedChunks.remove(chunk);
-				chunks.remove(key);
-				synchronized (unloadingChunks) {
-					unloadingChunks.put(key, chunk);
-					unloadStage1.add(new QueuedUnload(key, ticks));
+				synchronized (chunk) {
+					if (chunk.partiallyUnloaded || !chunk.queuedUnload) {
+						continue;
+					}
+					if (persistentChunks.containsKey(chunkCoordIntPair) || unloadingChunks.containsItem(key) || playerManager.getOrCreateChunkWatcher(x, z, false) != null || !fireBukkitUnloadEvent(chunk)) {
+						chunk.queuedUnload = false;
+						continue;
+					}
+					if (lastChunk == chunk) {
+						lastChunk = null;
+					}
+					chunk.partiallyUnloaded = true;
+					chunk.onChunkUnloadTT();
+					chunk.pendingBlockUpdates = world.getPendingBlockUpdates(chunk, false);
+					loadedChunks.remove(chunk);
+					chunks.remove(key);
+					synchronized (unloadingChunks) {
+						unloadingChunks.put(key, chunk);
+						unloadStage1.add(new QueuedUnload(key, ticks));
+					}
 				}
 			}
 
@@ -249,7 +254,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			try {
 				boolean notInUnload = !inUnload.getAndSet(true);
 				boolean notWorldGen = !worldGenInProgress.getAndSet(true);
-				safeSaveChunk(chunk);
+				saveChunk(chunk);
 				safeSaveExtraChunkData(chunk);
 				if (notWorldGen) {
 					worldGenInProgress.set(false);
@@ -357,20 +362,25 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		long key = key(x, z);
 		finalizeUnload(key);
 		Chunk chunk = getChunkIfExists(x, z);
-		if (chunk == null || !fireBukkitUnloadEvent(chunk)) {
-			return;
-		}
-		synchronized (chunk) {
-			chunk.queuedUnload = true;
-			chunk.partiallyUnloaded = true;
-			chunk.onChunkUnload();
-			chunk.isChunkLoaded = false;
-			if (save || chunk.isModified) {
-				safeSaveChunk(chunk);
-				safeSaveExtraChunkData(chunk);
+		if (chunk != null) {
+			synchronized (chunk) {
+				if (chunk.partiallyUnloaded) {
+					return;
+				}
+				if (world.getPersistentChunks().containsKey(new ChunkCoordIntPair(x, z)) || world.getPlayerManager().getOrCreateChunkWatcher(x, z, false) != null || !fireBukkitUnloadEvent(chunk)) {
+					return;
+				}
+				chunk.queuedUnload = true;
+				chunk.partiallyUnloaded = true;
+				chunk.onChunkUnloadTT();
+				if (save || chunk.isModified) {
+					saveChunk(chunk);
+					safeSaveExtraChunkData(chunk);
+				}
+				chunk.alreadySavedAfterUnload = true;
+				loadedChunks.remove(chunk);
+				chunks.remove(key);
 			}
-			loadedChunks.remove(chunk);
-			chunks.remove(key);
 		}
 	}
 
@@ -730,8 +740,15 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		}
 	}
 
+	@Deprecated
 	@Override
 	protected void safeSaveChunk(Chunk chunk) {
+		throw new Error("Not supported with TT");
+	}
+
+	@Override
+	@Declare
+	public void saveChunk(Chunk chunk) {
 		if (loader == null) {
 			return;
 		}
@@ -803,7 +820,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				safeSaveExtraChunkData(chunk);
 			}
 
-			safeSaveChunk(chunk);
+			saveChunk(chunk);
 			chunk.isModified = false; // Just in case a mod is managing to set the chunk as modified during saving, don't want pointless repeated saving.
 		}
 
