@@ -595,7 +595,7 @@
 				return t.a + this.middleCount + b.a;
 			}">getItemCount
 			</replaceMethod>
-			<synchronize>updateStacks,changeItemCount,setItemCount</synchronize>
+			<synchronize>updateStacks,changeItemCount,setItemCount,a(IL^class;ItemStack^;)V</synchronize>
 		</class>
 		<class id="factorization.common.TileEntityMirror">
 			<replaceMethod code="{
@@ -631,9 +631,6 @@
 		<class id="factorization.api.Charge">
 			<newField field="staticLock" class="java.lang.Object" static=""/>
 			<synchronize field="staticLock">update</synchronize>
-		</class>
-		<class id="factorization.common.TileEntityBarrel">
-			<synchronize>a(ILur;)V</synchronize>
 		</class>
 	</factorization>
 	<liteLoader>
