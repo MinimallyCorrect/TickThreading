@@ -197,6 +197,7 @@
 			<final field="zPosition"/>
 			<final field="entityLists"/>
 			<final field="worldObj"/>
+			<final field="chunkTileEntityMap"/>
 			<volatile field="isTerrainPopulated"/>
 			<replaceInitializer field="chunkTileEntityMap" class="java.util.concurrent.ConcurrentHashMap"/>
 			<!--
