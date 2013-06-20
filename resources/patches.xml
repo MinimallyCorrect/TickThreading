@@ -238,7 +238,7 @@
 			<replaceInitializer field="destroyedItemsNetCache" class="nallar.collections.ConcurrentQueueList"/>
 			<replaceInitializer field="loadedChunks" class="nallar.collections.ConcurrentQueueList"/>
 		</class>
-		<class id="net.minecraft.entity.player.EntityPlayerMP">
+		<class id="net.minecraft.entity.player.EntityPlayerMP" env="forge">
 			<addAll fromClass="nallar.patched.entity.PatchEntityPlayerMPForge"/>
 		</class>
 		<class id="net.minecraft.entity.Entity">
