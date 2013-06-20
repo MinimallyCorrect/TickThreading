@@ -22,6 +22,11 @@ public class ByteSource {
 				addFiles(file.listFiles());
 				continue;
 			}
+			String extension = file.getName().toLowerCase();
+			extension = extension.substring(extension.lastIndexOf('.') + 1);
+			if (!"jar".equals(extension) && !"zip".equals(extension)) {
+				continue;
+			}
 			try {
 				ZipFile zipFile = new ZipFile(file);
 				try {
@@ -30,7 +35,7 @@ public class ByteSource {
 					zipFile.close();
 				}
 			} catch (IOException e) {
-				Log.severe("Can't load file " + e);
+				Log.severe("Can't load file " + file, e);
 			}
 		}
 	}
