@@ -47,7 +47,6 @@ import net.minecraftforge.common.Configuration;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.WorldEvent;
-import sun.misc.Unsafe;
 
 public abstract class PatchMinecraftServer extends MinecraftServer {
 	private ThreadManager threadManager;
@@ -242,12 +241,16 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 					Thread.sleep(100L);
 				} catch (InterruptedException ignored) {
 				}
-				this.saveEverything();
+				try {
+					saveEverything(true);
+				} catch (Throwable t) {
+					Log.severe("Failed to perform save after crash", t);
+				}
 				this.finalTick(crashReport);
 			}
 		} finally {
 			try {
-				saveEverything();
+				saveEverything(true);
 			} catch (Throwable t) {
 				Log.severe("Failed to perform shutdown save.", t);
 			}
@@ -604,7 +607,13 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	@Override
 	@Declare
 	public void saveEverything() {
-		if (this.isServerRunning() && currentlySaving.get() == 0) {
+		saveEverything(false);
+	}
+
+	@Override
+	@Declare
+	public void saveEverything(boolean force) {
+		if (force || (this.isServerRunning() && currentlySaving.get() == 0)) {
 			currentlySaving.getAndIncrement();
 			try {
 				Log.info("Saving all player data.");

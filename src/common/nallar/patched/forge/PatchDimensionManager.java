@@ -53,14 +53,15 @@ public abstract class PatchDimensionManager extends DimensionManager {
 			return false;
 		}
 
-		if (save) {
-			try {
-				w.saveAllChunks(true, null);
-				w.flush();
-				fireBukkitWorldSave(w);
-			} catch (net.minecraft.world.MinecraftException ex) {
-				FMLLog.log(Level.SEVERE, ex, "Failed to save world " + w.getName() + " while unloading it.");
-			}
+		if (!save) {
+			Log.severe("Requested to unload a world without saving it. Ignoring this.");
+		}
+		try {
+			w.saveAllChunks(true, null);
+			w.flush();
+			fireBukkitWorldSave(w);
+		} catch (net.minecraft.world.MinecraftException ex) {
+			FMLLog.log(Level.SEVERE, ex, "Failed to save world " + w.getName() + " while unloading it.");
 		}
 		removeBukkitWorld(w);
 		try {
