@@ -549,4 +549,33 @@ public abstract class PatchChunk extends Chunk {
 			}
 		}
 	}
+
+	@Override
+	public TileEntity getChunkBlockTileEntity(int par1, int par2, int par3) {
+		ChunkPosition position = new ChunkPosition(par1, par2, par3);
+		TileEntity tileEntity = (TileEntity) this.chunkTileEntityMap.get(position);
+
+		if (tileEntity != null && tileEntity.isInvalid()) {
+			chunkTileEntityMap.remove(position);
+			worldObj.loadedTileEntityList.remove(tileEntity);
+			tileEntity = null;
+		}
+
+		if (tileEntity == null) {
+			int id = this.getBlockID(par1, par2, par3);
+			int meta = this.getBlockMetadata(par1, par2, par3);
+			Block block;
+
+			if (id <= 0 || (block = Block.blocksList[id]) == null || !block.hasTileEntity(meta)) {
+				return null;
+			}
+
+			tileEntity = block.createTileEntity(this.worldObj, meta);
+			this.worldObj.setBlockTileEntity(this.xPosition * 16 + par1, par2, this.zPosition * 16 + par3, tileEntity);
+
+			tileEntity = (TileEntity) this.chunkTileEntityMap.get(position);
+		}
+
+		return tileEntity;
+	}
 }
