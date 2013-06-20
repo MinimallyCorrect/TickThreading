@@ -42,6 +42,9 @@ public class Redirects {
 	}
 
 	public static boolean interceptPacket(Packet packet, NetServerHandler handler) {
+		if (packet == null) {
+			return false;
+		}
 		PacketProfiler.record(packet);
 		if (packet instanceof Packet9Respawn) {
 			Packet9Respawn packet9Respawn = (Packet9Respawn) packet;
