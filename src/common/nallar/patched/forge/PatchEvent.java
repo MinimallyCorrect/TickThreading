@@ -1,12 +1,11 @@
 package nallar.patched.forge;
 
-import java.util.concurrent.ConcurrentHashMap;
-
+import nallar.collections.PartiallySynchronizedMap;
 import net.minecraftforge.event.Cancelable;
 import net.minecraftforge.event.Event;
 
 public abstract class PatchEvent extends Event {
-	private static final ConcurrentHashMap<Class, Boolean> annotationMap = new ConcurrentHashMap<Class, Boolean>();
+	private static final PartiallySynchronizedMap<Class, Boolean> annotationMap = new PartiallySynchronizedMap<Class, Boolean>();
 
 	@Override
 	protected boolean hasAnnotation(Class annotation) {
@@ -17,7 +16,7 @@ public abstract class PatchEvent extends Event {
 		}
 		Class searchClass = cls;
 		while (searchClass != Event.class) {
-			if (searchClass.isAnnotationPresent(Cancelable.class)) // Forge bug, not fixed. Buggy behaviour may be required for some mods.
+			if (searchClass.isAnnotationPresent(Cancelable.class)) // TODO: Forge bug, not fixed. Buggy behaviour may be required for some mods.
 			{
 				annotationMap.put(cls, true);
 				return true;
