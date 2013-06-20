@@ -32,12 +32,11 @@ public abstract class PatchPlayerManager extends PlayerManager {
 	@Override
 	public void updatePlayerInstances() {
 		int currentTick = MinecraftServer.currentTick;
-		boolean squash = currentTick % 800 == 0;
 		ArrayList<PlayerInstance> postponed = new ArrayList<PlayerInstance>();
 		PlayerInstance playerInstance;
 		while ((playerInstance = chunkWatcherWithPlayersQ.poll()) != null) {
 			try {
-				if (playerInstance.shouldPostPone(squash, currentTick)) {
+				if (playerInstance.shouldPostPone(currentTick++ % 800 == 0, currentTick)) {
 					postponed.add(playerInstance);
 				} else {
 					playerInstance.sendChunkUpdate();
