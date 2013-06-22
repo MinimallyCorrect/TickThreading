@@ -1064,11 +1064,6 @@
 			<synchronize field="$1.intern()">getOrMakeResident(Ljava.lang.String;)Lee.lutsu.alpha.mc.mytown.entities.Resident;</synchronize>
 		</class>
 	</myTown>
-	<soulShards>
-		<class id="com.shadwdrgn.soulshards.CommonProxy">
-			<replaceMethodCall index="0" code="{}" method="println">processShard</replaceMethodCall>
-		</class>
-	</soulShards>
 	<extraBiomesXL>
 		<class id="extrabiomes.blocks.BlockAutumnLeaves$BlockType">
 			<insertBefore code="if (loadedCustomBlocks) { return; }">loadCustomBlocks</insertBefore>
