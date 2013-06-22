@@ -281,12 +281,14 @@ public class PatchManager {
 
 		public Object run(Element patchElement, CtClass ctClass) {
 			Map<String, String> attributes = DomUtil.getAttributes(patchElement);
-			Log.fine("Patching " + ctClass.getName() + " with " + this.name + '(' + CollectionsUtil.joinMap(attributes) + ')');
+			String textContent = patchElement.getTextContent().trim();
+			Map<String, String> attributesClean = new HashMap<String, String>(attributes);
+			attributesClean.remove("code");
+			Log.fine("Patching " + ctClass.getName() + " with " + this.name + '(' + CollectionsUtil.joinMap(attributesClean) + ')' + (textContent.isEmpty() ? "" : " {" + textContent + '}'));
 			if (requiredAttributes != null && !attributes.keySet().containsAll(requiredAttributes)) {
 				Log.severe("Missing required attributes " + requiredAttributes.toString() + " when patching " + ctClass.getName());
 				return null;
 			}
-			String textContent = patchElement.getTextContent().trim();
 			if ("^all^".equals(textContent)) {
 				attributes.put("silent", "true");
 				List<CtBehavior> ctBehaviors = new ArrayList<CtBehavior>();
@@ -314,7 +316,6 @@ public class PatchManager {
 				}
 			} else {
 				List<MethodDescription> methodDescriptions = MethodDescription.fromListString(ctClass.getName(), textContent);
-				Log.fine("Patching methods " + methodDescriptions.toString());
 				for (MethodDescription methodDescription : methodDescriptions) {
 					CtMethod ctMethod;
 					try {
