@@ -577,22 +577,22 @@
 		<class id="factorization.common.TileEntityBarrel">
 			<replaceMethod code="{
 				^class:ItemStack^ i = this.item;
-				^class:ItemStack^ t = this.topStack;
+				^class:ItemStack^ top = this.topStack;
 				^class:ItemStack^ b = this.bottomStack;
 				if (i == null) {
 					return 0;
 				}
-				if ((t == null) || (!itemMatch(t))) {
-					t = i.^method:ItemStack/getItem^();
-					t.a = 0;
-					this.topStack = t;
+				if ((top == null) || (!itemMatch(top))) {
+					top = i.^method:ItemStack/getItem^();
+					top.a = 0;
+					this.topStack = top;
 				}
 				if ((b == null) || (!itemMatch(b))) {
 					b = this.item.^method:ItemStack/getItem^();
 					b.a = 0;
 					this.bottomStack = b;
 				}
-				return t.a + this.middleCount + b.a;
+				return top.a + this.middleCount + b.a;
 			}">getItemCount
 			</replaceMethod>
 			<synchronize>updateStacks,changeItemCount,setItemCount,a(IL^class;ItemStack^;)V</synchronize>
