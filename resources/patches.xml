@@ -1258,6 +1258,7 @@
 			<replaceInitializer field="tags" class="nallar.collections.CHashMap"/>
 		</class>
 		<class id="thaumcraft.common.AuraManager">
+			<replaceNew oldClass="java.util.LinkedList" newClass="nallar.collections.ConcurrentLinkedQueueList">registerAuraNode,addToAuraUpdateList</replaceNew>
 			<synchronize>registerAuraNode</synchronize>
 		</class>
 		<class id="thaumcraft.common.WorldTicker">
@@ -1273,18 +1274,20 @@
 		<class id="thaumcraft.common.AuraWorldTicker">
 			<synchronize field="((^class:WorldServer^)$2[0]).auraLock">tickEnd</synchronize>
 			<replaceMethod code="{
-				if (thaumcraft.common.AuraManager.auraUpdateList.get(Integer.valueOf($1)) != null) {
-					return;
-				}
-				LinkedList temp = new ConcurrentLinkedQueueList();
-				Collection nodes = thaumcraft.common.AuraManager.auraNodes.values();
-				for (Iterator i = nodes.iterator(); i.hasNext();) {
-					thaumcraft.api.AuraNode node = (thaumcraft.api.AuraNode) i.next();
-					if (node.dimension == $1) {
-						temp.add(Integer.valueOf(node.key));
+				synchronized(thaumcraft.common.AuraManager.class) {
+					if (thaumcraft.common.AuraManager.auraUpdateList.get(Integer.valueOf($1)) != null) {
+						return;
 					}
+					LinkedList temp = new ConcurrentLinkedQueueList();
+					Collection nodes = thaumcraft.common.AuraManager.auraNodes.values();
+					for (Iterator i = nodes.iterator(); i.hasNext();) {
+						thaumcraft.api.AuraNode node = (thaumcraft.api.AuraNode) i.next();
+						if (node.dimension == $1) {
+							temp.add(Integer.valueOf(node.key));
+						}
+					}
+					thaumcraft.common.AuraManager.auraUpdateList.put(Integer.valueOf($1), temp);
 				}
-				thaumcraft.common.AuraManager.auraUpdateList.put(Integer.valueOf($1), temp);
 			}">populateAuraUpdateList</replaceMethod>
 		</class>
 		<class id="thaumcraft.common.EventHandler">
