@@ -618,7 +618,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			try {
 				Log.info("Saving all player data.");
 				this.serverConfigManager.saveAllPlayerData();
-				Log.info("Done saving player data, saving worlds.");
+				Log.info("Done saving player data, now saving " + DimensionManager.getWorlds().length + " worlds.");
 				if (worlds == null) {
 					for (WorldServer world : this.worldServers) {
 						world.canNotSave = false;
@@ -640,7 +640,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 						world.theChunkProviderServer.saveChunks(true, null);
 					}
 				}
-				Log.info("Done saving worlds, flushing world data to disk.");
+				Log.info("World save completed, flushing world data to disk.");
 				if (worlds == null) {
 					for (WorldServer world : this.worldServers) {
 						world.flush();
