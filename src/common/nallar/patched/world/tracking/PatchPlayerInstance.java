@@ -200,6 +200,7 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 		if (chunk.partiallyUnloaded) {
 			Log.severe("Chunk for " + this + " has been unloaded without removing the PlayerInstance");
 			this.chunk = null;
+			myManager.getWorldServer().theChunkProviderServer.getChunkAt(chunkLocation.chunkXPos, chunkLocation.chunkZPos, new LoadRunnable(this));
 			return true;
 		}
 		return false;
