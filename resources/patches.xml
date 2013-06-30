@@ -39,16 +39,14 @@
 			<volatile field="serverRunning"/>
 			<volatile field="serverIsRunning"/>
 			<replaceInitializer field="worlds" class="nallar.collections.ListSet"/>
+			<final field="processQueue"/>
 		</class>
 		<class id="net.minecraft.server.MinecraftServer" env="mcpc">
 			<replaceMethod code="{
-					this.server.getScheduler().mainThreadHeartbeat(this.w);
-
-					while (!processQueue.isEmpty()) {
-							((Runnable) processQueue.remove()).run();
-					}
+						this.server.getScheduler().mainThreadHeartbeat(this.w);
 					}">spigotTLETick
 			</replaceMethod>
+			<replaceInitializer field="processQueue" code="$_ = runQueue;"/>
 		</class>
 		<class id="net.minecraft.server.MinecraftServer" env="forge">
 			<addAll fromClass="nallar.patched.server.PatchMinecraftServerForge"/>

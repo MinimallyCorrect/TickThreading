@@ -551,11 +551,7 @@ public final class TickManager {
 								Log.severe("Something broke, tickRegions for " + world.getName() + " contained null!");
 							}
 						}
-						StringBuilder sb = new StringBuilder();
-						fixDiscrepancies(sb);
-						if (sb.length() > 0) {
-							Log.severe(sb.toString());
-						}
+						MinecraftServer.runQueue.add(new FixDiscrepanciesTask());
 					}
 				}
 			});
@@ -817,5 +813,19 @@ public final class TickManager {
 			tf.sb.append("Dumped tickRegions for ").append(hashCode).append(": ").append(x).append(", ").append(z);
 		}
 		return tf;
+	}
+
+	private class FixDiscrepanciesTask implements Runnable {
+		FixDiscrepanciesTask() {
+		}
+
+		@Override
+		public void run() {
+			StringBuilder sb = new StringBuilder();
+			fixDiscrepancies(sb);
+			if (sb.length() > 0) {
+				Log.severe(sb.toString());
+			}
+		}
 	}
 }
