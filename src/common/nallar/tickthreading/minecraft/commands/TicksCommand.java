@@ -76,6 +76,24 @@ public class TicksCommand extends Command {
 			sendChat(commandSender, "Refreshed " + count + " chunks");
 			return;
 		}
+		if ("d".equals(type)) {
+			int region = 0;
+			int worldId;
+			try {
+				worldId = Integer.parseInt(arguments.remove(0));
+			} catch (NumberFormatException e) {
+				throw e;
+			} catch (Throwable t) {
+				worldId = commandSender instanceof Entity ? ((Entity) commandSender).worldObj.dimensionId : 0;
+			}
+			if (arguments.size() == 2) {
+				region = TickManager.getHashCodeFloor(Integer.parseInt(arguments.remove(0)), Integer.parseInt(arguments.remove(0)));
+			} else if (commandSender instanceof Entity) {
+				region = TickManager.getHashCode((Entity) commandSender);
+			}
+			sendChat(commandSender, String.valueOf(TickThreading.instance.getManager(DimensionManager.getWorld(worldId)).writeRegionDetails(new TableFormatter(commandSender), region)));
+			return;
+		}
 		World world;
 		try {
 			world = getWorld(commandSender, arguments);
@@ -97,8 +115,6 @@ public class TicksCommand extends Command {
 			sendChat(commandSender, String.valueOf(((WorldServer) world).writePendingBlockUpdatesStats(new TableFormatter(commandSender))));
 		} else if ("t".equals(type)) {
 			sendChat(commandSender, String.valueOf(TickThreading.instance.getManager(world).writeDetailedStats(new TableFormatter(commandSender))));
-		} else if ("d".equals(type)) {
-			sendChat(commandSender, String.valueOf(TickThreading.instance.getManager(world).writeRegionDetails(new TableFormatter(commandSender), 0)));
 		} else {
 			usage(commandSender);
 		}

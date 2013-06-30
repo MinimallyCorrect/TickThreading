@@ -13,8 +13,8 @@ public abstract class TickRegion implements Runnable {
 	final World world;
 	final TickManager manager;
 	public final int hashCode;
-	private final int regionX;
-	private final int regionZ;
+	public final int regionX;
+	public final int regionZ;
 	private long averageTickTime = 1;
 	public boolean profilingEnabled = false;
 

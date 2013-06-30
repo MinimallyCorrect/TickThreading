@@ -6,10 +6,8 @@ import java.util.concurrent.locks.Lock;
 import nallar.collections.LinkedHashSetTempSetNoClear;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.minecraft.TickManager;
-import nallar.tickthreading.minecraft.commands.DumpCommand;
 import nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
 import nallar.tickthreading.util.TableFormatter;
-import nallar.tickthreading.util.stringfillers.StringFiller;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
@@ -50,13 +48,13 @@ public class TileEntityTickRegion extends TickRegion {
 				final TileEntity tileEntity = tileEntitiesIterator.next();
 				final int xPos = tileEntity.xCoord;
 				final int zPos = tileEntity.zCoord;
-				if (manager.getHashCode(xPos, zPos) != hashCode) {
+				if (TickManager.getHashCodeFloor(xPos, zPos) != hashCode) {
 					tileEntitiesIterator.remove();
 					if (tileEntity.isInvalid() || !world.getChunkProvider().chunkExists(xPos >> 4, zPos >> 4)) {
 						if (Log.debug) {
 							Log.debug("A tile entity is invalid or unloaded."
 									+ "\n entity: " + Log.toString(tileEntity)
-									+ "\n In " + hashCode + "\t.tickRegion: " + tileEntity.tickRegion.hashCode + "\texpected: " + manager.getHashCode(xPos, zPos));
+									+ "\n In " + hashCode + "\t.tickRegion: " + tileEntity.tickRegion.hashCode + "\texpected: " + TickManager.getHashCodeFloor(xPos, zPos));
 						}
 						invalidate(tileEntity);
 						continue;
@@ -64,7 +62,7 @@ public class TileEntityTickRegion extends TickRegion {
 					if (Log.debug) {
 						Log.debug("A tile entity is in the wrong TickRegion - was it moved by a player, or did something break?"
 								+ "\n entity: " + Log.toString(tileEntity)
-								+ "\n In " + hashCode + "\t.tickRegion: " + tileEntity.tickRegion.hashCode + "\texpected: " + manager.getHashCode(xPos, zPos));
+								+ "\n In " + hashCode + "\t.tickRegion: " + tileEntity.tickRegion.hashCode + "\texpected: " + TickManager.getHashCodeFloor(xPos, zPos));
 					}
 					manager.add(tileEntity, false);
 					manager.lock(tileEntity);
@@ -172,7 +170,8 @@ public class TileEntityTickRegion extends TickRegion {
 	public void dump(final TableFormatter tf) {
 		synchronized (tileEntitySet) {
 			for (TileEntity e : tileEntitySet) {
-				DumpCommand.dump(tf, e, tf.stringFiller == StringFiller.CHAT ? 35 : 70);
+				//DumpCommand.dump(tf, e, tf.stringFiller == StringFiller.CHAT ? 35 : 70);
+				tf.sb.append("TileEntity ").append(Log.toString(e)).append(" in ").append(hashCode).append(", new ").append(TickManager.getHashCode(e)).append('\n');
 			}
 		}
 	}

@@ -5,10 +5,8 @@ import java.util.Iterator;
 import nallar.collections.LinkedHashSetTempSetNoClear;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.minecraft.TickManager;
-import nallar.tickthreading.minecraft.commands.DumpCommand;
 import nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
 import nallar.tickthreading.util.TableFormatter;
-import nallar.tickthreading.util.stringfillers.StringFiller;
 import nallar.unsafe.UnsafeAccess;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -138,7 +136,8 @@ public class EntityTickRegion extends TickRegion {
 	public void dump(final TableFormatter tf) {
 		synchronized (entitySet) {
 			for (Entity e : entitySet) {
-				DumpCommand.dump(tf, e, tf.stringFiller == StringFiller.CHAT ? 35 : 70);
+				//DumpCommand.dump(tf, e, tf.stringFiller == StringFiller.CHAT ? 35 : 70);
+				tf.sb.append("Entity ").append(String.valueOf(e)).append(" in ").append(hashCode).append(", new ").append(TickManager.getHashCode(e)).append('\n');
 			}
 		}
 	}

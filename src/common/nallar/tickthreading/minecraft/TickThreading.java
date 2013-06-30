@@ -103,7 +103,7 @@ public class TickThreading {
 	public int maxEntitiesPerPlayer = 1000;
 	public float mobSpawningMultiplier = 1;
 	private int tickThreads = 0;
-	private int regionSize = 16;
+	int regionSize = 16;
 	private int profilingInterval = 0;
 	private int maxItemsPerChunk = 0;
 	private boolean profilingJson = false;
@@ -266,7 +266,7 @@ public class TickThreading {
 			Log.severe("World " + world.getName() + " has a duplicate provider dimension ID.\n" + Log.dumpWorlds());
 		}
 		world.loadEventFired = true;
-		TickManager manager = new TickManager((WorldServer) world, regionSize, getThreadCount(), waitForEntityTickCompletion);
+		TickManager manager = new TickManager((WorldServer) world, getThreadCount(), waitForEntityTickCompletion);
 		try {
 			Field loadedTileEntityField = ReflectUtil.getFields(World.class, List.class)[loadedTileEntityFieldIndex];
 			new LoadedTileEntityList(world, loadedTileEntityField, manager);

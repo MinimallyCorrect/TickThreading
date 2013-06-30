@@ -898,6 +898,22 @@ public abstract class PatchWorld extends World {
 	}
 
 	@Override
+	public void setBlockTileEntity(int x, int y, int z, TileEntity tileEntity) {
+		if (tileEntity == null || tileEntity.isInvalid()) {
+			return;
+		}
+
+		Chunk chunk = getChunkFromChunkCoords(x >> 4, z >> 4);
+		if (chunk != null) {
+			chunk.setChunkBlockTileEntity(x & 15, y, z & 15, tileEntity);
+		}
+
+		if (tileEntity.canUpdate()) {
+			loadedTileEntityList.add(tileEntity);
+		}
+	}
+
+	@Override
 	@Declare
 	public void setBlockTileEntityWithoutValidate(int x, int y, int z, TileEntity tileEntity) {
 		if (tileEntity == null || tileEntity.isInvalid()) {
