@@ -1047,6 +1047,9 @@ public abstract class PatchWorld extends World {
 	@Override
 	@Declare
 	public boolean preHandleSpawn(Entity e) {
+		if (e == null) {
+			return true;
+		}
 		if (e instanceof EntityPlayer) {
 			return false;
 		}
