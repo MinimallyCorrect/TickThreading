@@ -48,13 +48,13 @@ public class TileEntityTickRegion extends TickRegion {
 				final TileEntity tileEntity = tileEntitiesIterator.next();
 				final int xPos = tileEntity.xCoord;
 				final int zPos = tileEntity.zCoord;
-				if (TickManager.getHashCodeFloor(xPos, zPos) != hashCode) {
+				if (TickManager.getHashCode(xPos, zPos) != hashCode) {
 					tileEntitiesIterator.remove();
 					if (tileEntity.isInvalid() || !world.getChunkProvider().chunkExists(xPos >> 4, zPos >> 4)) {
 						if (Log.debug) {
 							Log.debug("A tile entity is invalid or unloaded."
 									+ "\n entity: " + Log.toString(tileEntity)
-									+ "\n In " + hashCode + "\t.tickRegion: " + tileEntity.tickRegion.hashCode + "\texpected: " + TickManager.getHashCodeFloor(xPos, zPos));
+									+ "\n In " + hashCode + "\t.tickRegion: " + tileEntity.tickRegion.hashCode + "\texpected: " + TickManager.getHashCode(xPos, zPos));
 						}
 						invalidate(tileEntity);
 						continue;
@@ -62,7 +62,7 @@ public class TileEntityTickRegion extends TickRegion {
 					if (Log.debug) {
 						Log.debug("A tile entity is in the wrong TickRegion - was it moved by a player, or did something break?"
 								+ "\n entity: " + Log.toString(tileEntity)
-								+ "\n In " + hashCode + "\t.tickRegion: " + tileEntity.tickRegion.hashCode + "\texpected: " + TickManager.getHashCodeFloor(xPos, zPos));
+								+ "\n In " + hashCode + "\t.tickRegion: " + tileEntity.tickRegion.hashCode + "\texpected: " + TickManager.getHashCode(xPos, zPos));
 					}
 					manager.add(tileEntity, false);
 					manager.lock(tileEntity);

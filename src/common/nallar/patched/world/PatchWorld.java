@@ -413,9 +413,9 @@ public abstract class PatchWorld extends World {
 				entity.rotationYaw = entity.prevRotationYaw;
 			}
 
-			int cX = MathHelper.floor_double(entity.posX / 16.0D);
-			int cY = MathHelper.floor_double(entity.posY / 16.0D);
-			int cZ = MathHelper.floor_double(entity.posZ / 16.0D);
+			int cX = MathHelper.floor_double(entity.posX) >> 4;
+			int cY = MathHelper.floor_double(entity.posY) >> 4;
+			int cZ = MathHelper.floor_double(entity.posZ) >> 4;
 
 			if (!entity.addedToChunk || entity.chunkCoordX != cX || entity.chunkCoordY != cY || entity.chunkCoordZ != cZ) {
 				synchronized (entity) {
