@@ -192,8 +192,8 @@ public class EntityTickProfiler {
 				x = ((Entity) o).chunkCoordX;
 				z = ((Entity) o).chunkCoordZ;
 			} else if (o instanceof TileEntity) {
-				x = ((TileEntity) o).xCoord >> 4;
-				z = ((TileEntity) o).zCoord >> 4;
+				x = (((TileEntity) o).xCoord - 15) >> 4;
+				z = (((TileEntity) o).zCoord - 15) >> 4;
 			}
 			if (x != Integer.MIN_VALUE) {
 				chunkTimeMap.get(new ChunkCoords(x, z)).value += singleTimeEntry.getValue();
