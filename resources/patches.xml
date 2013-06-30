@@ -42,7 +42,7 @@
 		<class id="net.minecraft.server.MinecraftServer" env="mcpc">
 			<replaceInitializer field="worlds" class="nallar.collections.ListSet"/>
 			<replaceMethod code="{
-						this.server.getScheduler().mainThreadHeartbeat(this.w);
+						this.server.getScheduler().mainThreadHeartbeat(^field:MinecraftServer/tickCounter^);
 					}">spigotTLETick
 			</replaceMethod>
 			<final field="processQueue"/>
@@ -165,7 +165,7 @@
 			">fireBukkitUnloadEvent
 			</replaceMethod>
 		</class>
-		<class id="org.bukkit.craftbukkit.v1_4_R1.chunkio.ChunkIOExecutor" env="mcpc">
+		<class id="org.bukkit.craftbukkit.v1_5_R3.chunkio.ChunkIOExecutor" env="mcpc">
 			<replaceInitializer field="instance" code="$_ = null;"/>
 			<replaceMethod code="throw new UnsupportedOperationException();">tick</replaceMethod>
 			<disable>adjustPoolSize</disable>
@@ -173,8 +173,8 @@
 			<replaceMethod code="$3.getChunkAt($4, $5, true, false, $6);">queueChunkLoad</replaceMethod>
 		</class>
 		<class id="net.minecraft.world.gen.ChunkProviderServer" env="mcpc">
-			<changeFieldType field="chunksToUnload" type="org.bukkit.craftbukkit.v1_4_R1.util.LongHashSet" remove="true"/>
-			<insertAfter field="chunksToUnload" code="$field = new org.bukkit.craftbukkit.v1_4_R1.util.LongHashSet();"/>
+			<changeFieldType field="chunksToUnload" type="org.bukkit.craftbukkit.v1_5_R3.util.LongHashSet" remove="true"/>
+			<insertAfter field="chunksToUnload" code="$field = new org.bukkit.craftbukkit.v1_5_R3.util.LongHashSet();"/>
 		</class>
 		<class id="net.minecraft.world.chunk.NibbleArray" env="forge">
 			<addAll fromClass="nallar.patched.storage.PatchNibbleArrayForge"/>
@@ -293,6 +293,12 @@
 		<class id="net.minecraft.tileentity.TileEntity">
 			<addAll fromClass="nallar.patched.PatchTileEntity"/>
 		</class>
+		<class id="net.minecraft.entity.EntityTrackerEntry" env="mcpc">
+			<removeUntilOpcode index="-2" opcode="ATHROW">tryStartWachingThis,removePlayerFromTracker</removeUntilOpcode>
+		</class>
+		<class id="net.minecraft.entity.EntityTracker" env="mcpc">
+			<removeUntilOpcode index="-2" opcode="ATHROW">removeEntityFromAllTrackingPlayers,addEntityToTracker(Lnet/minecraft/entity/Entity;IIZ)V</removeUntilOpcode>
+		</class>
 		<class id="net.minecraft.entity.EntityTracker">
 			<!-- Yet more comodification exceptions -->
 			<addAll fromClass="nallar.patched.entity.PatchEntityTracker"/>
@@ -377,7 +383,7 @@
 				See https://issues.jboss.org/browse/JASSIST-197
 			-->
 			<replaceMethodCall
-							code="if (((org.bukkit.craftbukkit.v1_4_R1.CraftWorld) ((org.bukkit.event.block.BlockEvent) $1).getBlock().getWorld()).getHandle().safeToGenerate()) { $0.callEvent($$); }"
+							code="if (((org.bukkit.craftbukkit.v1_5_R3.CraftWorld) ((org.bukkit.event.block.BlockEvent) $1).getBlock().getWorld()).getHandle().safeToGenerate()) { $0.callEvent($$); }"
 							method="callEvent">updateTick
 			</replaceMethodCall>
 		</class>
@@ -394,6 +400,7 @@
 			<threadLocalBoolean field="callingPlaceEvent" threadLocalField="$0.inPlaceEvent"/>
 		</class>
 		<class id="net.minecraft.world.World" env="mcpc">
+			<removeUntilOpcode index="-2" opcode="ATHROW">addEntity,removePlayerEntityDangerously</removeUntilOpcode>
 			<insertBefore code="inPlaceEvent = new nallar.tickthreading.util.BooleanThreadLocal();"/>
 			<final field="callingPlaceEvent"/>
 			<threadLocalBoolean field="callingPlaceEvent" threadLocalField="$0.inPlaceEvent"/>
@@ -448,24 +455,28 @@
 			<synchronize>subscribeToPermission,unsubscribeFromPermission,subscribeToDefaultPerms,unsubscribeFromDefaultPerms,getPermissionSubscriptions,getDefaultPermSubscriptions</synchronize>
 			<replaceMethod code="{ fireEvent($$); }">callEvent</replaceMethod>
 		</class>
-		<class id="org.bukkit.craftbukkit.v1_4_R1.CraftServer">
+		<class id="org.bukkit.craftbukkit.v1_5_R3.CraftServer">
 			<replaceMethodCall method="registerDimension" code="{ }">createWorld(Lorg.bukkit.WorldCreator;)Lorg.bukkit.World;</replaceMethodCall>
 			<replaceMethodCall method="addMVDimension" code="{ }">createWorld(Lorg.bukkit.WorldCreator;)Lorg.bukkit.World;</replaceMethodCall>
 			<ignoreExceptions code="System.err.println(&quot;Loading world failed&quot; + $e); $e.printStackTrace(); throw new java.lang.Error($e);">
 				createWorld(Lorg.bukkit.WorldCreator;)Lorg.bukkit.World;
 			</ignoreExceptions>
 			<replaceMethod code="{
-				return net.minecraftforge.common.DimensionManager.unloadWorld(((org.bukkit.craftbukkit.v1_4_R1.CraftWorld) $1).getHandle(), $2);
+				return net.minecraftforge.common.DimensionManager.unloadWorld(((org.bukkit.craftbukkit.v1_5_R3.CraftWorld) $1).getHandle(), $2);
 			}">unloadWorld(Lorg.bukkit.World;Z)V
 			</replaceMethod>
 		</class>
-		<class id="org.bukkit.craftbukkit.v1_4_R1.CraftWorld">
+		<class id="org.bukkit.craftbukkit.v1_5_R3.entity.CraftPlayer">
+			<removeUntilOpcode index="-2" opcode="ATHROW">kickPlayer</removeUntilOpcode>
+		</class>
+		<class id="org.bukkit.craftbukkit.v1_5_R3.CraftWorld">
+			<removeUntilOpcode index="-2" opcode="ATHROW">unloadChunkRequest,unloadChunk,loadChunk</removeUntilOpcode>
 			<replaceMethod
 							code=" {
 							Object[] chunks = world.getChunks();
 							org.bukkit.Chunk[] craftChunks = new org.bukkit.Chunk[chunks.length];
 							for (int i = 0; i &lt; craftChunks.length; i++) {
-								craftChunks[i] = ((zz) chunks[i]).bukkitChunk;
+								craftChunks[i] = ((^class:Chunk^) chunks[i]).bukkitChunk;
 							}
 							return craftChunks;
 							} "
@@ -508,7 +519,7 @@
 		</class>
 	</bukkit>
 	<spigot>
-		<class id="org.bukkit.craftbukkit.v1_4_R1.util.WatchdogThread">
+		<class id="org.bukkit.craftbukkit.v1_5_R3.util.WatchdogThread">
 			<disable>run</disable>
 		</class>
 	</spigot>

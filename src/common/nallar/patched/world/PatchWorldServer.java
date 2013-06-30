@@ -66,6 +66,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	public int saveTickCount_;
 	private int chunkTickWait;
 	private HashSet<ChunkCoordIntPair> chunkTickSet;
+	private TreeHashSet<NextTickListEntry> pendingTickListEntries;
 
 	public PatchWorldServer(final MinecraftServer par1MinecraftServer, final ISaveHandler par2ISaveHandler, final String par3Str, final int par4, final WorldSettings par5WorldSettings, final Profiler par6Profiler, final ILogAgent par7ILogAgent) {
 		super(par1MinecraftServer, par2ISaveHandler, par3Str, par4, par5WorldSettings, par6Profiler, par7ILogAgent);

@@ -602,20 +602,24 @@ public class Patches {
 		int currentIndex = 0;
 		Log.info("Removing until " + attributes.get("opcode") + ':' + opcode + " at " + removeIndex);
 		CtClass ctClass = ctBehavior.getDeclaringClass();
-		MethodInfo methodInfo = ctBehavior.getMethodInfo2();
+		MethodInfo methodInfo = ctBehavior.getMethodInfo();
 		CodeAttribute codeAttribute = methodInfo.getCodeAttribute();
 		if (codeAttribute != null) {
 			CodeIterator iterator = codeAttribute.iterator();
 			while (iterator.hasNext()) {
 				int index = iterator.next();
 				int op = iterator.byteAt(index);
-				if (op == opcode && (removeIndex == -1 || removeIndex == ++currentIndex)) {
+				if (op == opcode && (removeIndex < 0 || removeIndex == ++currentIndex)) {
 					for (int i = 0; i <= index; i++) {
 						iterator.writeByte(Opcode.NOP, i);
 					}
+					Log.info("Removed until " + index);
+					if (removeIndex == -2) {
+						break;
+					}
 				}
 			}
-			methodInfo.rebuildStackMapIf6(ctClass.getClassPool(), ctClass.getClassFile2());
+			methodInfo.rebuildStackMapIf6(ctClass.getClassPool(), ctClass.getClassFile());
 		}
 	}
 
