@@ -476,6 +476,17 @@ public abstract class PatchWorld extends World {
 
 	@Override
 	@Declare
+	public boolean isBlockGettingPowered(int x, int y, int z) {
+		return this.isBlockProvidingPowerTo(x, y - 1, z, 0) > 0
+				|| this.isBlockProvidingPowerTo(x, y + 1, z, 1) > 0
+				|| this.isBlockProvidingPowerTo(x, y, z - 1, 2) > 0
+				|| this.isBlockProvidingPowerTo(x, y, z + 1, 3) > 0
+				|| this.isBlockProvidingPowerTo(x - 1, y, z, 4) > 0
+				|| this.isBlockProvidingPowerTo(x + 1, y, z, 5) > 0;
+	}
+
+	@Override
+	@Declare
 	public boolean hasCollidingBoundingBoxes(Entity par1Entity, AxisAlignedBB par2AxisAlignedBB, IEntitySelector entitySelector) {
 		ArrayList collidingBoundingBoxes = new ArrayList();
 		int minX = MathHelper.floor_double(par2AxisAlignedBB.minX);

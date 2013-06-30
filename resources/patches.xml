@@ -38,9 +38,9 @@
 			<public field="mcServer"/>
 			<volatile field="serverRunning"/>
 			<volatile field="serverIsRunning"/>
-			<replaceInitializer field="worlds" class="nallar.collections.ListSet"/>
 		</class>
 		<class id="net.minecraft.server.MinecraftServer" env="mcpc">
+			<replaceInitializer field="worlds" class="nallar.collections.ListSet"/>
 			<replaceMethod code="{
 						this.server.getScheduler().mainThreadHeartbeat(this.w);
 					}">spigotTLETick
@@ -446,6 +446,7 @@
 	<bukkit>
 		<class id="org.bukkit.plugin.SimplePluginManager">
 			<synchronize>subscribeToPermission,unsubscribeFromPermission,subscribeToDefaultPerms,unsubscribeFromDefaultPerms,getPermissionSubscriptions,getDefaultPermSubscriptions</synchronize>
+			<replaceMethod code="{ fireEvent($$); }">callEvent</replaceMethod>
 		</class>
 		<class id="org.bukkit.craftbukkit.v1_4_R1.CraftServer">
 			<replaceMethodCall method="registerDimension" code="{ }">createWorld(Lorg.bukkit.WorldCreator;)Lorg.bukkit.World;</replaceMethodCall>
@@ -588,15 +589,15 @@
 				}
 				if ((top == null) || (!itemMatch(top))) {
 					top = i.^method:ItemStack/getItem^();
-					top.a = 0;
+					top.^field:ItemStack/stackSize^ = 0;
 					this.topStack = top;
 				}
 				if ((b == null) || (!itemMatch(b))) {
 					b = this.item.^method:ItemStack/getItem^();
-					b.a = 0;
+					b.^field:ItemStack/stackSize^ = 0;
 					this.bottomStack = b;
 				}
-				return top.a + this.middleCount + b.a;
+				return top.^field:ItemStack/stackSize^ + this.middleCount + b.^field:ItemStack/stackSize^;
 			}">getItemCount
 			</replaceMethod>
 			<synchronize>updateStacks,changeItemCount,setItemCount,a(IL^class:ItemStack^;)V</synchronize>
@@ -610,7 +611,7 @@
 		<class id="factorization.common.TileEntityRouter">
 			<newField field="emptyUpdateCount" class="int" code="0" static=""/>
 			<replaceMethod code="{
-				if (this.^field:TileEntity/worldObj^.^method:World/isBlockGettingPowered^(this.l, this.m, this.n)) {
+				if (this.^field:TileEntity/worldObj^.^method:World/isBlockGettingPowered^(this.^field:TileEntity/xCoord^, this.^field:TileEntity/yCoord^, this.^field:TileEntity/zCoord^)) {
 					return false;
 				}
 				if (this.is_input) {
@@ -795,8 +796,8 @@
 				  networkedFieldsToUpdate.clear();
 				}
 
-				for (Iterator i$ = $1.h.iterator(); i$.hasNext(); ) { Object obj = i$.next();
-					iq entityPlayer = (iq)obj;
+				for (Iterator i$ = $1.^field:World/playerEntities^.iterator(); i$.hasNext(); ) {
+					^class:EntityPlayerMP^ entityPlayer = (^class:EntityPlayerMP^)i$.next();
 
 					sendUpdatePacket(networkedFieldsToUpdateList, entityPlayer);
 				}
@@ -808,9 +809,11 @@
 		</class>
 	</industrialCraft>
 	<gregTech>
+		<class id="gregtechmod.api.GregTech_API">
+			<replaceNew oldClass="java.util.HashMap" newClass="nallar.collections.CHashMap"/>
+		</class>
 		<class id="gregtechmod.GT_Mod">
 			<synchronize>readIDSUData,writeIDSUData</synchronize>
-			<replaceInitializer fieldClass="gregtechmod.common.tileentities.GT_TileEntity_IDSU" field="sEnergyList" class="nallar.collections.CHashMap">readIDSUData</replaceInitializer>
 		</class>
 		<class id="gregtechmod.common.tileentities.GT_TileEntityMetaID_Machine">
 			<replaceMethodCall method="self.^method:TileEntity/onInventoryChanged^" code="{ }">^method:TileEntity/updateEntity^</replaceMethodCall>
@@ -1149,9 +1152,6 @@
 			}">load
 			</insertAfter>
 		</class>
-		<class id="twilightforest.TFEventListener">
-			<synchronize>worldSave</synchronize>
-		</class>
 		<class id="twilightforest.block.BlockTFMagicLogSpecial">
 			<!-- Spams logs, slow -->
 			<disable>doSortingTreeEffect</disable>
@@ -1160,11 +1160,6 @@
 			<synchronize>^method:BiomeDecorator/decorate^</synchronize>
 		</class>
 	</twilightForest>
-	<bukkitForge>
-		<class id="org.bukkit.plugin.SimplePluginManager">
-			<replaceMethod code="{ fireEvent($$); }">callEvent</replaceMethod>
-		</class>
-	</bukkitForge>
 	<additionalPipes>
 		<class id="buildcraft.additionalpipes.pipes.PipePowerTeleport">
 			<synchronize>receiveEnergy,requestEnergy</synchronize>

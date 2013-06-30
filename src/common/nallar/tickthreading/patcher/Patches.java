@@ -266,7 +266,10 @@ public class Patches {
 		}
 	}
 
-	@Patch
+	@Patch (
+			requiredAttributes = "oldClass,newClass",
+			emptyConstructor = false
+	)
 	public void replaceNew(Object o, Map<String, String> attributes) throws CannotCompileException, NotFoundException {
 		final String type = attributes.get("oldClass");
 		final String code = attributes.get("code");
