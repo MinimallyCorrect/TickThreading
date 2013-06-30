@@ -38,7 +38,7 @@ public class LogFormatter extends Formatter {
 		Throwable throwable = record.getThrown();
 		if (throwable != null) {
 			if (throwable.getStackTrace().length == 0) {
-				formattedMessage.append("Stack trace unavailable. Add -XX:-OmitStackTraceInFastThrow to your java parameters to see all stack traces.").append(LINE_SEPARATOR);
+				formattedMessage.append("Stack trace unavailable for ").append(Log.toString(throwable)).append(". Add -XX:-OmitStackTraceInFastThrow to your java parameters to see all stack traces.").append(LINE_SEPARATOR);
 			} else {
 				StringWriter stackTraceWriter = new StringWriter();
 				// No need to close this - StringWriter.close() does nothing, and PrintWriter.close() just calls it.
