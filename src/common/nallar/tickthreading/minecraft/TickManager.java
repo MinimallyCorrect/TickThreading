@@ -68,7 +68,7 @@ public final class TickManager {
 		shuffleCount = world.rand.nextInt(shuffleInterval);
 	}
 
-	public TickRegion getTileEntityRegion(int hashCode) {
+	public TileEntityTickRegion getTileEntityRegion(int hashCode) {
 		return tileEntityCallables.get(hashCode);
 	}
 
@@ -89,7 +89,7 @@ public final class TickManager {
 		return callable;
 	}
 
-	public TickRegion getEntityRegion(int hashCode) {
+	public EntityTickRegion getEntityRegion(int hashCode) {
 		return entityCallables.get(hashCode);
 	}
 
@@ -790,5 +790,11 @@ public final class TickManager {
 			}
 		}
 		return count;
+	}
+
+	public TableFormatter writeRegionDetails(final TableFormatter tf, final int hashCode) {
+		getTileEntityRegion(hashCode).dump(tf);
+		getEntityRegion(hashCode).dump(tf);
+		return tf;
 	}
 }

@@ -6,7 +6,11 @@ import java.util.concurrent.locks.Lock;
 import nallar.collections.LinkedHashSetTempSetNoClear;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.minecraft.TickManager;
+import nallar.tickthreading.minecraft.commands.DumpCommand;
 import nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
+import nallar.tickthreading.util.TableFormatter;
+import nallar.tickthreading.util.stringfillers.StringFiller;
+import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
@@ -163,5 +167,14 @@ public class TileEntityTickRegion extends TickRegion {
 	@Override
 	public void die() {
 		tileEntitySet.clear();
+	}
+
+	@Override
+	public void dump(final TableFormatter tf) {
+		synchronized (tileEntitySet) {
+			for (TileEntity e : tileEntitySet) {
+				DumpCommand.dump(tf, e, tf.stringFiller == StringFiller.CHAT ? 35 : 70);
+			}
+		}
 	}
 }
