@@ -14,7 +14,6 @@ import java.util.Map;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 
-import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.IPlayerTracker;
 import cpw.mods.fml.common.IScheduledTickHandler;
 import cpw.mods.fml.common.Mod;
@@ -25,7 +24,6 @@ import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.TickRegistry;
-import cpw.mods.fml.relauncher.RelaunchClassLoader;
 import cpw.mods.fml.relauncher.Side;
 import nallar.collections.IntSet;
 import nallar.reporting.LeakDetector;
@@ -226,8 +224,6 @@ public class TickThreading {
 		serverCommandManager.registerCommand(new ProfileCommand());
 		serverCommandManager.registerCommand(new DumpCommand());
 		MinecraftServer.setTargetTPS(targetTPS);
-		FMLLog.info("Loaded " + RelaunchClassLoader.patchedClasses + " patched classes" +
-				"\nUsed " + RelaunchClassLoader.usedPatchedClasses + '.');
 		Command.checkForPermissions();
 		String javaVersion = System.getProperty("java.runtime.version");
 		if (javaVersion.startsWith("1.6.0_")) {
