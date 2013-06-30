@@ -40,7 +40,7 @@ public final class TickManager {
 	private static final byte lockXMinus = 1 << 2;
 	private static final byte lockZPlus = 1 << 3;
 	private static final byte lockZMinus = 1 << 4;
-	public final int regionSize;
+	public static final int regionSize = TickThreading.instance.regionSize;
 	public boolean profilingEnabled = false;
 	private double averageTickLength = 0;
 	private long lastTickLength = 0;
@@ -60,11 +60,10 @@ public final class TickManager {
 	private final Map<Class<?>, Integer> entityClassToCountMap = new ConcurrentHashMap<Class<?>, Integer>();
 	private final ConcurrentLinkedQueue<TickRegion> removalQueue = new ConcurrentLinkedQueue<TickRegion>();
 
-	public TickManager(WorldServer world, int regionSize, int threads, boolean waitForCompletion) {
+	public TickManager(WorldServer world, int threads, boolean waitForCompletion) {
 		this.waitForCompletion = waitForCompletion;
 		threadManager = new ThreadManager(threads, "Entities in " + Log.name(world));
 		this.world = world;
-		this.regionSize = regionSize;
 		shuffleCount = world.rand.nextInt(shuffleInterval);
 	}
 
@@ -74,13 +73,15 @@ public final class TickManager {
 
 	@SuppressWarnings ("NumericCastThatLosesPrecision")
 	private TileEntityTickRegion getOrCreateRegion(TileEntity tileEntity) {
-		int hashCode = getHashCode(tileEntity);
+		int regionX = (tileEntity.xCoord - 15) / regionSize;
+		int regionZ = (tileEntity.zCoord - 15) / regionSize;
+		int hashCode = getHashCodeFromRegionCoords(regionX, regionZ);
 		TileEntityTickRegion callable = tileEntityCallables.get(hashCode);
 		if (callable == null) {
 			synchronized (tickRegions) {
 				callable = tileEntityCallables.get(hashCode);
 				if (callable == null) {
-					callable = new TileEntityTickRegion(world, this, tileEntity.xCoord / regionSize, tileEntity.zCoord / regionSize);
+					callable = new TileEntityTickRegion(world, this, regionX, regionZ);
 					tileEntityCallables.put(hashCode, callable);
 					tickRegions.add(callable);
 				}
@@ -95,8 +96,8 @@ public final class TickManager {
 
 	@SuppressWarnings ("NumericCastThatLosesPrecision")
 	private EntityTickRegion getOrCreateRegion(Entity entity) {
-		int regionX = (int) entity.posX / regionSize;
-		int regionZ = (int) entity.posZ / regionSize;
+		int regionX = (entity.chunkCoordX << 4) / regionSize;
+		int regionZ = (entity.chunkCoordZ << 4) / regionSize;
 		int hashCode = getHashCodeFromRegionCoords(regionX, regionZ);
 		EntityTickRegion callable = entityCallables.get(hashCode);
 		if (callable == null) {
@@ -112,21 +113,24 @@ public final class TickManager {
 		return callable;
 	}
 
-	int getHashCode(TileEntity tileEntity) {
-		return getHashCode(tileEntity.xCoord, tileEntity.zCoord);
+	public static int getHashCode(TileEntity tileEntity) {
+		return getHashCodeFloor(tileEntity.xCoord, tileEntity.zCoord);
 	}
 
-	@SuppressWarnings ("NumericCastThatLosesPrecision")
-	public int getHashCode(Entity entity) {
-		return getHashCode(entity.chunkCoordX, entity.chunkCoordZ);
+	public static int getHashCode(Entity entity) {
+		return getHashCode(entity.chunkCoordX << 4, entity.chunkCoordZ << 4);
 	}
 
-	public int getHashCode(int x, int z) {
+	public static int getHashCode(int x, int z) {
 		return getHashCodeFromRegionCoords(x / regionSize, z / regionSize);
 	}
 
+	public static int getHashCodeFloor(int x, int z) {
+		return getHashCodeFromRegionCoords((x - 15) / regionSize, (z - 15) / regionSize);
+	}
+
 	public static int getHashCodeFromRegionCoords(int x, int z) {
-		return (x & 0xFFFF) | ((z & 0xFFFF) << 16);
+		return x + (z << 16);
 	}
 
 	public void queueForRemoval(TickRegion tickRegion) {
@@ -793,8 +797,25 @@ public final class TickManager {
 	}
 
 	public TableFormatter writeRegionDetails(final TableFormatter tf, final int hashCode) {
-		getTileEntityRegion(hashCode).dump(tf);
-		getEntityRegion(hashCode).dump(tf);
+		int x = 0;
+		int z = 0;
+		TileEntityTickRegion tileEntityTickRegion = getTileEntityRegion(hashCode);
+		if (tileEntityTickRegion != null) {
+			tileEntityTickRegion.dump(tf);
+			x = tileEntityTickRegion.regionX;
+			z = tileEntityTickRegion.regionZ;
+		}
+		EntityTickRegion entityTickRegion = getEntityRegion(hashCode);
+		if (entityTickRegion != null) {
+			entityTickRegion.dump(tf);
+			x = entityTickRegion.regionX;
+			z = entityTickRegion.regionZ;
+		}
+		if (entityTickRegion == null && tileEntityTickRegion == null) {
+			tf.sb.append("tickRegion for ").append(hashCode).append(" does not exist");
+		} else {
+			tf.sb.append("Dumped tickRegions for ").append(hashCode).append(": ").append(x).append(", ").append(z);
+		}
 		return tf;
 	}
 }
