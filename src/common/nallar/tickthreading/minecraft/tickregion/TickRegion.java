@@ -83,4 +83,6 @@ public abstract class TickRegion implements Runnable {
 	protected abstract int size();
 
 	public abstract void die();
+
+	public abstract void dump(final TableFormatter tf);
 }

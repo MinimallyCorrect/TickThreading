@@ -27,7 +27,7 @@ public class TicksCommand extends Command {
 	}
 
 	private static void usage(ICommandSender commandSender) {
-		sendChat(commandSender, "Usage: /ticks [b/e/t/r [radius]/?] [dimensionid]");
+		sendChat(commandSender, "Usage: /ticks [b/d/e/t/r [radius]/?] [dimensionid]");
 	}
 
 	private static World getWorld(ICommandSender commandSender, List<String> arguments) {
@@ -97,6 +97,8 @@ public class TicksCommand extends Command {
 			sendChat(commandSender, String.valueOf(((WorldServer) world).writePendingBlockUpdatesStats(new TableFormatter(commandSender))));
 		} else if ("t".equals(type)) {
 			sendChat(commandSender, String.valueOf(TickThreading.instance.getManager(world).writeDetailedStats(new TableFormatter(commandSender))));
+		} else if ("d".equals(type)) {
+			sendChat(commandSender, String.valueOf(TickThreading.instance.getManager(world).writeRegionDetails(new TableFormatter(commandSender), 0)));
 		} else {
 			usage(commandSender);
 		}
