@@ -3,6 +3,7 @@ package nallar.patched.network;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -104,7 +105,7 @@ public abstract class PatchTcpConnection extends TcpConnection {
 		if (e == null || e.toString() == null) {
 			Log.severe("onNetworkError with bad exception " + e, new Throwable());
 		}
-		if (e instanceof SocketException) {
+		if (e instanceof SocketException || e instanceof SocketTimeoutException) {
 			this.networkShutdown("disconnected: " + e.getMessage(), e);
 		} else {
 			String name = "unknown";
