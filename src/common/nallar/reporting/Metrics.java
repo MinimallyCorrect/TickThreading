@@ -29,10 +29,11 @@
 package nallar.reporting;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Proxy;
 import java.net.URL;
@@ -44,6 +45,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.zip.GZIPOutputStream;
 
 import cpw.mods.fml.common.IScheduledTickHandler;
 import cpw.mods.fml.common.Loader;
@@ -73,15 +75,15 @@ public class Metrics {
 	/**
 	 * The current revision number
 	 */
-	private static final int REVISION = 6;
+	private static final int REVISION = 7;
 	/**
 	 * The base url of the metrics domain
 	 */
-	private static final String BASE_URL = "http://mcstats.org";
+	private static final String BASE_URL = "http://report.mcstats.org";
 	/**
 	 * The url used to report a server's status
 	 */
-	private static final String REPORT_URL = "/report/%s";
+	private static final String REPORT_URL = "/plugin/%s";
 	/**
 	 * The separator to use for custom data. This MUST NOT change unless you are
 	 * hosting your own version of metrics and want to change it.
@@ -90,7 +92,7 @@ public class Metrics {
 	/**
 	 * Interval of time to ping (in minutes)
 	 */
-	private static final int PING_INTERVAL = 10;
+	private static final int PING_INTERVAL = 15;
 	/**
 	 * The mod this metrics submits for
 	 */
@@ -371,30 +373,23 @@ public class Metrics {
 	private void postPlugin(final boolean isPing) throws IOException {
 		// Server software specific section
 		String pluginName = modname;
-		boolean onlineMode = MinecraftServer.getServer().isServerInOnlineMode(); // TRUE
-		// if
-		// online
-		// mode
-		// is
-		// enabled
+		boolean onlineMode = MinecraftServer.getServer().isServerInOnlineMode();
 		String pluginVersion = modversion;
-		String serverVersion = MinecraftServer.getServer().getServerModName() + " (MC: "
+		String serverVersion = "MinecraftForge " + MinecraftServer.getServer().getServerModName().replace("forge,", "") + " (MC: "
 				+ MinecraftServer.getServer().getMinecraftVersion() + ')';
 		int playersOnline = MinecraftServer.getServer().getCurrentPlayerCount();
 
-		// END server software specific section -- all code below does not use
-		// any code outside of this class / Java
+		// END server software specific section -- all code below does not use any code outside of this class / Java
 
 		// Construct the post data
-		final StringBuilder data = new StringBuilder();
+		StringBuilder json = new StringBuilder(1024);
+		json.append('{');
 
-		// The plugin's description file containg all of the plugin data such as
-		// name, version, author, etc
-		data.append(encode("guid")).append('=').append(encode(guid));
-		encodeDataPair(data, "version", pluginVersion);
-		encodeDataPair(data, "server", serverVersion);
-		encodeDataPair(data, "players", Integer.toString(playersOnline));
-		encodeDataPair(data, "revision", String.valueOf(REVISION));
+		// The plugin's description file containg all of the plugin data such as name, version, author, etc
+		appendJSONPair(json, "guid", guid);
+		appendJSONPair(json, "plugin_version", pluginVersion);
+		appendJSONPair(json, "server_version", serverVersion);
+		appendJSONPair(json, "players_online", Integer.toString(playersOnline));
 
 		// New data as of R6
 		String osname = System.getProperty("os.name");
@@ -408,48 +403,59 @@ public class Metrics {
 			osarch = "x86_64";
 		}
 
-		encodeDataPair(data, "osname", osname);
-		encodeDataPair(data, "osarch", osarch);
-		encodeDataPair(data, "osversion", osversion);
-		encodeDataPair(data, "cores", Integer.toString(coreCount));
-		encodeDataPair(data, "online-mode", Boolean.toString(onlineMode));
-		encodeDataPair(data, "java_version", java_version);
+		appendJSONPair(json, "osname", osname);
+		appendJSONPair(json, "osarch", osarch);
+		appendJSONPair(json, "osversion", osversion);
+		appendJSONPair(json, "cores", Integer.toString(coreCount));
+		appendJSONPair(json, "auth_mode", onlineMode ? "1" : "0");
+		appendJSONPair(json, "java_version", java_version);
 
 		// If we're pinging, append it
 		if (isPing) {
-			encodeDataPair(data, "ping", "true");
+			appendJSONPair(json, "ping", "1");
 		}
 
-		// Acquire a lock on the graphs, which lets us make the assumption we
-		// also lock everything
-		// inside of the graph (e.g plotters)
-		synchronized (graphs) {
+		if (!graphs.isEmpty()) {
+			synchronized (graphs) {
+				json.append(',');
+				json.append('"');
+				json.append("graphs");
+				json.append('"');
+				json.append(':');
+				json.append('{');
 
-			for (final Graph graph : graphs) {
-				for (Plotter plotter : graph.getPlotters()) {
-					// The key name to send to the metrics server
-					// The format is C-GRAPHNAME-PLOTTERNAME where separator -
-					// is defined at the top
-					// Legacy (R4) submitters use the format Custom%s, or
-					// CustomPLOTTERNAME
-					final String key = String.format("C%s%s%s%s",
-							CUSTOM_DATA_SEPARATOR, graph.getName(),
-							CUSTOM_DATA_SEPARATOR, plotter.getColumnName());
+				boolean firstGraph = true;
 
-					// The value to send, which for the foreseeable future is
-					// just the string
-					// value of plotter.getValue()
-					final String value = Integer.toString(plotter.getValue());
+				for (final Graph graph : graphs) {
+					StringBuilder graphJson = new StringBuilder();
+					graphJson.append('{');
 
-					// Add it to the http post data :)
-					encodeDataPair(data, key, value);
+					for (Plotter plotter : graph.getPlotters()) {
+						appendJSONPair(graphJson, plotter.getColumnName(), Integer.toString(plotter.getValue()));
+					}
+
+					graphJson.append('}');
+
+					if (!firstGraph) {
+						json.append(',');
+					}
+
+					json.append(escapeJSON(graph.getName()));
+					json.append(':');
+					json.append(graphJson);
+
+					firstGraph = false;
 				}
+
+				json.append('}');
 			}
 		}
 
+		// close json
+		json.append('}');
+
 		// Create the url
-		URL url = new URL(BASE_URL
-				+ String.format(REPORT_URL, encode(pluginName)));
+		URL url = new URL(BASE_URL + String.format(REPORT_URL, urlEncode(pluginName)));
 
 		// Connect to the website
 		URLConnection connection;
@@ -462,32 +468,49 @@ public class Metrics {
 			connection = url.openConnection();
 		}
 
+		byte[] uncompressed = json.toString().getBytes();
+		byte[] compressed = gzip(json.toString());
+
+		// Headers
+		connection.addRequestProperty("User-Agent", "MCStats/" + REVISION);
+		connection.addRequestProperty("Content-Type", "application/json");
+		connection.addRequestProperty("Content-Encoding", "gzip");
+		connection.addRequestProperty("Content-Length", Integer.toString(compressed.length));
+		connection.addRequestProperty("Accept", "application/json");
+		connection.addRequestProperty("Connection", "close");
+
 		connection.setDoOutput(true);
 
-		// Write the data
-		final OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
-		try {
-			writer.write(data.toString());
-			writer.flush();
-		} finally {
-			writer.close();
+		if (debug) {
+			Log.info("[Metrics] Prepared request for " + pluginName + " uncompressed=" + uncompressed.length + " compressed=" + compressed.length);
 		}
+
+		// Write the data
+		OutputStream os = connection.getOutputStream();
+		os.write(compressed);
+		os.flush();
 
 		// Now read the response
-		final String response;
 		final BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-		try {
-			response = reader.readLine();
-		} finally {
-			reader.close();
-		}
+		String response = reader.readLine();
 
-		if (response == null || response.startsWith("ERR")) {
-			throw new IOException(response); // Throw the exception
+		// close resources
+		os.close();
+		reader.close();
+
+		if (response == null || response.startsWith("ERR") || !response.isEmpty() && response.charAt(0) == '7') {
+			if (response == null) {
+				response = "null";
+			} else if (!response.isEmpty() && response.charAt(0) == '7') {
+				response = response.substring(response.startsWith("7,") ? 2 : 1);
+			}
+
+			throw new IOException(response);
 		} else {
 			// Is this the first update this hour?
-			if (response.contains("OK This is your first update this hour")) {
+			if ("1".equals(response) || response.contains("This is your first update this hour")) {
 				synchronized (graphs) {
+
 					for (final Graph graph : graphs) {
 						for (Plotter plotter : graph.getPlotters()) {
 							plotter.reset();
@@ -499,8 +522,33 @@ public class Metrics {
 	}
 
 	/**
-	 * Check if mineshafter is present. If it is, we need to bypass it to send
-	 * POST requests
+	 * GZip compress a string of bytes
+	 * @param input
+	 * @return
+	 */
+	public static byte[] gzip(String input) {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		GZIPOutputStream gzos = null;
+
+		try {
+			gzos = new GZIPOutputStream(baos);
+			gzos.write(input.getBytes("UTF-8"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (gzos != null) {
+				try {
+					gzos.close();
+				} catch (IOException ignore) {
+				}
+			}
+		}
+
+		return baos.toByteArray();
+	}
+
+	/**
+	 * Check if mineshafter is present. If it is, we need to bypass it to send POST requests
 	 * @return true if mineshafter is installed on the server
 	 */
 	private static boolean isMineshafterPresent() {
@@ -513,24 +561,81 @@ public class Metrics {
 	}
 
 	/**
-	 * <p>
-	 * Encode a key/value data pair to be used in a HTTP post request. This
-	 * INCLUDES a & so the first key/value pair MUST be included manually, e.g:
-	 * </p>
-	 * <code>
-	 * StringBuffer data = new StringBuffer();
-	 * data.append(encode("guid")).append('=').append(encode(guid));
-	 * encodeDataPair(data, "version", description.getVersion());
-	 * </code>
-	 * @param buffer the stringbuilder to append the data pair onto
-	 * @param key the key value
-	 * @param value the value
+	 * Appends a json encoded key/value pair to the given string builder.
+	 * @param json
+	 * @param key
+	 * @param value
+	 * @throws UnsupportedEncodingException
 	 */
-	private static void encodeDataPair(final StringBuilder buffer,
-									   final String key, final String value)
-			throws UnsupportedEncodingException {
-		buffer.append('&').append(encode(key)).append('=')
-				.append(encode(value));
+	private static void appendJSONPair(StringBuilder json, String key, String value) throws UnsupportedEncodingException {
+		boolean isValueNumeric = false;
+
+		try {
+			if ("0".equals(value) || !(!value.isEmpty() && value.charAt(value.length() - 1) == '0')) {
+				Double.parseDouble(value);
+				isValueNumeric = true;
+			}
+		} catch (NumberFormatException e) {
+			isValueNumeric = false;
+		}
+
+		if (json.charAt(json.length() - 1) != '{') {
+			json.append(',');
+		}
+
+		json.append(escapeJSON(key));
+		json.append(':');
+
+		if (isValueNumeric) {
+			json.append(value);
+		} else {
+			json.append(escapeJSON(value));
+		}
+	}
+
+	/**
+	 * Escape a string to create a valid JSON string
+	 * @param text
+	 * @return
+	 */
+	private static String escapeJSON(String text) {
+		StringBuilder builder = new StringBuilder();
+
+		builder.append('"');
+		for (int index = 0; index < text.length(); index++) {
+			char chr = text.charAt(index);
+
+			switch (chr) {
+				case '"':
+				case '\\':
+					builder.append('\\');
+					builder.append(chr);
+					break;
+				case '\b':
+					builder.append("\\b");
+					break;
+				case '\t':
+					builder.append("\\t");
+					break;
+				case '\n':
+					builder.append("\\n");
+					break;
+				case '\r':
+					builder.append("\\r");
+					break;
+				default:
+					if (chr < ' ') {
+						String t = "000" + Integer.toHexString(chr);
+						builder.append("\\u").append(t.substring(t.length() - 4));
+					} else {
+						builder.append(chr);
+					}
+					break;
+			}
+		}
+		builder.append('"');
+
+		return builder.toString();
 	}
 
 	/**
@@ -538,8 +643,7 @@ public class Metrics {
 	 * @param text the text to encode
 	 * @return the encoded text, as UTF-8
 	 */
-	private static String encode(final String text)
-			throws UnsupportedEncodingException {
+	private static String urlEncode(final String text) throws UnsupportedEncodingException {
 		return URLEncoder.encode(text, "UTF-8");
 	}
 
