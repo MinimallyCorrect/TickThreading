@@ -604,7 +604,8 @@
 		<class id="factorization.common.TileEntityMirror">
 			<replaceMethod code="{
 				this.next_check = (300 + rand.nextInt(60));
-			}">setNextCheck</replaceMethod>
+			}">setNextCheck
+			</replaceMethod>
 		</class>
 		<class id="factorization.common.TileEntityRouter">
 			<newField field="emptyUpdateCount" class="int" code="0" static=""/>
@@ -620,7 +621,8 @@
 				}
 
 				return this.buffer.a &lt; this.buffer.d();
-			}">shouldUpdate</replaceMethod>
+			}">shouldUpdate
+			</replaceMethod>
 		</class>
 		<class id="factorization.common.TileEntitySolarTurbine">
 			<synchronize>addReflector</synchronize>
@@ -688,7 +690,8 @@
 					}
 				}
 				return -1;
-			}">getPartialSlot(L^class:ItemStack^;II)I</replaceMethod>
+			}">getPartialSlot(L^class:ItemStack^;II)I
+			</replaceMethod>
 		</class>
 	</buildCraftCore>
 	<buildCraftEnergy>
@@ -1404,7 +1407,8 @@
 					}
 					thaumcraft.common.AuraManager.auraUpdateList.put(Integer.valueOf($1), temp);
 				}
-			}">populateAuraUpdateList</replaceMethod>
+			}">populateAuraUpdateList
+			</replaceMethod>
 		</class>
 		<class id="thaumcraft.common.EventHandler">
 			<synchronize field="$1.world.auraLock">chunkLoad</synchronize>
@@ -1712,7 +1716,8 @@
 		<class id="org.dynmap.forge.DynmapPlugin$WorldTracker">
 			<insertAfter code="{
 				this$0.handleUnload($1.world);
-			}">handleWorldUnload,getWorld(Lyc;Z)Lorg.dynmap.forge.ForgeWorld;</insertAfter>
+			}">handleWorldUnload,getWorld(Lyc;Z)Lorg.dynmap.forge.ForgeWorld;
+			</insertAfter>
 		</class>
 		<class id="org.dynmap.forge.SnapshotCache">
 			<synchronize/>
@@ -1733,7 +1738,8 @@
 					$1.y = this.inputMap.motionZ;
 					cpw.mods.fml.common.network.PacketDispatcher.sendPacketAroundPlayer($1, updatePacket.getPacket250(), 4096);
 				}
-			}">handleServer</replaceMethod>
+			}">handleServer
+			</replaceMethod>
 		</class>
 	</mmmPowerSuits>
 	<gregsLighting>
