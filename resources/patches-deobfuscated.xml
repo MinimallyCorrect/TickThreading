@@ -672,6 +672,19 @@
 				return injected;
 			}">inject
 			</replaceMethod>
+			<replaceMethod code="{
+				for (int i = $2; i &lt; $3; i++) {
+					^class:ItemStack^ other = this.inventory.a(i);
+					if (other != null) {
+						if (other.a($1) &amp;&amp; ^class:ItemStack^.a(other, $1)) {
+							if (other.a &lt; other.d()) {
+								return i;
+							}
+						}
+					}
+				}
+				return -1;
+			}">getPartialSlot(L^class:ItemStack^;II)I</replaceMethod>
 		</class>
 	</buildCraftCore>
 	<buildCraftEnergy>
