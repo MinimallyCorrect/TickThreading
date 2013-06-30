@@ -208,6 +208,9 @@
 			<replaceMethod code="return 1;">getHeightValue</replaceMethod>
 			<replaceMethod code="{ if ($2 == 0) { return 7; } return 0; }">getBlockID</replaceMethod>
 		</class>
+		<class id="net.minecraft.util.MathHelper">
+			<final field="SIN_TABLE"/>
+		</class>
 		<class id="net.minecraft.util.Vec3Pool">
 			<!-- This prevents entities in multiple threads using the same Vec3 for collisions. -->
 			<replace class="nallar.patched.PatchVec3Pool"/>

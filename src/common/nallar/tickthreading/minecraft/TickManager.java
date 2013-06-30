@@ -40,7 +40,7 @@ public final class TickManager {
 	private static final byte lockXMinus = 1 << 2;
 	private static final byte lockZPlus = 1 << 3;
 	private static final byte lockZMinus = 1 << 4;
-	public static final int regionSize = TickThreading.instance.regionSize;
+	public static final int regionSize = 31 - Integer.numberOfLeadingZeros(TickThreading.instance.regionSize);
 	public boolean profilingEnabled = false;
 	private double averageTickLength = 0;
 	private long lastTickLength = 0;
@@ -73,8 +73,8 @@ public final class TickManager {
 
 	@SuppressWarnings ("NumericCastThatLosesPrecision")
 	private TileEntityTickRegion getOrCreateRegion(TileEntity tileEntity) {
-		int regionX = (tileEntity.xCoord - 15) / regionSize;
-		int regionZ = (tileEntity.zCoord - 15) / regionSize;
+		int regionX = tileEntity.xCoord >> regionSize;
+		int regionZ = tileEntity.zCoord >> regionSize;
 		int hashCode = getHashCodeFromRegionCoords(regionX, regionZ);
 		TileEntityTickRegion callable = tileEntityCallables.get(hashCode);
 		if (callable == null) {
@@ -96,8 +96,8 @@ public final class TickManager {
 
 	@SuppressWarnings ("NumericCastThatLosesPrecision")
 	private EntityTickRegion getOrCreateRegion(Entity entity) {
-		int regionX = (entity.chunkCoordX << 4) / regionSize;
-		int regionZ = (entity.chunkCoordZ << 4) / regionSize;
+		int regionX = (entity.chunkCoordX << 4) >> regionSize;
+		int regionZ = (entity.chunkCoordZ << 4) >> regionSize;
 		int hashCode = getHashCodeFromRegionCoords(regionX, regionZ);
 		EntityTickRegion callable = entityCallables.get(hashCode);
 		if (callable == null) {
@@ -114,7 +114,7 @@ public final class TickManager {
 	}
 
 	public static int getHashCode(TileEntity tileEntity) {
-		return getHashCodeFloor(tileEntity.xCoord, tileEntity.zCoord);
+		return getHashCode(tileEntity.xCoord, tileEntity.zCoord);
 	}
 
 	public static int getHashCode(Entity entity) {
@@ -122,11 +122,7 @@ public final class TickManager {
 	}
 
 	public static int getHashCode(int x, int z) {
-		return getHashCodeFromRegionCoords(x / regionSize, z / regionSize);
-	}
-
-	public static int getHashCodeFloor(int x, int z) {
-		return getHashCodeFromRegionCoords((x - 15) / regionSize, (z - 15) / regionSize);
+		return getHashCodeFromRegionCoords(x >> regionSize, z >> regionSize);
 	}
 
 	public static int getHashCodeFromRegionCoords(int x, int z) {
@@ -644,9 +640,11 @@ public final class TickManager {
 				if (invalid || (chunk = chunkProviderServer.getChunkIfExists(te.xCoord >> 4, te.zCoord >> 4)) == null || chunk.getChunkBlockTileEntity(te.xCoord & 15, te.yCoord, te.zCoord & 15) != te) {
 					if (invalid) {
 						invalidTiles++;
+						sb.append("Removed ").append(Log.toString(te)).append(" as it is invalid.\n");
 					} else {
 						unloadedTiles++;
 						te.invalidate();
+						sb.append("Removed ").append(Log.toString(te)).append(" as it should have been unloaded.\n");
 					}
 					fixed++;
 					remove(te);

@@ -88,7 +88,7 @@ public class ProfileCommand extends Command {
 		} else {
 			worlds.add(world);
 		}
-		final int hashCode = x != null ? manager.getHashCodeFloor(x * 16, z * 16) : 0;
+		final int hashCode = x != null ? TickManager.getHashCode(x * 16, z * 16) : 0;
 		if (entity) {
 			final EntityTickProfiler entityTickProfiler = EntityTickProfiler.ENTITY_TICK_PROFILER;
 			if (location) {

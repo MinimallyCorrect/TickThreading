@@ -87,7 +87,7 @@ public class TicksCommand extends Command {
 				worldId = commandSender instanceof Entity ? ((Entity) commandSender).worldObj.dimensionId : 0;
 			}
 			if (arguments.size() == 2) {
-				region = TickManager.getHashCodeFloor(Integer.parseInt(arguments.remove(0)), Integer.parseInt(arguments.remove(0)));
+				region = TickManager.getHashCode(Integer.parseInt(arguments.remove(0)), Integer.parseInt(arguments.remove(0)));
 			} else if (commandSender instanceof Entity) {
 				region = TickManager.getHashCode((Entity) commandSender);
 			}
