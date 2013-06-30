@@ -26,17 +26,12 @@ import cpw.mods.fml.relauncher.FMLRelaunchLog;
 import cpw.mods.fml.relauncher.IClassTransformer;
 import cpw.mods.fml.relauncher.RelaunchClassLoader;
 import nallar.tickthreading.Log;
-import nallar.tickthreading.patcher.Declare;
 import nallar.unsafe.UnsafeUtil;
 import sun.misc.URLClassPath;
 
 public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 	private static final ThreadLocal<byte[]> buffer = new ThreadLocal<byte[]>();
 	private static final PrintStream err = new PrintStream(new FileOutputStream(FileDescriptor.err));
-	@Declare
-	public static int patchedClasses_;
-	@Declare
-	public static int usedPatchedClasses_;
 	private static volatile Map<String, byte[]> replacedClasses;
 	private File minecraftdir;
 	private File patchedModsFolder;
@@ -159,22 +154,19 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 				try {
 					Enumeration<ZipEntry> zipEntryEnumeration = (Enumeration<ZipEntry>) zipFile.entries();
 					int patchedClasses = 0;
-					int alreadyLoadedPatchedClasses = 0;
 					while (zipEntryEnumeration.hasMoreElements()) {
 						ZipEntry zipEntry = zipEntryEnumeration.nextElement();
 						String name = zipEntry.getName();
-						if (!name.toLowerCase().endsWith(".class")) {
-							continue;
-						} else if (replacedClasses.containsKey(name)) {
-							alreadyLoadedPatchedClasses++;
+						if (!name.toLowerCase().endsWith(".class") || replacedClasses.containsKey(name)) {
 							continue;
 						}
 						patchedClasses++;
 						byte[] contents = readFully(zipFile.getInputStream(zipEntry));
 						replacedClasses.put(name, contents);
 					}
-					RelaunchClassLoader.patchedClasses += patchedClasses;
-					log(Level.INFO, null, "Loaded " + patchedClasses + " patched classes for " + patchedModFile.getName() + ". " + (alreadyLoadedPatchedClasses == 0 ? "" : alreadyLoadedPatchedClasses + " classes not loaded, as already loaded from another patchedMods file."));
+					if (patchedClasses > 0) {
+						log(Level.INFO, null, "Loaded " + patchedClasses + " patched classes for " + patchedModFile.getName() + '.');
+					}
 				} finally {
 					zipFile.close();
 				}
@@ -213,11 +205,7 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 			if (replacedClasses == null) {
 				return null;
 			}
-			byte[] data = replacedClasses.get(classFile);
-			if (data != null) {
-				usedPatchedClasses++;
-			}
-			return data;
+			return replacedClasses.get(classFile);
 		} catch (Throwable t) {
 			log(Level.SEVERE, t, "Exception getting patched class for " + classFile);
 		}
