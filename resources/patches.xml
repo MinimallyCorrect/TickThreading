@@ -1268,7 +1268,6 @@
 			<newField code="nallar.tickthreading.util.contextaccess.ContextAccess.$" class="nallar.tickthreading.util.contextaccess.ContextAccess" field="context" static="true"/>
 			<insertBefore code="{
 				if (context.runningUnder(thaumcraft.common.WorldTicker.class)) {
-					Log.severe(&quot;Recursive TC add.&quot;, new Throwable());
 					return;
 				}
 			}">addSwapper,addBlockToRestore
