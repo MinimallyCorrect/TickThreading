@@ -599,7 +599,7 @@
 				return top.a + this.middleCount + b.a;
 			}">getItemCount
 			</replaceMethod>
-			<synchronize>updateStacks,changeItemCount,setItemCount,a(IL^class;ItemStack^;)V</synchronize>
+			<synchronize>updateStacks,changeItemCount,setItemCount,a(IL^class:ItemStack^;)V</synchronize>
 		</class>
 		<class id="factorization.common.TileEntityMirror">
 			<replaceMethod code="{
@@ -1370,94 +1370,6 @@
 			<synchronize>getCellArray,resetCache</synchronize>
 		</class>
 		<class id="appeng.me.tile.TileStorageBus">
-			<replaceMethod code="{
-				super.g();
-
-				if (this.delay++ > Math.min(100, Math.max(20, this.freq)))
-				{
-					appeng.api.me.util.IGridInterface gi = getGrid();
-					List oList;
-					if (gi != null)
-					{
-						this.delay = 0;
-						appeng.api.me.util.IMEInventory inv = getInv();
-						if (inv == null) {
-							if (oldList != null) {
-								this.freq = 0;
-								gi.onInventoryChange();
-								this.oldList = null;
-							}
-							return;
-						}
-
-						List sList = new SynchronizedList();
-						Object o = getGrid();
-						if (o == null) {
-							o = new Object();
-						}
-						synchronized (o) {
-							synchronized(sList) {
-								List newList = inv.getAvailableItems(sList);
-								if (newList != sList) {
-									sList.addAll(newList);
-									newList = sList;
-								}
-								if (newList == null) {
-									newList = new SynchronizedList();
-								}
-								if (this.oldList == null) {
-									this.oldList = new SynchronizedList();
-								}
-								oList = this.oldList;
-								this.oldList = newList;
-
-								synchronized(oList) {
-									if (oList.size() != newList.size()) {
-										gi.onInventoryChange();
-									}
-
-									for (Iterator i1 = newList.iterator(); i1.hasNext();) {
-										ur x = (ur) i1.next();
-										boolean found = false;
-										for (Iterator i2 = oList.iterator(); i2.hasNext();) {
-											ur y = (ur) i2.next();
-											if (appeng.util.Platform.isSameItem(x, y))
-											{
-												found = true;
-
-												if (x.a != y.a)
-												{
-													this.freq = 0;
-													gi.onInventoryChange();
-
-													if (x.a &lt;= y.a)
-														break;
-													ur j = x.l();
-													j.a -= y.a;
-													gi.signalInput(null, j);
-													break;
-												}
-
-											}
-
-										}
-
-										if (!found)
-										{
-											this.freq = 0;
-											gi.onInventoryChange();
-											gi.signalInput(null, x);
-										}
-									}
-								}
-							}
-						}
-					}
-
-					this.freq += 1;
-				}
-			}">^method:TileEntity/updateEntity^
-			</replaceMethod>
 			<synchronize>getCellArray,getSharedTagCompound,signalInput</synchronize>
 		</class>
 		<class id="appeng.me.MEInventoryArray">

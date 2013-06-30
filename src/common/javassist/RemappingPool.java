@@ -87,6 +87,10 @@ public class RemappingPool extends ClassPool {
 				if (cachedClass != null) {
 					return cachedClass;
 				}
+				cachedClass = super.getCached(className);
+				if (cachedClass != null && cachedClass.isPrimitive()) {
+					return cachedClass;
+				}
 				if (!Transformer.remapClassName(className).equals(className)) {
 					Log.severe("Attempted to load obfuscated class " + className, new Throwable());
 					return null;
