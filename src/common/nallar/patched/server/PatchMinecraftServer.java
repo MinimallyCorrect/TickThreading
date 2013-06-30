@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
@@ -72,6 +73,8 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	public final java.util.concurrent.atomic.AtomicInteger currentlySaving_ = null;
 	@Declare
 	public static java.util.Set<net.minecraftforge.common.Configuration> toSaveConfigurationSet_;
+	@Declare
+	public static final java.util.concurrent.ConcurrentLinkedQueue<Runnable> runQueue = new ConcurrentLinkedQueue<Runnable>();
 
 	public void construct() {
 		currentlySaving = new AtomicInteger();
@@ -359,9 +362,12 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	public void updateTimeLightAndEntities() {
 		final Profiler profiler = theProfiler;
 		profiler.startSection("levels");
-		int var1;
 
 		spigotTLETick();
+
+		for (Runnable runnable = runQueue.poll(); runnable != null; runnable = runQueue.poll()) {
+			runnable.run();
+		}
 
 		Integer[] dimensionIdsToTick = this.dimensionIdsToTick = DimensionManager.getIDs();
 
@@ -411,8 +417,8 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		this.serverConfigManager.sendPlayerInfoToAllPlayers();
 
 		profiler.endStartSection("tickables");
-		for (var1 = 0; var1 < this.tickables.size(); ++var1) {
-			((IUpdatePlayerListBox) this.tickables.get(var1)).update();
+		for (IUpdatePlayerListBox tickable : (Iterable<IUpdatePlayerListBox>) this.tickables) {
+			tickable.update();
 		}
 
 		if (concurrentTicking) {
