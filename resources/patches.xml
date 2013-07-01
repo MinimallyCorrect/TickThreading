@@ -118,8 +118,10 @@
 			<newField static="" field="nextEntryID_" class="java.util.concurrent.atomic.AtomicLong"/>
 			<insertAfter field="tickEntryID" code="this.$field = this.nextEntryID_.getAndIncrement();"/>
 		</class>
+		<class id="net.minecraft.world.WorldServer" env="forge">
+			<removeFieldAndInitializers field="pendingTickListEntries"/>
+		</class>
 		<class id="net.minecraft.world.WorldServer">
-			<removeFieldAndInitializers field="pendingBlockUpdates"/>
 			<addAll fromClass="nallar.patched.world.PatchWorldServer"/>
 			<profile>tickBlocksAndAmbiance</profile>
 			<profile>tick</profile>
