@@ -496,7 +496,6 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		final ChunkProviderServer chunkProviderServer = this.theChunkProviderServer;
 		final boolean isRaining = this.isRaining();
 		final boolean isThundering = this.isThundering();
-		final Profiler profiler = this.theProfiler;
 		final WorldProvider provider = this.provider;
 		int updateLCG = this.updateLCG;
 		// We use a random per thread - randoms are threadsafe, however it can result in some contention. See Random.nextInt - compareAndSet.
@@ -529,14 +528,12 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 			int xPos = cX * 16;
 			int zPos = cZ * 16;
 			this.moodSoundAndLightCheck(xPos, zPos, chunk);
-			profiler.endStartSection("chunkTick"); // endStart as moodSoundAndLightCheck starts a section.
 			chunk.updateSkylight();
 			int var8;
 			int var9;
 			int var10;
 			int var11;
 
-			profiler.startSection("lightning");
 			if (isRaining && isThundering && provider.canDoLightning(chunk) && rand.nextInt(100000) == 0) {
 				updateLCG = updateLCG * 1664525 + 1013904223;
 				var8 = updateLCG >> 2;
@@ -551,7 +548,6 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 
 			int blockID;
 
-			profiler.endStartSection("precipitation");
 			if (provider.canDoRainSnowIce(chunk) && rand.nextInt(16) == 0) {
 				updateLCG = updateLCG * 1664525 + 1013904223;
 				var8 = updateLCG >> 2;
@@ -580,7 +576,6 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 				}
 			}
 
-			profiler.endStartSection("blockTick");
 			ExtendedBlockStorage[] var19 = chunk.getBlockStorageArray();
 			var9 = var19.length;
 
@@ -606,8 +601,6 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 					}
 				}
 			}
-			profiler.endSection();
-			profiler.endStartSection("iterate");
 		}
 		this.updateLCG += updateLCG * 1664525;
 	}
