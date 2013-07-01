@@ -119,6 +119,7 @@
 			<insertAfter field="tickEntryID" code="this.$field = this.nextEntryID_.getAndIncrement();"/>
 		</class>
 		<class id="net.minecraft.world.WorldServer">
+			<removeFieldAndInitializers field="pendingBlockUpdates"/>
 			<addAll fromClass="nallar.patched.world.PatchWorldServer"/>
 			<profile>tickBlocksAndAmbiance</profile>
 			<profile>tick</profile>

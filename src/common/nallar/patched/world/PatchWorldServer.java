@@ -195,7 +195,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	@Declare
 	public nallar.tickthreading.util.TableFormatter writePendingBlockUpdatesStats(nallar.tickthreading.util.TableFormatter tf) {
 		tf.sb.append(pendingTickListEntries.size()).append(" pending block updates\n");
-		TreeHashSet<NextTickListEntry> pendingTickListEntries = (TreeHashSet<NextTickListEntry>) this.pendingTickListEntries;
+		TreeHashSet<NextTickListEntry> pendingTickListEntries = this.pendingTickListEntries;
 		Iterator<NextTickListEntry> nextTickListEntryIterator = pendingTickListEntries.concurrentIterator();
 		int[] blockFrequencies = new int[4096];
 
@@ -241,7 +241,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		int maxCX = minCX + 16;
 		int minCZ = chunk.zPosition << 4;
 		int maxCZ = minCZ + 16;
-		TreeHashSet<NextTickListEntry> pendingTickListEntries = (TreeHashSet<NextTickListEntry>) this.pendingTickListEntries;
+		TreeHashSet<NextTickListEntry> pendingTickListEntries = this.pendingTickListEntries;
 		Iterator<NextTickListEntry> nextTickListEntryIterator = pendingTickListEntries.concurrentIterator();
 
 		while (nextTickListEntryIterator.hasNext()) {
