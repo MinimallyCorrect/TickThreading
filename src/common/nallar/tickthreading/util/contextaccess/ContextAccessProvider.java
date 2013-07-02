@@ -18,7 +18,7 @@ class ContextAccessProvider {
 					sb.append("Stack:\n");
 					for (int i = -2; i < 3; i++) {
 						try {
-							sb.append(contextAccess.getContext(i).getName()).append(" at ").append(i);
+							sb.append(contextAccess.getContext(i).getName()).append(" at ").append(i).append('\n');
 						} catch (Throwable ignored) {
 						}
 					}

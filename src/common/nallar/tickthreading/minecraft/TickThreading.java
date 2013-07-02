@@ -138,6 +138,7 @@ public class TickThreading {
 			Log.flush();
 			Runtime.getRuntime().halt(1);
 		}
+		ContextAccess.$.getContext(0);
 	}
 
 	@Mod.Init
