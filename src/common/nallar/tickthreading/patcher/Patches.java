@@ -760,7 +760,7 @@ public class Patches {
 		replaceFieldUsage(ctBehavior, CollectionsUtil.<String, String>map(
 				"field", ctField.getName(),
 				"writeCode", "{ }",
-				"readCode", "{ }",
+				"readCode", "{ $_ = null; }",
 				"silent", "true"));
 	}
 
