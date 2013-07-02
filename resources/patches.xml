@@ -119,7 +119,7 @@
 			<insertAfter field="tickEntryID" code="this.$field = this.nextEntryID_.getAndIncrement();"/>
 		</class>
 		<class id="net.minecraft.world.WorldServer" env="forge">
-			<removeFieldAndInitializers field="pendingTickListEntries"/>
+			<removeInitializers field="pendingTickListEntries"/>
 		</class>
 		<class id="net.minecraft.world.WorldServer">
 			<addAll fromClass="nallar.patched.world.PatchWorldServer"/>
@@ -1274,35 +1274,35 @@
 		<class id="thaumcraft.api.ObjectTags">
 			<replaceInitializer field="tags" class="nallar.collections.CHashMap"/>
 		</class>
-		<class id="thaumcraft.common.AuraManager">
+		<class id="thaumcraft.common.aura.AuraManager">
 			<replaceNew oldClass="java.util.LinkedList" newClass="nallar.collections.ConcurrentLinkedQueueList">registerAuraNode,addToAuraUpdateList</replaceNew>
 			<synchronize>registerAuraNode</synchronize>
 		</class>
-		<class id="thaumcraft.common.WorldTicker">
+		<class id="thaumcraft.common.lib.WorldTicker">
 			<newField code="nallar.tickthreading.util.contextaccess.ContextAccess.$" class="nallar.tickthreading.util.contextaccess.ContextAccess" field="context" static="true"/>
 			<insertBefore code="{
-				if (context.runningUnder(thaumcraft.common.WorldTicker.class)) {
+				if (context.runningUnder(thaumcraft.common.lib.WorldTicker.class)) {
 					return;
 				}
 			}">addSwapper,addBlockToRestore
 			</insertBefore>
 		</class>
-		<class id="thaumcraft.common.AuraWorldTicker">
+		<class id="thaumcraft.common.aura.AuraWorldTicker">
 			<synchronize field="((^class:WorldServer^)$2[0]).auraLock">tickEnd</synchronize>
 			<replaceMethod code="{
-				synchronized(thaumcraft.common.AuraManager.class) {
-					if (thaumcraft.common.AuraManager.auraUpdateList.get(Integer.valueOf($1)) != null) {
+				synchronized(thaumcraft.common.aura.AuraManager.class) {
+					if (thaumcraft.common.aura.AuraManager.auraUpdateList.get(Integer.valueOf($1)) != null) {
 						return;
 					}
 					LinkedList temp = new ConcurrentLinkedQueueList();
-					Collection nodes = thaumcraft.common.AuraManager.auraNodes.values();
+					Collection nodes = thaumcraft.common.aura.AuraManager.auraNodes.values();
 					for (Iterator i = nodes.iterator(); i.hasNext();) {
-						thaumcraft.api.AuraNode node = (thaumcraft.api.AuraNode) i.next();
+						thaumcraft.api.aura.AuraNode node = (thaumcraft.api.aura.AuraNode) i.next();
 						if (node.dimension == $1) {
 							temp.add(Integer.valueOf(node.key));
 						}
 					}
-					thaumcraft.common.AuraManager.auraUpdateList.put(Integer.valueOf($1), temp);
+					thaumcraft.common.aura.AuraManager.auraUpdateList.put(Integer.valueOf($1), temp);
 				}
 			}">populateAuraUpdateList
 			</replaceMethod>
@@ -1310,14 +1310,14 @@
 		<class id="thaumcraft.common.EventHandler">
 			<synchronize field="$1.world.auraLock">chunkLoad</synchronize>
 		</class>
-		<class id="thaumcraft.common.blocks.TileCrystalCapacitor">
+		<class id="thaumcraft.common.tiles.TileCrystalCapacitor">
 			<replaceFieldUsage field="count" writeCode="{ }" readCode="{ $_ = null; }">^all^</replaceFieldUsage>
 			<removeField field="count"/>
 			<insertAfter code="interval = new Random().nextInt(300);"/>
 			<replaceMethod code="{
 				^class:World^ world = this.^field:TileEntity/worldObj^;
 				if (!world.onClient() &amp;&amp; interval++ % 300 == 0) {
-					ArrayList e = thaumcraft.common.AuraManager.getAurasWithin(world, ^field:TileEntity/xCoord^ + 0.5, ^field:TileEntity/yCoord^ + 0.5, ^field:TileEntity/zCoord^ + 0.5);
+					ArrayList e = thaumcraft.common.aura.AuraManager.getAurasWithin(world, ^field:TileEntity/xCoord^ + 0.5, ^field:TileEntity/yCoord^ + 0.5, ^field:TileEntity/zCoord^ + 0.5);
 					if(e.size() == 0) {
 					   return;
 					}
@@ -1326,17 +1326,17 @@
 
 					while(i$.hasNext()) {
 					   Integer key = (Integer)i$.next();
-					   thaumcraft.api.AuraNode nd = thaumcraft.common.AuraManager.getNode(key.intValue());
+					   thaumcraft.api.aura.AuraNode nd = thaumcraft.common.aura.AuraManager.getNode(key.intValue());
 					   if(nd != null) {
 					      if(nd.level &gt; nd.baseLevel &amp;&amp; this.storedVis &lt; this.maxVis) {
-					         thaumcraft.common.AuraManager.queueNodeChanges(nd.key, -1, 0, false, null, 0.0F, 0.0F, 0.0F);
+					         thaumcraft.common.aura.AuraManager.queueNodeChanges(nd.key, -1, 0, false, null, 0.0F, 0.0F, 0.0F);
 					         ++this.storedVis;
 					         sendTile();
 					         break;
 					      }
 
 					      if(nd.level &lt; nd.baseLevel &amp;&amp; this.storedVis &gt; 0) {
-					         thaumcraft.common.AuraManager.queueNodeChanges(nd.key, 1, 0, false, null, 0.0F, 0.0F, 0.0F);
+					         thaumcraft.common.aura.AuraManager.queueNodeChanges(nd.key, 1, 0, false, null, 0.0F, 0.0F, 0.0F);
 					         --this.storedVis;
 					         sendTile();
 					         break;
@@ -1347,11 +1347,11 @@
 			}">^method:TileEntity/updateEntity^
 			</replaceMethod>
 		</class>
-		<class id="thaumcraft.common.blocks.TileMarker">
+		<class id="thaumcraft.common.tiles.TileMarker">
 			<replaceInitializer field="markers" class="nallar.collections.CHashMap">^static^</replaceInitializer>
 			<replaceInitializer field="markedForDeletion" class="nallar.collections.ArrayListReplaceIterateTempListClear">^static^</replaceInitializer>
 		</class>
-		<class id="thaumcraft.common.blocks.TileSensor">
+		<class id="thaumcraft.common.tiles.TileSensor">
 			<replaceMethod code="((ArrayList) noteBlockEvents.get($1)).addAll($1.getNoteBlockEvents());">getNoteBlockEvents</replaceMethod>
 		</class>
 	</thaumcraft>

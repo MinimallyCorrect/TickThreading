@@ -657,9 +657,8 @@ public class Patches {
 			try {
 				CtClass type = ctClass.getDeclaredField(fieldName).getType();
 				if (type != expectedType) {
-					Log.severe("Field " + fieldName + " already exists, but as a different type. Exists: " + type + ", expected: " + expectedType);
-					removeField(ctClass, CollectionsUtil.<String, String>map("field", fieldName));
-					throw new NotFoundException("");
+					Log.warning("Field " + fieldName + " already exists, but as a different type. Exists: " + type.getName() + ", expected: " + expectedType.getName());
+					ctClass.getDeclaredField(fieldName).setType(expectedType);
 				}
 				boolean isStatic = (ctField.getModifiers() & Modifier.STATIC) == Modifier.STATIC;
 				if (isStatic != expectStatic) {
@@ -750,6 +749,21 @@ public class Patches {
 			ctClass.makeClassInitializer().insertAfter("patchStaticInitializer();");
 		}
 		publicInnerClasses(fromClass);
+	}
+
+	@Patch (
+			requiredAttributes = "field",
+			emptyConstructor = false
+	)
+	public void removeInitializers(Object o, Map<String, String> attributes) throws NotFoundException, CannotCompileException {
+		if (o instanceof CtClass) {
+			final CtField ctField = ((CtClass) o).getDeclaredField(attributes.get("field"));
+			for (CtBehavior ctBehavior : ((CtClass) o).getDeclaredBehaviors()) {
+				removeInitializers(ctBehavior, ctField);
+			}
+		} else {
+			removeInitializers((CtBehavior) o, ((CtBehavior) o).getDeclaringClass().getDeclaredField(attributes.get("field")));
+		}
 	}
 
 	private void removeInitializers(CtBehavior ctBehavior, final CtField ctField) throws CannotCompileException, NotFoundException {
