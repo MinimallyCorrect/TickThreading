@@ -11,6 +11,7 @@ import java.util.zip.ZipFile;
 
 import nallar.tickthreading.Log;
 import nallar.tickthreading.util.IterableEnumerationWrapper;
+import nallar.tickthreading.util.NormalFileFilter;
 
 public class ByteSource {
 	public static final Map<String, byte[]> classes = new HashMap<String, byte[]>();
@@ -19,7 +20,7 @@ public class ByteSource {
 	public static void addFiles(File... files) {
 		for (File file : files) {
 			if (file.isDirectory()) {
-				addFiles(file.listFiles());
+				addFiles(file.listFiles(NormalFileFilter.$));
 				continue;
 			}
 			String extension = file.getName().toLowerCase();
