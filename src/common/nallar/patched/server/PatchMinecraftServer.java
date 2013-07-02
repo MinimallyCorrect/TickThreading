@@ -256,6 +256,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				Log.severe("Failed to perform shutdown save.", t);
 			}
 			Log.info("Stopping the server. serverRunning: " + serverRunning + ", serverIsRunning: " + serverIsRunning + ", is crash: " + isCrash);
+			this.getLogAgent().logInfo("Stopping server");
 			try {
 				this.stopServer();
 				this.serverStopped = true;
