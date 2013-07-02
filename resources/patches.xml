@@ -707,35 +707,35 @@
 		</class>
 	</buildCraftTransport>
 	<thermalExpansionTransport>
-		<class id="thermalexpansion.transport.tileentity.TileConduitEnergy">
+		<class id="thermalexpansion.block.conduit.TileConduitEnergy">
 			<newField field="tickLock" class="java.lang.Object" static=""/>
 			<synchronize field="tickLock">updateGridIfNull</synchronize>
 		</class>
-		<class id="thermalexpansion.transport.tileentity.TileConduitLiquid">
+		<class id="thermalexpansion.block.conduit.TileConduitLiquid">
 			<newField field="tickLock" class="java.lang.Object" static=""/>
 			<synchronize field="tickLock">updateGridIfNull</synchronize>
 		</class>
-		<class id="thermalexpansion.transport.GridLiquid">
+		<class id="thermalexpansion.block.conduit.GridLiquid">
 			<synchronize>transferLiquid,removeNode,removeConduit,setNewGrid,changeMode,increaseTracker,addNode,addConduit</synchronize>
 		</class>
-		<class id="thermalexpansion.transport.GridEnergy">
+		<class id="thermalexpansion.block.conduit.GridEnergy">
 			<synchronize>transferEnergy,removeNode,removeConduit,setNewGrid,changeMode,increaseTracker,addNode,addConduit</synchronize>
 		</class>
 	</thermalExpansionTransport>
 	<thremalExpansionFactory>
-		<class id="thermalexpansion.factory.tileentity.TilePortableTank">
+		<class id="thermalexpansion.block.device.TileTankPortable">
 			<replaceMethod code="{
 				if (this.myTank.getLiquidAmount() &lt;= 0) {
 					return;
 				}
 
-				int[] coords = cofh.core.BlockUtils.getAdjacentCoordinatesForSide(this.l, this.m, this.n, 0);
+				int[] coords = cofh.util.BlockUtils.getAdjacentCoordinatesForSide(this.^field:TileEntity/xCoord^, this.^field:TileEntity/yCoord^, this.^field:TileEntity/zCoord^, 0);
 
-				any theTile = this.k.q(coords[0], coords[1], coords[2]);
+				^class:TileEntity^ theTile = this.^field:TileEntity/worldObj^.^method:World/getBlockTileEntity^(coords[0], coords[1], coords[2]);
 				if (theTile instanceof net.minecraftforge.liquids.ITankContainer) {
-					if (theTile instanceof thermalexpansion.factory.tileentity.TilePortableTank &amp;&amp;
-							!((((thermalexpansion.factory.tileentity.TilePortableTank)theTile).myTank.getLiquidID() &lt;= 0) ||
-							(((thermalexpansion.factory.tileentity.TilePortableTank)theTile).myTank.getLiquidAmount() != 8000))) {
+					if (theTile instanceof thermalexpansion.block.device.TileTankPortable &amp;&amp;
+							!((((thermalexpansion.block.device.TileTankPortable)theTile).myTank.getLiquidID() &lt;= 0) ||
+							(((thermalexpansion.block.device.TileTankPortable)theTile).myTank.getLiquidAmount() != 8000))) {
 						return;
 					}
 					int fillQty = Math.min(this.myTank.getLiquidAmount(), 250);
@@ -1366,7 +1366,7 @@
 		<class id="appeng.me.CellInventory">
 			<synchronize>^all^</synchronize>
 		</class>
-		<class id="appeng.me.Platform">
+		<class id="appeng.util.Platform">
 			<synchronize>getSharedTagCompound</synchronize>
 			<synchronize field="$2">addStackToList</synchronize>
 			<synchronize field="$1">addStackToList</synchronize>
@@ -1389,7 +1389,7 @@
 		<class id="appeng.me.MEInventoryArray">
 			<synchronize>^all^</synchronize>
 		</class>
-		<class id="appeng.common.MEGridEvents">
+		<class id="appeng.common.grid.MEGridEvents">
 			<replaceInitializer field="requests" class="nallar.collections.ConcurrentQueueList">^static^</replaceInitializer>
 		</class>
 	</appliedEnergistics>

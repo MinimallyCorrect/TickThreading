@@ -228,6 +228,7 @@ public class PatchManager {
 				try {
 					ctClass = classRegistry.getClass(className);
 				} catch (NotFoundException e) {
+					Log.info(className + " will not be patched, as it was not found.");
 					continue;
 				}
 				List<Element> patchElements = DomUtil.elementList(classElement.getChildNodes());
