@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -30,6 +31,7 @@ import nallar.tickthreading.Log;
 import nallar.tickthreading.util.CollectionsUtil;
 import nallar.tickthreading.util.IterableEnumerationWrapper;
 import nallar.tickthreading.util.LocationUtil;
+import nallar.tickthreading.util.NormalFileFilter;
 import nallar.unsafe.UnsafeUtil;
 import net.minecraft.server.MinecraftServer;
 
@@ -83,15 +85,17 @@ public class ClassRegistry {
 
 	public void loadFiles(Iterable<File> filesToLoad) throws IOException {
 		for (File file : filesToLoad) {
-			String extension = file.getName().toLowerCase();
-			extension = extension.substring(extension.lastIndexOf('.') + 1);
 			try {
-				File[] files = file.listFiles();
-				if (files != null) {
-					if (!".disabled".equals(file.getName()) && !patchedModsFolderName.equalsIgnoreCase(file.getName())) {
+				if (file.isDirectory()) {
+					File[] files = file.listFiles(NormalFileFilter.$);
+					if (files != null) {
 						loadFiles(Arrays.asList(files));
 					}
-				} else if ("jar".equals(extension) || "zip".equals(extension) || "litemod".equals(extension)) {
+					continue;
+				}
+				String extension = file.getName();
+				extension = extension.substring(extension.lastIndexOf('.') + 1).toLowerCase();
+				if ("jar".equals(extension) || "zip".equals(extension) || "litemod".equals(extension)) {
 					ZipFile zipFile = new ZipFile(file);
 					try {
 						loadZip(zipFile);
