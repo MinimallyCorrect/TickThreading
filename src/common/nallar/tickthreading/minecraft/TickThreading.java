@@ -138,6 +138,7 @@ public class TickThreading {
 			MinecraftServer.getServer().initiateShutdown();
 			Runtime.getRuntime().exit(1);
 		}
+		ContextAccess.$.getContext(0);
 	}
 
 	@Mod.Init
