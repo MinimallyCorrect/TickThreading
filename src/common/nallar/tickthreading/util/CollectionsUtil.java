@@ -55,7 +55,7 @@ public enum CollectionsUtil {
 		return (List<T>) objects;
 	}
 
-	public static String join(Iterable<File> iterable) {
+	public static String join(Iterable iterable) {
 		return join(iterable, defaultDelimiter);
 	}
 

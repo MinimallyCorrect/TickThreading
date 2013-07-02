@@ -39,6 +39,7 @@ import nallar.tickthreading.minecraft.entitylist.LoadedEntityList;
 import nallar.tickthreading.minecraft.entitylist.LoadedTileEntityList;
 import nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
 import nallar.tickthreading.minecraft.profiling.Timings;
+import nallar.tickthreading.util.CollectionsUtil;
 import nallar.tickthreading.util.LocationUtil;
 import nallar.tickthreading.util.PatchUtil;
 import nallar.tickthreading.util.ReflectUtil;
@@ -127,11 +128,13 @@ public class TickThreading {
 		} catch (IOException e) {
 			Log.severe("Failed to write patch runners", e);
 		}
-		if (PatchUtil.shouldPatch(LocationUtil.getJarLocations())) {
+		List<File> filesToCheck = LocationUtil.getJarLocations();
+		if (PatchUtil.shouldPatch(filesToCheck)) {
 			Log.severe("TickThreading is disabled, because your server has not been patched" +
 					" or the patches are out of date" +
 					"\nTo patch your server, simply run the PATCHME.bat/sh file in your server directory" +
-					"\n\nAlso, make a full backup of your server if you haven't already!");
+					"\n\nAlso, make a full backup of your server if you haven't already!" +
+					"\n\nFiles checked for patches: " + CollectionsUtil.join(filesToCheck));
 			MinecraftServer.getServer().initiateShutdown();
 			Runtime.getRuntime().exit(1);
 		}
