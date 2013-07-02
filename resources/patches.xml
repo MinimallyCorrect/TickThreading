@@ -835,7 +835,11 @@
 		<class id="gregtechmod.common.tileentities.GT_TileEntity_IDSU">
 			<replaceMethodCall method="remove" code="{ $_ = null; }">setEnergyVar</replaceMethodCall>
 		</class>
-		<class id="gregtechmod.api.BaseMetaTileEntityMJ">
+		<class id="gregtechmod.api.metatileentity.BaseMetaTileEntity">
+			<replaceFieldUsage field="mAverageEUInputIndex" writeCode="mAverageEUInputIndex = $1 >= mAverageEUInput.length ? 0 : $1;">^method:TileEntity/updateEntity^</replaceFieldUsage>
+			<replaceFieldUsage field="mAverageEUOutputIndex" writeCode="mAverageEUOutputIndex = $1 >= mAverageEUOutput.length ? 0 : $1;">^method:TileEntity/updateEntity^</replaceFieldUsage>
+		</class>
+		<class id="gregtechmod.api.metatileentity.BaseMetaTileEntityMJ" srg="true">
 			<synchronize>updateStatus,getPowerProvider,setPowerProvider</synchronize>
 			<replaceMethod code="{
 				buildcraft.api.power.IPowerProvider powerProvider = getPowerProvider();

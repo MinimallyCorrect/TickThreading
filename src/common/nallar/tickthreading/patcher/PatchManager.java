@@ -208,7 +208,9 @@ public class PatchManager {
 					continue;
 				}
 				Boolean isSrg_;
-				if (isMinecraft) {
+				if (!classElement.getAttribute("srg").isEmpty()) {
+					isSrg_ = classRegistry.classes.isSrg = true;
+				} else if (isMinecraft) {
 					isSrg_ = classRegistry.classes.isSrg = false;
 				} else {
 					isSrg_ = classRegistry.classes.setSrgFor(className);
