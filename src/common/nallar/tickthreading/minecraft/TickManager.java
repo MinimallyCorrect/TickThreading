@@ -40,7 +40,8 @@ public final class TickManager {
 	private static final byte lockXMinus = 1 << 2;
 	private static final byte lockZPlus = 1 << 3;
 	private static final byte lockZMinus = 1 << 4;
-	public static final int regionSize = 31 - Integer.numberOfLeadingZeros(TickThreading.instance.regionSize);
+	public static final int regionSize = TickThreading.instance.regionSize;
+	public static final int regionSizePower = 31 - Integer.numberOfLeadingZeros(regionSize);
 	public boolean profilingEnabled = false;
 	private double averageTickLength = 0;
 	private long lastTickLength = 0;
@@ -73,8 +74,8 @@ public final class TickManager {
 
 	@SuppressWarnings ("NumericCastThatLosesPrecision")
 	private TileEntityTickRegion getOrCreateRegion(TileEntity tileEntity) {
-		int regionX = tileEntity.xCoord >> regionSize;
-		int regionZ = tileEntity.zCoord >> regionSize;
+		int regionX = tileEntity.xCoord >> regionSizePower;
+		int regionZ = tileEntity.zCoord >> regionSizePower;
 		int hashCode = getHashCodeFromRegionCoords(regionX, regionZ);
 		TileEntityTickRegion callable = tileEntityCallables.get(hashCode);
 		if (callable == null) {
@@ -96,8 +97,8 @@ public final class TickManager {
 
 	@SuppressWarnings ("NumericCastThatLosesPrecision")
 	private EntityTickRegion getOrCreateRegion(Entity entity) {
-		int regionX = (entity.chunkCoordX << 4) >> regionSize;
-		int regionZ = (entity.chunkCoordZ << 4) >> regionSize;
+		int regionX = (entity.chunkCoordX << 4) >> regionSizePower;
+		int regionZ = (entity.chunkCoordZ << 4) >> regionSizePower;
 		int hashCode = getHashCodeFromRegionCoords(regionX, regionZ);
 		EntityTickRegion callable = entityCallables.get(hashCode);
 		if (callable == null) {
@@ -122,7 +123,7 @@ public final class TickManager {
 	}
 
 	public static int getHashCode(int x, int z) {
-		return getHashCodeFromRegionCoords(x >> regionSize, z >> regionSize);
+		return getHashCodeFromRegionCoords(x >> regionSizePower, z >> regionSizePower);
 	}
 
 	public static int getHashCodeFromRegionCoords(int x, int z) {
