@@ -23,10 +23,12 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.ChunkWatchEvent;
 
 public abstract class PatchPacket10Flying extends Packet10Flying {
+	private static final boolean concurrent = TickThreading.instance.concurrentMovementUpdates;
+
 	@Override
 	@Declare
 	public boolean canProcessAsync() {
-		return TickThreading.instance.concurrentMovementUpdates;
+		return concurrent;
 	}
 
 	@Override
@@ -38,6 +40,10 @@ public abstract class PatchPacket10Flying extends Packet10Flying {
 		NetServerHandler nsh = (NetServerHandler) par1NetHandler;
 		EntityPlayerMP entityPlayerMP = nsh.playerEntity;
 		sendChunks(entityPlayerMP);
+		if (!concurrent) {
+			nsh.handleFlying(this);
+			return;
+		}
 		boolean mainThreadProcess = false;
 		if (nsh.teleported > 22 || entityPlayerMP.ridingEntity != null) {
 			if (Thread.currentThread() instanceof TcpReaderThread) {
