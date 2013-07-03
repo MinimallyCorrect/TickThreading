@@ -1538,9 +1538,10 @@
 						Object o = getGrid();
 						if (o == null) {
 							o = new Object();
-						} else {
-							o = getGrid().getTile();
+						} else if (o instanceof appeng.api.TileRef) {
+							o = ((appeng.api.TileRef) o).getTile();
 						}
+						ArrayList toAdd = new ArrayList();
 						synchronized (o) {
 							synchronized (sList) {
 								List newList = inv.getAvailableItems(sList);
@@ -1556,7 +1557,6 @@
 								}
 								oList = this.oldList;
 								this.oldList = newList;
-								ArrayList toAdd = new ArrayList();
 
 								synchronized(oList) {
 									if (oList.size() != newList.size()) {
