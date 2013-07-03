@@ -1170,6 +1170,9 @@
 			}">load
 			</insertAfter>
 		</class>
+		<class id="twilightforest.block.BlockTFTowerDevice">
+			<replaceMethodCall code="{ }" method="println">^method:Block/breakBlock^</replaceMethodCall>
+		</class>
 		<class id="twilightforest.block.BlockTFMagicLogSpecial">
 			<!-- Spams logs, slow -->
 			<disable>doSortingTreeEffect</disable>
