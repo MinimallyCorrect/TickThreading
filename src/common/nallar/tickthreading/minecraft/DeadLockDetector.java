@@ -143,9 +143,9 @@ public class DeadLockDetector {
 			}
 		}
 		TreeMap<String, String> sortedThreads = new TreeMap<String, String>();
-		StringBuilder sb = new StringBuilder();
 		ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
 		if (!attemptedToRecoverDeadlock) {
+			StringBuilder sb = new StringBuilder();
 			sb
 					.append("The server appears to have ").append(spikeDetector ? "lag spiked." : "deadlocked.")
 					.append("\nLast tick ").append(deadTime / 1000000000).append("s ago.");
@@ -166,40 +166,40 @@ public class DeadLockDetector {
 				prefix = ", ";
 			}
 			sb.append("\n\n");
-			LoadingCache<String, List<ThreadInfo>> threads = CacheBuilder.newBuilder().build(new CacheLoader<String, List<ThreadInfo>>() {
-				@Override
-				public List<ThreadInfo> load(final String key) throws Exception {
-					return new ArrayList<ThreadInfo>();
-				}
-			});
-			ThreadInfo[] t = threadMXBean.dumpAllThreads(true, true);
-			for (ThreadInfo thread : t) {
-				String info = toString(thread, false);
-				if (info != null) {
-					threads.getUnchecked(info).add(thread);
-				}
-			}
-			for (Map.Entry<String, List<ThreadInfo>> entry : threads.asMap().entrySet()) {
-				List<ThreadInfo> threadInfoList = entry.getValue();
-				ThreadInfo lowest = null;
-				for (ThreadInfo threadInfo : threadInfoList) {
-					if (lowest == null || threadInfo.getThreadName().toLowerCase().compareTo(lowest.getThreadName().toLowerCase()) < 0) {
-						lowest = threadInfo;
-					}
-				}
-				List threadNameList = CollectionsUtil.newList(threadInfoList, new Function<Object, Object>() {
+			long[] deadlockedThreads = threadMXBean.findDeadlockedThreads();
+			if (deadlockedThreads == null) {
+				LoadingCache<String, List<ThreadInfo>> threads = CacheBuilder.newBuilder().build(new CacheLoader<String, List<ThreadInfo>>() {
 					@Override
-					public Object apply(final Object input) {
-						return ((ThreadInfo) input).getThreadName();
+					public List<ThreadInfo> load(final String key) throws Exception {
+						return new ArrayList<ThreadInfo>();
 					}
 				});
-				Collections.sort(threadNameList);
-				sortedThreads.put(lowest.getThreadName(), '"' + CollectionsUtil.join(threadNameList, "\", \"") + "\" " + entry.getKey());
-			}
-			sb.append(CollectionsUtil.join(sortedThreads.values(), "\n"));
-			long[] deadlockedThreads = threadMXBean.findDeadlockedThreads();
-
-			if (deadlockedThreads != null) {
+				ThreadInfo[] t = threadMXBean.dumpAllThreads(true, true);
+				for (ThreadInfo thread : t) {
+					String info = toString(thread, false);
+					if (info != null) {
+						threads.getUnchecked(info).add(thread);
+					}
+				}
+				for (Map.Entry<String, List<ThreadInfo>> entry : threads.asMap().entrySet()) {
+					List<ThreadInfo> threadInfoList = entry.getValue();
+					ThreadInfo lowest = null;
+					for (ThreadInfo threadInfo : threadInfoList) {
+						if (lowest == null || threadInfo.getThreadName().toLowerCase().compareTo(lowest.getThreadName().toLowerCase()) < 0) {
+							lowest = threadInfo;
+						}
+					}
+					List threadNameList = CollectionsUtil.newList(threadInfoList, new Function<Object, Object>() {
+						@Override
+						public Object apply(final Object input) {
+							return ((ThreadInfo) input).getThreadName();
+						}
+					});
+					Collections.sort(threadNameList);
+					sortedThreads.put(lowest.getThreadName(), '"' + CollectionsUtil.join(threadNameList, "\", \"") + "\" " + entry.getKey());
+				}
+				sb.append(CollectionsUtil.join(sortedThreads.values(), "\n"));
+			} else {
 				ThreadInfo[] infos = threadMXBean.getThreadInfo(deadlockedThreads, true, true);
 				sb.append("Definitely deadlocked: \n");
 				for (ThreadInfo threadInfo : infos) {
@@ -211,6 +211,7 @@ public class DeadLockDetector {
 				for (String threadManager : threadManagerSet) {
 					tryFixDeadlocks(threadManager);
 				}
+				trySleep(10000);
 			}
 			Log.severe(sb.toString());
 			attemptedToRecoverDeadlock = true;
