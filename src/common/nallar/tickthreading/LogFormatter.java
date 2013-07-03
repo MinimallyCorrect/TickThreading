@@ -37,6 +37,9 @@ public class LogFormatter extends Formatter {
 		@SuppressWarnings ("ThrowableResultOfMethodCallIgnored")
 		Throwable throwable = record.getThrown();
 		if (throwable != null) {
+			if (throwable.getClass().getName().endsWith("ThreadStuckError")) {
+				return "";
+			}
 			if (throwable.getStackTrace().length == 0) {
 				formattedMessage.append("Stack trace unavailable for ").append(String.valueOf(throwable)).append('-').append(throwable.getClass().getName()).append(". Add -XX:-OmitStackTraceInFastThrow to your java parameters to see all stack traces.").append(LINE_SEPARATOR);
 			} else {
