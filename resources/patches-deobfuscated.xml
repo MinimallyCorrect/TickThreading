@@ -1538,6 +1538,8 @@
 						Object o = getGrid();
 						if (o == null) {
 							o = new Object();
+						} else {
+							o = getGrid().getTile();
 						}
 						synchronized (o) {
 							synchronized (sList) {
