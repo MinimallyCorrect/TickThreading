@@ -24,11 +24,13 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import javassist.CannotCompileException;
+import javassist.ClassPool;
 import javassist.CtBehavior;
 import javassist.CtClass;
 import javassist.CtConstructor;
 import javassist.CtMethod;
 import javassist.NotFoundException;
+import javassist.RemappingPool;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.mappings.ClassDescription;
 import nallar.tickthreading.mappings.FieldDescription;
@@ -231,26 +233,38 @@ public class PatchManager {
 					Log.info(className + " will not be patched, as it was not found.");
 					continue;
 				}
-				List<Element> patchElements = DomUtil.elementList(classElement.getChildNodes());
-				boolean patched = false;
-				for (Element patchElement : patchElements) {
-					PatchMethodDescriptor patch = patches.get(patchElement.getTagName());
-					if (patch == null) {
-						Log.severe("Patch " + patchElement.getTagName() + " was not found.");
-						continue;
-					}
-					try {
-						Object result = patch.run(patchElement, ctClass);
-						patched = true;
-						if (result instanceof CtClass) {
-							ctClass = (CtClass) result;
-						}
-					} catch (Exception e) {
-						Log.severe("Failed to patch " + ctClass.getName() + " with " + patch.name, e);
-					}
+				ClassPool classPool = classRegistry.classes;
+				boolean shouldRemove = false;
+				if (classPool instanceof RemappingPool) {
+					RemappingPool remappingPool = (RemappingPool) classPool;
+					shouldRemove = remappingPool.addCurrentPackage(ctClass.getPackageName());
 				}
-				if (patched) {
-					patchingClasses.put(className, ctClass);
+				try {
+					List<Element> patchElements = DomUtil.elementList(classElement.getChildNodes());
+					boolean patched = false;
+					for (Element patchElement : patchElements) {
+						PatchMethodDescriptor patch = patches.get(patchElement.getTagName());
+						if (patch == null) {
+							Log.severe("Patch " + patchElement.getTagName() + " was not found.");
+							continue;
+						}
+						try {
+							Object result = patch.run(patchElement, ctClass);
+							patched = true;
+							if (result instanceof CtClass) {
+								ctClass = (CtClass) result;
+							}
+						} catch (Exception e) {
+							Log.severe("Failed to patch " + ctClass.getName() + " with " + patch.name, e);
+						}
+					}
+					if (patched) {
+						patchingClasses.put(className, ctClass);
+					}
+				} finally {
+					if (shouldRemove) {
+						((RemappingPool) classPool).removeCurrentPackage();
+					}
 				}
 				if (!isSrg_) {
 					classRegistry.classes.markChanged(className);

@@ -2,12 +2,14 @@ package javassist;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import nallar.collections.PartiallySynchronizedMap;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.patcher.remapping.ByteSource;
 import nallar.tickthreading.patcher.remapping.StringExtractor;
 import nallar.tickthreading.patcher.remapping.Transformer;
+import nallar.tickthreading.util.ReflectUtil;
 
 public class RemappingPool extends ClassPool {
 	private final PartiallySynchronizedMap<String, CtClass> srgClasses = new PartiallySynchronizedMap<String, CtClass>();
@@ -145,5 +147,25 @@ public class RemappingPool extends ClassPool {
 
 	public void markChanged(final String className) {
 		srgClasses.remove(className);
+	}
+
+	public boolean addCurrentPackage(final String packageName) {
+		if (packageName == null) {
+			return false;
+		}
+		ArrayList<String> importedPackages = getImportedPackages_();
+		if (importedPackages.contains(packageName)) {
+			return false;
+		}
+		importedPackages.add(0, packageName);
+		return true;
+	}
+
+	public void removeCurrentPackage() {
+		getImportedPackages_().remove(0);
+	}
+
+	private ArrayList<String> getImportedPackages_() {
+		return ReflectUtil.get(this, "importedPackages");
 	}
 }
