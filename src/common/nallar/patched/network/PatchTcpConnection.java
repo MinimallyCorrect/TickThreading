@@ -7,6 +7,7 @@ import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Queue;
 
 import nallar.collections.ConcurrentQueueList;
 import nallar.tickthreading.Log;
@@ -59,9 +60,9 @@ public abstract class PatchTcpConnection extends TcpConnection {
 			return actualReadPackets = readPackets;
 		} catch (NoSuchFieldError e) {
 			try {
-				return actualReadPackets = (Collection<Packet>) ReflectUtil.getField(TcpConnection.class, "o").get(this); // TODO: Implement reflection obfuscation
-			} catch (IllegalAccessException e1) {
-				Log.severe("Failed to get readPackets collection", e1);
+				return actualReadPackets = (Collection<Packet>) ReflectUtil.getField(this.getClass(), Queue.class, 0).get(this);
+			} catch (Throwable t) {
+				Log.severe("Failed to get readPackets collection", t);
 			}
 		}
 		throw new Error("Failed to get readPackets collection");

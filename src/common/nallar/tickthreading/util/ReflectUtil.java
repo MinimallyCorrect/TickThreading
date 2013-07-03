@@ -23,7 +23,9 @@ public enum ReflectUtil {
 			} catch (NoSuchFieldException ignored) {
 			}
 		} while (field == null && (c = c.getSuperclass()) != Object.class);
-		field.setAccessible(true);
+		if (field != null) {
+			field.setAccessible(true);
+		}
 		return field;
 	}
 
@@ -76,5 +78,13 @@ public enum ReflectUtil {
 			}
 		}
 		return listFields.toArray(new Field[listFields.size()]);
+	}
+
+	public static Field getField(final Class<?> inClass, final Class<?> type, final int index) {
+		Field[] fields = getFields(inClass, type);
+		if (fields == null || fields.length <= index) {
+			return null;
+		}
+		return fields[index];
 	}
 }
