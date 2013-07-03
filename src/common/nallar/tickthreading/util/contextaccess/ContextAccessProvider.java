@@ -1,6 +1,7 @@
 package nallar.tickthreading.util.contextaccess;
 
 import nallar.tickthreading.Log;
+import nallar.tickthreading.util.EnvironmentInfo;
 
 class ContextAccessProvider {
 	private static final Class[] contextAccessClasses = {
@@ -26,7 +27,7 @@ class ContextAccessProvider {
 				}
 				return contextAccess;
 			} catch (Throwable t) {
-				Log.warning("Unable to set up context access class " + clazz, t);
+				Log.warning("Unable to set up context access class " + clazz + ". " + t.getMessage() + ", falling back to slower context access. On JRE: " + EnvironmentInfo.getJavaVersion());
 			}
 		}
 		throw new Error("Failed to set up any context access");
