@@ -1594,12 +1594,12 @@
 										}
 									}
 								}
-								if (!toAdd.isEmpty()) {
-									gi.onInventoryChange();
-									Iterator iterator = toAdd.iterator();
-									while (iterator.hasNext()) {
-										gi.signalInput(null, (ur) iterator.next());
-									}
+							}
+							if (!toAdd.isEmpty()) {
+								gi.onInventoryChange();
+								Iterator iterator = toAdd.iterator();
+								while (iterator.hasNext()) {
+									gi.signalInput(null, (ur) iterator.next());
 								}
 							}
 						}
