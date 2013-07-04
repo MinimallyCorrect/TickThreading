@@ -693,30 +693,32 @@ public abstract class PatchWorld extends World {
 		final Profiler theProfiler = this.theProfiler;
 		theProfiler.startSection("updateEntities");
 		int var1;
-		Entity var2;
+		Entity weatherEffect;
 		CrashReport var4;
 		CrashReportCategory var5;
 
 		theProfiler.startSection("global");
-		final List weatherEffects = this.weatherEffects;
-		for (var1 = 0; var1 < weatherEffects.size(); ++var1) {
-			var2 = (Entity) weatherEffects.get(var1);
+		final List<Entity> weatherEffects = this.weatherEffects;
+		synchronized (weatherEffects) {
+			Iterator<Entity> iterator = weatherEffects.iterator();
+			while (iterator.hasNext()) {
+				weatherEffect = iterator.next();
 
-			try {
-				++var2.ticksExisted;
-				var2.onUpdate();
-			} catch (Throwable var6) {
-				var4 = CrashReport.makeCrashReport(var6, "Ticking entity");
-				var5 = var4.makeCategory("Entity being ticked");
-				if (var2 != null) {
-					var2.func_85029_a(var5);
+				if (weatherEffect == null) {
+					iterator.remove();
+					continue;
 				}
 
-				throw new ReportedException(var4);
-			}
+				try {
+					++weatherEffect.ticksExisted;
+					weatherEffect.onUpdate();
+				} catch (Throwable t) {
+					Log.severe("Failed to tick weather " + Log.toString(weatherEffect), t);
+				}
 
-			if (var2 == null || var2.isDead) {
-				weatherEffects.remove(var1--);
+				if (weatherEffect.isDead) {
+					iterator.remove();
+				}
 			}
 		}
 
@@ -747,26 +749,26 @@ public abstract class PatchWorld extends World {
 			unloadedEntitySet.clear();
 			theProfiler.endStartSection("entities");
 			for (var1 = 0; var1 < loadedEntityList.size(); ++var1) {
-				var2 = (Entity) loadedEntityList.get(var1);
+				weatherEffect = (Entity) loadedEntityList.get(var1);
 
-				if (var2.ridingEntity != null) {
-					if (!var2.ridingEntity.isDead && var2.ridingEntity.riddenByEntity == var2) {
+				if (weatherEffect.ridingEntity != null) {
+					if (!weatherEffect.ridingEntity.isDead && weatherEffect.ridingEntity.riddenByEntity == weatherEffect) {
 						continue;
 					}
 
-					var2.ridingEntity.riddenByEntity = null;
-					var2.ridingEntity = null;
+					weatherEffect.ridingEntity.riddenByEntity = null;
+					weatherEffect.ridingEntity = null;
 				}
 
 				theProfiler.startSection("tick");
 
-				if (!var2.isDead) {
+				if (!weatherEffect.isDead) {
 					try {
-						updateEntity(var2);
+						updateEntity(weatherEffect);
 					} catch (Throwable var7) {
 						var4 = CrashReport.makeCrashReport(var7, "Ticking entity");
 						var5 = var4.makeCategory("Entity being ticked");
-						var2.func_85029_a(var5);
+						weatherEffect.func_85029_a(var5);
 
 						throw new ReportedException(var4);
 					}
@@ -775,19 +777,19 @@ public abstract class PatchWorld extends World {
 				theProfiler.endSection();
 				theProfiler.startSection("remove");
 
-				if (var2.isDead) {
-					var3 = var2.chunkCoordX;
-					var13 = var2.chunkCoordZ;
+				if (weatherEffect.isDead) {
+					var3 = weatherEffect.chunkCoordX;
+					var13 = weatherEffect.chunkCoordZ;
 
-					if (var2.addedToChunk) {
+					if (weatherEffect.addedToChunk) {
 						Chunk chunk = getChunkIfExists(var3, var13);
 						if (chunk != null) {
-							chunk.removeEntity(var2);
+							chunk.removeEntity(weatherEffect);
 						}
 					}
 
 					loadedEntityList.remove(var1--);
-					releaseEntitySkin(var2);
+					releaseEntitySkin(weatherEffect);
 				}
 
 				theProfiler.endSection();
