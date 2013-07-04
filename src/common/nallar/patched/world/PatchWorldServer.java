@@ -33,6 +33,7 @@ import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.IWorldAccess;
 import net.minecraft.world.MinecraftException;
 import net.minecraft.world.NextTickListEntry;
+import net.minecraft.world.ServerBlockEventList;
 import net.minecraft.world.SpawnerAnimals;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.WorldProvider;
@@ -650,40 +651,31 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 
 	@Override
 	public synchronized void addBlockEvent(int par1, int par2, int par3, int par4, int par5, int par6) {
-		BlockEventData blockeventdata = new BlockEventData(par1, par2, par3, par4, par5, par6);
-		ArrayList blockEventCache = this.blockEventCache[this.blockEventCacheIndex];
-		Iterator iterator = blockEventCache.iterator();
-		BlockEventData blockeventdata1;
-
-		do {
-			if (!iterator.hasNext()) {
-				blockEventCache.add(blockeventdata);
+		BlockEventData blockEventData1 = new BlockEventData(par1, par2, par3, par4, par5, par6);
+		ArrayList<BlockEventData> blockEventCache = this.blockEventCache[this.blockEventCacheIndex];
+		for (BlockEventData blockEventData2 : blockEventCache) {
+			if (blockEventData1.equals(blockEventData2)) {
 				return;
 			}
-
-			blockeventdata1 = (BlockEventData) iterator.next();
 		}
-		while (!blockeventdata1.equals(blockeventdata));
+		blockEventCache.add(blockEventData1);
 	}
 
 	@Override
 	protected void sendAndApplyBlockEvents() {
 		while (true) {
-			ArrayList blockEventCache;
+			ArrayList<BlockEventData> blockEventCache;
 			synchronized (this) {
-				int i = blockEventCacheIndex;
-				blockEventCache = this.blockEventCache[i];
+				blockEventCache = this.blockEventCache[blockEventCacheIndex];
 				if (blockEventCache.isEmpty()) {
 					return;
 				}
-				blockEventCacheIndex = i ^ 1;
+				this.blockEventCache[blockEventCacheIndex] = new ServerBlockEventList();
 			}
 
-			for (final Object aBlockEventCache : blockEventCache) {
-				BlockEventData blockeventdata = (BlockEventData) aBlockEventCache;
-
-				if (this.onBlockEventReceived(blockeventdata)) {
-					this.mcServer.getConfigurationManager().sendToAllNear((double) blockeventdata.getX(), (double) blockeventdata.getY(), (double) blockeventdata.getZ(), 64.0D, this.provider.dimensionId, new Packet54PlayNoteBlock(blockeventdata.getX(), blockeventdata.getY(), blockeventdata.getZ(), blockeventdata.getBlockID(), blockeventdata.getEventID(), blockeventdata.getEventParameter()));
+			for (BlockEventData blockEventData : blockEventCache) {
+				if (this.onBlockEventReceived(blockEventData)) {
+					this.mcServer.getConfigurationManager().sendToAllNear((double) blockEventData.getX(), (double) blockEventData.getY(), (double) blockEventData.getZ(), 64.0D, this.provider.dimensionId, new Packet54PlayNoteBlock(blockEventData.getX(), blockEventData.getY(), blockEventData.getZ(), blockEventData.getBlockID(), blockEventData.getEventID(), blockEventData.getEventParameter()));
 				}
 			}
 

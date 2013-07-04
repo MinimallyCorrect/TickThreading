@@ -127,6 +127,9 @@
 			<profile>tick</profile>
 			<insertSuper>initialize</insertSuper>
 		</class>
+		<class id="net.minecraft.world.ServerBlockEventList">
+			<public/>
+		</class>
 		<class id="net.minecraft.world.biome.BiomeDecorator">
 			<synchronize>decorate(Lnet/minecraft/world/World;Ljava/util/Random;II)V</synchronize>
 		</class>
