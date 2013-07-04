@@ -1535,72 +1535,64 @@
 						}
 
 						List sList = new SynchronizedList();
-						Object o = getGrid();
-						if (o == null) {
-							o = new Object();
-						} else if (o instanceof appeng.api.TileRef) {
-							o = ((appeng.api.TileRef) o).getTile();
-						}
 						ArrayList toAdd = new ArrayList();
-						synchronized (o) {
-							synchronized (sList) {
-								List newList = inv.getAvailableItems(sList);
-								if (newList != sList) {
-									sList.addAll(newList);
-									newList = sList;
-								}
-								if (newList == null) {
-									newList = new SynchronizedList();
-								}
-								if (this.oldList == null) {
-									this.oldList = new SynchronizedList();
-								}
-								oList = this.oldList;
-								this.oldList = newList;
+						synchronized (sList) {
+							List newList = inv.getAvailableItems(sList);
+							if (newList != sList) {
+								sList.addAll(newList);
+								newList = sList;
+							}
+							if (newList == null) {
+								newList = new SynchronizedList();
+							}
+							if (this.oldList == null) {
+								this.oldList = new SynchronizedList();
+							}
+							oList = this.oldList;
+							this.oldList = newList;
 
-								synchronized(oList) {
-									if (oList.size() != newList.size()) {
-										gi.onInventoryChange();
-									}
+							synchronized(oList) {
+								if (oList.size() != newList.size()) {
+									gi.onInventoryChange();
+								}
 
-									for (Iterator i1 = newList.iterator(); i1.hasNext();) {
-										ur x = (ur) i1.next();
-										boolean found = false;
-										for (Iterator i2 = oList.iterator(); i2.hasNext();) {
-											ur y = (ur) i2.next();
-											if (appeng.util.Platform.isSameItem(x, y))
+								for (Iterator i1 = newList.iterator(); i1.hasNext();) {
+									ur x = (ur) i1.next();
+									boolean found = false;
+									for (Iterator i2 = oList.iterator(); i2.hasNext();) {
+										ur y = (ur) i2.next();
+										if (appeng.util.Platform.isSameItem(x, y))
+										{
+											found = true;
+
+											if (x.a != y.a)
 											{
-												found = true;
-
-												if (x.a != y.a)
-												{
-													this.freq = 0;
-													if (x.a &lt;= y.a)
-														break;
-													ur j = x.l();
-													j.a -= y.a;
-													toAdd.add(j);
+												this.freq = 0;
+												if (x.a &lt;= y.a)
 													break;
-												}
-
+												ur j = x.l();
+												j.a -= y.a;
+												toAdd.add(j);
+												break;
 											}
 
 										}
 
-										if (!found)
-										{
-											this.freq = 0;
-											toAdd.add(x);
-										}
+									}
+
+									if (!found)
+									{
+										this.freq = 0;
+										toAdd.add(x);
 									}
 								}
 							}
-							if (!toAdd.isEmpty()) {
-								gi.onInventoryChange();
-								Iterator iterator = toAdd.iterator();
-								while (iterator.hasNext()) {
-									gi.signalInput(null, (ur) iterator.next());
-								}
+						}
+						if (!toAdd.isEmpty()) {
+							gi.onInventoryChange();
+							Iterator iterator = toAdd.iterator();
+							while (iterator.hasNext()) {
+								gi.signalInput(null, (ur) iterator.next());
 							}
 						}
 					}
