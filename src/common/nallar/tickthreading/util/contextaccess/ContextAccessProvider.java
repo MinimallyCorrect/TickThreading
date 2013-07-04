@@ -27,7 +27,9 @@ class ContextAccessProvider {
 				}
 				return contextAccess;
 			} catch (Throwable t) {
-				Log.warning("Unable to set up context access class " + clazz + ". " + t.getMessage() + ", falling back to slower context access. On JRE: " + EnvironmentInfo.getJavaVersion());
+				if (Log.debug) {
+					Log.debug("Unable to set up context access class " + clazz + ". " + t.getMessage() + ", falling back to slower context access. On JRE: " + EnvironmentInfo.getJavaVersion());
+				}
 			}
 		}
 		throw new Error("Failed to set up any context access");
