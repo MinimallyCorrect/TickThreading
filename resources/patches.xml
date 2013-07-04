@@ -1310,7 +1310,7 @@
 			}">populateAuraUpdateList
 			</replaceMethod>
 		</class>
-		<class id="thaumcraft.common.EventHandler">
+		<class id="thaumcraft.common.lib.EventHandler">
 			<synchronize field="$1.world.auraLock">chunkLoad</synchronize>
 		</class>
 		<class id="thaumcraft.common.tiles.TileCrystalCapacitor">
