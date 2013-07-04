@@ -108,6 +108,7 @@
 			<public field="ambientTickCountdown"/>
 			<public field="forcedChunks"/>
 			<replaceInitializer field="playerEntities" class="java.util.concurrent.CopyOnWriteArrayList"/>
+			<replaceInitializer field="weatherEffects" class="nallar.collections.SynchronizedList"/>
 			<insertBefore code="if (preHandleSpawn($1)) { return false; }">spawnEntityInWorld</insertBefore>
 			<removeMethod>forceChunk,unforceChunk</removeMethod>
 		</class>
