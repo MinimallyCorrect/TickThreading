@@ -126,7 +126,6 @@
 			<profile>tickBlocksAndAmbiance</profile>
 			<profile>tick</profile>
 			<insertSuper>initialize</insertSuper>
-			<synchronize>addBlockEvent,sendAndApplyBlockEvents</synchronize>
 		</class>
 		<class id="net.minecraft.world.biome.BiomeDecorator">
 			<synchronize>decorate(Lnet/minecraft/world/World;Ljava/util/Random;II)V</synchronize>
