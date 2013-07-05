@@ -1503,10 +1503,11 @@
 			<synchronize field="$1">addStackToList</synchronize>
 		</class>
 		<class id="appeng.me.tile.TileController">
+			<newField field="staticLock" class="java.lang.Object" static=""/>
 			<replaceInitializer field="WaitingQueue" class="nallar.collections.ConcurrentLinkedQueueList"/>
 			<replaceInitializer field="CraftingQueue" class="nallar.collections.ConcurrentLinkedQueueList"/>
 			<synchronize field="CManager.getPrereqs()">getJobList,getJobStatus,cancelJob</synchronize>
-			<synchronize>getCellArray,^method:TileEntity/updateEntity^,advanceCraftingCursor,resetWaitingQueue</synchronize>
+			<synchronize field="staticLock">getCellArray,^method:TileEntity/updateEntity^,advanceCraftingCursor,resetWaitingQueue</synchronize>
 		</class>
 		<class id="appeng.me.tile.TileDrive">
 			<synchronize>getCellArray,resetCache</synchronize>
