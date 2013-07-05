@@ -28,7 +28,6 @@ public abstract class PatchServerConfigurationManagerForge extends ServerConfigu
 				fromDimension = this.mcServer.worldServerForDimension(fromDimensionId);
 				entityPlayerMP.dimension = toDimensionId;
 				toDimension = this.mcServer.worldServerForDimension(toDimensionId);
-				Log.info(entityPlayerMP + " changed dimension from " + Log.name(fromDimension) + " to " + Log.name(toDimension));
 				if (fromDimension == toDimension) {
 					if (!toDimension.playerEntities.contains(entityPlayerMP)) {
 						toDimension.spawnEntityInWorld(entityPlayerMP);
