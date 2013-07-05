@@ -1746,4 +1746,9 @@
 			<synchronize static="true"/>
 		</class>
 	</gregsLighting>
+	<hats>
+		<class id="hats.common.core.TickHandlerServer">
+			<replaceInitializer field="mobHats" class="nallar.collections.ConcurrentWeakHashMap"/>
+		</class>
+	</hats>
 </mods>
