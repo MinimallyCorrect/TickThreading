@@ -37,9 +37,7 @@ public abstract class Command extends CommandBase {
 			return null;
 		}
 		String perm = this.getClass().getName();
-		boolean result = permissions.has(entityPlayer, perm);
-		Log.info("Got " + result + " for " + perm + " for " + entityPlayer.username);
-		return result;
+		return permissions.has(entityPlayer, perm);
 	}
 
 	public static void sendChat(ICommandSender commandSender, String message) {
