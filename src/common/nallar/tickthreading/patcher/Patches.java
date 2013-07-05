@@ -1060,6 +1060,11 @@ public class Patches {
 		});
 	}
 
+	@Patch
+	public void unsynchronize(CtBehavior ctBehavior) {
+		ctBehavior.setModifiers(ctBehavior.getModifiers() & ~Modifier.SYNCHRONIZED);
+	}
+
 	@Patch (
 			emptyConstructor = false
 	)
