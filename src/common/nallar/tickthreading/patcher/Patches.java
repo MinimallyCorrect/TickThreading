@@ -1136,6 +1136,7 @@ public class Patches {
 				}
 			}
 			replacement.setBody("synchronized(" + field + ") { return " + ctMethod.getName() + "($$); }");
+			replacement.setModifiers(replacement.getModifiers() & ~Modifier.SYNCHRONIZED);
 			ctClass.addMethod(replacement);
 		}
 	}
