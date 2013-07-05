@@ -739,6 +739,9 @@
 		</class>
 	</buildCraftTransport>
 	<thermalExpansionTransport>
+		<class id="thermalexpansion.transport.tileentity.TileTeleportEnergy">
+			<synchronize>receiveEnergy</synchronize>
+		</class>
 		<class id="thermalexpansion.transport.tileentity.TileConduitEnergy">
 			<newField field="tickLock" class="java.lang.Object" static=""/>
 			<synchronize field="tickLock">updateGridIfNull</synchronize>
