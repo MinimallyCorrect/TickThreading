@@ -62,6 +62,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	 */
 	public final NativeMutex generateLock = new NativeMutex();
 	private static final ThreadPoolExecutor chunkLoadThreadPool;
+	private final IChunkProvider generator; // Mojang shouldn't use the same interface for  :(
 
 	static {
 		chunkLoadThreadPool = new ThreadPoolExecutor(1, Runtime.getRuntime().availableProcessors(), 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new ServerThreadFactory("Async ChunkLoader"));
@@ -76,7 +77,6 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	private final LongHashMap<Chunk> unloadingChunks = new LongHashMap<Chunk>();
 	private final ConcurrentQueueSet<Long> unloadStage0 = new ConcurrentQueueSet<Long>();
 	private final ConcurrentLinkedQueue<QueuedUnload> unloadStage1 = new ConcurrentLinkedQueue<QueuedUnload>();
-	private final IChunkProvider generator; // Mojang shouldn't use the same interface for  :(
 	private final IChunkLoader loader;
 	private final WorldServer world;
 	private final Chunk defaultEmptyChunk;
@@ -158,10 +158,10 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 					continue;
 				}
 				synchronized (chunk) {
-					if (chunk.partiallyUnloaded || !chunk.queuedUnload) {
+					if (chunk.partiallyUnloaded || !chunk.queuedUnload || unloadingChunks.containsItem(key)) {
 						continue;
 					}
-					if (persistentChunks.containsKey(chunkCoordIntPair) || unloadingChunks.containsItem(key) || playerManager.getOrCreateChunkWatcher(x, z, false) != null || !fireBukkitUnloadEvent(chunk)) {
+					if (persistentChunks.containsKey(chunkCoordIntPair) || playerManager.getOrCreateChunkWatcher(x, z, false) != null || !fireBukkitUnloadEvent(chunk)) {
 						chunk.queuedUnload = false;
 						continue;
 					}
