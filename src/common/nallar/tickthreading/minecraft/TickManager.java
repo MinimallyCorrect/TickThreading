@@ -23,6 +23,7 @@ import nallar.tickthreading.minecraft.tickregion.EntityTickRegion;
 import nallar.tickthreading.minecraft.tickregion.TickRegion;
 import nallar.tickthreading.minecraft.tickregion.TileEntityTickRegion;
 import nallar.tickthreading.util.CollectionsUtil;
+import nallar.tickthreading.util.MappingUtil;
 import nallar.tickthreading.util.TableFormatter;
 import nallar.unsafe.UnsafeUtil;
 import net.minecraft.entity.Entity;
@@ -840,7 +841,7 @@ public final class TickManager {
 				.heading("Number");
 		for (Class clazz : sortedKeys) {
 			tf
-					.row(clazz.getName())
+					.row(MappingUtil.debobfuscate(clazz.getName()))
 					.row(counts.get(clazz).value);
 		}
 		tf.finishTable();
