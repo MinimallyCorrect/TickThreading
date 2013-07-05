@@ -10,9 +10,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.google.common.base.Functions;
-import com.google.common.collect.Ordering;
-
 import nallar.tickthreading.minecraft.TickManager;
 import nallar.tickthreading.minecraft.TickThreading;
 import nallar.tickthreading.minecraft.commands.ProfileCommand;
@@ -132,11 +129,6 @@ public class EntityTickProfiler {
 		objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, tables);
 	}
 
-	private static <T> List<T> sortedKeys(Map<T, ? extends Comparable<?>> map, int elements) {
-		List<T> list = Ordering.natural().reverse().onResultOf(Functions.forMap(map)).immutableSortedCopy(map.keySet());
-		return list.size() > elements ? list.subList(0, elements) : list;
-	}
-
 	public TableFormatter writeStringData(TableFormatter tf) {
 		return writeStringData(tf, 5);
 	}
@@ -162,7 +154,7 @@ public class EntityTickProfiler {
 				.heading("Single Entity")
 				.heading("Time/Tick")
 				.heading("%");
-		final List<Object> sortedSingleKeysByTime = sortedKeys(singleTime, elements);
+		final List<Object> sortedSingleKeysByTime = CollectionsUtil.sortedKeys(singleTime, elements);
 		for (Object o : sortedSingleKeysByTime) {
 			tf
 					.row(niceName(o))
@@ -202,7 +194,7 @@ public class EntityTickProfiler {
 				.heading("Chunk")
 				.heading("Time/Tick")
 				.heading("%");
-		for (ChunkCoords chunkCoords : sortedKeys(chunkTimeMap, elements)) {
+		for (ChunkCoords chunkCoords : CollectionsUtil.sortedKeys(chunkTimeMap, elements)) {
 			long chunkTime = chunkTimeMap.get(chunkCoords).value;
 			tf
 					.row(chunkCoords.chunkXPos + ", " + chunkCoords.chunkZPos)
@@ -215,7 +207,7 @@ public class EntityTickProfiler {
 				.heading("All Entities of Type")
 				.heading("Time/Tick")
 				.heading("%");
-		for (Class c : sortedKeys(time, elements)) {
+		for (Class c : CollectionsUtil.sortedKeys(time, elements)) {
 			tf
 					.row(niceName(c))
 					.row(time.get(c) / (1000000d * ticks))
@@ -231,7 +223,7 @@ public class EntityTickProfiler {
 				.heading("Average Entity of Type")
 				.heading("Time/tick")
 				.heading("Calls");
-		for (Class c : sortedKeys(timePerTick, elements)) {
+		for (Class c : CollectionsUtil.sortedKeys(timePerTick, elements)) {
 			tf
 					.row(niceName(c))
 					.row(timePerTick.get(c) / 1000000d)

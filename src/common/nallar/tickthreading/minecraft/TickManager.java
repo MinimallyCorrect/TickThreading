@@ -22,6 +22,7 @@ import nallar.tickthreading.minecraft.commands.TPSCommand;
 import nallar.tickthreading.minecraft.tickregion.EntityTickRegion;
 import nallar.tickthreading.minecraft.tickregion.TickRegion;
 import nallar.tickthreading.minecraft.tickregion.TileEntityTickRegion;
+import nallar.tickthreading.util.CollectionsUtil;
 import nallar.tickthreading.util.TableFormatter;
 import nallar.unsafe.UnsafeUtil;
 import net.minecraft.entity.Entity;
@@ -812,6 +813,51 @@ public final class TickManager {
 			tf.sb.append("Dumped tickRegions for ").append(hashCode).append(": ").append(x).append(", ").append(z);
 		}
 		return tf;
+	}
+
+	public TableFormatter writeTECounts(final TableFormatter tf) {
+		final Map<Class, ComparableIntegerHolder> counts = new HashMap<Class, ComparableIntegerHolder>() {
+			@Override
+			public ComparableIntegerHolder get(Object key_) {
+				Class key = (Class) key_;
+				ComparableIntegerHolder value = super.get(key);
+				if (value == null) {
+					value = new ComparableIntegerHolder();
+					put(key, value);
+				}
+				return value;
+			}
+		};
+		for (TileEntity tileEntity : tileEntityList.unsafe()) {
+			if (tileEntity == null) {
+				continue;
+			}
+			counts.get(tileEntity.getClass()).value++;
+		}
+		List<Class> sortedKeys = CollectionsUtil.sortedKeys(counts, 15);
+		tf
+				.heading("Type")
+				.heading("Number");
+		for (Class clazz : sortedKeys) {
+			tf
+					.row(clazz.getName())
+					.row(counts.get(clazz).value);
+		}
+		tf.finishTable();
+		return tf;
+	}
+
+	private class ComparableIntegerHolder implements Comparable<ComparableIntegerHolder> {
+		public int value;
+
+		ComparableIntegerHolder() {
+		}
+
+		@Override
+		public int compareTo(final ComparableIntegerHolder comparableIntegerHolder) {
+			int otherValue = comparableIntegerHolder.value;
+			return (value < otherValue) ? -1 : ((value == otherValue) ? 0 : 1);
+		}
 	}
 
 	private class FixDiscrepanciesTask implements Runnable {
