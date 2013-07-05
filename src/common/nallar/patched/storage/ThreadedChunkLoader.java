@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -329,23 +330,26 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 		Iterator iterator;
 
 		for (i = 0; i < par1Chunk.entityLists.length; ++i) {
-			iterator = par1Chunk.entityLists[i].iterator();
+			List<Entity> entities = par1Chunk.entityLists[i];
 
-			while (iterator.hasNext()) {
-				Entity entity = (Entity) iterator.next();
-				nbttagcompound1 = new NBTTagCompound();
+			synchronized (entities) {
+				iterator = entities.iterator();
+				while (iterator.hasNext()) {
+					Entity entity = (Entity) iterator.next();
+					nbttagcompound1 = new NBTTagCompound();
 
-				try {
-					if (entity.addEntityID(nbttagcompound1)) {
-						par1Chunk.hasEntities = true;
-						nbttaglist1.appendTag(nbttagcompound1);
+					try {
+						if (entity.addEntityID(nbttagcompound1)) {
+							par1Chunk.hasEntities = true;
+							nbttaglist1.appendTag(nbttagcompound1);
+						}
+					} catch (Throwable t) {
+						FMLLog.log(Level.SEVERE, t,
+								"An Entity type %s at %s,%f,%f,%f has thrown an exception trying to write state. It will not persist. Report this to the mod author",
+								entity.getClass().getName(),
+								Log.name(entity.worldObj),
+								entity.posX, entity.posY, entity.posZ); // MCPC+ - add location
 					}
-				} catch (Throwable t) {
-					FMLLog.log(Level.SEVERE, t,
-							"An Entity type %s at %s,%f,%f,%f has thrown an exception trying to write state. It will not persist. Report this to the mod author",
-							entity.getClass().getName(),
-							Log.name(entity.worldObj),
-							entity.posX, entity.posY, entity.posZ); // MCPC+ - add location
 				}
 			}
 		}
