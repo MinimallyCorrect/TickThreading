@@ -138,11 +138,21 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 			log(Level.WARNING, null, "Not loading patched classes in " + url.replace("%", "%%") + ", replacedClasses was not set.");
 			return;
 		}
+		if (!url.isEmpty() && url.charAt(url.length() - 1) == '/') {
+			url = url.substring(0, url.length() - 1);
+		}
+		if (url.isEmpty() || ".".equals(url)) {
+			log(Level.WARNING, new Throwable(), "Failed to add patched classes from empty URL", url);
+			return;
+		}
 		File patchedModFile;
 		try {
 			patchedModFile = new File(patchedModsFolder, url.substring(url.lastIndexOf('/') + 1, url.length()));
 			if (!patchedURLs.add(patchedModFile.getAbsolutePath())) {
 				return;
+			}
+			if (patchedModsFolder.equals(patchedModFile)) {
+				throw new Exception("patched mods file = patched mods folder");
 			}
 		} catch (Exception e) {
 			log(Level.SEVERE, e, "Failed to add patched classes in URL %s", url);
