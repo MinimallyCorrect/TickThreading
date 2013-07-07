@@ -203,7 +203,7 @@ public class TickThreading {
 		profilingJson = config.get(GENERAL, "profilingJson", profilingJson, "Whether to write periodic profiling in JSON format").getBoolean(profilingJson);
 		rateLimitChunkUpdates = config.get(GENERAL, "rateLimitChunkUpdates", rateLimitChunkUpdates, "Whether to prevent repeated chunk updates which can cause rendering issues and disconnections for slow clients/connections.").getBoolean(rateLimitChunkUpdates);
 		config.save();
-		int[] disabledDimensions = config.get(GENERAL, "disableFastMobSpawningDimensions", new int[]{-1}, "List of dimensions not to enable fast spawning in.").getIntList();
+		int[] disabledDimensions = config.get(GENERAL, "disableFastMobSpawningDimensions", new int[]{-1, 1}, "List of dimensions not to enable fast spawning in.").getIntList();
 		disabledFastMobSpawningDimensions = new HashSet<Integer>(disabledDimensions.length);
 		for (int disabledDimension : disabledDimensions) {
 			disabledFastMobSpawningDimensions.add(disabledDimension);
