@@ -30,14 +30,13 @@ public class TileEntityTickRegion extends TickRegion {
 		Lock zPlusLock;
 		Lock zMinusLock;
 		long startTime = 0;
-		// This code is performance critical.
 		// Locking calls are manipulated by the patcher,
 		// INVOKEVIRTUAL java.util.concurrent.locks.Lock.lock/unlock() calls are replaced with
 		// MONITORENTER/MONITOREXIT instructions.
 		// For this reason, although we do use interfaces which correctly implement lock/unlock depending on the TileEntity,
 		// it is critical that .lock() is not called on anything other than a NativeMutex instance in this code.
 		// Behaving in this manner also allows us to avoid the overhead of calling an interface method.
-		// Volatile reads are, if used only when necessary, fast. JVM will not optimize out repeat volatile reads, happens-before on field write.
+		// Volatile reads are, if used only when necessary, fast. JVM will not optimize out repeat volatile reads.
 		// Just don't read fields repeatedly unnecessary. Best not to do this with non-volatile fields anyway.
 		final Iterator<TileEntity> tileEntitiesIterator = tileEntitySet.startIteration();
 		try {
