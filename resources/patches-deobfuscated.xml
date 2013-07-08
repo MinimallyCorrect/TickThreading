@@ -273,7 +273,6 @@
 		<class id="net.minecraft.nbt.NBTTagCompound">
 			<addAll fromClass="nallar.patched.nbt.PatchNBTTagCompound"/>
 			<replaceInitializer field="tagMap" class="nallar.collections.PartiallySynchronizedMap"/>
-			<final field="tagMap"/>
 		</class>
 		<class id="net.minecraft.entity.Entity">
 			<final field="rand"/>
