@@ -217,7 +217,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		handleUnloadQueue(queueThreshold, false);
 	}
 
-	private void handleUnloadQueue(long queueThreshold, boolean full) {
+	private synchronized void handleUnloadQueue(long queueThreshold, boolean full) {
 		int done = 0;
 		// Handle unloading stage 1
 		{
@@ -359,35 +359,53 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 	@Deprecated
 	public void unloadChunkImmediately(int x, int z, boolean save) {
-		long key = key(x, z);
-		finalizeUnload(key);
-		Chunk chunk = getChunkIfExists(x, z);
-		if (chunk != null) {
-			synchronized (chunk) {
-				if (chunk.partiallyUnloaded) {
-					return;
-				}
-				if (world.getPersistentChunks().containsKey(new ChunkCoordIntPair(x, z)) || world.getPlayerManager().getOrCreateChunkWatcher(x, z, false) != null || !fireBukkitUnloadEvent(chunk)) {
-					return;
-				}
-				chunk.queuedUnload = true;
-				chunk.partiallyUnloaded = true;
-				chunk.onChunkUnloadTT();
-				if (save || chunk.isModified) {
-					saveChunk(chunk);
-					safeSaveExtraChunkData(chunk);
-				}
-				chunk.alreadySavedAfterUnload = true;
-				loadedChunks.remove(chunk);
-				chunks.remove(key);
-			}
-		}
+		/** I lied, doesn't unload it immediately. **/
+		unloadChunk(x, z);
 	}
 
 	@Deprecated
 	public Chunk regenerateChunk(int x, int z) {
-		unloadChunkImmediately(x, z, false);
-		return getChunkAtInternal(x, z, true, true);
+		long key = key(x, z);
+		AtomicInteger lock = getLock(key);
+		synchronized (lock) {
+			try {
+				Chunk chunk = getChunkIfExists(x, z);
+				if (chunk != null) {
+					finalizeUnload(key);
+					do {
+						chunk = getChunkIfExists(x, z);
+						if (chunk == null) {
+							continue;
+						}
+						chunk.queuedUnload = true;
+						synchronized (chunk) {
+							if (chunk.partiallyUnloaded || unloadingChunks.containsItem(key)) {
+								continue;
+							}
+							if (!fireBukkitUnloadEvent(chunk)) {
+								Log.warning("Bukkit cancelled chunk unload for regeneration unload of " + x + ", " + z, new Throwable());
+							}
+							if (lastChunk == chunk) {
+								lastChunk = null;
+							}
+							chunk.partiallyUnloaded = true;
+							chunk.onChunkUnloadTT();
+							chunk.pendingBlockUpdates = world.getPendingBlockUpdates(chunk, false);
+							loadedChunks.remove(chunk);
+							chunks.remove(key);
+							synchronized (unloadingChunks) {
+								unloadingChunks.put(key, chunk);
+								unloadStage1.add(new QueuedUnload(key, 0));
+							}
+						}
+					} while (false);
+					finalizeUnload(key);
+				}
+				return getChunkAtInternal(x, z, true, true);
+			} finally {
+				lock.decrementAndGet();
+			}
+		}
 	}
 
 	@Override
@@ -524,9 +542,14 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 					return chunk;
 				}
 				chunk = loadingChunks.getValueByKey(key);
-				if (chunk == null) {
+				if (regenerate) {
+					if (!allowGenerate) {
+						throw new IllegalArgumentException();
+					}
+					loadingChunks.put(key, defaultEmptyChunk);
+				} else if (chunk == null) {
 					finalizeUnload(key);
-					chunk = regenerate ? null : safeLoadChunk(x, z);
+					chunk = safeLoadChunk(x, z);
 					if (chunk != null && (chunk.xPosition != x || chunk.zPosition != z)) {
 						Log.severe("Chunk at " + chunk.xPosition + ',' + chunk.zPosition + " was stored at " + x + ',' + z + "\nResetting this chunk.");
 						chunk = null;
@@ -545,7 +568,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 							Log.warning("Loaded chunk before world load event fired, this can cause many issues, including loss of multiblock data.", new Throwable());
 						}
 					}
-				} else {
+				} else if (chunk != defaultEmptyChunk) {
 					inLoadingMap = true;
 				}
 			}
