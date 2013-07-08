@@ -202,7 +202,7 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 		if (chunk.partiallyUnloaded) {
 			this.loaded = false;
 			this.chunk = null;
-			thePlayerManager.getWorldServer().theChunkProviderServer.getChunkAt(chunkLocation.chunkXPos, chunkLocation.chunkZPos, new LoadRunnable(this));
+			thePlayerManager.getWorldServer().theChunkProviderServer.getChunkAt(chunkLocation.chunkXPos, chunkLocation.chunkZPos, new ReloadRunnable(this));
 			return true;
 		}
 		return false;
@@ -294,6 +294,18 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 		public void onLoad(Chunk chunk) {
 			playerInstance.loaded = true;
 			playerInstance.chunk = chunk;
+		}
+	}
+
+	public static class ReloadRunnable extends LoadRunnable {
+		public ReloadRunnable(final PlayerInstance playerInstance) {
+			super(playerInstance);
+		}
+
+		@Override
+		public void onLoad(Chunk chunk) {
+			super.onLoad(chunk);
+			playerInstance.forceUpdate();
 		}
 	}
 }
