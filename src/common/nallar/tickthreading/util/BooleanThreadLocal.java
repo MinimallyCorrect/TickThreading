@@ -30,7 +30,6 @@ public class BooleanThreadLocal extends ThreadLocal<Boolean> {
 	@Override
 	public void set(Boolean value) {
 		if (value == get()) {
-			Log.severe("Pointless repeat set on threadlocal", new Throwable());
 			return;
 		}
 		super.set(value);
@@ -42,7 +41,7 @@ public class BooleanThreadLocal extends ThreadLocal<Boolean> {
 					return;
 				}
 			} while (true);
-		} else if (value == Boolean.FALSE) {
+		} else {
 			do {
 				int old = $.getIntVolatile(this, index);
 				int next = old - 1;
@@ -50,8 +49,6 @@ public class BooleanThreadLocal extends ThreadLocal<Boolean> {
 					return;
 				}
 			} while (true);
-		} else {
-			throw new Error("Must use Boolean.TRUE/FALSE.");
 		}
 	}
 
@@ -74,7 +71,7 @@ public class BooleanThreadLocal extends ThreadLocal<Boolean> {
 					return oldValue;
 				}
 			} while (true);
-		} else if (value == Boolean.FALSE) {
+		} else {
 			do {
 				int old = $.getIntVolatile(this, index);
 				int next = old - 1;
@@ -82,8 +79,6 @@ public class BooleanThreadLocal extends ThreadLocal<Boolean> {
 					return oldValue;
 				}
 			} while (true);
-		} else {
-			throw new Error("Must use Boolean.TRUE/FALSE.");
 		}
 	}
 

@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 
+import nallar.tickthreading.util.BooleanThreadLocal;
+
 @SuppressWarnings ("UnusedDeclaration")
 public class ThreadLocals {
 	public static final ThreadLocal redPowerBlockUpdateSet = new HashSetThreadLocal();
@@ -52,16 +54,6 @@ public class ThreadLocals {
 		@Override
 		protected Object initialValue() {
 			return new LinkedList();
-		}
-	}
-
-	private static class BooleanThreadLocal extends ThreadLocal {
-		BooleanThreadLocal() {
-		}
-
-		@Override
-		protected Object initialValue() {
-			return Boolean.FALSE;
 		}
 	}
 
