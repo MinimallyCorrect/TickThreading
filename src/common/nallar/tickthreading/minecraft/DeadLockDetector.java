@@ -366,8 +366,7 @@ public class DeadLockDetector {
 			}
 		}
 		sb.append('\n');
-		String ret = sb.toString();
-		return (run <= 2 && ret.contains("at java.util.concurrent.LinkedBlockingQueue.take(")) ? null : ret;
+		return (run <= 2 && sb.indexOf("at java.util.concurrent.LinkedBlockingQueue.take(") != -1) ? null : sb.toString();
 	}
 
 	public static void checkForLeakedThreadManagers() {
