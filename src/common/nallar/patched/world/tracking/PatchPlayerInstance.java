@@ -198,7 +198,7 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 			return true;
 		}
 		if (chunk.partiallyUnloaded) {
-			Log.severe("Chunk for " + this + " has been unloaded without removing the PlayerInstance");
+			this.loaded = false;
 			this.chunk = null;
 			myManager.getWorldServer().theChunkProviderServer.getChunkAt(chunkLocation.chunkXPos, chunkLocation.chunkZPos, new LoadRunnable(this));
 			return true;
@@ -222,8 +222,8 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 
 	@Override
 	public void sendChunkUpdate() {
-		watched = false;
 		if (noUpdateRequired()) {
+			clearTileCount();
 			return;
 		}
 		sentUpdates++;
@@ -258,8 +258,7 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 					}
 				}
 
-				this.numberOfTilesToUpdate = 0;
-				this.field_73260_f = 0;
+				clearTileCount();
 			}
 		}
 	}
