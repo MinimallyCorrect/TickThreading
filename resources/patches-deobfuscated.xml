@@ -1727,6 +1727,9 @@
 		</class>
 	</dynmap>
 	<mmmPowerSuits>
+		<class id="net.machinemuse.powersuits.powermodule.modules.RailgunModule">
+			<disable>drawParticleStreamTo</disable>
+		</class>
 		<class id="net.machinemuse.powersuits.network.packets.MusePacketPlayerUpdate">
 			<replaceMethod code="{
 				if (net.minecraft.server.MinecraftServer.currentTick % 2 == 0) {
