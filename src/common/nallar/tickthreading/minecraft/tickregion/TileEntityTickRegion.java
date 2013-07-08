@@ -29,7 +29,7 @@ public class TileEntityTickRegion extends TickRegion {
 		Lock xMinusLock;
 		Lock zPlusLock;
 		Lock zMinusLock;
-		long startTime = 0;
+		long startTime = profilingEnabled ? System.nanoTime() : 0;
 		// Locking calls are manipulated by the patcher,
 		// INVOKEVIRTUAL java.util.concurrent.locks.Lock.lock/unlock() calls are replaced with
 		// MONITORENTER/MONITOREXIT instructions.
@@ -41,9 +41,6 @@ public class TileEntityTickRegion extends TickRegion {
 		final Iterator<TileEntity> tileEntitiesIterator = tileEntitySet.startIteration();
 		try {
 			while (tileEntitiesIterator.hasNext()) {
-				if (profilingEnabled) {
-					startTime = System.nanoTime();
-				}
 				final TileEntity tileEntity = tileEntitiesIterator.next();
 				final int xPos = tileEntity.xCoord;
 				final int zPos = tileEntity.zCoord;
@@ -118,7 +115,8 @@ public class TileEntityTickRegion extends TickRegion {
 					}
 
 					if (profilingEnabled) {
-						entityTickProfiler.record(tileEntity, System.nanoTime() - startTime);
+						long oldStartTime = startTime;
+						entityTickProfiler.record(tileEntity, (startTime = System.nanoTime()) - oldStartTime);
 					}
 				}
 			}
