@@ -694,6 +694,9 @@ public class Patches {
 			try {
 				CtMethod oldMethod = ctClass.getDeclaredMethod(newMethod.getName(), newMethod.getParameterTypes());
 				replaceMethod(oldMethod, newMethod);
+				if (Modifier.isSynchronized(newMethod.getModifiers())) {
+					oldMethod.setModifiers(oldMethod.getModifiers() | Modifier.SYNCHRONIZED);
+				}
 			} catch (NotFoundException ignored) {
 				CtMethod added = CtNewMethod.copy(newMethod, ctClass, classMap);
 				ctClass.addMethod(added);
