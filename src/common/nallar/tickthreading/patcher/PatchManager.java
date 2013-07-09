@@ -187,7 +187,11 @@ public class PatchManager {
 		List<Element> modElements = DomUtil.elementList(configDocument.getDocumentElement().getChildNodes());
 		for (Element modElement : modElements) {
 			for (Element classElement : DomUtil.getElementsByTag(modElement, "class")) {
-				hashes.put(classElement.getAttribute("id"), DomUtil.getHash(classElement) + VersionUtil.TTVersionString().hashCode() * 31);
+				String className = classElement.getAttribute("id");
+				if (className.startsWith("net.minecraft.")) {
+					continue;
+				}
+				hashes.put(className, DomUtil.getHash(classElement) + VersionUtil.TTVersionString().hashCode() * 31);
 			}
 		}
 		return hashes;
