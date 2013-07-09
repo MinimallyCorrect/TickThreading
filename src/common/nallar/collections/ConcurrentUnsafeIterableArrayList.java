@@ -5,7 +5,6 @@ import java.util.Collection;
 
 import nallar.tickthreading.util.ReflectUtil;
 import nallar.unsafe.UnsafeAccess;
-import net.minecraft.tileentity.TileEntity;
 import sun.misc.Unsafe;
 
 public class ConcurrentUnsafeIterableArrayList<T> extends ArrayList<T> {

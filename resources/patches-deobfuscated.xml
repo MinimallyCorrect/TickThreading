@@ -1510,7 +1510,9 @@
 			<replaceInitializer field="CraftingQueue" class="nallar.collections.ConcurrentLinkedQueueList"/>
 			<unsynchronize>^method:TileEntity/updateEntity^,signalInput(L^class:ItemStack^;)V,signalInput(Lappeng.api.me.util.IMEInventory;L^class:ItemStack^;)L^class:ItemStack^;</unsynchronize>
 			<synchronize field="CManager.getPrereqs()">getJobList,getJobStatus,cancelJob</synchronize>
-			<synchronize field="staticLock">getCellArray,^method:TileEntity/updateEntity^,advanceCraftingCursor,resetWaitingQueue,signalInput(L^class:ItemStack^;)V,signalInput(Lappeng.api.me.util.IMEInventory;L^class:ItemStack^;)L^class:ItemStack^;</synchronize>
+			<synchronize field="staticLock">
+				getCellArray,^method:TileEntity/updateEntity^,advanceCraftingCursor,resetWaitingQueue,signalInput(L^class:ItemStack^;)V,signalInput(Lappeng.api.me.util.IMEInventory;L^class:ItemStack^;)L^class:ItemStack^;
+			</synchronize>
 		</class>
 		<class id="appeng.me.tile.TileDrive">
 			<synchronize>getCellArray,resetCache</synchronize>
@@ -1759,7 +1761,8 @@
 			<ignoreExceptions code="{
 				setIdleTicks(getIdleTicksMax());
       	return false;
-      }" type="java.lang.NullPointerException">activateMachine</ignoreExceptions>
+      }" type="java.lang.NullPointerException">activateMachine
+			</ignoreExceptions>
 		</class>
 	</mineFactoryReloaded>
 </mods>
