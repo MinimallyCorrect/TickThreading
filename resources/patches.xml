@@ -1520,4 +1520,9 @@
 			<replaceInitializer field="mobHats" class="nallar.collections.ConcurrentWeakHashMap"/>
 		</class>
 	</hats>
+	<xReqliquary>
+		<class id="xeno.reliquary.items.AlkahestHandler">
+			<replaceMethodCall index="0" code="{}" method="println">onCrafting</replaceMethodCall>
+		</class>
+	</xReqliquary>
 </mods>
