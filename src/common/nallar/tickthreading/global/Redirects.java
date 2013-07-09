@@ -74,8 +74,13 @@ public class Redirects {
 		return false;
 	}
 
+	private static final boolean fixIC2Dimension = System.getProperty("tickthreading.ic2remap") == null;
+
 	// announceBlockUpdate,initiateTileEntityEvent,initiateExplosionEffect
 	public static void interceptIC2Packet(Packet packet, Player player) {
+		if (!fixIC2Dimension) {
+			return;
+		}
 		if (player instanceof EntityPlayerMP) {
 			NetServerHandler netServerHandler = ((EntityPlayerMP) player).playerNetServerHandler;
 			Packet250CustomPayload packet250CustomPayload = (Packet250CustomPayload) packet;
@@ -93,6 +98,9 @@ public class Redirects {
 	}
 
 	public static void interceptIC2PacketIn(INetworkManager manager, Packet250CustomPayload packet, Player player) {
+		if (!fixIC2Dimension) {
+			return;
+		}
 		if (!(player instanceof EntityPlayerMP)) {
 			return;
 		}
