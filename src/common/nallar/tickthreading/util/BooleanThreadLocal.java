@@ -1,6 +1,5 @@
 package nallar.tickthreading.util;
 
-import nallar.tickthreading.Log;
 import nallar.unsafe.UnsafeAccess;
 import sun.misc.Unsafe;
 
