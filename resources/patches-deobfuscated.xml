@@ -1754,4 +1754,12 @@
 			<replaceInitializer field="mobHats" class="nallar.collections.ConcurrentWeakHashMap"/>
 		</class>
 	</hats>
+	<mineFactoryReloaded>
+		<class id="powercrystals.minefactoryreloaded.plants.TileEntityHarvester">
+			<ignoreExceptions code="{
+				setIdleTicks(getIdleTicksMax());
+      	return false;
+      }" type="java.lang.NullPointerException">activateMachine</ignoreExceptions>
+		</class>
+	</mineFactoryReloaded>
 </mods>
