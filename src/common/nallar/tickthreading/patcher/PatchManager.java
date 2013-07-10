@@ -299,6 +299,20 @@ public class PatchManager {
 		transformer.transform(input, output);
 	}
 
+	private void splitMultiClassPatches() {
+		for (Element classElement : DomUtil.getElementsByTag(configDocument.getDocumentElement(), "class")) {
+			String classNames = classElement.getAttribute("id");
+			if (classNames.contains(",")) {
+				for (String className : CollectionsUtil.split(classNames.trim())) {
+					Element newClassElement = (Element) classElement.cloneNode(true);
+					newClassElement.setAttribute("id", className);
+					classElement.getParentNode().insertBefore(newClassElement, classElement);
+				}
+				classElement.getParentNode().removeChild(classElement);
+			}
+		}
+	}
+
 	public class PatchMethodDescriptor {
 		public final String name;
 		public final List<String> requiredAttributes;
