@@ -198,6 +198,7 @@ public class PatchManager {
 	}
 
 	public void runPatches(Mappings mappings) {
+		splitMultiClassPatches();
 		List<Element> modElements = DomUtil.elementList(configDocument.getDocumentElement().getChildNodes());
 		patchingClasses = new HashMap<String, CtClass>();
 		Map<String, Boolean> isSrg = new HashMap<String, Boolean>();
