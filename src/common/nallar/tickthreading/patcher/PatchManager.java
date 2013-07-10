@@ -97,6 +97,7 @@ public class PatchManager {
 	}
 
 	public void obfuscate(Mappings mappings) {
+		splitMultiClassPatches();
 		NodeList minecraftClassNodes = ((Element) configDocument.getElementsByTagName("minecraftCommon").item(0)).getElementsByTagName("class");
 		for (Element classElement : DomUtil.elementList(minecraftClassNodes)) {
 			String className = classElement.getAttribute("id");
