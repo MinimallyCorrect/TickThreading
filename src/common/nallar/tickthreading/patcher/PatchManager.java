@@ -259,7 +259,7 @@ public class PatchManager {
 
 	private void splitMultiClassPatches() {
 		for (Element classElement : DomUtil.getElementsByTag(configDocument.getDocumentElement(), "class")) {
-			String classNames = classElement.getAttribute("id");
+			String classNames = classElement.getAttribute("id").replace("    ", "\n");
 			if (classNames.contains("\n")) {
 				for (String className : CollectionsUtil.split(classNames.trim(), "\n")) {
 					Element newClassElement = (Element) classElement.cloneNode(true);
