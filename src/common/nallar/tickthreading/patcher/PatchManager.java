@@ -303,10 +303,10 @@ public class PatchManager {
 	private void splitMultiClassPatches() {
 		for (Element classElement : DomUtil.getElementsByTag(configDocument.getDocumentElement(), "class")) {
 			String classNames = classElement.getAttribute("id");
-			if (classNames.contains(",")) {
-				for (String className : CollectionsUtil.split(classNames.trim())) {
+			if (classNames.contains("\n")) {
+				for (String className : CollectionsUtil.split(classNames.trim(), "\n")) {
 					Element newClassElement = (Element) classElement.cloneNode(true);
-					newClassElement.setAttribute("id", className);
+					newClassElement.setAttribute("id", className.trim());
 					classElement.getParentNode().insertBefore(newClassElement, classElement);
 				}
 				classElement.getParentNode().removeChild(classElement);

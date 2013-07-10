@@ -30,7 +30,7 @@ public enum CollectionsUtil {
 		return newList;
 	}
 
-	private static List<String> split(String input, String delimiter) {
+	public static List<String> split(String input, String delimiter) {
 		if (input == null || input.isEmpty()) {
 			return Collections.emptyList();
 		}
