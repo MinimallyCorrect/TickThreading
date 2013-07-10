@@ -1767,7 +1767,7 @@
 	</mineFactoryReloaded>
 	<xReliquary>
 		<class id="xeno.reliquary.items.AlkahestHandler">
-			<replaceMethodCall index="0" code="{}" method="println">onCrafting</replaceMethodCall>
+			<replaceMethodCall code="{}" method="println">onCrafting</replaceMethodCall>
 		</class>
 	</xReliquary>
 </mods>
