@@ -1027,6 +1027,13 @@ public class Patches {
 	}
 
 	@Patch (
+			requiredAttributes = "name"
+	)
+	public void rename(CtMethod ctMethod, Map<String, String> attributes) {
+		ctMethod.setName(attributes.get("name"));
+	}
+
+	@Patch (
 			requiredAttributes = "field"
 	)
 	public void synchronizeMethodCall(final CtBehavior ctBehavior, Map<String, String> attributes) throws CannotCompileException {
