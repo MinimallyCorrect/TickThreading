@@ -103,12 +103,12 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 	@Declare
 	public void cacheChunk(World world, int x, int z) {
 		if (!isChunkCacheFull()) {
-			long hash = hash(x, z);
-			if (chunkCache.getIfPresent(hash) == null && !world.getChunkProvider().chunkExists(x, z)) {
+			long key = key(x, z);
+			if (chunkCache.getIfPresent(key) == null && !world.getChunkProvider().chunkExists(x, z)) {
 				NBTTagCompound nbtTagCompound = readChunkNBT(world, x, z, true);
 				synchronized (syncLockObject) {
-					if (nbtTagCompound != null && chunkCache.getIfPresent(hash) == null && !world.getChunkProvider().chunkExists(x, z)) {
-						chunkCache.put(hash, nbtTagCompound);
+					if (nbtTagCompound != null && chunkCache.getIfPresent(key) == null && !world.getChunkProvider().chunkExists(x, z)) {
+						chunkCache.put(key, nbtTagCompound);
 					}
 				}
 			}
@@ -124,17 +124,17 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 		synchronized (this.syncLockObject) {
 			AnvilChunkLoaderPending pendingchunktosave = pendingSaves.get(chunkcoordintpair);
 
-			long hash = hash(x, z);
+			long key = key(x, z);
 			if (pendingchunktosave == null) {
-				nbtTagCompound = (NBTTagCompound) inProgressSaves.getValueByKey(hash);
+				nbtTagCompound = (NBTTagCompound) inProgressSaves.getValueByKey(key);
 				if (nbtTagCompound == null) {
-					nbtTagCompound = chunkCache.getIfPresent(hash);
+					nbtTagCompound = chunkCache.getIfPresent(key);
 				}
 			} else {
 				nbtTagCompound = pendingchunktosave.nbtTags;
 			}
 			if (nbtTagCompound != null && !readOnly) {
-				chunkCache.invalidate(hash);
+				chunkCache.invalidate(key);
 			}
 		}
 
@@ -238,7 +238,7 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 	public boolean writeNextIO() {
 		AnvilChunkLoaderPending anvilchunkloaderpending;
 
-		long hash;
+		long key;
 		synchronized (this.syncLockObject) {
 			if (this.pendingSaves.isEmpty()) {
 				return false;
@@ -246,11 +246,11 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 
 			anvilchunkloaderpending = this.pendingSaves.values().iterator().next();
 			this.pendingSaves.remove(anvilchunkloaderpending.chunkCoordinate);
-			hash = hash(anvilchunkloaderpending.chunkCoordinate.chunkXPos, anvilchunkloaderpending.chunkCoordinate.chunkZPos);
+			key = key(anvilchunkloaderpending.chunkCoordinate.chunkXPos, anvilchunkloaderpending.chunkCoordinate.chunkZPos);
 			if (anvilchunkloaderpending.unloading) {
-				chunkCache.put(hash, anvilchunkloaderpending.nbtTags);
+				chunkCache.put(key, anvilchunkloaderpending.nbtTags);
 			}
-			inProgressSaves.add(hash, anvilchunkloaderpending.nbtTags);
+			inProgressSaves.add(key, anvilchunkloaderpending.nbtTags);
 		}
 
 		try {
@@ -259,7 +259,7 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 			Log.severe("Failed to write chunk data to disk " + Log.pos(anvilchunkloaderpending.chunkCoordinate.chunkXPos, anvilchunkloaderpending.chunkCoordinate.chunkZPos));
 		}
 
-		inProgressSaves.remove(hash);
+		inProgressSaves.remove(key);
 
 		return true;
 	}
@@ -496,7 +496,7 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 		regionFileCache.close();
 	}
 
-	private static long hash(int x, int z) {
+	private static long key(int x, int z) {
 		return (((long) x) << 32) | (z & 0xffffffffL);
 	}
 }
