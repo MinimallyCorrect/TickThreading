@@ -1651,10 +1651,10 @@
 			appeng.me.tile.TileTerminal
 			appeng.me.tile.TileStorageMonitor
 			appeng.me.tile.TileStorageBus
-			appeng.me.tile.TileProgrammableInterface
+			appeng.me.tile.TileProgramableInterface
 			appeng.me.tile.TileP2PTunnel
 			appeng.me.tile.TileOutputCable
-			appeng.me.tile.TileLEvelEmitter
+			appeng.me.tile.TileLevelEmitter
 			appeng.me.tile.TileIOPort
 			appeng.me.tile.TileInterfaceBase
 			appeng.me.tile.TileInputCable
@@ -1665,7 +1665,7 @@
 			appeng.me.tile.TileAssemblerMB
 			appeng.me.tile.TileAssembler
 		">
-			<newMethod code="public void ^method:TileEntity/updateEntity^() { }" new=""/>
+			<newMethod code="public void ^method:TileEntity/updateEntity^() { }" ignoreDuplicate=""/>
 			<renameInterfaceMethod name="tickNetwork" interface="appeng.api.me.tiles.IGridMachine" allowMissing="">^method:TileEntity/updateEntity^</renameInterfaceMethod>
 		</class>
 	</appliedEnergistics>

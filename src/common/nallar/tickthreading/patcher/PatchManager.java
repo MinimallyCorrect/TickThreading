@@ -336,7 +336,9 @@ public class PatchManager {
 					try {
 						ctMethod = methodDescription.inClass(ctClass);
 					} catch (Throwable t) {
-						Log.warning("", t);
+						if (!attributes.containsKey("allowMissing")) {
+							Log.warning("", t);
+						}
 						continue;
 					}
 					run(ctMethod, attributes);

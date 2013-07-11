@@ -32,6 +32,7 @@ import javassist.bytecode.CodeAttribute;
 import javassist.bytecode.CodeIterator;
 import javassist.bytecode.ConstPool;
 import javassist.bytecode.Descriptor;
+import javassist.bytecode.DuplicateMemberException;
 import javassist.bytecode.MethodInfo;
 import javassist.bytecode.Mnemonic;
 import javassist.bytecode.Opcode;
@@ -78,7 +79,13 @@ public class Patches {
 			requiredAttributes = "code"
 	)
 	public void newMethod(CtClass ctClass, Map<String, String> attributes) throws CannotCompileException {
-		ctClass.addMethod(CtNewMethod.make(attributes.get("code"), ctClass));
+		try {
+			ctClass.addMethod(CtNewMethod.make(attributes.get("code"), ctClass));
+		} catch (DuplicateMemberException e) {
+			if (!attributes.containsKey("ignoreDuplicate")) {
+				throw e;
+			}
+		}
 	}
 
 	@Patch (
