@@ -334,7 +334,8 @@ public class Patches {
 	}
 
 	@Patch (
-			name = "volatile"
+			name = "volatile",
+			requiredAttributes = "field"
 	)
 	public void volatile_(CtClass ctClass, Map<String, String> attributes) throws NotFoundException {
 		String field = attributes.get("field");
@@ -347,6 +348,23 @@ public class Patches {
 		} else {
 			CtField ctField = ctClass.getDeclaredField(field);
 			ctField.setModifiers(ctField.getModifiers() | Modifier.VOLATILE);
+		}
+	}
+
+	@Patch (
+			requiredAttributes = "field"
+	)
+	public void unvolatile(CtClass ctClass, Map<String, String> attributes) throws NotFoundException {
+		String field = attributes.get("field");
+		if (field == null) {
+			for (CtField ctField : ctClass.getDeclaredFields()) {
+				if (ctField.getType().isPrimitive()) {
+					ctField.setModifiers(ctField.getModifiers() & ~Modifier.VOLATILE);
+				}
+			}
+		} else {
+			CtField ctField = ctClass.getDeclaredField(field);
+			ctField.setModifiers(ctField.getModifiers() & ~Modifier.VOLATILE);
 		}
 	}
 
