@@ -1576,12 +1576,6 @@
 				configureController,getCellArray,^method:TileEntity/updateEntity^,advanceCraftingCursor,resetWaitingQueue,signalInput(L^class:ItemStack^;)V,signalInput(Lappeng.api.me.util.IMEInventory;L^class:ItemStack^;)L^class:ItemStack^;
 			</synchronize>
 		</class>
-		<class id="appeng.me.tile.TileDrive">
-			<synchronize>getCellArray,resetCache</synchronize>
-		</class>
-		<class id="appeng.me.tile.TileChest">
-			<synchronize>getCellArray,resetCache</synchronize>
-		</class>
 		<class id="appeng.me.tile.TileStorageBus">
 			<replaceMethod code="{
 				super.g();
@@ -1699,6 +1693,19 @@
 		">
 			<newMethod code="public void ^method:TileEntity/updateEntity^() { }" ignoreDuplicate=""/>
 			<renameInterfaceMethod name="tickNetwork" interface="appeng.api.me.tiles.IGridMachine" allowMissing="">^method:TileEntity/updateEntity^</renameInterfaceMethod>
+			<newMethod code="private Object getNetworkLock() {
+				Object o = getGrid();
+				if (o instanceof appeng.api.TileRef) {
+					o = ((appeng.api.TileRef) o).getTile();
+				}
+				return o == null ? new Object() : o;
+			}"/>
+		</class>
+		<class id="appeng.me.tile.TileDrive">
+			<synchronize field="getNetworkLock()">getCellArray,resetCache</synchronize>
+		</class>
+		<class id="appeng.me.tile.TileChest">
+			<synchronize field="getNetworkLock()">getCellArray,resetCache</synchronize>
 		</class>
 	</appliedEnergistics>
 	<xyCraft>
