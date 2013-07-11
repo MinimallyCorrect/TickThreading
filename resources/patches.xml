@@ -1136,12 +1136,15 @@
 			<replaceInitializer field="hasFallen" class="nallar.collections.CHashMap"/>
 		</class>
 		<class id="portalgun.common.core.ChunkLoadHandler">
+			<replaceInitializer field="entTickets" class="nallar.collections.CHashMap"/>
+			<replaceInitializer field="portalTickets" class="nallar.collections.CHashMap"/>
 			<replaceMethodCall newMethod="getTEWithLoad" method="^class:World^.^method:World/getBlockTileEntity^">
 				ticketsLoaded(Ljava.util.List;L^class:World^;)V,ticketsLoaded(Ljava.util.List;L^class:World^;I)Ljava.util.List;
 			</replaceMethodCall>
 			<replaceMethodCall newMethod="getBlockIdWithLoad" method="^class:World^.^method:World/getBlockId^">
 				ticketsLoaded(Ljava.util.List;L^class:World^;)V,ticketsLoaded(Ljava.util.List;L^class:World^;I)Ljava.util.List;
 			</replaceMethodCall>
+			<synchronize static=""/>
 		</class>
 	</portalGun>
 	<graviGun>
