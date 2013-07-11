@@ -1047,6 +1047,41 @@ public class Patches {
 	}
 
 	@Patch (
+			requiredAttributes = "name,interface"
+	)
+	public void renameInterfaceMethod(CtMethod ctMethod, Map<String, String> attributes) throws CannotCompileException, NotFoundException {
+		CtClass currentClass = ctMethod.getDeclaringClass().getSuperclass();
+		final List<String> superClassNames = new ArrayList<String>();
+		boolean contains = false;
+		do {
+			if (!contains) {
+				for (CtClass ctClass : currentClass.getInterfaces()) {
+					if (ctClass.getName().equals(attributes.get("interface"))) {
+						contains = true;
+					}
+				}
+			}
+			currentClass = currentClass.getSuperclass();
+			superClassNames.add(currentClass.getName());
+		} while (currentClass != classRegistry.getClass("java.lang.Object"));
+		final String newName = attributes.get("name");
+		if (!contains) {
+			ctMethod.setName(newName);
+			return;
+		}
+		final String methodName = ctMethod.getName();
+		ctMethod.instrument(new ExprEditor() {
+			@Override
+			public void edit(MethodCall methodCall) throws CannotCompileException {
+				if (methodName.equals(methodCall.getMethodName()) && superClassNames.contains(methodCall.getClassName())) {
+					methodCall.replace("$_ = super." + newName + "($$);");
+				}
+			}
+		});
+		ctMethod.setName(newName);
+	}
+
+	@Patch (
 			requiredAttributes = "name"
 	)
 	public void rename(CtMethod ctMethod, Map<String, String> attributes) {
