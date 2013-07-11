@@ -1571,6 +1571,51 @@
 			<replaceInitializer field="mobHats" class="nallar.collections.ConcurrentWeakHashMap"/>
 		</class>
 	</hats>
+	<mineFactoryReloaded>
+		<class id="powercrystals.minefactoryreloaded.tile.machine.TileEntityDeepStorageUnit">
+			<replaceMethod code="{
+				^class:ItemStack^ item = _inventory[$1];
+				^class:ItemStack^ item2 = _inventory[2];
+				if (item != null)
+					{
+						if ((_storedQuantity == 0) &amp;&amp; ((item2 == null) || ((item2.^field:ItemStack/itemID^ == item.^field:ItemStack/itemID^) &amp;&amp; (item2.^method:ItemStack/getItemDamage^() == item.^method:ItemStack/getItemDamage^()))) &amp;&amp; (item.^method:ItemStack/getTagCompound^() == null))
+						{
+							_inventory[$1] = null;
+							_storedId = item.^field:ItemStack/itemID^;
+							_storedMeta = item.^method:ItemStack/getItemDamage^();
+							_storedQuantity = item.^field:ItemStack/stackSize^;
+							item = null;
+						}
+						else if ((item.^field:ItemStack/itemID^ == _storedId) &amp;&amp; (item.^method:ItemStack/getItemDamage^() == _storedMeta) &amp;&amp; (item.^method:ItemStack/getTagCompound^() == null) &amp;&amp; (2147483581 - item.^field:ItemStack/stackSize^ > _storedQuantity))
+						{
+							if (item.^method:ItemStack/getMaxStackSize^() > 1)
+							{
+								int s = item.^field:ItemStack/stackSize^;
+								item.^field:ItemStack/stackSize^ = 1;
+								_storedQuantity += s - 1;
+							}
+							else
+							{
+								_inventory[$1] = null;
+								_storedQuantity += item.^field:ItemStack/stackSize^;
+								item = null;
+							}
+
+						}
+						else if ((item.^field:ItemStack/itemID^ != _storedId) || (item.^method:ItemStack/getItemDamage^() != _storedMeta) || (item.^method:ItemStack/getTagCompound^() != null))
+						{
+							_inventory[$1] = item = powercrystals.core.util.UtilInventory.dropStack(this, item, getDropDirection());
+						}
+					}
+
+					if ((item == null) &amp;&amp; (item2 != null) &amp;&amp; (_storedQuantity > 1) &amp;&amp; (item2.^method:ItemStack/getMaxStackSize^() > 1))
+					{
+						_inventory[$1] = item = new ^class:ItemStack^(_storedId, 1, _storedMeta);
+						_storedQuantity -= 1;
+					}
+			}">checkInput</replaceMethod>
+		</class>
+	</mineFactoryReloaded>
 	<xReliquary>
 		<class id="xeno.reliquary.items.AlkahestHandler">
 			<replaceMethodCall code="{}" method="println">onCrafting</replaceMethodCall>
