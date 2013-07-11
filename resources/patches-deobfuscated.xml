@@ -1529,8 +1529,8 @@
 				if ($1 != null) {
 					Iterator i = $1.iterator();
 					while (i.hasNext()) {
-						appeng.api.TileRef tr = i.next();
-						^class:TileEntity^ tile = tr.getTile();
+						appeng.me.GridEnumeration$NetworkNode tr = (appeng.me.GridEnumeration$NetworkNode) i.next();
+						^class:TileEntity^ tile = (^class:TileEntity^) tr.getTile();
 						if (tile != this &amp;&amp; tile != null &amp;&amp; tile.^method:TileEntity/canUpdate^()) {
 							tiles.add(tile);
 						}
