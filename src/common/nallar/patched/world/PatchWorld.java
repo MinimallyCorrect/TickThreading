@@ -443,10 +443,11 @@ public abstract class PatchWorld extends World {
 			this.theProfiler.endSection();
 
 			if (notForced && entity.addedToChunk && entity.riddenByEntity != null) {
-				if (!entity.riddenByEntity.isDead && entity.riddenByEntity.ridingEntity == entity) {
-					this.updateEntity(entity.riddenByEntity);
+				Entity riddenByEntity = entity.riddenByEntity;
+				if (!riddenByEntity.isDead && riddenByEntity.ridingEntity == entity) {
+					this.updateEntity(riddenByEntity);
 				} else {
-					entity.riddenByEntity.ridingEntity = null;
+					riddenByEntity.ridingEntity = null;
 					entity.riddenByEntity = null;
 				}
 			}
