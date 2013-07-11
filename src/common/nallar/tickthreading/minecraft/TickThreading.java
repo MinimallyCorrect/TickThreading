@@ -98,7 +98,7 @@ public class TickThreading {
 	public boolean concurrentMovementUpdates = true;
 	public boolean rateLimitChunkUpdates = true;
 	public int saveInterval = 180;
-	public int deadLockTime = 45;
+	public int deadLockTime = 35;
 	public int chunkCacheSize = 2000;
 	public int chunkGCInterval = 1200;
 	public int maxEntitiesPerPlayer = 1000;
