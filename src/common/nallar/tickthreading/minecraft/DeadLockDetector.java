@@ -81,10 +81,10 @@ public class DeadLockDetector {
 	private static void tryFixDeadlocks(String stuckManagerName) {
 		stuckManagerName += " - ";
 		Iterable<Thread> threads = Thread.getAllStackTraces().keySet();
-		boolean lastWasKill = false;
+		boolean killed = false;
 		for (Thread thread : threads) {
 			if (thread.getName().startsWith(stuckManagerName)) {
-				if (lastWasKill) {
+				if (killed) {
 					trySleep(5);
 				}
 				StackTraceElement[] stackTraceElements = thread.getStackTrace();
@@ -96,9 +96,12 @@ public class DeadLockDetector {
 				}
 				if (runCount >= 3) {
 					thread.stop(new ThreadStuckError("Deadlock detected, appears to be caused by " + stuckManagerName));
-					lastWasKill = true;
+					killed = true;
 				}
 			}
+		}
+		if (!killed) {
+			Log.severe("Failed to kill any threads of manager " + stuckManagerName + ".\n" + CollectionsUtil.join(threads));
 		}
 	}
 
