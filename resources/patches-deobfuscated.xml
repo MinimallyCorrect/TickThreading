@@ -1531,7 +1531,7 @@
 					while (i.hasNext()) {
 						appeng.me.GridEnumeration$NetworkNode tr = (appeng.me.GridEnumeration$NetworkNode) i.next();
 						^class:TileEntity^ tile = (^class:TileEntity^) tr.getTile();
-						if (tile != this &amp;&amp; tile != null &amp;&amp; tile.^method:TileEntity/canUpdate^()) {
+						if (tile != this &amp;&amp; tile != null &amp;&amp; tile instanceof appeng.api.me.tiles.IGridMachine &amp;&amp; tile.^method:TileEntity/canUpdate^()) {
 							tiles.add(tile);
 						}
 					}
