@@ -230,22 +230,9 @@ public class TickThreading {
 		MinecraftServer.setTargetTPS(targetTPS);
 		Command.checkForPermissions();
 		String javaVersion = System.getProperty("java.runtime.version");
-		if (javaVersion.startsWith("1.6.0_")) {
-			int extrasIndex = javaVersion.indexOf('-');
-			if (extrasIndex != -1) {
-				javaVersion = javaVersion.substring(0, extrasIndex);
-			}
-			try {
-				boolean old = Integer.parseInt(javaVersion.substring(6)) < 34;
-				String warning = "It is recommended to use a Java 7 JRE. " + (old ? ", or if that is not possible, at least use the latest Java 6 JRE. " : "") + "Current version: " + javaVersion;
-				if (old) {
-					Log.severe(warning);
-				} else {
-					Log.info(warning);
-				}
-			} catch (NumberFormatException e) {
-				Log.warning("Unknown JRE version format, " + System.getProperty("java.runtime.version") + " -> " + javaVersion, e);
-			}
+		if (javaVersion.startsWith("1.6")) {
+			Log.severe("It is recommended to use a Java 7 JRE. Current version: " + javaVersion);
+			Log.severe("Java 7 has many performance improvements over 6, and some of TT's changes actually make performance worse when using java 6.");
 		}
 	}
 
