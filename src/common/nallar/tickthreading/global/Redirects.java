@@ -21,11 +21,21 @@ import net.minecraftforge.common.DimensionManager;
 public class Redirects {
 	private static final int FML_HASH = Hashing.murmur3_32().hashString("FML").asInt();
 
+	public static void exploitNotify(String message, EntityPlayerMP entityPlayerMP) {
+		String fullMessage = entityPlayerMP + " attempted to use an exploit: " + message;
+		Log.severe(fullMessage);
+		sendToAdmins(fullMessage);
+	}
+
 	public static void notifyAdmins(String message) {
 		if (!TickThreading.instance.antiCheatNotify) {
 			return;
 		}
 		Log.warning("Admin notify: " + message);
+		sendToAdmins(message);
+	}
+
+	private static void sendToAdmins(String message) {
 		ServerConfigurationManager serverConfigurationManager = MinecraftServer.getServer().getConfigurationManager();
 		serverConfigurationManager.playerUpdateLock.lock();
 		try {

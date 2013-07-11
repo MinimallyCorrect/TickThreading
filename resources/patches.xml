@@ -1525,4 +1525,14 @@
 			<replaceMethodCall code="{}" method="println">onCrafting</replaceMethodCall>
 		</class>
 	</xReliquary>
+	<notEnoughItems>
+		<class id="codechicken.nei.NEISPH">
+			<insertBefore code="{
+				if ($1.getType() != 10 &amp;&amp; !$3.^method:EntityPlayerMP/canCommandSenderUseCommand^(4, &quot;give&quot;)) {
+					Redirects.notifyAdmins(&quot;Modified NotEnoughItems. Probably duping and/or in creative mode. Packet type &quot; + $1.getType());
+					return;
+				}
+			}">handlePacket</insertBefore>
+		</class>
+	</notEnoughItems>
 </mods>
