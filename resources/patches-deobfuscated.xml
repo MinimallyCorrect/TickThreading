@@ -1504,14 +1504,44 @@
 			<synchronize field="$2">addStackToList</synchronize>
 			<synchronize field="$1">addStackToList</synchronize>
 		</class>
+		<class id="appeng.api.me.tiles.IGridMachine">
+			<newMethod code="public abstract void tickNetwork();"/>
+		</class>
 		<class id="appeng.me.tile.TileController">
-			<newField field="staticLock" class="java.lang.Object" static=""/>
+			<newField class="int" static="" field="tickSkip" code="0"/>
+			<newField class="java.util.ArrayList" code="new ArrayList();" field="tiles"/>
+			<insertBefore code="{
+				if (enabled) {
+					Iterator i = tiles.iterator();
+					while (i.hasNext()) {
+						Object o = i.next();
+						if (tickSkip++ % 2 == 0) {
+							((appeng.api.me.tiles.IGridMachine) o).tickNetwork();
+						}
+					}
+				}
+				if (tickSkip++ % 2 == 0) {
+					return;
+				}
+			}">^method:TileEntity/updateEntity^</insertBefore>
+			<insertBefore code="{
+				tiles.clear();
+				if ($1 != null) {
+					Iterator i = $1.iterator();
+					while (i.hasNext()) {
+						appeng.api.TileRef tr = i.next();
+						^class:TileEntity^ tile = tr.getTile();
+						if (tile != this &amp;&amp; tile != null &amp;&amp; tile.^method:TileEntity/canUpdate^()) {
+							tiles.add(tile);
+						}
+					}
+				}
+			}">configureController</insertBefore>
 			<replaceInitializer field="WaitingQueue" class="nallar.collections.ConcurrentLinkedQueueList"/>
 			<replaceInitializer field="CraftingQueue" class="nallar.collections.ConcurrentLinkedQueueList"/>
-			<unsynchronize>^method:TileEntity/updateEntity^,signalInput(L^class:ItemStack^;)V,signalInput(Lappeng.api.me.util.IMEInventory;L^class:ItemStack^;)L^class:ItemStack^;</unsynchronize>
 			<synchronize field="CManager.getPrereqs()">getJobList,getJobStatus,cancelJob</synchronize>
-			<synchronize field="staticLock">
-				getCellArray,^method:TileEntity/updateEntity^,advanceCraftingCursor,resetWaitingQueue,signalInput(L^class:ItemStack^;)V,signalInput(Lappeng.api.me.util.IMEInventory;L^class:ItemStack^;)L^class:ItemStack^;
+			<synchronize>
+				configureController,getCellArray,^method:TileEntity/updateEntity^,advanceCraftingCursor,resetWaitingQueue,signalInput(L^class:ItemStack^;)V,signalInput(Lappeng.api.me.util.IMEInventory;L^class:ItemStack^;)L^class:ItemStack^;
 			</synchronize>
 		</class>
 		<class id="appeng.me.tile.TileDrive">
@@ -1615,6 +1645,28 @@
 		</class>
 		<class id="appeng.common.MEGridEvents">
 			<replaceInitializer field="requests" class="nallar.collections.ConcurrentQueueList">^static^</replaceInitializer>
+		</class>
+		<class id="
+			appeng.me.tile.TileWireless
+			appeng.me.tile.TileTerminal
+			appeng.me.tile.TileStorageMonitor
+			appeng.me.tile.TileStorageBus
+			appeng.me.tile.TileProgrammableInterface
+			appeng.me.tile.TileP2PTunnel
+			appeng.me.tile.TileOutputCable
+			appeng.me.tile.TileLEvelEmitter
+			appeng.me.tile.TileIOPort
+			appeng.me.tile.TileInterfaceBase
+			appeng.me.tile.TileInputCable
+			appeng.me.tile.TileDrive
+			appeng.me.tile.TileDarkCable
+			appeng.me.tile.TileChest
+			appeng.me.tile.TileCraftingMonitor
+			appeng.me.tile.TileAssemblerMB
+			appeng.me.tile.TileAssembler
+		">
+			<newMethod code="public void ^method:TileEntity/updateEntity^() { }" new=""/>
+			<renameInterfaceMethod name="tickNetwork" interface="appeng.api.me.tiles.IGridMachine" allowMissing="">^method:TileEntity/updateEntity^</renameInterfaceMethod>
 		</class>
 	</appliedEnergistics>
 	<xyCraft>
