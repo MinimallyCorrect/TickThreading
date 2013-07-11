@@ -837,12 +837,43 @@
 		<class id="gregtechmod.common.tileentities.GT_TileEntity_IDSU">
 			<replaceMethodCall method="remove" code="{ $_ = null; }">setEnergyVar</replaceMethodCall>
 		</class>
+		<class id="gregtechmod.api.metatileentity.MetaTileEntity">
+			<unvolatile field="VERSION"/>
+			<final field="VERSION"/>
+		</class>
 		<class id="gregtechmod.api.metatileentity.BaseMetaTileEntity">
 			<replaceFieldUsage field="mAverageEUInputIndex" writeCode="mAverageEUInputIndex = $1 >= mAverageEUInput.length ? 0 : $1;">^method:TileEntity/updateEntity^</replaceFieldUsage>
 			<replaceFieldUsage field="mAverageEUOutputIndex" writeCode="mAverageEUOutputIndex = $1 >= mAverageEUOutput.length ? 0 : $1;">^method:TileEntity/updateEntity^</replaceFieldUsage>
+			<replaceMethod code="{
+				gregtechmod.api.metatileentity.MetaTileEntity m = mMetaTileEntity;
+				return m != null &amp;&amp; m.getBaseMetaTileEntity() == this;
+			}">hasValidMetaTileEntity</replaceMethod>
 		</class>
 		<class id="gregtechmod.api.metatileentity.BaseMetaTileEntityMJ" srg="true">
-			<synchronize>updateStatus,getPowerProvider,setPowerProvider</synchronize>
+			<replaceMethod code="{
+				if (hasMJConverterUpgrade()) {
+					buildcraft.api.power.IPowerProvider p = mProvider;
+					if (p == null) {
+						synchronized(this) {
+							p = mProvider;
+							if (p == null) {
+								p = buildcraft.api.power.PowerFramework.currentFramework.createPowerProvider();
+								mProvider = p;
+								p.configure(100, 1, 100, 1, 10000);
+							}
+						}
+					}
+					else {
+						int c = getMJCapacity();
+						if (c > 0) {
+							int s = getStoredMJ();
+							if (s &lt; c) {
+								increaseStoredMJ((int)p.useEnergy(1.0F, (float) c - s, true), true);
+							}
+						}
+					}
+      	}
+			}">updateStatus</replaceMethod>
 			<replaceMethod code="{
 				buildcraft.api.power.IPowerProvider powerProvider = getPowerProvider();
 				if (powerProvider == null) {
