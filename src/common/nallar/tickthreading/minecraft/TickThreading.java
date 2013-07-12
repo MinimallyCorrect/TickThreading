@@ -217,7 +217,7 @@ public class TickThreading {
 				+ "\nIf anything breaks, check if it is still broken without TickThreading"
 				+ "\nWe don't want to annoy mod devs with issue reports caused by TickThreading."
 				+ "\nSeriously, please don't."
-				+ "\nIf it's only broken with TickThreading, report it at http://github.com/nallar/TickThreading"
+				+ "\nIf it's only broken with TickThreading, report it at https://github.com/nallar/TickThreading/issues/new"
 				+ "\n\nAlso, you really should be making regular backups. (You should be doing that even when not using TT.)");
 		if (Log.debug) {
 			Log.severe("TickThreading is running in debug mode.");
