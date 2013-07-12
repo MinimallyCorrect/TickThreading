@@ -1563,13 +1563,10 @@
 				if (enabled) {
 					Iterator i = tiles.iterator();
 					while (i.hasNext()) {
-						Object o = i.next();
-						if (tickSkip++ % 3 == 0) {
-							((appeng.api.me.tiles.IGridMachine) o).tickNetwork();
-						}
+						((appeng.api.me.tiles.IGridMachine) i.next()).tickNetwork();
 					}
 				}
-				if (tickSkip++ % 2 == 0) {
+				if (tickSkip++ % 3 == 0) {
 					return;
 				}
 			}">^method:TileEntity/updateEntity^</insertBefore>
