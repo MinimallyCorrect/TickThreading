@@ -244,7 +244,10 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 					int z = chunkLocation.chunkZPos * 16 + (locationOfBlockChange[0] >> 8 & 15);
 					sendToAllPlayersWatchingChunk(new Packet53BlockChange(x, y, z, worldServer));
 
-					tilesToUpdate.add(chunk.getChunkBlockTileEntity(locationOfBlockChange[0] >> 12 & 15, locationOfBlockChange[0] & 255, locationOfBlockChange[0] >> 8 & 15));
+					TileEntity tileEntity = chunk.getChunkBlockTileEntity(locationOfBlockChange[0] >> 12 & 15, locationOfBlockChange[0] & 255, locationOfBlockChange[0] >> 8 & 15);
+					if (tileEntity != null) {
+						tilesToUpdate.add(tileEntity);
+					}
 				} else {
 					if (numberOfTilesToUpdate >= ForgeDummyContainer.clumpingThreshold) {
 						sendToAllPlayersWatchingChunk(new Packet51MapChunk(chunk, false, field_73260_f));
@@ -253,7 +256,10 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 					}
 
 					for (int i = 0; i < numberOfTilesToUpdate; ++i) {
-						tilesToUpdate.add(chunk.getChunkBlockTileEntity(locationOfBlockChange[i] >> 12 & 15, locationOfBlockChange[i] & 255, locationOfBlockChange[i] >> 8 & 15));
+						TileEntity tileEntity = chunk.getChunkBlockTileEntity(locationOfBlockChange[i] >> 12 & 15, locationOfBlockChange[i] & 255, locationOfBlockChange[i] >> 8 & 15);
+						if (tileEntity != null) {
+							tilesToUpdate.add(tileEntity);
+						}
 					}
 				}
 
