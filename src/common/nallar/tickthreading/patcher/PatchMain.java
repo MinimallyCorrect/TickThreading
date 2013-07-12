@@ -81,8 +81,10 @@ public class PatchMain {
 			Log.severe("An error occurred while patching, can't continue", e);
 		}
 		try {
-			Log.info("Done. Press enter to exit.");
-			System.console().readLine();
+			if (System.getProperty("unattend") == null) {
+				Log.info("Done. Press enter to exit.");
+				System.console().readLine();
+			}
 		} catch (Exception ignored) {
 		}
 	}
