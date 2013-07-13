@@ -1559,6 +1559,152 @@
 		<class id="appeng.me.tile.TileController">
 			<newField class="int" static="" field="tickSkip" code="0"/>
 			<newField class="java.util.ArrayList" code="new ArrayList();" field="tiles"/>
+			<replaceMethod code="{
+				if (!isPowered()) {
+					return;
+				}
+				List Clusters = new ArrayList();
+				try {
+					Iterator i = Assemblers.iterator();
+					while (i.hasNext()) {
+						appeng.api.TileRef ar = (appeng.api.TileRef) i.next();
+						appeng.me.tile.TileAssembler a = (appeng.me.tile.TileAssembler)ar.getTile();
+						if (a.ac != null) {
+							if (Clusters.indexOf(a.ac) == -1) {
+								Clusters.add(a.ac);
+							}
+						}
+					}
+					i = Clusters.iterator();
+					while (i.hasNext()) {
+						appeng.me.crafting.AssemblerCluster ac = (appeng.me.crafting.AssemblerCluster) i.next();
+						if (useMEEnergy(3f * ac.howManyCpus(), &quot;crafting cpus&quot;))
+							ac.cycleCpus();
+					}
+				}
+				catch (Exception err) {
+				}
+				if (this.CraftingQueue.size() == 0) return;
+
+				appeng.api.me.util.IMEInventory invItemPool = getCellArray();
+				if (invItemPool == null) {
+					return;
+				}
+				List Patterns = getPatterns();
+
+				Iterator cri = this.WaitingQueue.iterator();
+				while (cri.hasNext()) {
+					appeng.me.crafting.CraftRequest x = (appeng.me.crafting.CraftRequest)cri.next();
+					if (x.canTry()) {
+						x.clearMissing();
+
+						if (x.getAmount() > 0) {
+							ur xRequest = x.getRequest();
+							if (xRequest != null) {
+								appeng.api.me.util.IAssemblerPattern pattern = appeng.me.crafting.Crafting.findRecipe(Patterns, xRequest);
+
+								if ((x instanceof appeng.me.crafting.DelayedCraftRequest)) {
+									if (pattern != null) {
+										while (x.getAmount() > 0) {
+											x.markCrafted();
+										}
+									}
+									if (x.getAmount() &lt;= 0)
+										cri.remove();
+								}
+							}
+						}
+					}
+				}
+				ArrayList postponed = new ArrayList();
+				while (true) {
+					appeng.me.crafting.CraftRequest x = (appeng.me.crafting.CraftRequest)this.CraftingQueue.pollFirst();
+					if (x == null) {
+						break;
+					}
+					if (!x.canTry()) {
+						postponed.add(x);
+						continue;
+					}
+					x.clearMissing();
+
+					if (x.getAmount() > 0) {
+						ur xRequest = x.getRequest();
+						if (xRequest != null) {
+							appeng.api.me.util.IAssemblerPattern pattern = appeng.me.crafting.Crafting.findRecipe(Patterns, xRequest);
+
+							boolean Recursive = false;
+							appeng.me.crafting.CraftRequest cr = x.getParent();
+							while (cr != null) {
+								if (!(cr instanceof appeng.me.crafting.PushCraftRequest)) {
+									if (appeng.util.Platform.isSameItem(cr.getRequest(), x.getRequest()))
+										Recursive = true;
+								}
+								cr = cr.getParent();
+							}
+
+							if (Recursive) {
+								x.markChainCrafted();
+							}
+							else if ((pattern == null) &amp;&amp; (x.requirePattern())) {
+								if (x.canRequestPrereqs()) {
+									appeng.me.crafting.CraftRequest ex = new appeng.me.crafting.DelayedCraftRequest(xRequest);
+									x.requestedPreReqs(ex);
+									this.WaitingQueue.add(ex);
+									OnCraftingChange();
+								}
+							}
+							else {
+								int i = 0;
+								int lastAmount = x.getAmount();
+								while (lastAmount > 0 &amp;&amp; i++ &lt; 16) {
+									appeng.api.me.util.IAssemblerCluster ac = null;
+									if (pattern != null) ac = pattern.getCluster();
+									if (ac == null || ac.canCraft()) {
+										if (ac != null) {
+											ac.addCraft();
+										}
+										x.Craft(this, pattern, invItemPool, this.CraftingQueue, this.WaitingQueue);
+									} else {
+										break;
+									}
+									int amount = x.getAmount();
+									if (lastAmount == amount) {
+										break;
+									}
+									lastAmount = amount;
+								}
+							}
+
+						}
+
+						if (x.getAmount() > 0)
+							postponed.add(x);
+						else
+							OnCraftingChange();
+					}
+				}
+
+				CraftingQueue.addAll(postponed);
+
+				if (this.sendCraftingUpdate) {
+					this.sendCraftingUpdate = false;
+					Iterator ip = this.craftingViewingPlayers.iterator();
+					while (ip.hasNext()) {
+						qx p = (qx)ip.next();
+
+						if (p.bL != null) {
+							if ((p.bL instanceof appeng.me.container.ContainerCraftingMonitor)) {
+								appeng.me.container.ContainerCraftingMonitor ct = (appeng.me.container.ContainerCraftingMonitor)p.bL;
+								ct.updateClient();
+							}
+							else {
+								ip.remove();
+							}
+						}
+					}
+				}
+			}">advanceCraftingCursor</replaceMethod>
 			<insertBefore code="{
 				if (enabled) {
 					Iterator i = tiles.iterator();
@@ -1566,7 +1712,7 @@
 						((appeng.api.me.tiles.IGridMachine) i.next()).tickNetwork();
 					}
 				}
-				if (tickSkip++ % 3 == 0) {
+				if (tickSkip++ % 2 == 0) {
 					return;
 				}
 			}">^method:TileEntity/updateEntity^</insertBefore>
