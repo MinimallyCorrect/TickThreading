@@ -1571,11 +1571,15 @@
 					Iterator i = Assemblers.iterator();
 					while (i.hasNext()) {
 						appeng.api.TileRef ar = (appeng.api.TileRef) i.next();
-						appeng.me.tile.TileAssembler a = (appeng.me.tile.TileAssembler)ar.getTile();
-						if (a.ac != null) {
-							if (Clusters.indexOf(a.ac) == -1) {
-								Clusters.add(a.ac);
+						try {
+							appeng.me.tile.TileAssembler a = (appeng.me.tile.TileAssembler)ar.getTile();
+							if (a.ac != null) {
+								if (Clusters.indexOf(a.ac) == -1) {
+									Clusters.add(a.ac);
+								}
 							}
+						} catch(appeng.api.exceptions.AppEngTileMissingException e) {
+							i.remove();
 						}
 					}
 					i = Clusters.iterator();
@@ -1588,7 +1592,6 @@
 				catch (Exception err) {
 					Log.warning(&quot;Exception cycling assembler CPUs&quot;, err);
 				}
-				if (this.CraftingQueue.size() == 0) return;
 
 				appeng.api.me.util.IMEInventory invItemPool = getCellArray();
 				if (invItemPool == null) {
@@ -1669,8 +1672,6 @@
 											ac.addCraft();
 										}
 										x.Craft(this, pattern, invItemPool, this.CraftingQueue, this.WaitingQueue);
-									} else {
-										break;
 									}
 									int amount = x.getAmount();
 									if (lastAmount == amount &amp;&amp; i > 4) {
