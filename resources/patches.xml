@@ -1634,4 +1634,16 @@
 			}">handlePacket</insertBefore>
 		</class>
 	</notEnoughItems>
+	<tubestuff>
+		<class id="immibis.tubestuff.TubeStuff">
+			<insertBefore code="{
+				if ($1 == $2) {
+					return true;
+				}
+				if ($1 == null || $2 == null) {
+					return false;
+				}
+			}">areItemsEqual</insertBefore>
+		</class>
+	</tubestuff>
 </mods>
