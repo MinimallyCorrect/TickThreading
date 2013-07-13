@@ -1586,6 +1586,7 @@
 					}
 				}
 				catch (Exception err) {
+					Log.warning(&quot;Exception cycling assembler CPUs&quot;, err);
 				}
 				if (this.CraftingQueue.size() == 0) return;
 
@@ -1640,7 +1641,7 @@
 							appeng.me.crafting.CraftRequest cr = x.getParent();
 							while (cr != null) {
 								if (!(cr instanceof appeng.me.crafting.PushCraftRequest)) {
-									if (appeng.util.Platform.isSameItem(cr.getRequest(), x.getRequest()))
+									if (appeng.util.Platform.isSameItem(cr.getRequest(), xRequest)
 										Recursive = true;
 								}
 								cr = cr.getParent();
