@@ -36,7 +36,7 @@ public abstract class PatchPlayerManager extends PlayerManager {
 		PlayerInstance playerInstance;
 		while ((playerInstance = chunkWatcherWithPlayersQ.poll()) != null) {
 			try {
-				if (playerInstance.shouldPostPone(currentTick++ % 800 == 0, currentTick)) {
+				if (playerInstance.shouldPostPone(currentTick++ % 600 == 0, currentTick)) {
 					postponed.add(playerInstance);
 				} else {
 					playerInstance.sendChunkUpdate();

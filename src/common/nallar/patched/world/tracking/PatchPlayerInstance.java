@@ -217,7 +217,7 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 			startTime = currentTick - (runningTicks /= 2);
 			sentUpdates /= 2;
 		}
-		return (sentUpdates / (float) runningTicks) > 0.1f;
+		return (sentUpdates / (float) runningTicks) > 0.2f;
 	}
 
 	@Override
