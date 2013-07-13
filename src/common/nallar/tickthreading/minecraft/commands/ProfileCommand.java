@@ -48,7 +48,8 @@ public class ProfileCommand extends Command {
 				return;
 			}
 			if ("l".equals(arguments.get(0))) {
-				new ContentionProfiler(commandSender, 30, 5);
+				sendChat(commandSender, "Performing lock contention profiling for 10 minutes.");
+				new ContentionProfiler(commandSender, 240, 11);
 				return;
 			}
 			entity_ = "e".equals(arguments.get(0));
