@@ -74,4 +74,10 @@ public abstract class PatchTileEntity extends TileEntity {
 	public String toString() {
 		return Log.classString(this) + '@' + System.identityHashCode(this) + " in " + Log.name(worldObj) + " at x, y, z: " + xCoord + ", " + yCoord + ", " + zCoord;
 	}
+
+	@Override
+	@Declare
+	public boolean noLock() {
+		return false;
+	}
 }

@@ -13,6 +13,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
 public class TileEntityTickRegion extends TickRegion {
+	private int checkTime = 0;
 	private final LinkedHashSetTempSetNoClear<TileEntity> tileEntitySet = new LinkedHashSetTempSetNoClear<TileEntity>();
 
 	public TileEntityTickRegion(World world, TickManager manager, int regionX, int regionY) {
@@ -22,6 +23,7 @@ public class TileEntityTickRegion extends TickRegion {
 	@Override
 	public void doTick() {
 		final TickManager manager = this.manager;
+		final boolean check = checkTime++ % 60 == 0;
 		final boolean profilingEnabled = manager.profilingEnabled || this.profilingEnabled;
 		EntityTickProfiler entityTickProfiler = profilingEnabled ? EntityTickProfiler.ENTITY_TICK_PROFILER : null;
 		Lock thisLock;
@@ -42,30 +44,22 @@ public class TileEntityTickRegion extends TickRegion {
 		try {
 			while (tileEntitiesIterator.hasNext()) {
 				final TileEntity tileEntity = tileEntitiesIterator.next();
-				final int xPos = tileEntity.xCoord;
-				final int zPos = tileEntity.zCoord;
-				if (TickManager.getHashCode(xPos, zPos) != hashCode) {
-					tileEntitiesIterator.remove();
-					if (tileEntity.isInvalid() || !world.getChunkProvider().chunkExists(xPos >> 4, zPos >> 4)) {
-						if (Log.debug) {
-							Log.debug("A tile entity is invalid or unloaded."
-									+ "\n entity: " + Log.toString(tileEntity)
-									+ "\n In " + hashCode + "\t.tickRegion: " + tileEntity.tickRegion.hashCode + "\texpected: " + TickManager.getHashCode(xPos, zPos));
-						}
-						invalidate(tileEntity);
+				if (check) {
+					if (check(tileEntity, tileEntitiesIterator)) {
 						continue;
 					}
-					if (Log.debug) {
-						Log.debug("A tile entity is in the wrong TickRegion - was it moved by a player, or did something break?"
-								+ "\n entity: " + Log.toString(tileEntity)
-								+ "\n In " + hashCode + "\t.tickRegion: " + tileEntity.tickRegion.hashCode + "\texpected: " + TickManager.getHashCode(xPos, zPos));
-					}
-					manager.add(tileEntity, false);
-					manager.lock(tileEntity);
-					continue;
 				}
-				if (tileEntity.lastTTX != xPos || tileEntity.lastTTY != tileEntity.yCoord || tileEntity.lastTTZ != zPos) {
-					manager.lock(tileEntity);
+				if (tileEntity.noLock()) {
+					try {
+						if (tileEntity.isInvalid()) {
+							tileEntitiesIterator.remove();
+							invalidate(tileEntity);
+						} else if (tileEntity.worldObj != null) {
+							tileEntity.updateEntity();
+						}
+					} catch (Throwable throwable) {
+						Log.severe("Exception ticking TileEntity " + Log.toString(tileEntity), throwable);
+					}
 					continue;
 				}
 				xPlusLock = tileEntity.xPlusLock;
@@ -123,6 +117,36 @@ public class TileEntityTickRegion extends TickRegion {
 		} finally {
 			tileEntitySet.done();
 		}
+	}
+
+	private boolean check(final TileEntity tileEntity, final Iterator tileEntitiesIterator) {
+		final int xPos = tileEntity.xCoord;
+		final int zPos = tileEntity.zCoord;
+		if (TickManager.getHashCode(xPos, zPos) != hashCode) {
+			tileEntitiesIterator.remove();
+			if (tileEntity.isInvalid() || !world.getChunkProvider().chunkExists(xPos >> 4, zPos >> 4)) {
+				if (Log.debug) {
+					Log.debug("A tile entity is invalid or unloaded."
+							+ "\n entity: " + Log.toString(tileEntity)
+							+ "\n In " + hashCode + "\t.tickRegion: " + tileEntity.tickRegion.hashCode + "\texpected: " + TickManager.getHashCode(xPos, zPos));
+				}
+				invalidate(tileEntity);
+				return true;
+			}
+			if (Log.debug) {
+				Log.debug("A tile entity is in the wrong TickRegion - was it moved by a player, or did something break?"
+						+ "\n entity: " + Log.toString(tileEntity)
+						+ "\n In " + hashCode + "\t.tickRegion: " + tileEntity.tickRegion.hashCode + "\texpected: " + TickManager.getHashCode(xPos, zPos));
+			}
+			manager.add(tileEntity, false);
+			manager.lock(tileEntity);
+			return true;
+		}
+		if (tileEntity.lastTTX != xPos || tileEntity.lastTTY != tileEntity.yCoord || tileEntity.lastTTZ != zPos) {
+			manager.lock(tileEntity);
+			return true;
+		}
+		return false;
 	}
 
 	private void invalidate(TileEntity tileEntity) {
