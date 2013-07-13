@@ -9,6 +9,9 @@
 		</class>
 	</tickthreading>
 	<minecraftCommon>
+		<class id="net.minecraft.tileentity.TileEntityChest">
+			<addAll fromClass="nallar.patched.PatchTileEntityNoLock"/>
+		</class>
 		<class id="net.minecraft.world.SpawnerAnimals" env="forge">
 			<addAll fromClass="nallar.patched.PatchSpawnerAnimalsForge"/>
 		</class>
