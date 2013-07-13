@@ -540,7 +540,7 @@
 		</class>
 		<class id="net.minecraftforge.event.Event">
 			<final field="listeners"/>
-			<removeField field="annotationMap"/>
+			<removeFieldAndInitializers field="annotationMap" silent="true"/>
 			<addAll fromClass="nallar.patched.forge.PatchEvent"/>
 		</class>
 		<class id="net.minecraftforge.common.ForgeChunkManager$Ticket">
@@ -1646,4 +1646,9 @@
 			}">areItemsEqual</insertBefore>
 		</class>
 	</tubestuff>
+	<mekanism>
+		<class id="mekanism.common.TileEntitySmeltingFactory">
+			<ignoreExceptions type="java.lang.NullPointerException">onUpdate</ignoreExceptions>
+		</class>
+	</mekanism>
 </mods>

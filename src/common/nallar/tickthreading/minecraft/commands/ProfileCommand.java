@@ -7,6 +7,7 @@ import java.util.List;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.minecraft.TickManager;
 import nallar.tickthreading.minecraft.TickThreading;
+import nallar.tickthreading.minecraft.profiling.ContentionProfiler;
 import nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
 import nallar.tickthreading.minecraft.profiling.PacketProfiler;
 import nallar.tickthreading.minecraft.profiling.Timings;
@@ -44,6 +45,10 @@ public class ProfileCommand extends Command {
 			}
 			if ("p".equals(arguments.get(0))) {
 				PacketProfiler.startProfiling(commandSender, 10);
+				return;
+			}
+			if ("l".equals(arguments.get(0))) {
+				new ContentionProfiler(commandSender, 30, 5);
 				return;
 			}
 			entity_ = "e".equals(arguments.get(0));
