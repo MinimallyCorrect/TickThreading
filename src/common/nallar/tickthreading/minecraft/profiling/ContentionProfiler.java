@@ -96,6 +96,9 @@ public class ContentionProfiler {
 	private void tick() {
 		ThreadInfo[] threads = ManagementFactory.getThreadMXBean().getThreadInfo(this.threads, true, true);
 		for (ThreadInfo thread : threads) {
+			if (thread == null) {
+				continue;
+			}
 			Thread.State ts = thread.getThreadState();
 			switch (ts) {
 				case WAITING:
