@@ -4,7 +4,6 @@ import java.lang.management.LockInfo;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,26 +74,29 @@ public class ContentionProfiler {
 		List<Long> threads = new ArrayList<Long>();
 		for (Thread thread : Thread.getAllStackTraces().keySet()) {
 			if (thread instanceof ThreadMinecraftServer) {
-				Log.info("Using thread " + thread);
 				threads.add(thread.getId());
 			}
 		}
-		Log.info("Ticks " + ticks + " at " + resolution + "ms resolution.");
 		this.threads = Longs.toArray(threads);
-		Log.info(Arrays.toString(this.threads));
 		while (ticks --> 0) {
-			tick();
-			try {
-				Thread.sleep(resolution, 0);
-			} catch (InterruptedException e) {
-				Log.severe("Interrupted in profiling", e);
-				return;
+			long r = resolution - tick();
+
+			if (r > 0) {
+				try {
+					Thread.sleep(r, 0);
+				} catch (InterruptedException e) {
+					Log.severe("Interrupted in profiling", e);
+					return;
+				}
+			} else if (r < -10) {
+				ticks--;
 			}
 		}
 	}
 
-	private void tick() {
-		ThreadInfo[] threads = ManagementFactory.getThreadMXBean().getThreadInfo(this.threads, true, true);
+	private long tick() {
+		long t = System.currentTimeMillis();
+		ThreadInfo[] threads = ManagementFactory.getThreadMXBean().getThreadInfo(this.threads, 4);
 		for (ThreadInfo thread : threads) {
 			if (thread == null) {
 				continue;
@@ -108,11 +110,25 @@ public class ContentionProfiler {
 					if (lockInfo != null) {
 						(ts == Thread.State.BLOCKED ? monitorMap : waitingMap).get(lockInfo.toString()).value++;
 					}
-					StackTraceElement stackTraceElement = thread.getStackTrace()[0];
-					traceMap.get(stackTraceElement.getClassName() + '.' + stackTraceElement.getMethodName()).value++;
+					StackTraceElement stackTraceElement = getTrace(thread.getStackTrace());
+					if (stackTraceElement != null) {
+						traceMap.get(stackTraceElement.getClassName() + '.' + stackTraceElement.getMethodName()).value++;
+					}
 					break;
 			}
 		}
+		return System.currentTimeMillis() - t;
+	}
+
+	private static StackTraceElement getTrace(final StackTraceElement[] stackTrace) {
+		for (StackTraceElement stackTraceElement : stackTrace) {
+			String className = stackTraceElement.getClassName();
+			if (className.startsWith("java") || className.startsWith("sun.")) {
+				continue;
+			}
+			return stackTraceElement;
+		}
+		return null;
 	}
 
 	private static class IntHashMap<K> extends HashMap<K, IntegerHolder> {
