@@ -1641,7 +1641,7 @@
 							appeng.me.crafting.CraftRequest cr = x.getParent();
 							while (cr != null) {
 								if (!(cr instanceof appeng.me.crafting.PushCraftRequest)) {
-									if (appeng.util.Platform.isSameItem(cr.getRequest(), xRequest)
+									if (appeng.util.Platform.isSameItem(cr.getRequest(), xRequest))
 										Recursive = true;
 								}
 								cr = cr.getParent();
@@ -1673,7 +1673,7 @@
 										break;
 									}
 									int amount = x.getAmount();
-									if (lastAmount == amount) {
+									if (lastAmount == amount &amp;&amp; i > 4) {
 										break;
 									}
 									lastAmount = amount;
