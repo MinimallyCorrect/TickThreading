@@ -15,6 +15,7 @@ import nallar.tickthreading.minecraft.commands.Command;
 import nallar.tickthreading.util.CollectionsUtil;
 import nallar.tickthreading.util.TableFormatter;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ThreadMinecraftServer;
 
 public class ContentionProfiler {
@@ -26,7 +27,7 @@ public class ContentionProfiler {
 			@Override
 			public void run() {
 				profile(ticks);
-				dump(tf);
+				dump(tf, commandSender instanceof MinecraftServer ? 15 : 6);
 				Command.sendChat(commandSender, tf.toString());
 			}
 		}, "Contention Profiler").start();
@@ -39,12 +40,12 @@ public class ContentionProfiler {
 	private final Map<String, IntegerHolder> waitingMap = new IntHashMap<String>();
 	private final Map<String, IntegerHolder> traceMap = new IntHashMap<String>();
 
-	private void dump(final TableFormatter tf) {
+	private void dump(final TableFormatter tf, int entries) {
 		float ticks = this.ticks;
 		tf
 				.heading("Monitor")
 				.heading("Wasted Cores");
-		for (String key : CollectionsUtil.sortedKeys(monitorMap, 6)) {
+		for (String key : CollectionsUtil.sortedKeys(monitorMap, entries)) {
 			tf
 					.row(key)
 					.row(monitorMap.get(key).value / ticks);
@@ -54,7 +55,7 @@ public class ContentionProfiler {
 		tf
 				.heading("Wait")
 				.heading("Wasted Cores");
-		for (String key : CollectionsUtil.sortedKeys(waitingMap, 6)) {
+		for (String key : CollectionsUtil.sortedKeys(waitingMap, entries)) {
 			tf
 					.row(key)
 					.row(waitingMap.get(key).value / ticks);
@@ -64,7 +65,7 @@ public class ContentionProfiler {
 		tf
 				.heading("Stack")
 				.heading("Wasted Cores");
-		for (String key : CollectionsUtil.sortedKeys(traceMap, 6)) {
+		for (String key : CollectionsUtil.sortedKeys(traceMap, entries)) {
 			tf
 					.row(key)
 					.row(traceMap.get(key).value / ticks);
