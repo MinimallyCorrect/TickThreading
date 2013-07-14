@@ -262,7 +262,6 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 						}
 					}
 				}
-
 			}
 			clearTileCount();
 		}

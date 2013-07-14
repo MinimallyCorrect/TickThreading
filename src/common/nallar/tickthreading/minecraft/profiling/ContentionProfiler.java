@@ -80,7 +80,7 @@ public class ContentionProfiler {
 			}
 		}
 		this.threads = Longs.toArray(threads);
-		while (ticks --> 0) {
+		while (ticks-- > 0) {
 			long r = resolution - tick();
 
 			if (r > 0) {

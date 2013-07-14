@@ -713,7 +713,8 @@
 				$2.^method:ICrafting/sendProgressBarUpdate^($1, 7, l != null ? l.amount : 0);
 				$2.^method:ICrafting/sendProgressBarUpdate^($1, 8, l != null ? l.itemID : 0);
 				$2.^method:ICrafting/sendProgressBarUpdate^($1, 10, l != null ? l.itemMeta : 0);
-			}">sendGUINetworkData</replaceMethod>
+			}">sendGUINetworkData
+			</replaceMethod>
 		</class>
 		<class id="buildcraft.energy.TileEngine">
 			<synchronize>createEngineIfNeeded</synchronize>
@@ -956,7 +957,8 @@
 			<replaceMethod code="{
 				gregtechmod.api.MetaTileEntity m = mMetaTileEntity;
 				return m != null &amp;&amp; m.mBaseMetaTileEntity == this;
-			}">hasValidMetaTileEntity</replaceMethod>
+			}">hasValidMetaTileEntity
+			</replaceMethod>
 		</class>
 		<class id="gregtechmod.api.BaseMetaTileEntityMJ">
 			<replaceMethod code="{
@@ -982,7 +984,8 @@
 						}
 					}
       	}
-			}">updateStatus</replaceMethod>
+			}">updateStatus
+			</replaceMethod>
 			<replaceMethod code="{
 				buildcraft.api.power.IPowerProvider powerProvider = getPowerProvider();
 				if (powerProvider == null) {
@@ -1709,7 +1712,8 @@
 						}
 					}
 				}
-			}">advanceCraftingCursor</replaceMethod>
+			}">advanceCraftingCursor
+			</replaceMethod>
 			<insertBefore code="{
 				if (enabled) {
 					Iterator i = tiles.iterator();
@@ -1720,7 +1724,8 @@
 				if (tickSkip++ % 2 == 0) {
 					return;
 				}
-			}">^method:TileEntity/updateEntity^</insertBefore>
+			}">^method:TileEntity/updateEntity^
+			</insertBefore>
 			<insertBefore code="{
 				tiles.clear();
 				if ($1 != null) {
@@ -1733,7 +1738,8 @@
 						}
 					}
 				}
-			}">configureController</insertBefore>
+			}">configureController
+			</insertBefore>
 			<replaceInitializer field="WaitingQueue" class="nallar.collections.ConcurrentLinkedQueueList"/>
 			<replaceInitializer field="CraftingQueue" class="nallar.collections.ConcurrentLinkedQueueList"/>
 			<synchronize field="CManager.getPrereqs()">getJobList,getJobStatus,cancelJob</synchronize>
@@ -1915,11 +1921,13 @@
 				map.clear();
 				map.putAll(defaultMappings);
 				map.putAll(mappings);
-			}">load(Ljava.lang.String;)V</insertAfter>
+			}">load(Ljava.lang.String;)V
+			</insertAfter>
 			<unsynchronize>get</unsynchronize>
 			<replaceMethod code="{
 				return (String) map.get($1);
-			}">get</replaceMethod>
+			}">get
+			</replaceMethod>
 		</class>
 	</forestry>
 	<railCraft>
@@ -2073,7 +2081,8 @@
 						_inventory[$1] = item = new ^class:ItemStack^(_storedId, 1, _storedMeta);
 						_storedQuantity -= 1;
 					}
-			}">checkInput</replaceMethod>
+			}">checkInput
+			</replaceMethod>
 		</class>
 		<class id="powercrystals.minefactoryreloaded.plants.TileEntityHarvester">
 			<ignoreExceptions code="{
@@ -2095,7 +2104,8 @@
 					Redirects.notifyAdmins(&quot;Modified NotEnoughItems. Probably duping and/or in creative mode. Packet type &quot; + $1.getType());
 					return;
 				}
-			}">handlePacket</insertBefore>
+			}">handlePacket
+			</insertBefore>
 		</class>
 	</notEnoughItems>
 	<tubestuff>
@@ -2107,7 +2117,8 @@
 				if ($1 == null || $2 == null) {
 					return false;
 				}
-			}">areItemsEqual</insertBefore>
+			}">areItemsEqual
+			</insertBefore>
 		</class>
 	</tubestuff>
 	<mekanism>
