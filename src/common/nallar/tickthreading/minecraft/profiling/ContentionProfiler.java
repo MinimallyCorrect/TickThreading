@@ -33,39 +33,41 @@ public class ContentionProfiler {
 	}
 
 	private final long resolution;
+	private long ticks;
 	private long[] threads;
 	private final Map<String, IntegerHolder> monitorMap = new IntHashMap<String>();
 	private final Map<String, IntegerHolder> waitingMap = new IntHashMap<String>();
 	private final Map<String, IntegerHolder> traceMap = new IntHashMap<String>();
 
 	private void dump(final TableFormatter tf) {
+		float ticks = this.ticks;
 		tf
 				.heading("Monitor")
-				.heading("Time (ms)");
+				.heading("Wasted Cores");
 		for (String key : CollectionsUtil.sortedKeys(monitorMap, 6)) {
 			tf
 					.row(key)
-					.row(monitorMap.get(key).value);
+					.row(monitorMap.get(key).value / ticks);
 		}
 		tf.finishTable();
 		tf.sb.append('\n');
 		tf
 				.heading("Wait")
-				.heading("Time (ms)");
+				.heading("Wasted Cores");
 		for (String key : CollectionsUtil.sortedKeys(waitingMap, 6)) {
 			tf
 					.row(key)
-					.row(waitingMap.get(key).value);
+					.row(waitingMap.get(key).value / ticks);
 		}
 		tf.finishTable();
 		tf.sb.append('\n');
 		tf
 				.heading("Stack")
-				.heading("Time (ms)");
+				.heading("Wasted Cores");
 		for (String key : CollectionsUtil.sortedKeys(traceMap, 6)) {
 			tf
 					.row(key)
-					.row(traceMap.get(key).value);
+					.row(traceMap.get(key).value / ticks);
 		}
 		tf.finishTable();
 	}
@@ -91,12 +93,13 @@ public class ContentionProfiler {
 			} else if (r < -10) {
 				ticks--;
 			}
+			this.ticks++;
 		}
 	}
 
 	private long tick() {
 		long t = System.currentTimeMillis();
-		ThreadInfo[] threads = ManagementFactory.getThreadMXBean().getThreadInfo(this.threads, 4);
+		ThreadInfo[] threads = ManagementFactory.getThreadMXBean().getThreadInfo(this.threads, 6);
 		for (ThreadInfo thread : threads) {
 			if (thread == null) {
 				continue;
@@ -106,13 +109,28 @@ public class ContentionProfiler {
 				case WAITING:
 				case TIMED_WAITING:
 				case BLOCKED:
+					StackTraceElement[] stackTrace = thread.getStackTrace();
+					StackTraceElement stack = null;
+					StackTraceElement prevStack = null;
+					for (StackTraceElement stackTraceElement : stackTrace) {
+						String className = stackTraceElement.getClassName();
+						if (className.startsWith("java") || className.startsWith("sun.")) {
+							prevStack = stackTraceElement;
+						} else {
+							stack = stackTraceElement;
+							break;
+						}
+					}
+					if (stack != null && ("waitForCompletion".equals(stack.getMethodName()) || "nallar.tickthreading.minecraft.ThreadManager$1".equals(stack.getClassName()))) {
+						continue;
+					}
 					LockInfo lockInfo = thread.getLockInfo();
 					if (lockInfo != null) {
 						(ts == Thread.State.BLOCKED ? monitorMap : waitingMap).get(lockInfo.toString()).value++;
 					}
-					StackTraceElement stackTraceElement = getTrace(thread.getStackTrace());
-					if (stackTraceElement != null) {
-						traceMap.get(stackTraceElement.getClassName() + '.' + stackTraceElement.getMethodName()).value++;
+					if (stack != null) {
+						String prev = name(prevStack);
+						traceMap.get(name(stack) + (prev == null ? "" : " -> " + prev)).value++;
 					}
 					break;
 			}
@@ -120,15 +138,12 @@ public class ContentionProfiler {
 		return System.currentTimeMillis() - t;
 	}
 
-	private static StackTraceElement getTrace(final StackTraceElement[] stackTrace) {
-		for (StackTraceElement stackTraceElement : stackTrace) {
-			String className = stackTraceElement.getClassName();
-			if (className.startsWith("java") || className.startsWith("sun.")) {
-				continue;
-			}
-			return stackTraceElement;
+	private static String name(StackTraceElement stack) {
+		if (stack == null) {
+			return null;
 		}
-		return null;
+		String className = stack.getClassName();
+		return className.substring(className.lastIndexOf('.') + 1) + '.' + stack.getMethodName();
 	}
 
 	private static class IntHashMap<K> extends HashMap<K, IntegerHolder> {
