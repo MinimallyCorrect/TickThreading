@@ -1658,4 +1658,9 @@
 			<ignoreExceptions type="java.lang.NullPointerException">onUpdate</ignoreExceptions>
 		</class>
 	</mekanism>
+	<magicBees>
+		<class id="magicbees.world.WorldTicker">
+			<replaceNew oldClass="java.util.LinkedList" newClass="nallar.collections.ConcurrentLinkedQueueList">queueChunkCoords</replaceNew>
+		</class>
+	</magicBees>
 </mods>
