@@ -1439,6 +1439,54 @@
 			<replaceNew oldClass="java.util.LinkedList" newClass="nallar.collections.ConcurrentLinkedQueueList">registerAuraNode,addToAuraUpdateList</replaceNew>
 			<synchronize>registerAuraNode</synchronize>
 		</class>
+		<class id="thaumcraft.common.Utils">
+			<replaceMethod code="{
+				Random rand = new Random();
+				^class:TileEntity^ tileEntity = $1.^method:World/getBlockTileEntity^($2, $3, $4);
+				if (!(tileEntity instanceof ^class:IInventory^)) {
+					return;
+				}
+				int md = $1.^method:World/getBlockMetadata^($2, $3, $4);
+				^class:IInventory^ inventory = (^class:IInventory^)tileEntity;
+
+				for (int i = 0; i &lt; inventory.^method:IInventory/getSizeInventory^(); i++)
+				if (((!(tileEntity instanceof thaumcraft.common.blocks.TileResearchTable)) || (md != 15) || (i != 9)) &amp;&amp; ((!(tileEntity instanceof thaumcraft.common.blocks.TileArcaneWorkbench)) || (i != 9))) {
+					^class:ItemStack^ item = inventory.^method:IInventory/getStackInSlot^(i);
+
+					if ((item != null) &amp;&amp; (item.^field:ItemStack/stackSize^ &gt; 0)) {
+						float rx = rand.nextFloat() * 0.8F + 0.1F;
+						float ry = rand.nextFloat() * 0.8F + 0.1F;
+						float rz = rand.nextFloat() * 0.8F + 0.1F;
+
+
+						^class:EntityItem^ entityItem = new ^class:EntityItem^($1, (double) $2 + rx, (double) $3 + ry, (double) $4 + rz, new ^class:ItemStack^(item.^field:ItemStack/itemID^, item.^field:ItemStack/stackSize^, item.^method:ItemStack/getItemDamage^()));
+						item.^field:ItemStack/stackSize^ = 0;
+
+						if (item.^method:ItemStack/hasTagCompound^()) {
+							entityItem.^method:EntityItem/getEntityItem^().^method:ItemStack/setTagCompound^((^class:NBTTagCompound^)item.^method:ItemStack/getTagCompound^().^method:NBTTagCompound/copy^());
+						}
+
+						float factor = 0.05F;
+						entityItem.^field:Entity/motionX^ = (rand.nextGaussian() * factor);
+						entityItem.^field:Entity/motionY^ = (rand.nextGaussian() * factor + 0.2000000029802322D);
+						entityItem.^field:Entity/motionZ^ = (rand.nextGaussian() * factor);
+						$1.^method:World/spawnEntityInWorld^(entityItem);
+					}
+				}
+				if ((tileEntity instanceof thaumcraft.common.blocks.TileResearchTable)) {
+					float rx = rand.nextFloat() * 0.8F + 0.1F;
+					float ry = rand.nextFloat() * 0.8F + 0.1F;
+					float rz = rand.nextFloat() * 0.8F + 0.1F;
+					^class:EntityItem^ entityItem = new ^class:EntityItem^($1, (double) $2 + rx, (double) $3 + ry, (double) $4 + rz, new ^class:ItemStack^(thaumcraft.common.Config.itemInkwell, 1, thaumcraft.common.Config.itemInkwell.^method:ItemStack/getMaxDamage^() - 1));
+
+					float factor = 0.05F;
+					entityItem.^field:Entity/motionX^ = (rand.nextGaussian() * factor);
+					entityItem.^field:Entity/motionY^ = (rand.nextGaussian() * factor + 0.2000000029802322D);
+					entityItem.^field:Entity/motionZ^ = (rand.nextGaussian() * factor);
+					$1.^method:World/spawnEntityInWorld^(entityItem);
+				}
+			}">dropItems</replaceMethod>
+		</class>
 		<class id="thaumcraft.common.WorldTicker">
 			<newField code="nallar.tickthreading.util.contextaccess.ContextAccess.$" class="nallar.tickthreading.util.contextaccess.ContextAccess" field="context" static="true"/>
 			<insertBefore code="{

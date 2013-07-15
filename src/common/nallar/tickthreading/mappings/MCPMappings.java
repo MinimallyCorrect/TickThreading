@@ -115,7 +115,12 @@ public class MCPMappings extends Mappings {
 		if (mapped != null) {
 			name = mapped;
 		}
-		return map(new ClassDescription(name)).name;
+		ClassDescription classDescription = map(new ClassDescription(name));
+		if (classDescription == null) {
+			Log.severe("Couldn't map class name " + name);
+			return name;
+		}
+		return classDescription.name;
 	}
 
 	@Override
