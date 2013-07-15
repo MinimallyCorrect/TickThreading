@@ -724,11 +724,11 @@
 			<synchronize>transferLiquid,removeNode,removeConduit,setNewGrid,changeMode,increaseTracker,addNode,addConduit</synchronize>
 			<replaceMethod code="{
 				int n = this.conduitList.size() + this.outputList.size() + this.inputList.size();
-				if (n < 1) {
+				if (n &lt; 1) {
 					n = 1;
 				}
 				int a = getLiquidAmount();
-				return isFirst(theCond) ? (a / n + a % n) : (a / n);
+				return isFirst($1) ? (a / n + a % n) : (a / n);
 			}">getSharedAmount</replaceMethod>
 		</class>
 		<class id="thermalexpansion.block.conduit.GridEnergy">
