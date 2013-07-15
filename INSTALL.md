@@ -22,7 +22,7 @@ Java Tuning
 - Use the latest Java 7.
 - Make sure not to set -Xmx higher than you need - higher values may reduce performance, especially >= 32GB
 - Suggested java parameters - make sure to set -Xmx:  
-    java -server -Xmx<memoryToUseInGB>G -XX:UseSSE=4 -XX:+UseConcMarkSweepGC -XX:+UseCMSCompactAtFullCollection -XX:+UseParNewGC -XX:+DisableExplicitGC -XX:+AggressiveOpts -jar server.jar nogui
+    java -server -Xmx{memoryToUseInGB}G -XX:UseSSE=4 -XX:+UseConcMarkSweepGC -XX:+UseCMSCompactAtFullCollection -XX:+UseParNewGC -XX:+DisableExplicitGC -XX:+AggressiveOpts -jar server.jar nogui
 
 - *Xmx* sets the memory the server is allowed to use. It should be set to a reasonable value - enough for the server to run, but not much higher than it needs. >= 32GB will prevent the JVM from using
 compressed OOPs, an optimisation which reduces the size of pointers and generally gives a reasonable performance boost, so it's a good idea to keep Xmx low.
