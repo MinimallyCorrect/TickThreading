@@ -135,8 +135,11 @@ public class TickThreading {
 					"\nTo patch your server, simply run the PATCHME.bat/sh file in your server directory" +
 					"\n\nAlso, make a full backup of your server if you haven't already!" +
 					"\n\nFiles checked for patches: " + CollectionsUtil.join(filesToCheck));
-			Log.flush();
-			Runtime.getRuntime().halt(1);
+			MinecraftServer.getServer().initiateShutdown();
+			if (!System.getProperty("os.name").startsWith("Windows")) {
+				PatchUtil.startPatch();
+			}
+			Runtime.getRuntime().exit(1);
 		}
 		ContextAccess.$.getContext(0);
 	}
