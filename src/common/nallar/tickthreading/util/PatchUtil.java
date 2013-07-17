@@ -1,7 +1,11 @@
 package nallar.tickthreading.util;
 
 import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Scanner;
@@ -20,18 +24,21 @@ public enum PatchUtil {
 	;
 	private static boolean written = false;
 
+	private static String getClassPath() {
+		return LocationUtil.locationOf(TickThreading.class).toString() + File.pathSeparator + new File(LocationUtil.getServerDirectory(), "lib/guava-12.0.1.jar");
+	}
+
 	public static synchronized void writePatchRunners() throws IOException {
 		if (written) {
 			return;
 		}
 		written = true;
 		String java = System.getProperties().getProperty("java.home") + File.separator + "bin" + File.separator + "java";
-		String CP = LocationUtil.locationOf(TickThreading.class).toString();
+		String CP = getClassPath();
 		String MS = CollectionsUtil.join(LocationUtil.getJarLocations());
 
-		ZipFile zipFile = new ZipFile(new File(CP));
+		ZipFile zipFile = new ZipFile(new File(LocationUtil.locationOf(TickThreading.class).toString()));
 		try {
-			CP += File.pathSeparator + new File(LocationUtil.getServerDirectory(), "lib/guava-12.0.1.jar");
 			for (ZipEntry zipEntry : new IterableEnumerationWrapper<ZipEntry>((Enumeration<ZipEntry>) zipFile.entries())) {
 				if (zipEntry.getName().startsWith("patchrun/") && !(!zipEntry.getName().isEmpty() && zipEntry.getName().charAt(zipEntry.getName().length() - 1) == '/')) {
 					String data = new Scanner(zipFile.getInputStream(zipEntry), "UTF-8").useDelimiter("\\A").next();
@@ -61,5 +68,39 @@ public enum PatchUtil {
 			Log.severe("Failed to determine whether patches should run", e);
 		}
 		return false;
+	}
+
+	@SuppressWarnings ("IOResourceOpenedButNotSafelyClosed")
+	public static void startPatch() {
+		String classPath = getClassPath();
+		String separator = System.getProperty("file.separator");
+		String path = System.getProperty("java.home")
+				+ separator + "bin" + separator + "java";
+		ProcessBuilder processBuilder = new ProcessBuilder(path, "-Dunattend=true", "-cp", classPath, PatchMain.class.getCanonicalName(), "patcher", CollectionsUtil.join(LocationUtil.getJarLocations()));
+		Process p;
+		try {
+			p = processBuilder.start();
+		} catch (IOException e) {
+			Log.severe("Failed to start patcher", e);
+			return;
+		}
+		inheritIO(p.getInputStream(), new PrintStream(new FileOutputStream(FileDescriptor.out)));
+		inheritIO(p.getErrorStream(), new PrintStream(new FileOutputStream(FileDescriptor.err)));
+		try {
+			p.waitFor();
+		} catch (InterruptedException ignored) {
+		}
+	}
+
+	private static void inheritIO(final InputStream src, final PrintStream dst) {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				Scanner sc = new Scanner(src);
+				while (sc.hasNextLine()) {
+					dst.println(sc.nextLine());
+				}
+			}
+		}).start();
 	}
 }

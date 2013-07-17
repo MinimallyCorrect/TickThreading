@@ -136,6 +136,9 @@ public class TickThreading {
 					"\n\nAlso, make a full backup of your server if you haven't already!" +
 					"\n\nFiles checked for patches: " + CollectionsUtil.join(filesToCheck));
 			MinecraftServer.getServer().initiateShutdown();
+			if (!System.getProperty("os.name").startsWith("Windows")) {
+				PatchUtil.startPatch();
+			}
 			Runtime.getRuntime().exit(1);
 		}
 		ContextAccess.$.getContext(0);
