@@ -153,6 +153,7 @@
 		<class id="net.minecraft.world.gen.ChunkProviderServer">
 			<replace class="nallar.patched.storage.ThreadedChunkProvider"/>
 			<lockToSynchronized>getChunkAtInternal</lockToSynchronized>
+			<profile>tick</profile>
 		</class>
 		<class id="net.minecraft.world.gen.ChunkProviderServer" env="mcpc">
 			<replaceMethod code="{
