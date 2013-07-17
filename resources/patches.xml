@@ -1239,14 +1239,14 @@
 		</class>
 	</additionalPipes>
 	<MFFS>
-		<class id="chb.mods.mffs.network.server.ForceFieldServerUpdatehandler$ForceFieldpacket">
+		<class id="mods.mffs.network.server.ForceFieldServerUpdatehandler$ForceFieldpacket">
 			<public all="true"/>
 			<synchronize field="queue">addto</synchronize>
 		</class>
-		<class id="chb.mods.mffs.network.server.ForceFieldServerUpdatehandler">
+		<class id="mods.mffs.network.server.ForceFieldServerUpdatehandler">
 			<replaceMethod code="{
-				yc[] worlds = net.minecraftforge.common.DimensionManager.getWorlds();
-				yc world;
+				^class:World^[] worlds = net.minecraftforge.common.DimensionManager.getWorlds();
+				^class:World^ world;
 				for (int i = 0; i &lt; worlds.length; i++) {
 					world = worlds[i];
 					StringBuilder str = new StringBuilder();
@@ -1287,13 +1287,12 @@
 							dos.writeInt(100);
 							dos.writeUTF(str.toString());
 
-							di pkt = new di();
-							pkt.a = &quot;MFFS&quot;;
-							pkt.c = bos.toByteArray();
-							pkt.b = bos.size();
-							pkt.r = true;
+							^class:Packet250CustomPayload^ pkt = new ^class:Packet250CustomPayload^();
+							pkt.^field:Packet250CustomPayload/channel^ = &quot;MFFS&quot;;
+							pkt.^field:Packet250CustomPayload/data^ = bos.toByteArray();
+							pkt.^field:Packet250CustomPayload/length^ = bos.size();
 
-							cpw.mods.fml.common.network.PacketDispatcher.sendPacketToAllInDimension(pkt, world.u.h);
+							cpw.mods.fml.common.network.PacketDispatcher.sendPacketToAllInDimension(pkt, world.^field:World/provider^.^field:WorldProvider/dimensionId^);
 						} catch (Exception e) {
 							Log.severe(&quot;Failed to send MFFS force-field update&quot;, e);
 						}
@@ -1303,10 +1302,10 @@
 			</replaceMethod>
 			<synchronize>tickEnd</synchronize>
 		</class>
-		<class id="chb.mods.mffs.common.item.ItemCardPowerLink">
+		<class id="mods.mffs.common.item.ItemCardPowerLink">
 			<synchronize/>
 		</class>
-		<class id="chb.mods.mffs.common.ModularForceFieldSystem$MFFSChunkloadCallback">
+		<class id="mods.mffs.common.ModularForceFieldSystem$MFFSChunkloadCallback">
 			<replaceMethodCall newMethod="getTEWithLoad" method="^class:World^.^method:World/getBlockTileEntity^">
 				ticketsLoaded(Ljava.util.List;L^class:World^;)V,ticketsLoaded(Ljava.util.List;L^class:World^;I)Ljava.util.List;
 			</replaceMethodCall>
@@ -1314,11 +1313,11 @@
 				ticketsLoaded(Ljava.util.List;L^class:World^;)V,ticketsLoaded(Ljava.util.List;L^class:World^;I)Ljava.util.List;
 			</replaceMethodCall>
 		</class>
-		<class id="chb.mods.mffs.common.Linkgrid$Worldlinknet">
+		<class id="mods.mffs.common.Linkgrid$Worldlinknet">
 			<replaceInitializer field="FieldFusion" class="java.util.concurrent.ConcurrentHashMap"/>
 			<replaceInitializer field="Jammer" class="java.util.concurrent.ConcurrentHashMap"/>
 		</class>
-		<class id="chb.mods.mffs.common.tileentity.TileEntityProjector">
+		<class id="mods.mffs.common.tileentity.TileEntityProjector">
 			<synchronize>calculateField(Z)Z</synchronize>
 		</class>
 	</MFFS>

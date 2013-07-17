@@ -120,7 +120,7 @@ public class MCPMappings extends Mappings {
 				if (mapped == null) {
 					Log.severe("Failed to deobfuscate field " + className + '/' + fieldName);
 				}
-				fieldMatcher.appendReplacement(result, mapped.name);
+				fieldMatcher.appendReplacement(result, mapped == null ? fieldName : mapped.name);
 			}
 			fieldMatcher.appendTail(result);
 		}
