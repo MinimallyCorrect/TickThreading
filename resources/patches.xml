@@ -1672,4 +1672,7 @@
 			<replaceNew oldClass="java.util.LinkedList" newClass="nallar.collections.ConcurrentLinkedQueueList">queueChunkCoords</replaceNew>
 		</class>
 	</magicBees>
+	<dimensionalDoors>
+		<replaceFieldUsage field="hasGrownRifts" writeCode="if ($0 != null) { $0.hasGrownRifts = $1; }"/>
+	</dimensionalDoors>
 </mods>
