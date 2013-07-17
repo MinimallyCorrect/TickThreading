@@ -15,12 +15,11 @@ public abstract class PatchPacketDispatcher {
 
 	@Declare
 	public static void sendPacketAroundPlayer(EntityPlayerMP player, Packet packet, int squaredDistance) {
-		EntityPlayerMP playerMP = (EntityPlayerMP) player;
-		WorldServer worldServer = ((WorldServer) playerMP.worldObj);
-		int cX = playerMP.chunkCoordX;
-		int cZ = playerMP.chunkCoordZ;
+		WorldServer worldServer = ((WorldServer) player.worldObj);
+		int cX = player.chunkCoordX;
+		int cZ = player.chunkCoordZ;
 		for (EntityPlayerMP entityPlayerMP : (Iterable<EntityPlayerMP>) worldServer.playerEntities) {
-			if (entityPlayerMP != playerMP && (square((entityPlayerMP.chunkCoordX - cX) << 4) + square((entityPlayerMP.chunkCoordZ - cZ) << 4)) < squaredDistance) {
+			if (entityPlayerMP != player && (square((entityPlayerMP.chunkCoordX - cX) << 4) + square((entityPlayerMP.chunkCoordZ - cZ) << 4)) < squaredDistance) {
 				entityPlayerMP.playerNetServerHandler.sendPacketToPlayer(packet);
 			}
 		}
