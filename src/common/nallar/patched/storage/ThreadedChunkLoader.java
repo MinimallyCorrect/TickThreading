@@ -256,7 +256,7 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 		try {
 			this.writeChunkNBTTags(anvilchunkloaderpending);
 		} catch (Exception exception) {
-			Log.severe("Failed to write chunk data to disk " + Log.pos(anvilchunkloaderpending.chunkCoordinate.chunkXPos, anvilchunkloaderpending.chunkCoordinate.chunkZPos));
+			Log.severe("Failed to write chunk data to disk " + Log.pos(anvilchunkloaderpending.chunkCoordinate.chunkXPos, anvilchunkloaderpending.chunkCoordinate.chunkZPos), exception);
 		}
 
 		inProgressSaves.remove(key);
