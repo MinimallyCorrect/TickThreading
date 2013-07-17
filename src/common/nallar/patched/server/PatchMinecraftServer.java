@@ -368,11 +368,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		final Profiler profiler = theProfiler;
 		profiler.startSection("levels");
 
-		spigotTLETick();
-
-		for (Runnable runnable = runQueue.poll(); runnable != null; runnable = runQueue.poll()) {
-			runnable.run();
-		}
+		runQueuedTasks();
 
 		Integer[] dimensionIdsToTick = this.dimensionIdsToTick = DimensionManager.getIDs();
 
@@ -439,6 +435,14 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		DimensionManager.unloadWorlds(worldTickTimes);
 
 		profiler.endSection();
+	}
+
+	private void runQueuedTasks() {
+		spigotTLETick();
+
+		for (Runnable runnable = runQueue.poll(); runnable != null; runnable = runQueue.poll()) {
+			runnable.run();
+		}
 	}
 
 	private void spigotTLETick() {
