@@ -21,7 +21,6 @@ import nallar.tickthreading.patcher.PatchMain;
 import nallar.tickthreading.patcher.PatchManager;
 import nallar.tickthreading.patcher.Patches;
 import nallar.tickthreading.util.contextaccess.ContextAccess;
-import net.minecraft.server.MinecraftServer;
 
 public enum PatchUtil {
 	;
@@ -126,7 +125,6 @@ public enum PatchUtil {
 					"\nTo patch your server, simply run the PATCHME.bat/sh file in your server directory" +
 					"\n\nAlso, make a full backup of your server if you haven't already!" +
 					"\n\nFiles checked for patches: " + CollectionsUtil.join(filesToCheck));
-			MinecraftServer.getServer().initiateShutdown();
 			if (!System.getProperty("os.name").startsWith("Windows")) {
 				PatchUtil.startPatch();
 			}
