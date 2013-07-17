@@ -84,7 +84,10 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	}
 
 	public static void staticConstruct() {
-		PatchUtil.checkPatches();
+		try {
+			PatchUtil.checkPatches();
+		} catch (NoClassDefFoundError ignored) {
+		}
 		setTargetTPS(20);
 		setNetworkTPS(40);
 	}
