@@ -1,7 +1,6 @@
 package nallar.tickthreading.minecraft;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,8 +38,6 @@ import nallar.tickthreading.minecraft.entitylist.LoadedEntityList;
 import nallar.tickthreading.minecraft.entitylist.LoadedTileEntityList;
 import nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
 import nallar.tickthreading.minecraft.profiling.Timings;
-import nallar.tickthreading.util.CollectionsUtil;
-import nallar.tickthreading.util.LocationUtil;
 import nallar.tickthreading.util.PatchUtil;
 import nallar.tickthreading.util.ReflectUtil;
 import nallar.tickthreading.util.TableFormatter;
@@ -123,25 +120,7 @@ public class TickThreading {
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load
-		try {
-			PatchUtil.writePatchRunners();
-		} catch (IOException e) {
-			Log.severe("Failed to write patch runners", e);
-		}
-		List<File> filesToCheck = LocationUtil.getJarLocations();
-		if (PatchUtil.shouldPatch(filesToCheck)) {
-			Log.severe("TickThreading is disabled, because your server has not been patched" +
-					" or the patches are out of date" +
-					"\nTo patch your server, simply run the PATCHME.bat/sh file in your server directory" +
-					"\n\nAlso, make a full backup of your server if you haven't already!" +
-					"\n\nFiles checked for patches: " + CollectionsUtil.join(filesToCheck));
-			MinecraftServer.getServer().initiateShutdown();
-			if (!System.getProperty("os.name").startsWith("Windows")) {
-				PatchUtil.startPatch();
-			}
-			Runtime.getRuntime().exit(1);
-		}
-		ContextAccess.$.getContext(0);
+		PatchUtil.checkPatches();
 	}
 
 	@Mod.Init

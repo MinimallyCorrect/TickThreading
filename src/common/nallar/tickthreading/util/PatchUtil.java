@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Scanner;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -19,6 +20,8 @@ import nallar.tickthreading.minecraft.TickThreading;
 import nallar.tickthreading.patcher.PatchMain;
 import nallar.tickthreading.patcher.PatchManager;
 import nallar.tickthreading.patcher.Patches;
+import nallar.tickthreading.util.contextaccess.ContextAccess;
+import net.minecraft.server.MinecraftServer;
 
 public enum PatchUtil {
 	;
@@ -102,5 +105,33 @@ public enum PatchUtil {
 				}
 			}
 		}).start();
+	}
+
+	private static boolean patchesChecked = false;
+
+	public static void checkPatches() {
+		if (patchesChecked) {
+			return;
+		}
+		patchesChecked = true;
+		try {
+			PatchUtil.writePatchRunners();
+		} catch (IOException e) {
+			Log.severe("Failed to write patch runners", e);
+		}
+		List<File> filesToCheck = LocationUtil.getJarLocations();
+		if (PatchUtil.shouldPatch(filesToCheck)) {
+			Log.severe("TickThreading is disabled, because your server has not been patched" +
+					" or the patches are out of date" +
+					"\nTo patch your server, simply run the PATCHME.bat/sh file in your server directory" +
+					"\n\nAlso, make a full backup of your server if you haven't already!" +
+					"\n\nFiles checked for patches: " + CollectionsUtil.join(filesToCheck));
+			MinecraftServer.getServer().initiateShutdown();
+			if (!System.getProperty("os.name").startsWith("Windows")) {
+				PatchUtil.startPatch();
+			}
+			Runtime.getRuntime().exit(1);
+		}
+		ContextAccess.$.getContext(0);
 	}
 }
