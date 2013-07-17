@@ -19,28 +19,43 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ThreadMinecraftServer;
 
 public class ContentionProfiler {
-	public ContentionProfiler(final ICommandSender commandSender, int seconds, int resolution) {
-		this.resolution = resolution;
-		final int ticks = seconds * 1000 / resolution;
-		final TableFormatter tf = new TableFormatter(commandSender);
-		new Thread(new Runnable() {
+	public static void profile(final ICommandSender commandSender, int seconds, int resolution) {
+		final ContentionProfiler contentionProfiler = new ContentionProfiler(seconds, resolution);
+		contentionProfiler.run(new Runnable() {
 			@Override
 			public void run() {
-				profile(ticks);
-				dump(tf, commandSender instanceof MinecraftServer ? 15 : 6);
+				TableFormatter tf = new TableFormatter(commandSender);
+				contentionProfiler.dump(tf, commandSender instanceof MinecraftServer ? 15 : 6);
 				Command.sendChat(commandSender, tf.toString());
 			}
-		}, "Contention Profiler").start();
+		});
 	}
 
-	private final long resolution;
+	public ContentionProfiler(int seconds, int resolution) {
+		this.seconds = seconds;
+		this.resolution = resolution;
+	}
+
+	private final int seconds;
+	private final int resolution;
 	private long ticks;
 	private long[] threads;
 	private final Map<String, IntegerHolder> monitorMap = new IntHashMap<String>();
 	private final Map<String, IntegerHolder> waitingMap = new IntHashMap<String>();
 	private final Map<String, IntegerHolder> traceMap = new IntHashMap<String>();
 
-	private void dump(final TableFormatter tf, int entries) {
+	public void run(final Runnable completed) {
+		final int ticks = seconds * 1000 / resolution;
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				profile(ticks);
+				completed.run();
+			}
+		}, "Contention Profiler").start();
+	}
+
+	public void dump(final TableFormatter tf, int entries) {
 		float ticks = this.ticks;
 		tf
 				.heading("Monitor")
