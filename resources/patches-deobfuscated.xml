@@ -42,6 +42,7 @@
 			<volatile field="serverRunning"/>
 			<volatile field="serverIsRunning"/>
 			<replaceInitializer field="worlds" class="nallar.collections.ListSet"/>
+			<profile>runQueuedTasks</profile>
 		</class>
 		<class id="net.minecraft.server.MinecraftServer" env="mcpc">
 			<replaceMethod code="{
