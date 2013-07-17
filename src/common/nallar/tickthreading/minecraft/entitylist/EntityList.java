@@ -16,7 +16,6 @@ import net.minecraft.world.World;
 * Used to override World.loadedTile/EntityList.
 * */
 public abstract class EntityList<T> extends ArrayList<T> {
-	private static boolean warnedIterateTransform = false;
 	public final TickManager manager;
 	public final ConcurrentUnsafeIterableArrayList<T> innerList;
 
@@ -68,10 +67,6 @@ public abstract class EntityList<T> extends ArrayList<T> {
 	@Override
 	public Iterator<T> iterator() {
 		if (!Thread.holdsLock(this)) {
-			if (!warnedIterateTransform) {
-				Log.warning("Unsafe entity list iteration", new Throwable());
-				warnedIterateTransform = true;
-			}
 			return innerList.unsafeIterator();
 		}
 		return innerList.iterator();
