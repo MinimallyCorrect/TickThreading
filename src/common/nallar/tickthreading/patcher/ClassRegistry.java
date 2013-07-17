@@ -278,8 +278,9 @@ public class ClassRegistry {
 			return;
 		}
 		try {
-			if (MinecraftServer.getServer() == null) {
-				throw new NullPointerException();
+			MinecraftServer.getServer();
+			if (!this.getClass().getClassLoader().getClass().getName().contains("Relaunch")) {
+				throw null;
 			}
 		} catch (Throwable t) {
 			if (!file.delete()) {
