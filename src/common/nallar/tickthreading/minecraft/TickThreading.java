@@ -15,6 +15,7 @@ import com.google.common.io.Files;
 
 import cpw.mods.fml.common.IPlayerTracker;
 import cpw.mods.fml.common.IScheduledTickHandler;
+import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.TickType;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
@@ -195,6 +196,10 @@ public class TickThreading {
 
 	@Mod.ServerStarting
 	public void serverStarting(FMLServerStartingEvent event) {
+		if (Loader.isModLoaded("TickProfiler")) {
+			Log.severe("You're using TickProfiler with TT - TT includes TP's features. Please uninstall TickProfiler, it can cause problems with TT.");
+			Runtime.getRuntime().exit(1);
+		}
 		Log.severe(VersionUtil.versionString() + " is installed on this server!"
 				+ "\nIf anything breaks, check if it is still broken without TickThreading"
 				+ "\nWe don't want to annoy mod devs with issue reports caused by TickThreading."
