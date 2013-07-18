@@ -1675,4 +1675,9 @@
 	<dimensionalDoors>
 		<replaceFieldUsage field="hasGrownRifts" writeCode="if ($0 != null) { $0.hasGrownRifts = $1; }"/>
 	</dimensionalDoors>
+	<tagApi>
+		<class id="org.kitteh.tag.TagAPI">
+			<replaceMethodCall method="equals" code="$_ = false;" index="0">getName,check</replaceMethodCall>
+		</class>
+	</tagApi>
 </mods>
