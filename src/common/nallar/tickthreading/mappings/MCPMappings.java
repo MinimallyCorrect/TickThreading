@@ -88,7 +88,12 @@ public class MCPMappings extends Mappings {
 				}
 				FieldDescription fieldDescription = new FieldDescription(className, fieldName);
 				FieldDescription mapped = map(fieldDescription);
-				fieldMatcher.appendReplacement(result, mapped.name);
+				if (mapped == null) {
+					Log.severe("Could not map " + fieldName);
+					fieldMatcher.appendReplacement(result, fieldName);
+				} else {
+					fieldMatcher.appendReplacement(result, mapped.name);
+				}
 			}
 			fieldMatcher.appendTail(result);
 		}
