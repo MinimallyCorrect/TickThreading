@@ -1321,6 +1321,77 @@
 		</class>
 		<class id="mods.mffs.common.tileentity.TileEntityProjector">
 			<synchronize>calculateField(Z)Z</synchronize>
+			<replaceMethod code="{
+				^class:ItemStack^ i = ^method:IInventory/getStackInSlot^(1);
+				return i != null &amp;&amp; i.^method:ItemStack/getItem^() instanceof mods.mffs.common.modules.ModuleBase;
+			}">hasValidTypeMod</replaceMethod>
+			<replaceMethod code="{
+				^class:ItemStack^ i = ^method:IInventory/getStackInSlot^(1);
+				if (i == null) {
+					return null;
+				}
+				^class:Item^ item = i.^method:ItemStack/getItem^();
+				if (item instanceof mods.mffs.common.modules.ModuleBase) {
+					return (mods.mffs.common.modules.ModuleBase) item;
+				}
+				return null;
+			}">get_type</replaceMethod>
+			<replaceMethod code="{
+				HashSet field_def = new HashSet();
+				HashSet field_interior = new HashSet();
+				mods.mffs.common.modules.ModuleBase type = get_type();
+				if(type == null) {
+					this.field_def = field_def;
+					this.field_interior = field_interior;
+					return false;
+				}
+         HashSet tField = new HashSet();
+         HashSet tFieldInt = new HashSet();
+         if (type instanceof mods.mffs.common.modules.Module3DBase) {
+            ((mods.mffs.common.modules.Module3DBase) type).calculateField(this, tField, tFieldInt);
+         } else {
+            type.calculateField(this, tField);
+         }
+
+         Iterator i$ = tField.iterator();
+
+         mods.mffs.api.PointXYZ pnt;
+         mods.mffs.api.PointXYZ tp;
+         while(i$.hasNext()) {
+            pnt = (mods.mffs.api.PointXYZ)i$.next();
+            if(pnt.Y + ^field:TileEntity/yCoord^ &lt; 255) {
+               tp = new mods.mffs.api.PointXYZ(pnt.X + ^field:TileEntity/xCoord^, pnt.Y + ^field:TileEntity/yCoord^, pnt.Z + ^field:TileEntity/zCoord^, ^field:TileEntity/worldObj^);
+               if(!Forcefielddefine(tp, $1)) {
+               		this.field_def = field_def;
+									this.field_interior = field_interior;
+                  return false;
+               }
+
+               field_def.add(tp);
+            }
+         }
+
+         i$ = tFieldInt.iterator();
+
+         while(i$.hasNext()) {
+            pnt = (mods.mffs.api.PointXYZ)i$.next();
+            if(pnt.Y + ^field:TileEntity/yCoord^ &lt; 255) {
+               tp = new mods.mffs.api.PointXYZ(pnt.X + ^field:TileEntity/xCoord^, pnt.Y + ^field:TileEntity/yCoord^, pnt.Z + ^field:TileEntity/zCoord^, ^field:TileEntity/worldObj^);
+               if(!calculateBlock(tp)) {
+               		this.field_def = field_def;
+									this.field_interior = field_interior;
+                  return false;
+               }
+
+               field_interior.add(tp);
+            }
+         }
+
+				this.field_def = field_def;
+				this.field_interior = field_interior;
+    		return true;
+			}">calculateField(Z)Z
+			</replaceMethod>
 		</class>
 	</MFFS>
 	<thaumcraft>

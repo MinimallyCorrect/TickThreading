@@ -118,9 +118,11 @@ public class MCPMappings extends Mappings {
 				FieldDescription fieldDescription = new FieldDescription(className, fieldName);
 				FieldDescription mapped = map(fieldDescription);
 				if (mapped == null) {
-					Log.severe("Failed to deobfuscate field " + className + '/' + fieldName);
+					Log.severe("Could not map " + fieldName);
+					fieldMatcher.appendReplacement(result, fieldName);
+				} else {
+					fieldMatcher.appendReplacement(result, mapped.name);
 				}
-				fieldMatcher.appendReplacement(result, mapped == null ? fieldName : mapped.name);
 			}
 			fieldMatcher.appendTail(result);
 		}
