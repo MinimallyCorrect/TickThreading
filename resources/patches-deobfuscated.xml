@@ -1350,6 +1350,9 @@
 		</class>
 	</additionalPipes>
 	<MFFS>
+		<class id="chb.mods.mffs.common.LinkGrid$Worldlinknet">
+			<replaceInitializer field="Jammer" class="java.util.concurrent.ConcurrentHashMap"/>
+		</class>
 		<class id="chb.mods.mffs.network.server.ForceFieldServerUpdatehandler$ForceFieldpacket">
 			<public all="true"/>
 			<synchronize field="queue">addto</synchronize>
