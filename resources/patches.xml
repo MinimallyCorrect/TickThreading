@@ -1677,7 +1677,7 @@
 	</dimensionalDoors>
 	<tagApi>
 		<class id="org.kitteh.tag.TagAPI">
-			<replaceMethodCall method="equals" code="$_ = false;" index="0">getName,check</replaceMethodCall>
+			<replaceMethodCall method="equals" code="$_ = true;" index="0">getName,check,handlePacket</replaceMethodCall>
 		</class>
 	</tagApi>
 </mods>
