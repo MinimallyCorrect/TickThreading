@@ -11,6 +11,7 @@ import nallar.tickthreading.minecraft.profiling.ContentionProfiler;
 import nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
 import nallar.tickthreading.minecraft.profiling.PacketProfiler;
 import nallar.tickthreading.minecraft.profiling.Timings;
+import nallar.tickthreading.minecraft.profiling.UtilisationProfiler;
 import nallar.tickthreading.minecraft.tickregion.TickRegion;
 import nallar.tickthreading.util.TableFormatter;
 import net.minecraft.command.ICommandSender;
@@ -52,6 +53,11 @@ public class ProfileCommand extends Command {
 				ContentionProfiler.profile(commandSender, 240, 11);
 				return;
 			}
+			if ("u".equals(arguments.get(0))) {
+				sendChat(commandSender, "Performing CPU utilisation profiling for 1 minute.");
+				UtilisationProfiler.profile(commandSender, 60);
+				return;
+			}
 			entity_ = "e".equals(arguments.get(0));
 			if ("c".equals(arguments.get(0))) {
 				entity_ = true;
@@ -71,7 +77,7 @@ public class ProfileCommand extends Command {
 				}
 			}
 		} catch (Exception e) {
-			sendChat(commandSender, "Usage: /profile [type=a/e/p/(c [chunk x] [chunk z])] [time=7] [dimensionid=current dimension]");
+			sendChat(commandSender, "Usage: /profile [type=a/e/l/p/u/(c [chunk x] [chunk z])] [time=7] [dimensionid=current dimension]");
 			return;
 		}
 		final int time = time_;
