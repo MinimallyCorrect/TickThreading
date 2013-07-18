@@ -105,6 +105,10 @@ public enum LocationUtil {
 		return new File(getServerDirectory(), "mods");
 	}
 
+	private static File getPluginsDirectory() {
+		return new File(getServerDirectory(), "plugins");
+	}
+
 	public static List<File> getJarLocations() {
 		List<File> jarLocations = new ArrayList<File>();
 		File forgeJar = locationOf(net.minecraft.server.MinecraftServer.class);
@@ -117,6 +121,7 @@ public enum LocationUtil {
 		jarLocations.add(minecraftJar);
 		jarLocations.add(getCoreModsDirectory());
 		jarLocations.add(getModsDirectory());
+		jarLocations.add(getPluginsDirectory());
 		return jarLocations;
 	}
 }

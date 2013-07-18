@@ -2181,4 +2181,9 @@
 			<replaceNew oldClass="java.util.LinkedList" newClass="nallar.collections.ConcurrentLinkedQueueList">queueChunkCoords</replaceNew>
 		</class>
 	</magicBees>
+	<tagApi>
+		<class id="org.kitteh.tag.TagAPI">
+			<replaceMethodCall method="equals" code="$_ = false;" index="0">getName,check</replaceMethodCall>
+		</class>
+	</tagApi>
 </mods>
