@@ -361,7 +361,7 @@ public abstract class PatchWorld extends World {
 		}
 		int x = MathHelper.floor_double(entity.posX);
 		int z = MathHelper.floor_double(entity.posZ);
-		boolean periodicUpdate = forcedUpdateCount++ % 19 == 0;
+		boolean periodicUpdate = forcedUpdateCount++ % 32 == 0;
 		Boolean isForced_ = entity.isForced;
 		if (isForced_ == null || periodicUpdate) {
 			entity.isForced = isForced_ = getPersistentChunks().containsKey(new ChunkCoordIntPair(x >> 4, z >> 4));
