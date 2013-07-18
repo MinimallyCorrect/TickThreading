@@ -1320,7 +1320,7 @@
 			<replaceInitializer field="Jammer" class="java.util.concurrent.ConcurrentHashMap"/>
 		</class>
 		<class id="mods.mffs.common.tileentity.TileEntityProjector">
-			<synchronize>calculateField(Z)Z</synchronize>
+			<synchronize>calculateField(Z)Z,getInteriorPoints</synchronize>
 			<replaceMethod code="{
 				^class:ItemStack^ i = ^method:IInventory/getStackInSlot^(1);
 				return i != null &amp;&amp; i.^method:ItemStack/getItem^() instanceof mods.mffs.common.modules.ModuleBase;
