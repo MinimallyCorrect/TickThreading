@@ -54,6 +54,10 @@ public class TableFormatter {
 		return row(String.valueOf(data));
 	}
 
+	public TableFormatter row(long data) {
+		return row(String.valueOf(data));
+	}
+
 	public TableFormatter row(double data) {
 		currentData.add(formatDoubleWithPrecision(data, 3));
 		return this;
