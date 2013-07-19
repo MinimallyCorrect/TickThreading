@@ -222,10 +222,10 @@ public class DeadLockDetector {
 				for (String threadManager : threadManagerSet) {
 					tryFixDeadlocks(threadManager);
 				}
-				trySleep(10000);
 			}
 			Log.severe(sb.toString());
 			attemptedToRecoverDeadlock = true;
+			trySleep(15000);
 			return true;
 		}
 		if (spikeDetector) {
