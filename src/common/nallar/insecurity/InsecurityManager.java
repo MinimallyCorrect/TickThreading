@@ -27,8 +27,8 @@ public class InsecurityManager extends java.lang.SecurityManager {
 	@Override
 	public void checkExit(int status) {
 		super.checkExit(status);
-		if (MinecraftServer.getServer().isServerRunning()) {
-			Log.info("Server shutting down - requested at ", new ThisIsNotAnError());
+		if (Log.debug && MinecraftServer.getServer().isServerRunning()) {
+			Log.debug("Server shutting down - requested at ", new ThisIsNotAnError());
 		}
 		for (Handler handler : FMLLog.getLogger().getHandlers()) {
 			handler.flush();
