@@ -168,6 +168,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 			} catch (Throwable t) {
 				FMLLog.log(Level.SEVERE, t, "Failed to set up Security Manager. This is probably not a huge problem - but it could indicate classloading issues.");
 			}
+			currentTick = (int) (System.currentTimeMillis() / 50);
 			if (this.startServer()) {
 				FMLLog.fine("calling handleServerStarted()");
 				FMLCommonHandler.instance().handleServerStarted();
@@ -177,24 +178,23 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				for (Configuration configuration : toSaveConfigurationSet) {
 					configuration.save();
 				}
-				// This block is derived from Spigot code,
-				// LGPL
 				this.serverIsRunning = true;
 				if (TickThreading.instance.concurrentNetworkTicks) {
 					tickNetworkInMainThread = false;
 					new FakeServerThread(new NetworkTickRunnable(this), "Network Tick", false).start();
 				}
-				long lastTick = 0L;
+				long lastTime = 0L;
 				double currentMaxTPS = 0;
 				while (this.serverRunning) {
 					long curTime = System.nanoTime();
-					long wait = TARGET_TICK_TIME - (curTime - lastTick);
+					long wait = (TARGET_TICK_TIME - (curTime - lastTime)) / 1000000;
 					if (wait > 0 && currentMaxTPS > TARGET_TPS) {
-						Thread.sleep(wait / 1000000);
+						Thread.sleep(wait);
 						continue;
 					}
-					lastTick = curTime;
-					currentTick = ++tickCounter;
+					lastTime = curTime;
+					++currentTick;
+					++tickCounter;
 					try {
 						this.tick();
 					} catch (Exception e) {
