@@ -760,6 +760,11 @@
 			<synchronize field="staticLock">updateEntity</synchronize>
 		</class>
 	</buildCraftTransport>
+	<thermalExpansionPlugins>
+		<class id="thermalexpansion.plugins.cc.TurtleWrench">
+			<ignoreExceptions type="java.lang.NullPointerException" code="return false;">attack</ignoreExceptions>
+		</class>
+	</thermalExpansionPlugins>
 	<thermalExpansionTransport>
 		<class id="thermalexpansion.transport.tileentity.TileTeleportEnergy">
 			<synchronize>receiveEnergy</synchronize>
