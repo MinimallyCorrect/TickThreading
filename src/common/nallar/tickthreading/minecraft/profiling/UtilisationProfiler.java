@@ -49,14 +49,14 @@ public class UtilisationProfiler {
 	}
 
 	public void dump(final TableFormatter tf, int entries) {
-
+		double seconds = TimeUnit.SECONDS.toNanos(this.seconds);
 		tf
 				.heading("Thread")
-				.heading("Used CPU Time");
+				.heading("Used CPU Time (%)");
 		for (String key : CollectionsUtil.sortedKeys(monitorMap, entries)) {
 			tf
 					.row(key)
-					.row(monitorMap.get(key) / TimeUnit.SECONDS.toNanos(1));
+					.row((100d * monitorMap.get(key)) / seconds);
 		}
 		tf.finishTable();
 	}
@@ -70,7 +70,7 @@ public class UtilisationProfiler {
 		}
 		final long[] threads1 = Longs.toArray(threads);
 		try {
-			Thread.sleep(seconds * TimeUnit.SECONDS.toMillis(1));
+			Thread.sleep(TimeUnit.SECONDS.toMillis(seconds));
 			for (long threadId : threads1) {
 				long time = threadMXBean.getThreadCpuTime(threadId);
 				if (time < 0) {
