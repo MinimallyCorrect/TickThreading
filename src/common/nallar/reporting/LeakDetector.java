@@ -11,7 +11,7 @@ import nallar.tickthreading.Log;
 import nallar.unsafe.UnsafeUtil;
 
 public class LeakDetector {
-	private final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(0);
+	private final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1);
 	private final long waitTimeSeconds;
 	private final Map<Long, LeakCheckEntry> scheduledObjects = new ConcurrentHashMap<Long, LeakCheckEntry>();
 

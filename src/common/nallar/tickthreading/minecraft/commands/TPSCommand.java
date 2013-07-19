@@ -63,7 +63,7 @@ public class TPSCommand extends Command {
 		double tps = MinecraftServer.getTPS();
 		double targetTPS = MinecraftServer.getTargetTPS();
 		double difference = Math.abs(targetTPS - tps);
-		int charsFirst = (int) ((tps / targetTPS) * tpsWidth);
+		int charsFirst = (int) Math.round((tps / targetTPS) * tpsWidth);
 		int charsAfter = tpsWidth - charsFirst;
 		StringBuilder sb = new StringBuilder();
 		sb
