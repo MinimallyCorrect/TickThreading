@@ -713,6 +713,11 @@
 			<synchronize field="staticLock">updateEntity</synchronize>
 		</class>
 	</buildCraftTransport>
+	<thermalExpansionPlugins>
+		<class id="thermalexpansion.plugins.cc.TurtleWrench">
+			<ignoreExceptions type="java.lang.NullPointerException" code="return false;">attack</ignoreExceptions>
+		</class>
+	</thermalExpansionPlugins>
 	<thermalExpansionTransport>
 		<class id="thermalexpansion.block.conduit.TileConduitEnergy">
 			<newField field="tickLock" class="java.lang.Object" static=""/>
