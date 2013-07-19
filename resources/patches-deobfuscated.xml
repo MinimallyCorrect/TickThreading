@@ -1681,10 +1681,15 @@
 		<class id="appeng.me.CellInventory">
 			<synchronize>^all^</synchronize>
 		</class>
-		<class id="appeng.me.Platform">
-			<synchronize>getSharedTagCompound</synchronize>
-			<synchronize field="$2">addStackToList</synchronize>
-			<synchronize field="$1">addStackToList</synchronize>
+		<class id="appeng.util.Platform">
+			<insertBefore code="{
+				if ($1 == $2) {
+					return true;
+				}
+				if ($1 == null || $2 == null) {
+					return false;
+				}
+			}">NBTEqualityTest</insertBefore>
 		</class>
 		<class id="appeng.api.me.tiles.IGridMachine">
 			<newMethod code="public abstract void tickNetwork();"/>
