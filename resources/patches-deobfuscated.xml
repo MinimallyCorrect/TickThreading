@@ -1522,14 +1522,14 @@
 			<replaceMethod code="{
 				Random rand = new Random();
 				^class:TileEntity^ tileEntity = $1.^method:World/getBlockTileEntity^($2, $3, $4);
-				if (!(tileEntity instanceof ^class:IInventory^) || tileEntity instanceof thaumcraft.common.blocks.TileArcaneWorkbench) {
+				if (!(tileEntity instanceof ^class:IInventory^)) {
 					return;
 				}
 				int md = $1.^method:World/getBlockMetadata^($2, $3, $4);
 				^class:IInventory^ inventory = (^class:IInventory^)tileEntity;
 
 				for (int i = 0; i &lt; inventory.^method:IInventory/getSizeInventory^(); i++)
-				if ((!(tileEntity instanceof thaumcraft.common.blocks.TileResearchTable)) || (md != 15) || (i != 9)) {
+				if (((!(tileEntity instanceof thaumcraft.common.blocks.TileResearchTable)) || (md != 15) || (i != 9)) &amp;&amp; ((!(tileEntity instanceof thaumcraft.common.blocks.TileArcaneWorkbench)) || (i != 9))) {
 					^class:ItemStack^ item = inventory.^method:IInventory/getStackInSlot^(i);
 
 					if ((item != null) &amp;&amp; (item.^field:ItemStack/stackSize^ &gt; 0)) {
