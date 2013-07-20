@@ -692,7 +692,7 @@
 			<newField field="staticLock" class="java.lang.Object" static=""/>
 			<synchronize field="staticLock">initialize</synchronize>
 			<synchronize field="facadeBlocks">blockCreated,getBlockId,getTile,computeConnections</synchronize>
-			<synchronize field="thisLock">entityEntering,groupEntities</synchronize>
+			<synchronize>entityEntering,groupEntities,^method:TileEntity/updateEntity^</synchronize>
 		</class>
 		<class id="buildcraft.transport.PipeTransportItems">
 			<replaceInitializer field="travelingEntities" class="java.util.concurrent.ConcurrentHashMap"/>
