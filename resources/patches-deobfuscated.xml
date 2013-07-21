@@ -1853,7 +1853,25 @@
 				}
 			}">advanceCraftingCursor
 			</replaceMethod>
+			<rename name="requestUpdate_">requestUpdate</rename>
+			<synchronize field="$1">requestUpdate,requestUpdate_</synchronize>
+			<newField field="updateQueue" class="java.util.concurrent.ConcurrentLinkedQueue" code="new java.util.concurrent.ConcurrentLinkedQueue()"/>
+			<newMethod code="public void requestUpdate(appeng.api.me.tiles.IGridTileEntity tt) {
+				if (tt instanceof appeng.me.tile.TileInterfaceBase) {
+					appeng.me.tile.TileInterfaceBase t = (appeng.me.tile.TileInterfaceBase) tt;
+					if (!t.inUpdate) {
+						updateQueue.add(tt);
+					}
+				}
+			}"/>
 			<insertBefore code="{
+				appeng.api.me.tiles.IGridTileEntity tt;
+				HashSet done = new HashSet();
+				while ((tt = ((appeng.api.me.tiles.IGridTileEntity) updateQueue.poll())) != null) {
+					if (done.add(tt)) {
+						requestUpdate_(tt);
+					}
+				}
 				if (enabled) {
 					Iterator i = tiles.iterator();
 					while (i.hasNext()) {
