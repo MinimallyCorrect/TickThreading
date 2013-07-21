@@ -1682,6 +1682,11 @@
 		</class>
 	</universalElectricity>
 	<appliedEnergistics>
+		<class id="appeng.proxy.ProxyGregTech">
+			<replaceMethod code="{
+				return $1 instanceof gregtechmod.common.tileentities.GT_TileEntity_Quantumchest;
+			}">isQuantumChest</replaceMethod>
+		</class>
 		<class id="appeng.me.crafting.CraftRequest">
 			<replaceInitializer field="Prereqs" class="SynchronizedList"/>
 			<final field="Prereqs"/>
