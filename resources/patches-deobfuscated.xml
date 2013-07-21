@@ -41,7 +41,7 @@
 			<public field="mcServer"/>
 			<volatile field="serverRunning"/>
 			<volatile field="serverIsRunning"/>
-			<replaceInitializer field="worlds" class="nallar.collections.ListSet"/>
+			<replaceInitializer field="worlds" class="nallar.collections.ListSet" silent="true"/>
 			<profile>runQueuedTasks</profile>
 		</class>
 		<class id="net.minecraft.server.MinecraftServer" env="mcpc">
@@ -739,9 +739,10 @@
 			<newField field="staticLock" class="java.lang.Object" static=""/>
 			<synchronize field="staticLock">initialize</synchronize>
 			<synchronize field="facadeBlocks">blockCreated,getBlockId,getTile,computeConnections</synchronize>
-			<synchronize>entityEntering,groupEntities,^method:TileEntity/updateEntity^</synchronize>
+			<synchronize>entityEntering,^method:TileEntity/updateEntity^</synchronize>
 		</class>
 		<class id="buildcraft.transport.PipeTransportItems">
+			<synchronize field="container"/>
 			<replaceInitializer field="travelingEntities" class="java.util.concurrent.ConcurrentHashMap"/>
 			<replaceInitializer field="toRemove" class="nallar.collections.SynchronizedSet"/>
 			<replaceMethod code="{
@@ -1853,8 +1854,8 @@
 				}
 			}">advanceCraftingCursor
 			</replaceMethod>
+			<synchronize field="$1">requestUpdate</synchronize>
 			<rename name="requestUpdate_">requestUpdate</rename>
-			<synchronize field="$1">requestUpdate,requestUpdate_</synchronize>
 			<newField field="updateQueue" class="java.util.concurrent.ConcurrentLinkedQueue" code="new java.util.concurrent.ConcurrentLinkedQueue()"/>
 			<newMethod code="public void requestUpdate(appeng.api.me.tiles.IGridTileEntity tt) {
 				if (tt instanceof appeng.me.tile.TileInterfaceBase) {
@@ -1868,7 +1869,7 @@
 				appeng.api.me.tiles.IGridTileEntity tt;
 				HashSet done = new HashSet();
 				while ((tt = ((appeng.api.me.tiles.IGridTileEntity) updateQueue.poll())) != null) {
-					if (done.add(tt)) {
+					if (!((appeng.me.tile.TileInterfaceBase) tt).inUpdate &amp;&amp; done.add(tt)) {
 						requestUpdate_(tt);
 					}
 				}
