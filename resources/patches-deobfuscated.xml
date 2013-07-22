@@ -742,7 +742,7 @@
 			<synchronize>entityEntering,^method:TileEntity/updateEntity^</synchronize>
 		</class>
 		<class id="buildcraft.transport.PipeTransportItems">
-			<synchronize field="container"/>
+			<synchronize field="container">groupEntities</synchronize>
 			<replaceInitializer field="travelingEntities" class="java.util.concurrent.ConcurrentHashMap"/>
 			<replaceInitializer field="toRemove" class="nallar.collections.SynchronizedSet"/>
 			<replaceMethod code="{
