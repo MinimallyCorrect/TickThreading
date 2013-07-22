@@ -1759,4 +1759,9 @@
 			<replaceMethodCall method="equals" code="$_ = true;" index="0">getName,check,handlePacket</replaceMethodCall>
 		</class>
 	</tagApi>
+	<dimensionalDoors>
+		<class id="StevenDimDoors.mod_pocketDim.CommonTickHandler">
+			<replaceFieldUsage field="hasGrownRifts" writeCode="if ($0 != null) { $0.hasGrownRifts = $_; }">onTickInGame</replaceFieldUsage>
+		</class>
+	</dimensionalDoors>
 </mods>
