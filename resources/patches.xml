@@ -241,6 +241,9 @@
 		<class id="net.minecraft.util.IntHashMap">
 			<replace class="nallar.patched.collection.PatchIntHashMap"/>
 		</class>
+		<class id="net.minecraft.entity.DataWatcher">
+			<replace class="nallar.patched.entity.PatchDataWatcher"/>
+		</class>
 		<class id="net.minecraft.entity.passive.EntitySquid">
 			<removeMethod>isInWater</removeMethod>
 		</class>
