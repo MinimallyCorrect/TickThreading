@@ -1755,9 +1755,6 @@
 			<replaceNew oldClass="java.util.LinkedList" newClass="nallar.collections.ConcurrentLinkedQueueList">queueChunkCoords</replaceNew>
 		</class>
 	</magicBees>
-	<dimensionalDoors>
-		<replaceFieldUsage field="hasGrownRifts" writeCode="if ($0 != null) { $proceed(); }"/>
-	</dimensionalDoors>
 	<tagApi>
 		<class id="org.kitteh.tag.TagAPI">
 			<replaceMethodCall method="equals" code="$_ = true;" index="0">getName,check,handlePacket</replaceMethodCall>
@@ -1765,7 +1762,7 @@
 	</tagApi>
 	<dimensionalDoors>
 		<class id="StevenDimDoors.mod_pocketDim.CommonTickHandler">
-			<replaceFieldUsage field="hasGrownRifts" writeCode="if ($0 != null) { $0.hasGrownRifts = $_; }">onTickInGame</replaceFieldUsage>
+			<replaceFieldUsage field="hasGrownRifts" writeCode="if ($0 != null) { $proceed($$); }">onTickInGame</replaceFieldUsage>
 		</class>
 	</dimensionalDoors>
 	<mobHats>
