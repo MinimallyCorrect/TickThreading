@@ -1753,7 +1753,7 @@
 		</class>
 	</magicBees>
 	<dimensionalDoors>
-		<replaceFieldUsage field="hasGrownRifts" writeCode="if ($0 != null) { $0.hasGrownRifts = $1; }"/>
+		<replaceFieldUsage field="hasGrownRifts" writeCode="if ($0 != null) { $proceed(); }"/>
 	</dimensionalDoors>
 	<tagApi>
 		<class id="org.kitteh.tag.TagAPI">
