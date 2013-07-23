@@ -692,9 +692,10 @@
 			<newField field="staticLock" class="java.lang.Object" static=""/>
 			<synchronize field="staticLock">initialize</synchronize>
 			<synchronize field="facadeBlocks">blockCreated,getBlockId,getTile,computeConnections</synchronize>
-			<synchronize>entityEntering,groupEntities,^method:TileEntity/updateEntity^</synchronize>
+			<synchronize>entityEntering,^method:TileEntity/updateEntity^</synchronize>
 		</class>
 		<class id="buildcraft.transport.PipeTransportItems">
+			<synchronize field="container">groupEntities</synchronize>
 			<replaceInitializer field="travelingEntities" class="java.util.concurrent.ConcurrentHashMap"/>
 			<replaceInitializer field="toRemove" class="nallar.collections.SynchronizedSet"/>
 			<replaceMethod code="{
