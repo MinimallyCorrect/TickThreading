@@ -1768,4 +1768,15 @@
 			<replaceFieldUsage field="hasGrownRifts" writeCode="if ($0 != null) { $0.hasGrownRifts = $_; }">onTickInGame</replaceFieldUsage>
 		</class>
 	</dimensionalDoors>
+	<mobHats>
+		<class id="hats.common.core.TickHandlerServer">
+			<newField field="skip" class="int" code="0"/>
+			<insertBefore code="{
+				if (skip++ % 1800 != 0) {
+				 return;
+				}
+			}">worldTick</insertBefore>
+			<replaceMethodCall method="^class:EntityLiving^.^method:Entity/isEntityAlive^" code="$_ = $0.^method:Entity/isEntityAlive^() &amp;&amp; $0.chunk != null;">worldTick</replaceMethodCall>
+		</class>
+	</mobHats>
 </mods>
