@@ -694,9 +694,11 @@ public abstract class PatchWorld extends World {
 		for (Entity entity : (Iterable<Entity>) entitiesToUnload) {
 			if (entity == null) {
 				Log.warning("Tried to unload null entity", new Throwable());
+				continue;
 			}
 			if (!(entity instanceof EntityPlayerMP)) {
 				unloadedEntitySet.add(entity);
+				entity.chunk = null;
 			}
 		}
 	}
