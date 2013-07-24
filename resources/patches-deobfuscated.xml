@@ -1441,7 +1441,8 @@
 			<replaceMethod code="{
 				^class:ItemStack^ i = ^method:IInventory/getStackInSlot^(1);
 				return i != null &amp;&amp; i.^method:ItemStack/getItem^() instanceof chb.mods.mffs.common.modules.ModuleBase;
-			}">hasValidTypeMod</replaceMethod>
+			}">hasValidTypeMod
+			</replaceMethod>
 			<replaceMethod code="{
 				^class:ItemStack^ i = ^method:IInventory/getStackInSlot^(1);
 				if (i == null) {
@@ -1452,7 +1453,8 @@
 					return (chb.mods.mffs.common.modules.ModuleBase) item;
 				}
 				return null;
-			}">get_type</replaceMethod>
+			}">get_type
+			</replaceMethod>
 			<replaceMethod code="{
 				HashSet field_def = new HashSet();
 				HashSet field_interior = new HashSet();
@@ -1685,7 +1687,8 @@
 		<class id="appeng.proxy.ProxyGregTech">
 			<replaceMethod code="{
 				return $1 instanceof gregtechmod.common.tileentities.GT_TileEntity_Quantumchest;
-			}">isQuantumChest</replaceMethod>
+			}">isQuantumChest
+			</replaceMethod>
 		</class>
 		<class id="appeng.me.crafting.CraftRequest">
 			<replaceInitializer field="Prereqs" class="SynchronizedList"/>
@@ -1702,7 +1705,8 @@
 				if ($1 == null || $2 == null) {
 					return false;
 				}
-			}">NBTEqualityTest</insertBefore>
+			}">NBTEqualityTest
+			</insertBefore>
 		</class>
 		<class id="appeng.api.me.tiles.IGridMachine">
 			<newMethod code="public abstract void tickNetwork();"/>
