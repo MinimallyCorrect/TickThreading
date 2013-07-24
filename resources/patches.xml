@@ -741,7 +741,8 @@
 				}
 				int a = getLiquidAmount();
 				return isFirst($1) ? (a / n + a % n) : (a / n);
-			}">getSharedAmount</replaceMethod>
+			}">getSharedAmount
+			</replaceMethod>
 		</class>
 		<class id="thermalexpansion.block.conduit.GridEnergy">
 			<synchronize>transferEnergy,removeNode,removeConduit,setNewGrid,changeMode,increaseTracker,addNode,addConduit</synchronize>
@@ -1334,7 +1335,8 @@
 			<replaceMethod code="{
 				^class:ItemStack^ i = ^method:IInventory/getStackInSlot^(1);
 				return i != null &amp;&amp; i.^method:ItemStack/getItem^() instanceof mods.mffs.common.modules.ModuleBase;
-			}">hasValidTypeMod</replaceMethod>
+			}">hasValidTypeMod
+			</replaceMethod>
 			<replaceMethod code="{
 				^class:ItemStack^ i = ^method:IInventory/getStackInSlot^(1);
 				if (i == null) {
@@ -1345,7 +1347,8 @@
 					return (mods.mffs.common.modules.ModuleBase) item;
 				}
 				return null;
-			}">get_type</replaceMethod>
+			}">get_type
+			</replaceMethod>
 			<replaceMethod code="{
 				HashSet field_def = new HashSet();
 				HashSet field_interior = new HashSet();
@@ -1508,7 +1511,8 @@
 				if ($1 == null || $2 == null) {
 					return false;
 				}
-			}">NBTEqualityTest</insertBefore>
+			}">NBTEqualityTest
+			</insertBefore>
 		</class>
 		<class id="appeng.me.tile.TileController">
 			<replaceInitializer field="WaitingQueue" class="nallar.collections.ConcurrentLinkedQueueList"/>
@@ -1772,7 +1776,8 @@
 				if (skip++ % 1800 != 0) {
 				 return;
 				}
-			}">worldTick</insertBefore>
+			}">worldTick
+			</insertBefore>
 			<replaceMethodCall method="^class:EntityLiving^.^method:Entity/isEntityAlive^" code="$_ = $0.^method:Entity/isEntityAlive^() &amp;&amp; $0.chunk != null;">worldTick</replaceMethodCall>
 		</class>
 	</mobHats>
