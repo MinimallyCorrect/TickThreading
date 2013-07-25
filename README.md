@@ -1,9 +1,9 @@
 TickThreading [![Build Status](http://nallar.me/buildservice/job/TickThreading/badge/icon)](http://nallar.me/buildservice/job/TickThreading/)
 ==========
-Mod to run entity and tileentity ticks in threads and a patcher to make the server and any mods/plugins threadsafe.
-Optionally, allows for automatically variable tick rate per tick region. (Normally a chunk)
+Multi-threaded minecraft server implementation. Compatible with Forge and MCPC+.
 
 Copyright &copy; 2012, nallar <rallan.pcl+tt@gmail.com>
+
 TickThreading is licensed under the [N Open License, Version 1][License]
 
 Download
