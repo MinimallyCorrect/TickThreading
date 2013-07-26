@@ -107,13 +107,17 @@ public class PacketProfiler {
 			return;
 		}
 		String id;
+		int size;
 		if (packet instanceof Packet250CustomPayload) {
-			id = ((Packet250CustomPayload) packet).channel;
+			Packet250CustomPayload packet250CustomPayload = (Packet250CustomPayload) packet;
+			id = ((Packet250CustomPayload) packet).channel + (packet250CustomPayload.data.length > 0 ? Byte.toString(packet250CustomPayload.data[0]) : Byte.MIN_VALUE);
+			size = packet250CustomPayload.data.length;
 		} else {
 			id = String.valueOf(packet.getPacketId());
+			size = packet.getPacketSize();
 		}
 		getCount(id).getAndIncrement();
-		getSize(id).addAndGet(packet.getPacketSize());
+		getSize(id).addAndGet(size);
 	}
 
 	private static AtomicInteger getCount(String id) {
