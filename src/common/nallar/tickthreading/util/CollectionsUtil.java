@@ -22,7 +22,7 @@ public enum CollectionsUtil {
 		return split(input, defaultDelimiter);
 	}
 
-	public static List<? extends Object> newList(List<?> input, Function<Object, ?> function) {
+	public static List<?> newList(List<?> input, Function<Object, ?> function) {
 		List<Object> newList = new ArrayList<Object>(input.size());
 		for (Object o : input) {
 			newList.add(function.apply(o));

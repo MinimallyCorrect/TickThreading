@@ -299,11 +299,11 @@ public abstract class PatchRelaunchClassLoader extends RelaunchClassLoader {
 			ByteArrayOutputStream bos = new ByteArrayOutputStream(stream.available());
 
 			int readBytes;
-			byte[] buffer = this.buffer.get();
+			byte[] buffer = PatchRelaunchClassLoader.buffer.get();
 
 			if (buffer == null) {
 				buffer = new byte[1048576];
-				this.buffer.set(buffer);
+				PatchRelaunchClassLoader.buffer.set(buffer);
 			}
 
 			while ((readBytes = stream.read(buffer, 0, buffer.length)) != -1) {
