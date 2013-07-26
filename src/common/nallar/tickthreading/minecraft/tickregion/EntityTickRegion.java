@@ -81,7 +81,7 @@ public class EntityTickRegion extends TickRegion {
 						entitiesIterator.remove();
 						manager.removed(entity);
 						world.releaseEntitySkin(entity);
-					} else if (manager.getHashCode(entity) != hashCode) {
+					} else if (TickManager.getHashCode(entity) != hashCode) {
 						entitiesIterator.remove();
 						manager.add(entity, false);
 						//Log.severe("Inconsistent state: " + entity + " is in the wrong TickRegion.");
