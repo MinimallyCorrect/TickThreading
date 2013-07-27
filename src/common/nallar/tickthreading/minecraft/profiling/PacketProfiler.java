@@ -51,7 +51,7 @@ public class PacketProfiler {
 	}
 
 	private static TableFormatter writeStats(final TableFormatter tf) {
-		return writeStats(tf, 8);
+		return writeStats(tf, 9);
 	}
 
 	private static TableFormatter writeStats(final TableFormatter tf, int elements) {
