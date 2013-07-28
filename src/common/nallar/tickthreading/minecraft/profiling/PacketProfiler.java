@@ -110,8 +110,9 @@ public class PacketProfiler {
 		int size;
 		if (packet instanceof Packet250CustomPayload) {
 			Packet250CustomPayload packet250CustomPayload = (Packet250CustomPayload) packet;
-			id = ((Packet250CustomPayload) packet).channel + (packet250CustomPayload.data.length > 0 ? Byte.toString(packet250CustomPayload.data[0]) : Byte.MIN_VALUE);
-			size = packet250CustomPayload.data.length;
+			byte[] data = packet250CustomPayload.data;
+			size = data == null ? 0 : data.length;
+			id = packet250CustomPayload.channel + (size > 0 ? Byte.toString(data[0]) : Byte.MIN_VALUE);
 		} else {
 			id = String.valueOf(packet.getPacketId());
 			size = packet.getPacketSize();
