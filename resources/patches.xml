@@ -1514,17 +1514,59 @@
 			}">NBTEqualityTest
 			</insertBefore>
 		</class>
+		<class id="appeng.api.me.tiles.IGridMachine">
+			<newMethod code="public abstract void tickNetwork();"/>
+		</class>
 		<class id="appeng.me.tile.TileController">
+			<newField class="int" static="" field="tickSkip" code="0"/>
+			<newField class="java.util.ArrayList" code="new ArrayList();" field="tiles"/>
+			<synchronize field="$1">requestUpdate</synchronize>
+			<rename name="requestUpdate_">requestUpdate</rename>
+			<newField field="updateQueue" class="java.util.concurrent.ConcurrentLinkedQueue" code="new java.util.concurrent.ConcurrentLinkedQueue()"/>
+			<newMethod code="public void requestUpdate(appeng.api.me.tiles.IGridTileEntity tt) {
+				if (tt instanceof appeng.me.tile.TileInterfaceBase) {
+					updateQueue.add(tt);
+				}
+			}"/>
+			<insertBefore code="{
+				appeng.api.me.tiles.IGridTileEntity tt;
+				HashSet done = new HashSet();
+				while ((tt = ((appeng.api.me.tiles.IGridTileEntity) updateQueue.poll())) != null) {
+					if (done.add(tt)) {
+						requestUpdate_(tt);
+					}
+				}
+				if (enabled) {
+					Iterator i = tiles.iterator();
+					while (i.hasNext()) {
+						((appeng.api.me.tiles.IGridMachine) i.next()).tickNetwork();
+					}
+				}
+				if (tickSkip++ % 2 == 0) {
+					return;
+				}
+			}">updateTileEntity
+			</insertBefore>
+			<insertBefore code="{
+				tiles.clear();
+				if ($1 != null) {
+					Iterator i = $1.iterator();
+					while (i.hasNext()) {
+						appeng.common.grid.GridEnumeration$NetworkNode tr = (appeng.common.grid.GridEnumeration$NetworkNode) i.next();
+						^class:TileEntity^ tile = (^class:TileEntity^) tr.getTile();
+						if (tile != this &amp;&amp; tile != null &amp;&amp; tile instanceof appeng.api.me.tiles.IGridMachine) {
+							tiles.add(tile);
+						}
+					}
+				}
+			}">configureController
+			</insertBefore>
 			<replaceInitializer field="WaitingQueue" class="nallar.collections.ConcurrentLinkedQueueList"/>
 			<replaceInitializer field="CraftingQueue" class="nallar.collections.ConcurrentLinkedQueueList"/>
 			<synchronize field="CManager.getPrereqs()">getJobList,getJobStatus,cancelJob</synchronize>
-			<synchronize>getCellArray,^method:TileEntity/updateEntity^,advanceCraftingCursor,resetWaitingQueue</synchronize>
-		</class>
-		<class id="appeng.me.tile.TileDrive">
-			<synchronize>getCellArray,resetCache</synchronize>
-		</class>
-		<class id="appeng.me.tile.TileChest">
-			<synchronize>getCellArray,resetCache</synchronize>
+			<synchronize>
+				configureController,getCellArray,updateTileEntity,advanceCraftingCursor,resetWaitingQueue,signalInput(L^class:ItemStack^;)V,signalInput(Lappeng.api.me.util.IMEInventory;L^class:ItemStack^;)L^class:ItemStack^;
+			</synchronize>
 		</class>
 		<class id="appeng.me.tile.TileStorageBus">
 			<synchronize>getCellArray,getSharedTagCompound,signalInput</synchronize>
@@ -1534,6 +1576,41 @@
 		</class>
 		<class id="appeng.common.grid.MEGridEvents">
 			<replaceInitializer field="requests" class="nallar.collections.ConcurrentQueueList">^static^</replaceInitializer>
+		</class>
+		<class id="
+			appeng.me.tile.TileWireless
+			appeng.me.tile.TileTerminal
+			appeng.me.tile.TileStorageMonitor
+			appeng.me.tile.TileStorageBus
+			appeng.me.tile.TileProgramableInterface
+			appeng.me.tile.TileP2PTunnel
+			appeng.me.tile.TileOutputCable
+			appeng.me.tile.TileLevelEmitter
+			appeng.me.tile.TileIOPort
+			appeng.me.tile.TileInterfaceBase
+			appeng.me.tile.TileInputCable
+			appeng.me.tile.TileDrive
+			appeng.me.tile.TileDarkCable
+			appeng.me.tile.TileChest
+			appeng.me.tile.TileCraftingMonitor
+			appeng.me.tile.TileAssemblerMB
+			appeng.me.tile.TileAssembler
+		">
+			<newMethod code="public void updateTileEntity() { }" ignoreDuplicate=""/>
+			<renameInterfaceMethod name="tickNetwork" interface="appeng.api.me.tiles.IGridMachine" allowMissing="">updateTileEntity</renameInterfaceMethod>
+			<newMethod code="private Object getNetworkLock() {
+				Object o = getGrid();
+				if (o instanceof appeng.api.TileRef) {
+					o = ((appeng.api.TileRef) o).getTile();
+				}
+				return o == null ? new Object() : o;
+			}"/>
+		</class>
+		<class id="appeng.me.tile.TileDrive">
+			<synchronize field="getNetworkLock()">getCellArray,resetCache</synchronize>
+		</class>
+		<class id="appeng.me.tile.TileChest">
+			<synchronize field="getNetworkLock()">getCellArray,resetCache</synchronize>
 		</class>
 	</appliedEnergistics>
 	<xyCraft>
