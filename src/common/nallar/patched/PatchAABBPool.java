@@ -11,7 +11,7 @@ public abstract class PatchAABBPool extends AABBPool {
 	}
 
 	@Override
-	public AxisAlignedBB addOrModifyAABBInPool(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
+	public AxisAlignedBB getAABB(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
 		return new AxisAlignedBB(minX, minY, minZ, maxX, maxY, maxZ);
 	}
 

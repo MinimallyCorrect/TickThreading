@@ -145,7 +145,7 @@ public class Metrics {
 		configuration.get(Configuration.CATEGORY_GENERAL, "opt-out", false,
 				"Set to true to disable all reporting");
 		guid = configuration.get(Configuration.CATEGORY_GENERAL, "guid", UUID
-				.randomUUID().toString(), "Server unique ID").value;
+				.randomUUID().toString(), "Server unique ID").getString();
 		debug = configuration.get(Configuration.CATEGORY_GENERAL, "debug",
 				false, "Set to true for verbose debug").getBoolean(false);
 		configuration.save();
@@ -336,7 +336,7 @@ public class Metrics {
 	public void enable() throws IOException {
 		// Check if the server owner has already set opt-out, if not, set it.
 		if (isOptOut()) {
-			configuration.getCategory(Configuration.CATEGORY_GENERAL).get("opt-out").value = "false";
+			configuration.getCategory(Configuration.CATEGORY_GENERAL).get("opt-out").set("false");
 			configuration.save();
 		}
 		// Enable Task, if it is not running
@@ -353,7 +353,7 @@ public class Metrics {
 	public void disable() throws IOException {
 		// Check if the server owner has already set opt-out, if not, set it.
 		if (!isOptOut()) {
-			configuration.getCategory(Configuration.CATEGORY_GENERAL).get("opt-out").value = "true";
+			configuration.getCategory(Configuration.CATEGORY_GENERAL).get("opt-out").set("true");
 			configuration.save();
 		}
 	}

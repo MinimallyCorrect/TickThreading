@@ -24,14 +24,17 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import javassist.CannotCompileException;
+import javassist.ClassPool;
 import javassist.CtBehavior;
 import javassist.CtClass;
 import javassist.CtConstructor;
 import javassist.CtMethod;
 import javassist.NotFoundException;
+import javassist.RemappingPool;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.mappings.ClassDescription;
 import nallar.tickthreading.mappings.FieldDescription;
+import nallar.tickthreading.mappings.MCPMappings;
 import nallar.tickthreading.mappings.Mappings;
 import nallar.tickthreading.mappings.MethodDescription;
 import nallar.tickthreading.util.CollectionsUtil;
@@ -96,10 +99,9 @@ public class PatchManager {
 		configDocument = DomUtil.readDocumentFromInputStream(configInputStream);
 	}
 
-	public void obfuscate(Mappings mappings) {
-		splitMultiClassPatches();
-		NodeList minecraftClassNodes = ((Element) configDocument.getElementsByTagName("minecraftCommon").item(0)).getElementsByTagName("class");
-		for (Element classElement : DomUtil.elementList(minecraftClassNodes)) {
+	static boolean minecraftCommonDeobfuscate(Element classElement, Mappings mappings) {
+		if ("minecraftCommon".equals(((Element) classElement.getParentNode()).getTagName())) {
+			((MCPMappings) mappings).seargeMappings = false;
 			String className = classElement.getAttribute("id");
 			ClassDescription deobfuscatedClass = new ClassDescription(className);
 			ClassDescription obfuscatedClass = mappings.map(deobfuscatedClass);
@@ -153,27 +155,28 @@ public class PatchManager {
 					}
 				}
 			}
+			return true;
 		}
-		for (Element classElement : DomUtil.getElementsByTag(configDocument.getDocumentElement(), "class")) {
-			for (Element patchElement : DomUtil.elementList(classElement.getChildNodes())) {
-				Map<String, String> attributes = DomUtil.getAttributes(patchElement);
-				for (String key : attributes.keySet()) {
-					String code = patchElement.getAttribute(key);
-					if (!code.isEmpty()) {
-						String obfuscatedCode = mappings.obfuscate(code);
-						if (!code.equals(obfuscatedCode)) {
-							patchElement.setAttribute(key, obfuscatedCode);
-							Log.info("Obfuscated " + code + " to " + obfuscatedCode);
-						}
+		return false;
+	}
+
+	static void postDeobfuscate(Element classElement, Mappings mappings) {
+		for (Element patchElement : DomUtil.elementList(classElement.getChildNodes())) {
+			Map<String, String> attributes = DomUtil.getAttributes(patchElement);
+			for (String key : attributes.keySet()) {
+				String code = patchElement.getAttribute(key);
+				if (!code.isEmpty()) {
+					String obfuscatedCode = mappings.obfuscate(code);
+					if (!code.equals(obfuscatedCode)) {
+						patchElement.setAttribute(key, obfuscatedCode);
 					}
 				}
-				String textContent = patchElement.getTextContent();
-				if (textContent != null && !textContent.isEmpty()) {
-					String obfuscatedTextContent = mappings.obfuscate(textContent);
-					if (!textContent.equals(obfuscatedTextContent)) {
-						patchElement.setTextContent(obfuscatedTextContent);
-						Log.info("Obfuscated " + textContent + " to " + obfuscatedTextContent);
-					}
+			}
+			String textContent = patchElement.getTextContent();
+			if (textContent != null && !textContent.isEmpty()) {
+				String obfuscatedTextContent = mappings.obfuscate(textContent);
+				if (!textContent.equals(obfuscatedTextContent)) {
+					patchElement.setTextContent(obfuscatedTextContent);
 				}
 			}
 		}
@@ -184,17 +187,24 @@ public class PatchManager {
 		List<Element> modElements = DomUtil.elementList(configDocument.getDocumentElement().getChildNodes());
 		for (Element modElement : modElements) {
 			for (Element classElement : DomUtil.getElementsByTag(modElement, "class")) {
-				hashes.put(classElement.getAttribute("id"), DomUtil.getHash(classElement) + VersionUtil.TTVersionString().hashCode() * 31);
+				String className = classElement.getAttribute("id");
+				if (className.startsWith("net.minecraft.")) {
+					continue;
+				}
+				hashes.put(className, DomUtil.getHash(classElement) + VersionUtil.TTVersionString().hashCode() * 31);
 			}
 		}
 		return hashes;
 	}
 
-	public void runPatches() {
+	public void runPatches(Mappings mappings) {
+		splitMultiClassPatches();
 		List<Element> modElements = DomUtil.elementList(configDocument.getDocumentElement().getChildNodes());
 		patchingClasses = new HashMap<String, CtClass>();
+		Map<String, Boolean> isSrg = new HashMap<String, Boolean>();
 		for (Element modElement : modElements) {
 			for (Element classElement : DomUtil.getElementsByTag(modElement, "class")) {
+				boolean isMinecraft = minecraftCommonDeobfuscate(classElement, mappings);
 				String className = classElement.getAttribute("id");
 				if (!classRegistry.shouldPatch(className)) {
 					Log.info(className + " is already patched, skipping.");
@@ -202,42 +212,75 @@ public class PatchManager {
 				}
 				String environment = classElement.getAttribute("env");
 				if (!environment.isEmpty() && !environment.equals(patchEnvironment)) {
-					Log.info(className + " requires " + environment + ", not patched as we are using " + patchEnvironment);
+					continue;
+				}
+				Boolean isSrg_;
+				if (!classElement.getAttribute("srg").isEmpty()) {
+					isSrg_ = classRegistry.classes.isSrg = true;
+				} else if (isMinecraft) {
+					isSrg_ = classRegistry.classes.isSrg = false;
+				} else {
+					isSrg_ = classRegistry.classes.setSrgFor(className);
+				}
+				if (mappings instanceof MCPMappings) {
+					((MCPMappings) mappings).seargeMappings = isSrg_;
+				}
+				postDeobfuscate(classElement, mappings);
+				Boolean previousSrg = isSrg.put(className, isSrg_);
+				if (previousSrg != null && previousSrg != isSrg_) {
+					Log.severe("Class " + className + " was previously marked as srg: " + previousSrg + ", now marked as " + isSrg_);
 					continue;
 				}
 				CtClass ctClass;
 				try {
 					ctClass = classRegistry.getClass(className);
 				} catch (NotFoundException e) {
-					Log.info("Not patching " + className + ", not found.");
+					Log.info(className + " will not be patched, as it was not found.");
 					continue;
 				}
-				List<Element> patchElements = DomUtil.elementList(classElement.getChildNodes());
-				boolean patched = false;
-				for (Element patchElement : patchElements) {
-					PatchMethodDescriptor patch = patches.get(patchElement.getTagName());
-					if (patch == null) {
-						Log.severe("Patch " + patchElement.getTagName() + " was not found.");
-						continue;
-					}
-					try {
-						Object result = patch.run(patchElement, ctClass);
-						patched = true;
-						if (result instanceof CtClass) {
-							ctClass = (CtClass) result;
+				ClassPool classPool = classRegistry.classes;
+				boolean shouldRemove = false;
+				if (classPool instanceof RemappingPool) {
+					RemappingPool remappingPool = (RemappingPool) classPool;
+					shouldRemove = remappingPool.addCurrentPackage(ctClass.getPackageName());
+				}
+				try {
+					List<Element> patchElements = DomUtil.elementList(classElement.getChildNodes());
+					boolean patched = false;
+					for (Element patchElement : patchElements) {
+						PatchMethodDescriptor patch = patches.get(patchElement.getTagName());
+						if (patch == null) {
+							Log.severe("Patch " + patchElement.getTagName() + " was not found.");
+							continue;
 						}
-					} catch (Exception e) {
-						Log.severe("Failed to patch " + ctClass.getName() + " with " + patch.name, e);
+						try {
+							Object result = patch.run(patchElement, ctClass);
+							patched = true;
+							if (result instanceof CtClass) {
+								ctClass = (CtClass) result;
+							}
+						} catch (Exception e) {
+							Log.severe("Failed to patch " + ctClass.getName() + " with " + patch.name, e);
+						}
+					}
+					if (patched) {
+						patchingClasses.put(className, ctClass);
+					}
+				} finally {
+					if (shouldRemove) {
+						((RemappingPool) classPool).removeCurrentPackage();
 					}
 				}
-				if (patched) {
-					patchingClasses.put(className, ctClass);
+				if (!isSrg_) {
+					classRegistry.classes.markChanged(className);
 				}
 			}
 		}
 		for (Map.Entry<String, CtClass> entry : patchingClasses.entrySet()) {
 			String className = entry.getKey();
 			CtClass ctClass = entry.getValue();
+			Boolean isSrg_ = isSrg.get(className);
+			classRegistry.classes.isSrg = isSrg_ != null ? isSrg_ : classRegistry.classes.setSrgFor(className);
 			Patches.findUnusedFields(ctClass);
 			try {
 				ctClass.getClassFile().compact();
@@ -354,14 +397,14 @@ public class PatchManager {
 				} else {
 					return patchMethod.invoke(patchTypes, ctClass, attributes);
 				}
-			} catch (Exception e) {
-				if (e instanceof InvocationTargetException) {
-					e = (Exception) e.getCause();
+			} catch (Throwable t) {
+				if (t instanceof InvocationTargetException) {
+					t = t.getCause();
 				}
-				if (e instanceof CannotCompileException && attributes.containsKey("code")) {
+				if (t instanceof CannotCompileException && attributes.containsKey("code")) {
 					Log.severe("Code: " + attributes.get("code"));
 				}
-				Log.severe("Error patching " + ctClass.getName() + " with " + toString(), e);
+				Log.severe("Error patching " + ctClass.getName() + " with " + toString(), t);
 				return null;
 			}
 		}
@@ -373,14 +416,14 @@ public class PatchManager {
 				} else {
 					return patchMethod.invoke(patchTypes, ctBehavior, attributes);
 				}
-			} catch (Exception e) {
-				if (e instanceof InvocationTargetException) {
-					e = (Exception) e.getCause();
+			} catch (Throwable t) {
+				if (t instanceof InvocationTargetException) {
+					t = t.getCause();
 				}
-				if (e instanceof CannotCompileException && attributes.containsKey("code")) {
+				if (t instanceof CannotCompileException && attributes.containsKey("code")) {
 					Log.severe("Code: " + attributes.get("code"));
 				}
-				Log.severe("Error patching " + ctBehavior.getName() + " in " + ctBehavior.getDeclaringClass().getName() + " with " + toString(), e);
+				Log.severe("Error patching " + ctBehavior.getName() + " in " + ctBehavior.getDeclaringClass().getName() + " with " + toString(), t);
 				return null;
 			}
 		}

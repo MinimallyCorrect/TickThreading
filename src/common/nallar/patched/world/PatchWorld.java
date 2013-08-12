@@ -23,6 +23,7 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.item.EntityXPOrb;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.logging.ILogAgent;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
@@ -90,8 +91,8 @@ public abstract class PatchWorld extends World {
 		}
 	}
 
-	public PatchWorld(ISaveHandler par1ISaveHandler, String par2Str, WorldProvider par3WorldProvider, WorldSettings par4WorldSettings, Profiler par5Profiler) {
-		super(par1ISaveHandler, par2Str, par3WorldProvider, par4WorldSettings, par5Profiler);
+	public PatchWorld(final ISaveHandler par1ISaveHandler, final String par2Str, final WorldProvider par3WorldProvider, final WorldSettings par4WorldSettings, final Profiler par5Profiler, final ILogAgent par6ILogAgent) {
+		super(par1ISaveHandler, par2Str, par3WorldProvider, par4WorldSettings, par5Profiler, par6ILogAgent);
 	}
 
 	@Override
@@ -263,14 +264,14 @@ public abstract class PatchWorld extends World {
 					effectiveMaxRange = maxRange * 0.800000011920929D;
 				}
 
-				if (playerEntity.getHasActivePotion()) {
-					float var18 = playerEntity.func_82243_bO();
+				if (playerEntity.isInvisible()) {
+					float f = playerEntity.func_82243_bO();
 
-					if (var18 < 0.1F) {
-						var18 = 0.1F;
+					if (f < 0.1F) {
+						f = 0.1F;
 					}
 
-					effectiveMaxRange *= (double) (0.7F * var18);
+					effectiveMaxRange *= (double) (0.7F * f);
 				}
 
 				if ((maxRange < 0.0D || distanceSq < (effectiveMaxRange * effectiveMaxRange)) && (distanceSq < closestRange)) {
@@ -295,8 +296,8 @@ public abstract class PatchWorld extends World {
 	}
 
 	@Override
-	protected void notifyBlockOfNeighborChange(int x, int y, int z, int par4) {
-		if (!this.editingBlocks && !this.isRemote) {
+	public void notifyBlockOfNeighborChange(int x, int y, int z, int par4) {
+		if (!this.isRemote) {
 			int var5 = this.getBlockIdWithoutLoad(x, y, z);
 			Block var6 = var5 < 1 ? null : Block.blocksList[var5];
 
@@ -476,7 +477,18 @@ public abstract class PatchWorld extends World {
 
 	@Override
 	@Declare
-	public boolean hasCollidingBoundingBoxes(Entity par1Entity, AxisAlignedBB par2AxisAlignedBB) {
+	public boolean isBlockGettingPowered(int x, int y, int z) {
+		return this.isBlockProvidingPowerTo(x, y - 1, z, 0) > 0
+				|| this.isBlockProvidingPowerTo(x, y + 1, z, 1) > 0
+				|| this.isBlockProvidingPowerTo(x, y, z - 1, 2) > 0
+				|| this.isBlockProvidingPowerTo(x, y, z + 1, 3) > 0
+				|| this.isBlockProvidingPowerTo(x - 1, y, z, 4) > 0
+				|| this.isBlockProvidingPowerTo(x + 1, y, z, 5) > 0;
+	}
+
+	@Override
+	@Declare
+	public boolean hasCollidingBoundingBoxes(Entity par1Entity, AxisAlignedBB par2AxisAlignedBB, IEntitySelector entitySelector) {
 		ArrayList collidingBoundingBoxes = new ArrayList();
 		int minX = MathHelper.floor_double(par2AxisAlignedBB.minX);
 		int maxX = MathHelper.floor_double(par2AxisAlignedBB.maxX + 1.0D);
@@ -507,7 +519,7 @@ public abstract class PatchWorld extends World {
 							if (blkid > 0) {
 								Block block = Block.blocksList[blkid];
 								if (block != null) {
-									block.addCollidingBlockToList(this, x, y, z, par2AxisAlignedBB, collidingBoundingBoxes, par1Entity);
+									block.addCollisionBoxesToList(this, x, y, z, par2AxisAlignedBB, collidingBoundingBoxes, par1Entity);
 								}
 								if (!collidingBoundingBoxes.isEmpty()) {
 									return true;
@@ -520,7 +532,7 @@ public abstract class PatchWorld extends World {
 		}
 
 		double var14 = 0.25D;
-		List<Entity> var16 = this.getEntitiesWithinAABBExcludingEntity(par1Entity, par2AxisAlignedBB.expand(var14, var14, var14), 100);
+		List<Entity> var16 = this.getEntitiesWithinAABBExcludingEntity(par1Entity, par2AxisAlignedBB.expand(var14, var14, var14), entitySelector, 100);
 
 		for (Entity aVar16 : var16) {
 			AxisAlignedBB var13 = aVar16.getBoundingBox();
@@ -541,7 +553,7 @@ public abstract class PatchWorld extends World {
 
 	@Override
 	@Declare
-	public List getCollidingBoundingBoxes(Entity par1Entity, AxisAlignedBB par2AxisAlignedBB, int limit) {
+	public List getCollidingBoundingBoxes(Entity par1Entity, AxisAlignedBB par2AxisAlignedBB, IEntitySelector entitySelector, int limit) {
 		ArrayList collidingBoundingBoxes = new ArrayList();
 		int minX = MathHelper.floor_double(par2AxisAlignedBB.minX);
 		int maxX = MathHelper.floor_double(par2AxisAlignedBB.maxX) + 1;
@@ -577,7 +589,7 @@ public abstract class PatchWorld extends World {
 							if (blkid > 0) {
 								Block block = Block.blocksList[blkid];
 								if (block != null) {
-									block.addCollidingBlockToList(this, x, y, z, par2AxisAlignedBB, collidingBoundingBoxes, par1Entity);
+									block.addCollisionBoxesToList(this, x, y, z, par2AxisAlignedBB, collidingBoundingBoxes, par1Entity);
 								}
 							}
 						}
@@ -590,7 +602,7 @@ public abstract class PatchWorld extends World {
 		}
 
 		double var14 = 0.25D;
-		List<Entity> var16 = this.getEntitiesWithinAABBExcludingEntity(par1Entity, par2AxisAlignedBB.expand(var14, var14, var14), limit);
+		List<Entity> var16 = this.getEntitiesWithinAABBExcludingEntity(par1Entity, par2AxisAlignedBB.expand(var14, var14, var14), entitySelector, limit);
 
 		for (Entity aVar16 : var16) {
 			AxisAlignedBB var13 = aVar16.getBoundingBox();
@@ -611,7 +623,7 @@ public abstract class PatchWorld extends World {
 
 	@Override
 	public List getCollidingBoundingBoxes(Entity par1Entity, AxisAlignedBB par2AxisAlignedBB) {
-		return getCollidingBoundingBoxes(par1Entity, par2AxisAlignedBB, 2000);
+		return getCollidingBoundingBoxes(par1Entity, par2AxisAlignedBB, null, 2000);
 	}
 
 	@Override
@@ -631,7 +643,7 @@ public abstract class PatchWorld extends World {
 
 	@Override
 	@Declare
-	public List getEntitiesWithinAABBExcludingEntity(Entity par1Entity, AxisAlignedBB par2AxisAlignedBB, int limit) {
+	public List getEntitiesWithinAABBExcludingEntity(Entity par1Entity, AxisAlignedBB par2AxisAlignedBB, IEntitySelector entitySelector, int limit) {
 		ArrayList entitiesWithinAABBExcludingEntity = new ArrayList();
 		int minX = MathHelper.floor_double((par2AxisAlignedBB.minX - COLLISION_RANGE) / 16.0D);
 		int maxX = MathHelper.floor_double((par2AxisAlignedBB.maxX + COLLISION_RANGE) / 16.0D);
@@ -642,7 +654,7 @@ public abstract class PatchWorld extends World {
 			for (int z = minZ; z <= maxZ; ++z) {
 				Chunk chunk = getChunkIfExists(x, z);
 				if (chunk != null) {
-					limit = chunk.getEntitiesWithinAABBForEntity(par1Entity, par2AxisAlignedBB, entitiesWithinAABBExcludingEntity, limit);
+					limit = chunk.getEntitiesWithinAABBForEntity(par1Entity, par2AxisAlignedBB, entitiesWithinAABBExcludingEntity, entitySelector, limit);
 				}
 			}
 		}
@@ -651,8 +663,8 @@ public abstract class PatchWorld extends World {
 	}
 
 	@Override
-	public List getEntitiesWithinAABBExcludingEntity(Entity par1Entity, AxisAlignedBB par2AxisAlignedBB) {
-		return getEntitiesWithinAABBExcludingEntity(par1Entity, par2AxisAlignedBB, 1000);
+	public List getEntitiesWithinAABBExcludingEntity(Entity par1Entity, AxisAlignedBB par2AxisAlignedBB, IEntitySelector entitySelector) {
+		return getEntitiesWithinAABBExcludingEntity(par1Entity, par2AxisAlignedBB, entitySelector, 1000);
 	}
 
 	@Override
@@ -874,19 +886,13 @@ public abstract class PatchWorld extends World {
 	}
 
 	@Override
-	public boolean isBlockProvidingPowerTo(int par1, int par2, int par3, int par4) {
+	public int isBlockProvidingPowerTo(int par1, int par2, int par3, int par4) {
 		int id = getBlockIdWithoutLoad(par1, par2, par3);
-		return id > 0 && Block.blocksList[id].isProvidingStrongPower(this, par1, par2, par3, par4);
-	}
-
-	@Override
-	public boolean isBlockIndirectlyProvidingPowerTo(int x, int y, int z, int direction) {
-		int id = getBlockIdWithoutLoad(x, y, z);
 		if (id < 1) {
-			return false;
+			return 0;
 		}
 		Block block = Block.blocksList[id];
-		return block != null && ((block.isBlockNormalCube(this, x, y, z) && isBlockGettingPowered(x, y, z)) || block.isProvidingWeakPower(this, x, y, z, direction));
+		return block == null ? 0 : block.isProvidingStrongPower(this, par1, par2, par3, par4);
 	}
 
 	@Override
@@ -1108,6 +1114,7 @@ public abstract class PatchWorld extends World {
 		return e.isDead;
 	}
 
+	@Override
 	@Declare
 	public Entity getEntity(int id) {
 		return ((WorldServer) (Object) this).getEntityTracker().getEntity(id);

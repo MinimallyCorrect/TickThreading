@@ -17,9 +17,8 @@
 
 	<property name="mcpsrc.dir" value="${mcp.dir}/src"/>
 
-	<property name="mc.version" value="1.4.7"/>
-	<property name="forge.version" value="6.6.2.534"/>
-	<property name="project.version" value="1.0.0"/>
+	<property name="mc.version" value="1.5.2"/>
+	<property name="forge.version" value="7.8.1.737"/>
 
 	<property name="forge.name" value="minecraftforge-src-${mc.version}-${forge.version}.zip"/>
 	<property name="maven-ant-tasks.name" value="maven-ant-tasks-2.1.3.jar"/>
@@ -58,7 +57,7 @@
 
 	<!-- Set full version -->
 	<target name="initialize-version" depends="version-provided,version-not-provided">
-		<property name="project.version.full" value="${project.version}.${build.number}"/>
+		<property name="project.version.full" value="${mc.version}.${build.number}"/>
 	</target>
 
 	<!-- Set unknown build number -->
@@ -168,11 +167,11 @@
 		</copy>
 
 		<!-- Recompile -->
-		<exec dir="${mcp.dir}" executable="cmd" osfamily="windows">
+		<exec dir="${mcp.dir}" executable="cmd" osfamily="windows" failifexecutionfails="true">
 			<arg line="/c recompile.bat"/>
 		</exec>
 
-		<exec dir="${mcp.dir}" executable="sh" osfamily="unix">
+		<exec dir="${mcp.dir}" executable="sh" osfamily="unix" failifexecutionfails="true">
 			<arg value="recompile.sh"/>
 		</exec>
 
@@ -180,15 +179,13 @@
 		<parallel>
 			<delete dir="${mcpsrc.dir}/minecraft/me/nallar"/>
 			<delete dir="${mcpsrc.dir}/minecraft/nallar"/>
+			<delete dir="${mcpsrc.dir}/minecraft/javassist"/>
 			<delete file="${mcpsrc.dir}/minecraft/net/minecraft/network/packet/IPacketHandler.java"/>
 		</parallel>
 
 		<fail message="MCP failed to build">
 			<condition>
-				<or>
-					<resourcecontains resource="${mcp.dir}/logs/client_compile.log" substring="error:"/>
-					<resourcecontains resource="${mcp.dir}/logs/client_compile.log" substring=" errors"/>
-				</or>
+				<resourcecontains resource="${mcp.dir}/logs/client_compile.log" substring=" error"/>
 			</condition>
 		</fail>
 
@@ -206,20 +203,17 @@
 			<fileset dir="${mcp.dir}/reobf/minecraft"/>
 		</copy>
 
-		<!-- Copy resources -->
-		<copy todir="${classes.dir}">
-			<fileset dir="resources"/>
-			<filterset>
-				<filter token="MC_VERSION" value="${mc.version}"/>
-				<filter token="MOD_VERSION" value="${project.version.full}"/>
-				<filter token="MOD_ID" value="${ant.project.name}"/>
-				<filter token="MOD_NAME" value="${ant.project.name}"/>
-			</filterset>
-		</copy>
-
 	</target>
 
 	<target name="packageDependencies">
+		<mkdir dir="${classes.dir}/mappings/"/>
+		<copy todir="${classes.dir}/mappings">
+			<fileset dir="${mcp.dir}/conf/">
+				<include name="methods.csv"/>
+				<include name="fields.csv"/>
+				<include name="packaged.srg"/>
+			</fileset>
+		</copy>
 		<unzip dest="${classes.dir}/" src="${lib.dir}/javassist.jar"/>
 		<unzip dest="${classes.dir}/" src="${lib.dir}/high-scale-lib.jar"/>
 		<unzip dest="${classes.dir}/" src="${lib.dir}/jackson-core-lgpl.jar"/>
@@ -238,18 +232,21 @@
 	<!-- Package the compiled files -->
 	<target name="package" depends="initialize-version">
 
-		<java classname="nallar.tickthreading.patcher.PatchMain">
-			<classpath>
-				<path refid="class.path"/>
-				<pathelement location="${classes.dir}"/>
-			</classpath>
-			<arg value="obfuscator"/>
-		</java>
+		<!-- Copy resources -->
+		<copy todir="${classes.dir}">
+			<fileset dir="resources"/>
+			<filterset>
+				<filter token="MC_VERSION" value="${mc.version}"/>
+				<filter token="MOD_VERSION" value="${project.version.full}"/>
+				<filter token="MOD_ID" value="${ant.project.name}"/>
+				<filter token="MOD_NAME" value="${ant.project.name}"/>
+			</filterset>
+		</copy>
 
 		<delete dir="${jar.dir}"/>
 		<mkdir dir="${jar.dir}"/>
 		<jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${classes.dir}"/>
-		<copy file="${jar.dir}/${ant.project.name}.jar" tofile="${jar.dir}/${ant.project.name}-${mc.version}-${project.version.full}.jar"/>
+		<copy file="${jar.dir}/${ant.project.name}.jar" tofile="${jar.dir}/${ant.project.name}-${project.version.full}.jar"/>
 
 	</target>
 

@@ -91,7 +91,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	private Chunk lastChunk;
 	// Mojang compatiblity fields.
 	public final IChunkProvider currentChunkProvider;
-	public final Set<Long> chunksToUnload = null;
+	public Set<Long> chunksToUnload;
 	public final List<Chunk> loadedChunks;
 	public final IChunkLoader currentChunkLoader;
 	@SuppressWarnings ("UnusedDeclaration")
@@ -130,8 +130,8 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	}
 
 	@Override
-	public boolean unload100OldestChunks() {
-		return generator.unload100OldestChunks();
+	public boolean unloadQueuedChunks() {
+		return generator.unloadQueuedChunks();
 	}
 
 	@SuppressWarnings ({"ConstantConditions", "FieldRepeatedlyAccessedInMethod"})

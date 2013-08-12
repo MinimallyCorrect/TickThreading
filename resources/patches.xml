@@ -41,12 +41,12 @@
 			<public field="mcServer"/>
 			<volatile field="serverRunning"/>
 			<volatile field="serverIsRunning"/>
-			<replaceInitializer field="worlds" class="nallar.collections.ListSet" silent="true"/>
 			<profile>runQueuedTasks</profile>
 		</class>
 		<class id="net.minecraft.server.MinecraftServer" env="mcpc">
+			<replaceInitializer field="worlds" class="nallar.collections.ListSet"/>
 			<replaceMethod code="{
-						this.server.getScheduler().mainThreadHeartbeat(this.w);
+						this.server.getScheduler().mainThreadHeartbeat(^field:MinecraftServer/tickCounter^);
 					}">spigotTLETick
 			</replaceMethod>
 			<final field="processQueue"/>
@@ -123,12 +123,17 @@
 			<newField static="" field="nextEntryID_" class="java.util.concurrent.atomic.AtomicLong"/>
 			<insertAfter field="tickEntryID" code="this.$field = this.nextEntryID_.getAndIncrement();"/>
 		</class>
+		<class id="net.minecraft.world.WorldServer" env="forge">
+			<removeInitializers field="pendingTickListEntries"/>
+		</class>
 		<class id="net.minecraft.world.WorldServer">
 			<addAll fromClass="nallar.patched.world.PatchWorldServer"/>
 			<profile>tickBlocksAndAmbiance</profile>
 			<profile>tick</profile>
 			<insertSuper>initialize</insertSuper>
-			<synchronize>addBlockEvent,sendAndApplyBlockEvents</synchronize>
+		</class>
+		<class id="net.minecraft.world.ServerBlockEventList">
+			<public/>
 		</class>
 		<class id="net.minecraft.world.biome.BiomeDecorator">
 			<synchronize>decorate(Lnet/minecraft/world/World;Ljava/util/Random;II)V</synchronize>
@@ -171,7 +176,7 @@
 			">fireBukkitUnloadEvent
 			</replaceMethod>
 		</class>
-		<class id="org.bukkit.craftbukkit.v1_4_R1.chunkio.ChunkIOExecutor" env="mcpc">
+		<class id="org.bukkit.craftbukkit.v1_5_R3.chunkio.ChunkIOExecutor" env="mcpc">
 			<replaceInitializer field="instance" code="$_ = null;"/>
 			<replaceMethod code="throw new UnsupportedOperationException();">tick</replaceMethod>
 			<disable>adjustPoolSize</disable>
@@ -179,8 +184,8 @@
 			<replaceMethod code="$3.getChunkAt($4, $5, true, false, $6);">queueChunkLoad</replaceMethod>
 		</class>
 		<class id="net.minecraft.world.gen.ChunkProviderServer" env="mcpc">
-			<changeFieldType field="chunksToUnload" type="org.bukkit.craftbukkit.v1_4_R1.util.LongHashSet" remove="true"/>
-			<insertAfter field="chunksToUnload" code="$field = new org.bukkit.craftbukkit.v1_4_R1.util.LongHashSet();"/>
+			<changeFieldType field="chunksToUnload" type="org.bukkit.craftbukkit.v1_5_R3.util.LongHashSet" remove="true"/>
+			<insertAfter field="chunksToUnload" code="$field = new org.bukkit.craftbukkit.v1_5_R3.util.LongHashSet();"/>
 		</class>
 		<class id="net.minecraft.world.chunk.NibbleArray" env="forge">
 			<addAll fromClass="nallar.patched.storage.PatchNibbleArrayForge"/>
@@ -235,6 +240,9 @@
 		</class>
 		<class id="net.minecraft.util.IntHashMap">
 			<replace class="nallar.patched.collection.PatchIntHashMap"/>
+		</class>
+		<class id="net.minecraft.entity.DataWatcher">
+			<replace class="nallar.patched.entity.PatchDataWatcher"/>
 		</class>
 		<class id="net.minecraft.entity.passive.EntitySquid">
 			<removeMethod>isInWater</removeMethod>
@@ -297,6 +305,12 @@
 		</class>
 		<class id="net.minecraft.tileentity.TileEntity">
 			<addAll fromClass="nallar.patched.PatchTileEntity"/>
+		</class>
+		<class id="net.minecraft.entity.EntityTrackerEntry" env="mcpc">
+			<removeUntilOpcode index="-2" opcode="ATHROW">tryStartWachingThis,removePlayerFromTracker</removeUntilOpcode>
+		</class>
+		<class id="net.minecraft.entity.EntityTracker" env="mcpc">
+			<removeUntilOpcode index="-2" opcode="ATHROW">removeEntityFromAllTrackingPlayers,addEntityToTracker(Lnet/minecraft/entity/Entity;IIZ)V</removeUntilOpcode>
 		</class>
 		<class id="net.minecraft.entity.EntityTracker">
 			<!-- Yet more comodification exceptions -->
@@ -382,7 +396,7 @@
 				See https://issues.jboss.org/browse/JASSIST-197
 			-->
 			<replaceMethodCall
-							code="if (((org.bukkit.craftbukkit.v1_4_R1.CraftWorld) ((org.bukkit.event.block.BlockEvent) $1).getBlock().getWorld()).getHandle().safeToGenerate()) { $0.callEvent($$); }"
+							code="if (((org.bukkit.craftbukkit.v1_5_R3.CraftWorld) ((org.bukkit.event.block.BlockEvent) $1).getBlock().getWorld()).getHandle().safeToGenerate()) { $0.callEvent($$); }"
 							method="callEvent">updateTick
 			</replaceMethodCall>
 		</class>
@@ -399,6 +413,7 @@
 			<threadLocalBoolean field="callingPlaceEvent" threadLocalField="$0.inPlaceEvent"/>
 		</class>
 		<class id="net.minecraft.world.World" env="mcpc">
+			<removeUntilOpcode index="-2" opcode="ATHROW">addEntity,removePlayerEntityDangerously</removeUntilOpcode>
 			<insertBefore code="inPlaceEvent = new nallar.tickthreading.util.BooleanThreadLocal();"/>
 			<final field="callingPlaceEvent"/>
 			<threadLocalBoolean field="callingPlaceEvent" threadLocalField="$0.inPlaceEvent"/>
@@ -451,25 +466,30 @@
 	<bukkit>
 		<class id="org.bukkit.plugin.SimplePluginManager">
 			<synchronize>subscribeToPermission,unsubscribeFromPermission,subscribeToDefaultPerms,unsubscribeFromDefaultPerms,getPermissionSubscriptions,getDefaultPermSubscriptions</synchronize>
+			<replaceMethod code="{ fireEvent($$); }">callEvent</replaceMethod>
 		</class>
-		<class id="org.bukkit.craftbukkit.v1_4_R1.CraftServer">
+		<class id="org.bukkit.craftbukkit.v1_5_R3.CraftServer">
 			<replaceMethodCall method="registerDimension" code="{ }">createWorld(Lorg.bukkit.WorldCreator;)Lorg.bukkit.World;</replaceMethodCall>
 			<replaceMethodCall method="addMVDimension" code="{ }">createWorld(Lorg.bukkit.WorldCreator;)Lorg.bukkit.World;</replaceMethodCall>
 			<ignoreExceptions code="System.err.println(&quot;Loading world failed&quot; + $e); $e.printStackTrace(); throw new java.lang.Error($e);">
 				createWorld(Lorg.bukkit.WorldCreator;)Lorg.bukkit.World;
 			</ignoreExceptions>
 			<replaceMethod code="{
-				return net.minecraftforge.common.DimensionManager.unloadWorld(((org.bukkit.craftbukkit.v1_4_R1.CraftWorld) $1).getHandle(), $2);
+				return net.minecraftforge.common.DimensionManager.unloadWorld(((org.bukkit.craftbukkit.v1_5_R3.CraftWorld) $1).getHandle(), $2);
 			}">unloadWorld(Lorg.bukkit.World;Z)V
 			</replaceMethod>
 		</class>
-		<class id="org.bukkit.craftbukkit.v1_4_R1.CraftWorld">
+		<class id="org.bukkit.craftbukkit.v1_5_R3.entity.CraftPlayer">
+			<removeUntilOpcode index="-2" opcode="ATHROW">kickPlayer</removeUntilOpcode>
+		</class>
+		<class id="org.bukkit.craftbukkit.v1_5_R3.CraftWorld">
+			<removeUntilOpcode index="-2" opcode="ATHROW">unloadChunkRequest,unloadChunk,loadChunk</removeUntilOpcode>
 			<replaceMethod
 							code=" {
 							Object[] chunks = world.getChunks();
 							org.bukkit.Chunk[] craftChunks = new org.bukkit.Chunk[chunks.length];
 							for (int i = 0; i &lt; craftChunks.length; i++) {
-								craftChunks[i] = ((zz) chunks[i]).bukkitChunk;
+								craftChunks[i] = ((^class:Chunk^) chunks[i]).bukkitChunk;
 							}
 							return craftChunks;
 							} "
@@ -512,7 +532,7 @@
 		</class>
 	</bukkit>
 	<spigot>
-		<class id="org.bukkit.craftbukkit.v1_4_R1.util.WatchdogThread">
+		<class id="org.bukkit.craftbukkit.v1_5_R3.util.WatchdogThread">
 			<disable>run</disable>
 		</class>
 	</spigot>
@@ -586,25 +606,25 @@
 		<class id="factorization.common.TileEntityBarrel">
 			<replaceMethod code="{
 				^class:ItemStack^ i = this.item;
-				^class:ItemStack^ t = this.topStack;
+				^class:ItemStack^ top = this.topStack;
 				^class:ItemStack^ b = this.bottomStack;
 				if (i == null) {
 					return 0;
 				}
-				if ((t == null) || (!itemMatch(t))) {
-					t = i.l();
-					t.a = 0;
-					this.topStack = t;
+				if ((top == null) || (!itemMatch(top))) {
+					top = i.^method:ItemStack/copy^();
+					top.^field:ItemStack/stackSize^ = 0;
+					this.topStack = top;
 				}
 				if ((b == null) || (!itemMatch(b))) {
-					b = this.item.l();
-					b.a = 0;
+					b = this.item.^method:ItemStack/copy^();
+					b.^field:ItemStack/stackSize^ = 0;
 					this.bottomStack = b;
 				}
-				return t.a + this.middleCount + b.a;
+				return top.^field:ItemStack/stackSize^ + this.middleCount + b.^field:ItemStack/stackSize^;
 			}">getItemCount
 			</replaceMethod>
-			<synchronize>updateStacks,changeItemCount,setItemCount</synchronize>
+			<synchronize>updateStacks,changeItemCount,setItemCount,a(IL^class:ItemStack^;)V</synchronize>
 		</class>
 		<class id="factorization.common.TileEntityMirror">
 			<replaceMethod code="{
@@ -615,7 +635,7 @@
 		<class id="factorization.common.TileEntityRouter">
 			<newField field="emptyUpdateCount" class="int" code="0" static=""/>
 			<replaceMethod code="{
-				if (this.k.A(this.l, this.m, this.n)) {
+				if (this.^field:TileEntity/worldObj^.^method:World/isBlockGettingPowered^(this.^field:TileEntity/xCoord^, this.^field:TileEntity/yCoord^, this.^field:TileEntity/zCoord^)) {
 					return false;
 				}
 				if (this.is_input) {
@@ -625,7 +645,7 @@
 					return ++emptyUpdateCount % 5 == 0;
 				}
 
-				return this.buffer.a &lt; this.buffer.d();
+				return this.buffer.^field:ItemStack/stackSize^ &lt; this.buffer.^method:ItemStack/getMaxStackSize^();
 			}">shouldUpdate
 			</replaceMethod>
 		</class>
@@ -641,9 +661,6 @@
 			<newField field="staticLock" class="java.lang.Object" static=""/>
 			<synchronize field="staticLock">update</synchronize>
 		</class>
-		<class id="factorization.common.TileEntityBarrel">
-			<synchronize>a(ILur;)V</synchronize>
-		</class>
 	</factorization>
 	<liteLoader>
 		<class id="com.mumfrey.liteloader.core.HookProfiler">
@@ -654,49 +671,6 @@
 	<buildCraftCore>
 		<class id="buildcraft.core.EntityRobot">
 			<synchronize>build</synchronize>
-		</class>
-		<class id="buildcraft.core.inventory.TransactorSimple">
-			<replaceMethod code="{
-				int injected = 0;
-
-				int slotIndex = 0;
-				int slot = 0;
-				int size = inventory.^method:IInventory/getSizeInventory^();
-				while (slotIndex &lt; size &amp;&amp; injected &lt; $1.^field:ItemStack/stackSize^) {
-					slot = getPartialSlot($1, $2, slotIndex++);
-					if (slot != -1){
-						injected += addToSlot(slot, $1, injected, $3);
-					}
-				}
-
-				slotIndex = 0;
-				while (slotIndex &lt; size &amp;&amp; injected &lt; $1.^field:ItemStack/stackSize^) {
-					slotIndex++;
-					slot = getEmptySlot($2);
-					if (slot != -1){
-						injected += addToSlot(slot, $1, injected, $3);
-					}
-				}
-				if (injected > 0) {
-					inventory.^method:IInventory/onInventoryChanged^();
-				}
-				return injected;
-			}">inject
-			</replaceMethod>
-			<replaceMethod code="{
-				for (int i = $2; i &lt; $3; i++) {
-					^class:ItemStack^ other = this.inventory.a(i);
-					if (other != null) {
-						if (other.a($1) &amp;&amp; ^class:ItemStack^.a(other, $1)) {
-							if (other.a &lt; other.d()) {
-								return i;
-							}
-						}
-					}
-				}
-				return -1;
-			}">getPartialSlot(L^class:ItemStack^;II)I
-			</replaceMethod>
 		</class>
 	</buildCraftCore>
 	<buildCraftEnergy>
@@ -768,38 +742,44 @@
 		</class>
 	</thermalExpansionPlugins>
 	<thermalExpansionTransport>
-		<class id="thermalexpansion.transport.tileentity.TileTeleportEnergy">
-			<synchronize>receiveEnergy</synchronize>
-		</class>
-		<class id="thermalexpansion.transport.tileentity.TileConduitEnergy">
+		<class id="thermalexpansion.block.conduit.TileConduitEnergy">
 			<newField field="tickLock" class="java.lang.Object" static=""/>
 			<synchronize field="tickLock">updateGridIfNull</synchronize>
 		</class>
-		<class id="thermalexpansion.transport.tileentity.TileConduitLiquid">
+		<class id="thermalexpansion.block.conduit.TileConduitLiquid">
 			<newField field="tickLock" class="java.lang.Object" static=""/>
 			<synchronize field="tickLock">updateGridIfNull</synchronize>
 		</class>
-		<class id="thermalexpansion.transport.GridLiquid">
+		<class id="thermalexpansion.block.conduit.GridLiquid">
 			<synchronize>transferLiquid,removeNode,removeConduit,setNewGrid,changeMode,increaseTracker,addNode,addConduit</synchronize>
+			<replaceMethod code="{
+				int n = this.conduitList.size() + this.outputList.size() + this.inputList.size();
+				if (n &lt; 1) {
+					n = 1;
+				}
+				int a = getLiquidAmount();
+				return isFirst($1) ? (a / n + a % n) : (a / n);
+			}">getSharedAmount
+			</replaceMethod>
 		</class>
-		<class id="thermalexpansion.transport.GridEnergy">
+		<class id="thermalexpansion.block.conduit.GridEnergy">
 			<synchronize>transferEnergy,removeNode,removeConduit,setNewGrid,changeMode,increaseTracker,addNode,addConduit</synchronize>
 		</class>
 	</thermalExpansionTransport>
 	<thremalExpansionFactory>
-		<class id="thermalexpansion.factory.tileentity.TilePortableTank">
+		<class id="thermalexpansion.block.device.TileTankPortable">
 			<replaceMethod code="{
 				if (this.myTank.getLiquidAmount() &lt;= 0) {
 					return;
 				}
 
-				int[] coords = cofh.core.BlockUtils.getAdjacentCoordinatesForSide(this.l, this.m, this.n, 0);
+				int[] coords = cofh.util.BlockUtils.getAdjacentCoordinatesForSide(this.^field:TileEntity/xCoord^, this.^field:TileEntity/yCoord^, this.^field:TileEntity/zCoord^, 0);
 
-				any theTile = this.k.q(coords[0], coords[1], coords[2]);
+				^class:TileEntity^ theTile = this.^field:TileEntity/worldObj^.^method:World/getBlockTileEntity^(coords[0], coords[1], coords[2]);
 				if (theTile instanceof net.minecraftforge.liquids.ITankContainer) {
-					if (theTile instanceof thermalexpansion.factory.tileentity.TilePortableTank &amp;&amp;
-							!((((thermalexpansion.factory.tileentity.TilePortableTank)theTile).myTank.getLiquidID() &lt;= 0) ||
-							(((thermalexpansion.factory.tileentity.TilePortableTank)theTile).myTank.getLiquidAmount() != 8000))) {
+					if (theTile instanceof thermalexpansion.block.device.TileTankPortable &amp;&amp;
+							!((((thermalexpansion.block.device.TileTankPortable)theTile).myTank.getLiquidID() &lt;= 0) ||
+							(((thermalexpansion.block.device.TileTankPortable)theTile).myTank.getLiquidAmount() != 8000))) {
 						return;
 					}
 					int fillQty = Math.min(this.myTank.getLiquidAmount(), 250);
@@ -862,71 +842,6 @@
 			<replaceMethodCall method="self.^method:TileEntity/onInventoryChanged^" code="{ }">^method:TileEntity/updateEntity^</replaceMethodCall>
 		</class>
 		<class id="ic2.core.network.NetworkManager">
-			<replaceMethodCall method="cpw.mods.fml.common.network.PacketDispatcher.sendPacketToPlayer" code="nallar.tickthreading.global.Redirects.interceptIC2Packet($$);">
-				announceBlockUpdate,initiateTileEntityEvent,initiateExplosionEffect
-			</replaceMethodCall>
-			<insertBefore code="nallar.tickthreading.global.Redirects.interceptIC2PacketIn($1, $2, $3);">onPacketData</insertBefore>
-			<replaceMethod code="{
-      byte[] var10000;
-      try {
-         java.io.ByteArrayOutputStream e = new java.io.ByteArrayOutputStream();
-         e.write(0);
-         java.util.zip.GZIPOutputStream gzip = new java.util.zip.GZIPOutputStream(e);
-         java.io.DataOutputStream os = new java.io.DataOutputStream(gzip);
-         os.writeInt(((^class:EntityPlayerMP^) $2).^field:EntityPlayerMP/playerNetServerHandler^.clientDimension);
-         java.util.Iterator i$ = $1.iterator();
-         int done = 0;
-
-         do {
-            ic2.core.network.NetworkManager$TileEntityField tef = (ic2.core.network.NetworkManager$TileEntityField)i$.next();
-            if (!tef.te.r() &amp;&amp; tef.te.k == $2.p &amp;&amp; (tef.target == null || tef.target == $2)) {
-               int distance = Math.min(Math.abs(tef.te.l - (int)$2.t), Math.abs(tef.te.n - (int)$2.v));
-               if (distance &lt;= net.minecraft.server.MinecraftServer.D().ad().a() + 16) {
-                  os.writeInt(tef.te.l);
-                  os.writeInt(tef.te.m);
-                  os.writeInt(tef.te.n);
-                  os.writeShort(tef.field.length());
-                  os.writeChars(tef.field);
-                  java.lang.reflect.Field field = null;
-
-                  try {
-                     Class e1 = tef.te.getClass();
-
-                     do {
-                        try {
-                           field = e1.getDeclaredField(tef.field);
-                        } catch (NoSuchFieldException var14) {
-                           e1 = e1.getSuperclass();
-                        }
-                     } while(field == null &amp;&amp; e1 != Object.class);
-
-                     if (field == null) {
-                        throw new NoSuchFieldException(tef.field);
-                     }
-
-                     field.setAccessible(true);
-                     try {
-                     	ic2.core.network.DataEncoder.encode(os, field.get(tef.te));
-                     } catch (Throwable t) {
-                     	Log.severe(&quot;IC2 network manager failed to write field data for &quot; + tef.field + &quot; of class &quot; + e1, t);
-                     	os.close();
-                     	gzip.close();
-                     	return new byte[0];
-                     }
-                  } catch (Exception var15) {
-                     throw new RuntimeException(var15);
-                  }
-               }
-            }
-         } while (i$.hasNext() &amp;&amp; done++ &lt; 10000);
-         os.close();
-         gzip.close();
-         return e.toByteArray();
-      } catch (java.io.IOException var16) {
-         throw new RuntimeException(var16);
-      }
-   }">getFieldData
-			</replaceMethod>
 			<replaceMethod code="{
 				ic2.core.WorldData worldData = ic2.core.WorldData.get($1);
 				Collection networkedFieldsToUpdate = worldData.networkedFieldsToUpdate;
@@ -939,8 +854,8 @@
 				  networkedFieldsToUpdate.clear();
 				}
 
-				for (Iterator i$ = $1.h.iterator(); i$.hasNext(); ) { Object obj = i$.next();
-					iq entityPlayer = (iq)obj;
+				for (Iterator i$ = $1.^field:World/playerEntities^.iterator(); i$.hasNext(); ) {
+					^class:EntityPlayerMP^ entityPlayer = (^class:EntityPlayerMP^)i$.next();
 
 					sendUpdatePacket(networkedFieldsToUpdateList, entityPlayer);
 				}
@@ -952,9 +867,11 @@
 		</class>
 	</industrialCraft>
 	<gregTech>
+		<class id="gregtechmod.api.GregTech_API">
+			<replaceNew oldClass="java.util.HashMap" newClass="nallar.collections.CHashMap"/>
+		</class>
 		<class id="gregtechmod.GT_Mod">
 			<synchronize>readIDSUData,writeIDSUData</synchronize>
-			<replaceInitializer fieldClass="gregtechmod.common.tileentities.GT_TileEntity_IDSU" field="sEnergyList" class="nallar.collections.CHashMap">readIDSUData</replaceInitializer>
 		</class>
 		<class id="gregtechmod.common.tileentities.GT_TileEntityMetaID_Machine">
 			<replaceMethodCall method="self.^method:TileEntity/onInventoryChanged^" code="{ }">^method:TileEntity/updateEntity^</replaceMethodCall>
@@ -962,16 +879,22 @@
 		<class id="gregtechmod.common.tileentities.GT_TileEntity_IDSU">
 			<replaceMethodCall method="remove" code="{ $_ = null; }">setEnergyVar</replaceMethodCall>
 		</class>
-		<class id="gregtechmod.api.BaseMetaTileEntity">
+		<class id="gregtechmod.api.metatileentity.MetaTileEntity">
+			<unvolatile field="VERSION"/>
+			<final field="VERSION"/>
+		</class>
+		<class id="gregtechmod.api.metatileentity.BaseMetaTileEntity">
+			<replaceFieldUsage field="mAverageEUInputIndex" writeCode="mAverageEUInputIndex = $1 >= mAverageEUInput.length ? 0 : $1;">^method:TileEntity/updateEntity^</replaceFieldUsage>
+			<replaceFieldUsage field="mAverageEUOutputIndex" writeCode="mAverageEUOutputIndex = $1 >= mAverageEUOutput.length ? 0 : $1;">^method:TileEntity/updateEntity^</replaceFieldUsage>
 			<replaceMethod code="{
-				gregtechmod.api.MetaTileEntity m = mMetaTileEntity;
-				return m != null &amp;&amp; m.mBaseMetaTileEntity == this;
+				gregtechmod.api.metatileentity.MetaTileEntity m = mMetaTileEntity;
+				return m != null &amp;&amp; m.getBaseMetaTileEntity() == this;
 			}">hasValidMetaTileEntity
 			</replaceMethod>
 		</class>
-		<class id="gregtechmod.api.BaseMetaTileEntityMJ">
+		<class id="gregtechmod.api.metatileentity.BaseMetaTileEntityMJ" srg="true">
 			<replaceMethod code="{
-				if (this.mMJConverter) {
+				if (hasMJConverterUpgrade()) {
 					buildcraft.api.power.IPowerProvider p = mProvider;
 					if (p == null) {
 						synchronized(this) {
@@ -1243,11 +1166,6 @@
 			<synchronize field="$1.intern()">getOrMakeResident(Ljava.lang.String;)Lee.lutsu.alpha.mc.mytown.entities.Resident;</synchronize>
 		</class>
 	</myTown>
-	<soulShards>
-		<class id="com.shadwdrgn.soulshards.CommonProxy">
-			<replaceMethodCall index="0" code="{}" method="println">processShard</replaceMethodCall>
-		</class>
-	</soulShards>
 	<extraBiomesXL>
 		<class id="extrabiomes.blocks.BlockAutumnLeaves$BlockType">
 			<insertBefore code="if (loadedCustomBlocks) { return; }">loadCustomBlocks</insertBefore>
@@ -1284,7 +1202,7 @@
 	</extraBiomesXL>
 	<portalGun>
 		<class id="portalgun.common.core.TickHandlerServer">
-			<synchronize field="$1.e">worldTick</synchronize>
+			<synchronize field="$1.^field:World/loadedEntityList^">worldTick</synchronize>
 			<replaceInitializer field="grabMap" class="nallar.collections.CHashMap"/>
 			<replaceInitializer field="portals" class="nallar.collections.CHashMap"/>
 			<replaceInitializer field="moonPortals" class="nallar.collections.CHashMap"/>
@@ -1306,7 +1224,7 @@
 	</portalGun>
 	<graviGun>
 		<class id="gravigun.common.core.TickHandlerServer">
-			<synchronize field="$1.i">worldTick</synchronize>
+			<synchronize field="$1.^field:World/weatherEffects^">worldTick</synchronize>
 			<replaceInitializer field="grabMap" class="java.util.concurrent.ConcurrentHashMap"/>
 			<replaceInitializer field="tossedEntities" class="java.util.concurrent.ConcurrentHashMap"/>
 			<replaceInitializer field="tosser" class="java.util.concurrent.ConcurrentHashMap"/>
@@ -1332,8 +1250,8 @@
 			}">load
 			</insertAfter>
 		</class>
-		<class id="twilightforest.TFEventListener">
-			<synchronize>worldSave</synchronize>
+		<class id="twilightforest.block.BlockTFTowerDevice">
+			<replaceMethodCall code="{ }" method="println">^method:Block/breakBlock^</replaceMethodCall>
 		</class>
 		<class id="twilightforest.block.BlockTFMagicLogSpecial">
 			<!-- Spams logs, slow -->
@@ -1343,11 +1261,6 @@
 			<synchronize>^method:BiomeDecorator/decorate^</synchronize>
 		</class>
 	</twilightForest>
-	<bukkitForge>
-		<class id="org.bukkit.plugin.SimplePluginManager">
-			<replaceMethod code="{ fireEvent($$); }">callEvent</replaceMethod>
-		</class>
-	</bukkitForge>
 	<additionalPipes>
 		<class id="buildcraft.additionalpipes.pipes.PipePowerTeleport">
 			<synchronize>receiveEnergy,requestEnergy</synchronize>
@@ -1357,14 +1270,14 @@
 		</class>
 	</additionalPipes>
 	<MFFS>
-		<class id="chb.mods.mffs.network.server.ForceFieldServerUpdatehandler$ForceFieldpacket">
+		<class id="mods.mffs.network.server.ForceFieldServerUpdatehandler$ForceFieldpacket">
 			<public all="true"/>
 			<synchronize field="queue">addto</synchronize>
 		</class>
-		<class id="chb.mods.mffs.network.server.ForceFieldServerUpdatehandler">
+		<class id="mods.mffs.network.server.ForceFieldServerUpdatehandler">
 			<replaceMethod code="{
-				yc[] worlds = net.minecraftforge.common.DimensionManager.getWorlds();
-				yc world;
+				^class:World^[] worlds = net.minecraftforge.common.DimensionManager.getWorlds();
+				^class:World^ world;
 				for (int i = 0; i &lt; worlds.length; i++) {
 					world = worlds[i];
 					StringBuilder str = new StringBuilder();
@@ -1405,13 +1318,12 @@
 							dos.writeInt(100);
 							dos.writeUTF(str.toString());
 
-							di pkt = new di();
-							pkt.a = &quot;MFFS&quot;;
-							pkt.c = bos.toByteArray();
-							pkt.b = bos.size();
-							pkt.r = true;
+							^class:Packet250CustomPayload^ pkt = new ^class:Packet250CustomPayload^();
+							pkt.^field:Packet250CustomPayload/channel^ = &quot;MFFS&quot;;
+							pkt.^field:Packet250CustomPayload/data^ = bos.toByteArray();
+							pkt.^field:Packet250CustomPayload/length^ = bos.size();
 
-							cpw.mods.fml.common.network.PacketDispatcher.sendPacketToAllInDimension(pkt, world.u.h);
+							cpw.mods.fml.common.network.PacketDispatcher.sendPacketToAllInDimension(pkt, world.^field:World/provider^.^field:WorldProvider/dimensionId^);
 						} catch (Exception e) {
 							Log.severe(&quot;Failed to send MFFS force-field update&quot;, e);
 						}
@@ -1421,10 +1333,10 @@
 			</replaceMethod>
 			<synchronize>tickEnd</synchronize>
 		</class>
-		<class id="chb.mods.mffs.common.item.ItemCardPowerLink">
+		<class id="mods.mffs.common.item.ItemCardPowerLink">
 			<synchronize/>
 		</class>
-		<class id="chb.mods.mffs.common.ModularForceFieldSystem$MFFSChunkloadCallback">
+		<class id="mods.mffs.common.ModularForceFieldSystem$MFFSChunkloadCallback">
 			<replaceMethodCall newMethod="getTEWithLoad" method="^class:World^.^method:World/getBlockTileEntity^">
 				ticketsLoaded(Ljava.util.List;L^class:World^;)V,ticketsLoaded(Ljava.util.List;L^class:World^;I)Ljava.util.List;
 			</replaceMethodCall>
@@ -1432,15 +1344,15 @@
 				ticketsLoaded(Ljava.util.List;L^class:World^;)V,ticketsLoaded(Ljava.util.List;L^class:World^;I)Ljava.util.List;
 			</replaceMethodCall>
 		</class>
-		<class id="chb.mods.mffs.common.Linkgrid$Worldlinknet">
+		<class id="mods.mffs.common.Linkgrid$Worldlinknet">
 			<replaceInitializer field="FieldFusion" class="java.util.concurrent.ConcurrentHashMap"/>
 			<replaceInitializer field="Jammer" class="java.util.concurrent.ConcurrentHashMap"/>
 		</class>
-		<class id="chb.mods.mffs.common.tileentity.TileEntityProjector">
+		<class id="mods.mffs.common.tileentity.TileEntityProjector">
 			<synchronize>calculateField(Z)Z,getInteriorPoints</synchronize>
 			<replaceMethod code="{
 				^class:ItemStack^ i = ^method:IInventory/getStackInSlot^(1);
-				return i != null &amp;&amp; i.^method:ItemStack/getItem^() instanceof chb.mods.mffs.common.modules.ModuleBase;
+				return i != null &amp;&amp; i.^method:ItemStack/getItem^() instanceof mods.mffs.common.modules.ModuleBase;
 			}">hasValidTypeMod
 			</replaceMethod>
 			<replaceMethod code="{
@@ -1449,8 +1361,8 @@
 					return null;
 				}
 				^class:Item^ item = i.^method:ItemStack/getItem^();
-				if (item instanceof chb.mods.mffs.common.modules.ModuleBase) {
-					return (chb.mods.mffs.common.modules.ModuleBase) item;
+				if (item instanceof mods.mffs.common.modules.ModuleBase) {
+					return (mods.mffs.common.modules.ModuleBase) item;
 				}
 				return null;
 			}">get_type
@@ -1458,7 +1370,7 @@
 			<replaceMethod code="{
 				HashSet field_def = new HashSet();
 				HashSet field_interior = new HashSet();
-				chb.mods.mffs.common.modules.ModuleBase type = get_type();
+				mods.mffs.common.modules.ModuleBase type = get_type();
 				if(type == null) {
 					this.field_def = field_def;
 					this.field_interior = field_interior;
@@ -1466,20 +1378,20 @@
 				}
          HashSet tField = new HashSet();
          HashSet tFieldInt = new HashSet();
-         if (type instanceof chb.mods.mffs.common.modules.Module3DBase) {
-            ((chb.mods.mffs.common.modules.Module3DBase) type).calculateField(this, tField, tFieldInt);
+         if (type instanceof mods.mffs.common.modules.Module3DBase) {
+            ((mods.mffs.common.modules.Module3DBase) type).calculateField(this, tField, tFieldInt);
          } else {
             type.calculateField(this, tField);
          }
 
          Iterator i$ = tField.iterator();
 
-         chb.mods.mffs.api.PointXYZ pnt;
-         chb.mods.mffs.api.PointXYZ tp;
+         mods.mffs.api.PointXYZ pnt;
+         mods.mffs.api.PointXYZ tp;
          while(i$.hasNext()) {
-            pnt = (chb.mods.mffs.api.PointXYZ)i$.next();
+            pnt = (mods.mffs.api.PointXYZ)i$.next();
             if(pnt.Y + ^field:TileEntity/yCoord^ &lt; 255) {
-               tp = new chb.mods.mffs.api.PointXYZ(pnt.X + ^field:TileEntity/xCoord^, pnt.Y + ^field:TileEntity/yCoord^, pnt.Z + ^field:TileEntity/zCoord^, ^field:TileEntity/worldObj^);
+               tp = new mods.mffs.api.PointXYZ(pnt.X + ^field:TileEntity/xCoord^, pnt.Y + ^field:TileEntity/yCoord^, pnt.Z + ^field:TileEntity/zCoord^, ^field:TileEntity/worldObj^);
                if(!Forcefielddefine(tp, $1)) {
                		this.field_def = field_def;
 									this.field_interior = field_interior;
@@ -1493,9 +1405,9 @@
          i$ = tFieldInt.iterator();
 
          while(i$.hasNext()) {
-            pnt = (chb.mods.mffs.api.PointXYZ)i$.next();
+            pnt = (mods.mffs.api.PointXYZ)i$.next();
             if(pnt.Y + ^field:TileEntity/yCoord^ &lt; 255) {
-               tp = new chb.mods.mffs.api.PointXYZ(pnt.X + ^field:TileEntity/xCoord^, pnt.Y + ^field:TileEntity/yCoord^, pnt.Z + ^field:TileEntity/zCoord^, ^field:TileEntity/worldObj^);
+               tp = new mods.mffs.api.PointXYZ(pnt.X + ^field:TileEntity/xCoord^, pnt.Y + ^field:TileEntity/yCoord^, pnt.Z + ^field:TileEntity/zCoord^, ^field:TileEntity/worldObj^);
                if(!calculateBlock(tp)) {
                		this.field_def = field_def;
 									this.field_interior = field_interior;
@@ -1517,105 +1429,50 @@
 		<class id="thaumcraft.api.ObjectTags">
 			<replaceInitializer field="tags" class="nallar.collections.CHashMap"/>
 		</class>
-		<class id="thaumcraft.common.AuraManager">
+		<class id="thaumcraft.common.aura.AuraManager">
 			<replaceNew oldClass="java.util.LinkedList" newClass="nallar.collections.ConcurrentLinkedQueueList">registerAuraNode,addToAuraUpdateList</replaceNew>
 			<synchronize>registerAuraNode</synchronize>
 		</class>
-		<class id="thaumcraft.common.Utils">
-			<replaceMethod code="{
-				Random rand = new Random();
-				^class:TileEntity^ tileEntity = $1.^method:World/getBlockTileEntity^($2, $3, $4);
-				if (!(tileEntity instanceof ^class:IInventory^)) {
-					return;
-				}
-				int md = $1.^method:World/getBlockMetadata^($2, $3, $4);
-				^class:IInventory^ inventory = (^class:IInventory^)tileEntity;
-
-				for (int i = 0; i &lt; inventory.^method:IInventory/getSizeInventory^(); i++) {
-				if (((!(tileEntity instanceof thaumcraft.common.blocks.TileResearchTable)) || (md != 15) || (i != 9)) &amp;&amp; ((!(tileEntity instanceof thaumcraft.common.blocks.TileArcaneWorkbench)) || (i != 9))) {
-					^class:ItemStack^ item = inventory.^method:IInventory/getStackInSlot^(i);
-
-					if ((item != null) &amp;&amp; (item.^field:ItemStack/stackSize^ &gt; 0)) {
-						float rx = rand.nextFloat() * 0.8F + 0.1F;
-						float ry = rand.nextFloat() * 0.8F + 0.1F;
-						float rz = rand.nextFloat() * 0.8F + 0.1F;
-
-
-						^class:EntityItem^ entityItem = new ^class:EntityItem^($1, (double) $2 + rx, (double) $3 + ry, (double) $4 + rz, new ^class:ItemStack^(item.^field:ItemStack/itemID^, item.^field:ItemStack/stackSize^, item.^method:ItemStack/getItemDamage^()));
-						item.^field:ItemStack/stackSize^ = 0;
-
-						if (item.^method:ItemStack/hasTagCompound^()) {
-							entityItem.^method:EntityItem/getEntityItem^().^method:ItemStack/setTagCompound^((^class:NBTTagCompound^)item.^method:ItemStack/getTagCompound^().^method:NBTTagCompound/copy^());
-						}
-
-						float factor = 0.05F;
-						entityItem.^field:Entity/motionX^ = (rand.nextGaussian() * factor);
-						entityItem.^field:Entity/motionY^ = (rand.nextGaussian() * factor + 0.2000000029802322D);
-						entityItem.^field:Entity/motionZ^ = (rand.nextGaussian() * factor);
-						$1.^method:World/spawnEntityInWorld^(entityItem);
-					}
-				} else {
-					^class:ItemStack^ item = inventory.^method:IInventory/getStackInSlot^(i);
-					if (item != null) {
-						item.^field:ItemStack/stackSize^ = 0;
-					}
-				}
-				}
-				if ((tileEntity instanceof thaumcraft.common.blocks.TileResearchTable)) {
-					float rx = rand.nextFloat() * 0.8F + 0.1F;
-					float ry = rand.nextFloat() * 0.8F + 0.1F;
-					float rz = rand.nextFloat() * 0.8F + 0.1F;
-					^class:EntityItem^ entityItem = new ^class:EntityItem^($1, (double) $2 + rx, (double) $3 + ry, (double) $4 + rz, new ^class:ItemStack^(thaumcraft.common.Config.itemInkwell, 1, thaumcraft.common.Config.itemInkwell.^method:ItemStack/getMaxDamage^() - 1));
-
-					float factor = 0.05F;
-					entityItem.^field:Entity/motionX^ = (rand.nextGaussian() * factor);
-					entityItem.^field:Entity/motionY^ = (rand.nextGaussian() * factor + 0.2000000029802322D);
-					entityItem.^field:Entity/motionZ^ = (rand.nextGaussian() * factor);
-					$1.^method:World/spawnEntityInWorld^(entityItem);
-				}
-			}">dropItems
-			</replaceMethod>
-		</class>
-		<class id="thaumcraft.common.WorldTicker">
+		<class id="thaumcraft.common.lib.WorldTicker">
 			<newField code="nallar.tickthreading.util.contextaccess.ContextAccess.$" class="nallar.tickthreading.util.contextaccess.ContextAccess" field="context" static="true"/>
 			<insertBefore code="{
-				if (context.runningUnder(thaumcraft.common.WorldTicker.class)) {
+				if (context.runningUnder(thaumcraft.common.lib.WorldTicker.class)) {
 					return;
 				}
 			}">addSwapper,addBlockToRestore
 			</insertBefore>
 		</class>
-		<class id="thaumcraft.common.AuraWorldTicker">
+		<class id="thaumcraft.common.aura.AuraWorldTicker">
 			<synchronize field="((^class:WorldServer^)$2[0]).auraLock">tickEnd</synchronize>
 			<replaceMethod code="{
-				synchronized(thaumcraft.common.AuraManager.class) {
-					if (thaumcraft.common.AuraManager.auraUpdateList.get(Integer.valueOf($1)) != null) {
+				synchronized(thaumcraft.common.aura.AuraManager.class) {
+					if (thaumcraft.common.aura.AuraManager.auraUpdateList.get(Integer.valueOf($1)) != null) {
 						return;
 					}
 					LinkedList temp = new ConcurrentLinkedQueueList();
-					Collection nodes = thaumcraft.common.AuraManager.auraNodes.values();
+					Collection nodes = thaumcraft.common.aura.AuraManager.auraNodes.values();
 					for (Iterator i = nodes.iterator(); i.hasNext();) {
-						thaumcraft.api.AuraNode node = (thaumcraft.api.AuraNode) i.next();
+						thaumcraft.api.aura.AuraNode node = (thaumcraft.api.aura.AuraNode) i.next();
 						if (node.dimension == $1) {
 							temp.add(Integer.valueOf(node.key));
 						}
 					}
-					thaumcraft.common.AuraManager.auraUpdateList.put(Integer.valueOf($1), temp);
+					thaumcraft.common.aura.AuraManager.auraUpdateList.put(Integer.valueOf($1), temp);
 				}
 			}">populateAuraUpdateList
 			</replaceMethod>
 		</class>
-		<class id="thaumcraft.common.EventHandler">
+		<class id="thaumcraft.common.lib.EventHandler">
 			<synchronize field="$1.world.auraLock">chunkLoad</synchronize>
 		</class>
-		<class id="thaumcraft.common.blocks.TileCrystalCapacitor">
+		<class id="thaumcraft.common.tiles.TileCrystalCapacitor">
 			<replaceFieldUsage field="count" writeCode="{ }" readCode="{ $_ = null; }">^all^</replaceFieldUsage>
 			<removeField field="count"/>
 			<insertAfter code="interval = new Random().nextInt(300);"/>
 			<replaceMethod code="{
 				^class:World^ world = this.^field:TileEntity/worldObj^;
 				if (!world.onClient() &amp;&amp; interval++ % 300 == 0) {
-					ArrayList e = thaumcraft.common.AuraManager.getAurasWithin(world, ^field:TileEntity/xCoord^ + 0.5, ^field:TileEntity/yCoord^ + 0.5, ^field:TileEntity/zCoord^ + 0.5);
+					ArrayList e = thaumcraft.common.aura.AuraManager.getAurasWithin(world, ^field:TileEntity/xCoord^ + 0.5, ^field:TileEntity/yCoord^ + 0.5, ^field:TileEntity/zCoord^ + 0.5);
 					if(e.size() == 0) {
 					   return;
 					}
@@ -1624,17 +1481,17 @@
 
 					while(i$.hasNext()) {
 					   Integer key = (Integer)i$.next();
-					   thaumcraft.api.AuraNode nd = thaumcraft.common.AuraManager.getNode(key.intValue());
+					   thaumcraft.api.aura.AuraNode nd = thaumcraft.common.aura.AuraManager.getNode(key.intValue());
 					   if(nd != null) {
 					      if(nd.level &gt; nd.baseLevel &amp;&amp; this.storedVis &lt; this.maxVis) {
-					         thaumcraft.common.AuraManager.queueNodeChanges(nd.key, -1, 0, false, null, 0.0F, 0.0F, 0.0F);
+					         thaumcraft.common.aura.AuraManager.queueNodeChanges(nd.key, -1, 0, false, null, 0.0F, 0.0F, 0.0F);
 					         ++this.storedVis;
 					         sendTile();
 					         break;
 					      }
 
 					      if(nd.level &lt; nd.baseLevel &amp;&amp; this.storedVis &gt; 0) {
-					         thaumcraft.common.AuraManager.queueNodeChanges(nd.key, 1, 0, false, null, 0.0F, 0.0F, 0.0F);
+					         thaumcraft.common.aura.AuraManager.queueNodeChanges(nd.key, 1, 0, false, null, 0.0F, 0.0F, 0.0F);
 					         --this.storedVis;
 					         sendTile();
 					         break;
@@ -1645,43 +1502,16 @@
 			}">^method:TileEntity/updateEntity^
 			</replaceMethod>
 		</class>
-		<class id="thaumcraft.common.blocks.TileMarker">
+		<class id="thaumcraft.common.tiles.TileMarker">
 			<replaceInitializer field="markers" class="nallar.collections.CHashMap">^static^</replaceInitializer>
 			<replaceInitializer field="markedForDeletion" class="nallar.collections.ArrayListReplaceIterateTempListClear">^static^</replaceInitializer>
 		</class>
-		<class id="thaumcraft.common.blocks.TileSensor">
+		<class id="thaumcraft.common.tiles.TileSensor">
 			<replaceMethod code="((ArrayList) noteBlockEvents.get($1)).addAll($1.getNoteBlockEvents());">getNoteBlockEvents</replaceMethod>
 		</class>
 	</thaumcraft>
 	<universalElectricity>
-		<class id="universalelectricity.core.electricity.Electricity">
-			<newField field="cleanNetworkCount" class="int" code="0"/>
-			<newField field="readWriteLock" class="nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock"/>
-			<newField field="writeLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>
-			<newField field="readLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.readLock();"/>
-			<replaceInitializer field="electricityNetworks" class="nallar.collections.LockArrayList"/>
-			<insertAfter code="((nallar.collections.LockArrayList)electricityNetworks).lock = writeLock;"/>
-			<lock field="readLock">unregister,cleanUpNetworks,resetConductors</lock>
-			<synchronize>mergeConnection,splitConnection,cleanUpNetworks</synchronize>
-			<insertBefore code="if (cleanNetworkCount++ % 15 != 0) { return; }">cleanUpNetworks</insertBefore>
-		</class>
-		<class id="universalelectricity.core.electricity.ElectricityConnections">
-			<replaceInitializer field="connectors" class="nallar.collections.CHashMap"/>
-		</class>
-		<class id="universalelectricity.core.electricity.ElectricityNetwork">
-			<replaceMethodCall code="$_ = $0.getTEWithoutLoad($$);" method="^class:World^.^method:World/getBlockTileEntity^">getProduced,getRequestWithoutReduction</replaceMethodCall>
-			<newField field="readLock" class="java.util.concurrent.locks.Lock" code="none"/>
-			<replaceMethod code="{
-				nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock readWriteLock = new nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock();
-				readLock = readWriteLock.readLock();
-				consumers = new nallar.collections.CHashMap();
-				producers = new nallar.collections.CHashMap();
-				conductors = new nallar.collections.LockArrayList();
-				((nallar.collections.LockArrayList)conductors).lock = readWriteLock.writeLock();
-				this.addConductor($1);
-			}"/>
-			<lock field="readLock">addConductor,cleanConductors,setNetwork,resetConductors,onOverCharge,getTotalResistance,refreshConductors</lock>
-		</class>
+		<!-- TODO: Rework UE patches. API changed a lot. -->
 	</universalElectricity>
 	<appliedEnergistics>
 		<class id="appeng.proxy.ProxyGregTech">
@@ -1714,171 +1544,19 @@
 		<class id="appeng.me.tile.TileController">
 			<newField class="int" static="" field="tickSkip" code="0"/>
 			<newField class="java.util.ArrayList" code="new ArrayList();" field="tiles"/>
-			<replaceMethod code="{
-				if (!isPowered()) {
-					return;
-				}
-				List Clusters = new ArrayList();
-				try {
-					Iterator i = Assemblers.iterator();
-					while (i.hasNext()) {
-						appeng.api.TileRef ar = (appeng.api.TileRef) i.next();
-						try {
-							appeng.me.tile.TileAssembler a = (appeng.me.tile.TileAssembler)ar.getTile();
-							if (a.ac != null) {
-								if (Clusters.indexOf(a.ac) == -1) {
-									Clusters.add(a.ac);
-								}
-							}
-						} catch(appeng.api.exceptions.AppEngTileMissingException e) {
-							i.remove();
-						}
-					}
-					i = Clusters.iterator();
-					while (i.hasNext()) {
-						appeng.me.crafting.AssemblerCluster ac = (appeng.me.crafting.AssemblerCluster) i.next();
-						if (useMEEnergy(3f * ac.howManyCpus(), &quot;crafting cpus&quot;))
-							ac.cycleCpus();
-					}
-				}
-				catch (Exception err) {
-					Log.warning(&quot;Exception cycling assembler CPUs&quot;, err);
-				}
-
-				appeng.api.me.util.IMEInventory invItemPool = getCellArray();
-				if (invItemPool == null) {
-					return;
-				}
-				List Patterns = getPatterns();
-
-				Iterator cri = this.WaitingQueue.iterator();
-				while (cri.hasNext()) {
-					appeng.me.crafting.CraftRequest x = (appeng.me.crafting.CraftRequest)cri.next();
-					if (x.canTry()) {
-						x.clearMissing();
-
-						if (x.getAmount() > 0) {
-							ur xRequest = x.getRequest();
-							if (xRequest != null) {
-								appeng.api.me.util.IAssemblerPattern pattern = appeng.me.crafting.Crafting.findRecipe(Patterns, xRequest);
-
-								if ((x instanceof appeng.me.crafting.DelayedCraftRequest)) {
-									if (pattern != null) {
-										while (x.getAmount() > 0) {
-											x.markCrafted();
-										}
-									}
-									if (x.getAmount() &lt;= 0)
-										cri.remove();
-								}
-							}
-						}
-					}
-				}
-				ArrayList postponed = new ArrayList();
-				while (true) {
-					appeng.me.crafting.CraftRequest x = (appeng.me.crafting.CraftRequest)this.CraftingQueue.pollFirst();
-					if (x == null) {
-						break;
-					}
-					if (!x.canTry()) {
-						postponed.add(x);
-						continue;
-					}
-					x.clearMissing();
-
-					if (x.getAmount() > 0) {
-						ur xRequest = x.getRequest();
-						if (xRequest != null) {
-							appeng.api.me.util.IAssemblerPattern pattern = appeng.me.crafting.Crafting.findRecipe(Patterns, xRequest);
-
-							boolean Recursive = false;
-							appeng.me.crafting.CraftRequest cr = x.getParent();
-							while (cr != null) {
-								if (!(cr instanceof appeng.me.crafting.PushCraftRequest)) {
-									if (appeng.util.Platform.isSameItem(cr.getRequest(), xRequest))
-										Recursive = true;
-								}
-								cr = cr.getParent();
-							}
-
-							if (Recursive) {
-								x.markChainCrafted();
-							}
-							else if ((pattern == null) &amp;&amp; (x.requirePattern())) {
-								if (x.canRequestPrereqs()) {
-									appeng.me.crafting.CraftRequest ex = new appeng.me.crafting.DelayedCraftRequest(xRequest);
-									x.requestedPreReqs(ex);
-									this.WaitingQueue.add(ex);
-									OnCraftingChange();
-								}
-							}
-							else {
-								int i = 0;
-								int lastAmount = x.getAmount();
-								while (lastAmount > 0 &amp;&amp; i++ &lt; 16) {
-									appeng.api.me.util.IAssemblerCluster ac = null;
-									if (pattern != null) ac = pattern.getCluster();
-									if (ac == null || ac.canCraft()) {
-										if (ac != null) {
-											ac.addCraft();
-										}
-										x.Craft(this, pattern, invItemPool, this.CraftingQueue, this.WaitingQueue);
-									}
-									int amount = x.getAmount();
-									if (lastAmount == amount &amp;&amp; i > 4) {
-										break;
-									}
-									lastAmount = amount;
-								}
-							}
-
-						}
-
-						if (x.getAmount() > 0)
-							postponed.add(x);
-						else
-							OnCraftingChange();
-					}
-				}
-
-				CraftingQueue.addAll(postponed);
-
-				if (this.sendCraftingUpdate) {
-					this.sendCraftingUpdate = false;
-					Iterator ip = this.craftingViewingPlayers.iterator();
-					while (ip.hasNext()) {
-						qx p = (qx)ip.next();
-
-						if (p.bL != null) {
-							if ((p.bL instanceof appeng.me.container.ContainerCraftingMonitor)) {
-								appeng.me.container.ContainerCraftingMonitor ct = (appeng.me.container.ContainerCraftingMonitor)p.bL;
-								ct.updateClient();
-							}
-							else {
-								ip.remove();
-							}
-						}
-					}
-				}
-			}">advanceCraftingCursor
-			</replaceMethod>
 			<synchronize field="$1">requestUpdate</synchronize>
 			<rename name="requestUpdate_">requestUpdate</rename>
 			<newField field="updateQueue" class="java.util.concurrent.ConcurrentLinkedQueue" code="new java.util.concurrent.ConcurrentLinkedQueue()"/>
 			<newMethod code="public void requestUpdate(appeng.api.me.tiles.IGridTileEntity tt) {
 				if (tt instanceof appeng.me.tile.TileInterfaceBase) {
-					appeng.me.tile.TileInterfaceBase t = (appeng.me.tile.TileInterfaceBase) tt;
-					if (!t.inUpdate) {
-						updateQueue.add(tt);
-					}
+					updateQueue.add(tt);
 				}
 			}"/>
 			<insertBefore code="{
 				appeng.api.me.tiles.IGridTileEntity tt;
 				HashSet done = new HashSet();
 				while ((tt = ((appeng.api.me.tiles.IGridTileEntity) updateQueue.poll())) != null) {
-					if (!((appeng.me.tile.TileInterfaceBase) tt).inUpdate &amp;&amp; done.add(tt)) {
+					if (done.add(tt)) {
 						requestUpdate_(tt);
 					}
 				}
@@ -1891,14 +1569,14 @@
 				if (tickSkip++ % 2 == 0) {
 					return;
 				}
-			}">^method:TileEntity/updateEntity^
+			}">updateTileEntity
 			</insertBefore>
 			<insertBefore code="{
 				tiles.clear();
 				if ($1 != null) {
 					Iterator i = $1.iterator();
 					while (i.hasNext()) {
-						appeng.me.GridEnumeration$NetworkNode tr = (appeng.me.GridEnumeration$NetworkNode) i.next();
+						appeng.common.grid.GridEnumeration$NetworkNode tr = (appeng.common.grid.GridEnumeration$NetworkNode) i.next();
 						^class:TileEntity^ tile = (^class:TileEntity^) tr.getTile();
 						if (tile != this &amp;&amp; tile != null &amp;&amp; tile instanceof appeng.api.me.tiles.IGridMachine) {
 							tiles.add(tile);
@@ -1911,103 +1589,16 @@
 			<replaceInitializer field="CraftingQueue" class="nallar.collections.ConcurrentLinkedQueueList"/>
 			<synchronize field="CManager.getPrereqs()">getJobList,getJobStatus,cancelJob</synchronize>
 			<synchronize>
-				configureController,getCellArray,^method:TileEntity/updateEntity^,advanceCraftingCursor,resetWaitingQueue,signalInput(L^class:ItemStack^;)V,signalInput(Lappeng.api.me.util.IMEInventory;L^class:ItemStack^;)L^class:ItemStack^;
+				configureController,getCellArray,updateTileEntity,advanceCraftingCursor,resetWaitingQueue,signalInput(L^class:ItemStack^;)V,signalInput(Lappeng.api.me.util.IMEInventory;L^class:ItemStack^;)L^class:ItemStack^;
 			</synchronize>
 		</class>
 		<class id="appeng.me.tile.TileStorageBus">
-			<replaceMethod code="{
-				super.g();
-
-				if (this.delay++ > Math.min(100, Math.max(20, this.freq)))
-				{
-					appeng.api.me.util.IGridInterface gi = getGrid();
-					List oList;
-					if (gi != null)
-					{
-						this.delay = 0;
-						appeng.api.me.util.IMEInventory inv = getInv();
-						if (inv == null) {
-							if (oldList != null) {
-								this.freq = 0;
-								gi.onInventoryChange();
-								this.oldList = null;
-							}
-							return;
-						}
-
-						List sList = new SynchronizedList();
-						ArrayList toAdd = new ArrayList();
-						synchronized (sList) {
-							List newList = inv.getAvailableItems(sList);
-							if (newList != sList) {
-								sList.addAll(newList);
-								newList = sList;
-							}
-							if (newList == null) {
-								newList = new SynchronizedList();
-							}
-							if (this.oldList == null) {
-								this.oldList = new SynchronizedList();
-							}
-							oList = this.oldList;
-							this.oldList = newList;
-
-							synchronized(oList) {
-								if (oList.size() != newList.size()) {
-									gi.onInventoryChange();
-								}
-
-								for (Iterator i1 = newList.iterator(); i1.hasNext();) {
-									ur x = (ur) i1.next();
-									boolean found = false;
-									for (Iterator i2 = oList.iterator(); i2.hasNext();) {
-										ur y = (ur) i2.next();
-										if (appeng.util.Platform.isSameItem(x, y))
-										{
-											found = true;
-
-											if (x.a != y.a)
-											{
-												this.freq = 0;
-												if (x.a &lt;= y.a)
-													break;
-												ur j = x.l();
-												j.a -= y.a;
-												toAdd.add(j);
-												break;
-											}
-
-										}
-
-									}
-
-									if (!found)
-									{
-										this.freq = 0;
-										toAdd.add(x);
-									}
-								}
-							}
-						}
-						if (!toAdd.isEmpty()) {
-							gi.onInventoryChange();
-							Iterator iterator = toAdd.iterator();
-							while (iterator.hasNext()) {
-								gi.signalInput(null, (ur) iterator.next());
-							}
-						}
-					}
-
-					this.freq += 1;
-				}
-			}">^method:TileEntity/updateEntity^
-			</replaceMethod>
 			<synchronize>getCellArray,getSharedTagCompound,signalInput</synchronize>
 		</class>
 		<class id="appeng.me.MEInventoryArray">
 			<synchronize>^all^</synchronize>
 		</class>
-		<class id="appeng.common.MEGridEvents">
+		<class id="appeng.common.grid.MEGridEvents">
 			<replaceInitializer field="requests" class="nallar.collections.ConcurrentQueueList">^static^</replaceInitializer>
 		</class>
 		<class id="
@@ -2029,8 +1620,8 @@
 			appeng.me.tile.TileAssemblerMB
 			appeng.me.tile.TileAssembler
 		">
-			<newMethod code="public void ^method:TileEntity/updateEntity^() { }" ignoreDuplicate=""/>
-			<renameInterfaceMethod name="tickNetwork" interface="appeng.api.me.tiles.IGridMachine" allowMissing="">^method:TileEntity/updateEntity^</renameInterfaceMethod>
+			<newMethod code="public void updateTileEntity() { }" ignoreDuplicate=""/>
+			<renameInterfaceMethod name="tickNetwork" interface="appeng.api.me.tiles.IGridMachine" allowMissing="">updateTileEntity</renameInterfaceMethod>
 			<newMethod code="private Object getNetworkLock() {
 				Object o = getGrid();
 				if (o instanceof appeng.api.TileRef) {
@@ -2143,8 +1734,8 @@
 		<class id="vswe.stevescarts.CommonProxy">
 			<replaceMethod code="{
 				^class:Entity^ entity = $2.getEntity($1);
-				if (entity instanceof vswe.stevescarts.Carts.entMCBase) {
-					return (vswe.stevescarts.Carts.entMCBase) entity;
+				if (entity instanceof vswe.stevescarts.Carts.MinecartModular) {
+					return (vswe.stevescarts.Carts.MinecartModular) entity;
 				}
 				return null;
 			}">getCart
@@ -2152,22 +1743,6 @@
 		</class>
 	</stevesCarts>
 	<dynmap>
-		<class id="org.dynmap.forge.DynmapPlugin">
-			<newMethod code="
-			public void handleUnload(yc world) {
-				if (last_world == world) {
-					last_world = null;
-					last_fworld = null;
-				}
-			}"/>
-			<synchronize>handleUnload,</synchronize>
-		</class>
-		<class id="org.dynmap.forge.DynmapPlugin$WorldTracker">
-			<insertAfter code="{
-				this$0.handleUnload($1.world);
-			}">handleWorldUnload,getWorld(Lyc;Z)Lorg.dynmap.forge.ForgeWorld;
-			</insertAfter>
-		</class>
 		<class id="org.dynmap.forge.SnapshotCache">
 			<synchronize/>
 		</class>
@@ -2177,18 +1752,14 @@
 		</class>
 	</dynmap>
 	<mmmPowerSuits>
-		<class id="net.machinemuse.powersuits.powermodule.modules.RailgunModule">
-			<disable>drawParticleStreamTo</disable>
-		</class>
-		<class id="net.machinemuse.powersuits.network.packets.MusePacketPlayerUpdate">
+		<class id="net.machinemuse.powersuits.network.packets.MusePacketPlayerUpdate" srg="true">
 			<replaceMethod code="{
 				if (net.minecraft.server.MinecraftServer.currentTick % 2 == 0) {
-					net.machinemuse.powersuits.network.packets.MusePacketPlayerUpdate updatePacket = new net.machinemuse.powersuits.network.packets.MusePacketPlayerUpdate($1, this.inputMap);
-					updatePacket.username = this.username;
-					$1.w = this.inputMap.motionX;
-					$1.x = this.inputMap.motionY;
-					$1.y = this.inputMap.motionZ;
-					cpw.mods.fml.common.network.PacketDispatcher.sendPacketAroundPlayer($1, updatePacket.getPacket250(), 4096);
+					net.machinemuse.powersuits.network.packets.MusePacketPlayerUpdate updatePacket = new net.machinemuse.powersuits.network.packets.MusePacketPlayerUpdate((cpw.mods.fml.common.network.Player) $1, this.inputMap);
+					$1.^field:Entity/motionX^ = this.inputMap.motionX;
+					$1.^field:Entity/motionY^ = this.inputMap.motionY;
+					$1.^field:Entity/motionZ^ = this.inputMap.motionZ;
+					cpw.mods.fml.common.network.PacketDispatcher.sendPacketAroundPlayer((^class:EntityPlayerMP^) $1, updatePacket.getPacket250(), 4096);
 				}
 			}">handleServer
 			</replaceMethod>
@@ -2205,7 +1776,7 @@
 		</class>
 	</hats>
 	<mineFactoryReloaded>
-		<class id="powercrystals.minefactoryreloaded.processing.TileEntityDeepStorageUnit">
+		<class id="powercrystals.minefactoryreloaded.tile.machine.TileEntityDeepStorageUnit">
 			<replaceMethod code="{
 				^class:ItemStack^ item = _inventory[$1];
 				^class:ItemStack^ item2 = _inventory[2];
@@ -2237,9 +1808,7 @@
 						}
 						else if ((item.^field:ItemStack/itemID^ != _storedId) || (item.^method:ItemStack/getItemDamage^() != _storedMeta) || (item.^method:ItemStack/getTagCompound^() != null))
 						{
-							_inventory[$1] = null;
-							powercrystals.minefactoryreloaded.core.MFRUtil.dropStack(this, item);
-							item = null;
+							_inventory[$1] = item = powercrystals.core.util.UtilInventory.dropStack(this, item, getDropDirection());
 						}
 					}
 
@@ -2250,13 +1819,6 @@
 					}
 			}">checkInput
 			</replaceMethod>
-		</class>
-		<class id="powercrystals.minefactoryreloaded.plants.TileEntityHarvester">
-			<ignoreExceptions code="{
-				setIdleTicks(getIdleTicksMax());
-      	return false;
-      }" type="java.lang.NullPointerException">activateMachine
-			</ignoreExceptions>
 		</class>
 	</mineFactoryReloaded>
 	<xReliquary>
@@ -2303,4 +1865,21 @@
 			<replaceMethodCall method="equals" code="$_ = true;" index="0">getName,check,handlePacket</replaceMethodCall>
 		</class>
 	</tagApi>
+	<dimensionalDoors>
+		<class id="StevenDimDoors.mod_pocketDim.CommonTickHandler">
+			<replaceFieldUsage field="hasGrownRifts" writeCode="if ($0 != null) { $proceed($$); }">onTickInGame</replaceFieldUsage>
+		</class>
+	</dimensionalDoors>
+	<mobHats>
+		<class id="hats.common.core.TickHandlerServer">
+			<newField field="skip" class="int" code="0"/>
+			<insertBefore code="{
+				if (skip++ % 1800 != 0) {
+				 return;
+				}
+			}">worldTick
+			</insertBefore>
+			<replaceMethodCall method="^class:EntityLiving^.^method:Entity/isEntityAlive^" code="$_ = $0.^method:Entity/isEntityAlive^() &amp;&amp; $0.chunk != null;">worldTick</replaceMethodCall>
+		</class>
+	</mobHats>
 </mods>

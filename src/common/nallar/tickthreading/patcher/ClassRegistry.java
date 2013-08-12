@@ -22,9 +22,9 @@ import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 
 import javassist.ClassPath;
-import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.NotFoundException;
+import javassist.RemappingPool;
 import javassist.bytecode.MethodInfo;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.util.CollectionsUtil;
@@ -52,7 +52,7 @@ public class ClassRegistry {
 	private final Map<String, byte[]> replacementFiles = new HashMap<String, byte[]>();
 	public File serverFile;
 	private File patchedModsFolder;
-	public final ClassPool classes = new ClassPool(false);
+	public final RemappingPool classes = new RemappingPool();
 	public boolean disableJavassistLoading = false;
 	public boolean forcePatching = false;
 	public boolean writeAllClasses = false;

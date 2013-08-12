@@ -24,6 +24,8 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockEventData;
 import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.logging.ILogAgent;
+import net.minecraft.network.packet.Packet54PlayNoteBlock;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.IProgressUpdate;
@@ -31,6 +33,7 @@ import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.IWorldAccess;
 import net.minecraft.world.MinecraftException;
 import net.minecraft.world.NextTickListEntry;
+import net.minecraft.world.ServerBlockEventList;
 import net.minecraft.world.SpawnerAnimals;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.WorldProvider;
@@ -65,9 +68,10 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	public int saveTickCount_;
 	private int chunkTickWait;
 	private HashSet<ChunkCoordIntPair> chunkTickSet;
+	private TreeHashSet<NextTickListEntry> pendingTickListEntries;
 
-	public PatchWorldServer(MinecraftServer par1MinecraftServer, ISaveHandler par2ISaveHandler, String par3Str, int par4, WorldSettings par5WorldSettings, Profiler par6Profiler) {
-		super(par1MinecraftServer, par2ISaveHandler, par3Str, par4, par5WorldSettings, par6Profiler);
+	public PatchWorldServer(final MinecraftServer par1MinecraftServer, final ISaveHandler par2ISaveHandler, final String par3Str, final int par4, final WorldSettings par5WorldSettings, final Profiler par6Profiler, final ILogAgent par7ILogAgent) {
+		super(par1MinecraftServer, par2ISaveHandler, par3Str, par4, par5WorldSettings, par6Profiler, par7ILogAgent);
 	}
 
 	public void construct() {
@@ -193,7 +197,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	@Declare
 	public nallar.tickthreading.util.TableFormatter writePendingBlockUpdatesStats(nallar.tickthreading.util.TableFormatter tf) {
 		tf.sb.append(pendingTickListEntries.size()).append(" pending block updates\n");
-		TreeHashSet<NextTickListEntry> pendingTickListEntries = (TreeHashSet<NextTickListEntry>) this.pendingTickListEntries;
+		TreeHashSet<NextTickListEntry> pendingTickListEntries = this.pendingTickListEntries;
 		Iterator<NextTickListEntry> nextTickListEntryIterator = pendingTickListEntries.concurrentIterator();
 		int[] blockFrequencies = new int[4096];
 
@@ -239,7 +243,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		int maxCX = minCX + 16;
 		int minCZ = chunk.zPosition << 4;
 		int maxCZ = minCZ + 16;
-		TreeHashSet<NextTickListEntry> pendingTickListEntries = (TreeHashSet<NextTickListEntry>) this.pendingTickListEntries;
+		TreeHashSet<NextTickListEntry> pendingTickListEntries = this.pendingTickListEntries;
 		Iterator<NextTickListEntry> nextTickListEntryIterator = pendingTickListEntries.concurrentIterator();
 
 		while (nextTickListEntryIterator.hasNext()) {
@@ -295,8 +299,9 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	}
 
 	@Override
-	public void scheduleBlockUpdateFromLoad(int x, int y, int z, int blockID, int timeOffset) {
+	public void scheduleBlockUpdateFromLoad(int x, int y, int z, int blockID, int timeOffset, int par6) {
 		NextTickListEntry nextTickListEntry = new NextTickListEntry(x, y, z, blockID);
+		nextTickListEntry.func_82753_a(par6);
 
 		if (blockID > 0) {
 			nextTickListEntry.setScheduledTime((long) timeOffset + worldInfo.getWorldTotalTime());
@@ -395,7 +400,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		}
 
 		profiler.endStartSection("chunkSource");
-		theChunkProviderServer.unload100OldestChunks();
+		theChunkProviderServer.unloadQueuedChunks();
 		theChunkProviderServer.tick();
 		this.skylightSubtracted = this.calculateSkylightSubtracted(1.0F);
 
@@ -412,9 +417,9 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		this.villageCollectionObj.tick();
 		this.villageSiegeObj.tick();
 		profiler.endStartSection("portalForcer");
-		this.field_85177_Q.func_85189_a(this.getTotalWorldTime());
+		this.field_85177_Q.removeStalePortalLocations(this.getTotalWorldTime());
 		for (Teleporter tele : customTeleporters) {
-			tele.func_85189_a(getTotalWorldTime());
+			tele.removeStalePortalLocations(getTotalWorldTime());
 		}
 		profiler.endSection();
 		this.sendAndApplyBlockEvents();
@@ -553,12 +558,12 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 				var11 = this.getPrecipitationHeight(var9 + xPos, var10 + zPos);
 
 				if (this.isBlockFreezableNaturally(var9 + xPos, var11 - 1, var10 + zPos)) {
-					this.setBlockWithNotify(var9 + xPos, var11 - 1, var10 + zPos, Block.ice.blockID);
+					this.setBlock(var9 + xPos, var11 - 1, var10 + zPos, Block.ice.blockID);
 				}
 
 				if (isRaining) {
 					if (this.canSnowAt(var9 + xPos, var11, var10 + zPos)) {
-						this.setBlockWithNotify(var9 + xPos, var11, var10 + zPos, Block.snow.blockID);
+						this.setBlock(var9 + xPos, var11, var10 + zPos, Block.snow.blockID);
 					}
 
 					BiomeGenBase var12 = this.getBiomeGenForCoords(var9 + xPos, var10 + zPos);
@@ -642,5 +647,39 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 
 	public boolean safeToGenerate() {
 		return theChunkProviderServer.safeToGenerate();
+	}
+
+	@Override
+	public synchronized void addBlockEvent(int par1, int par2, int par3, int par4, int par5, int par6) {
+		BlockEventData blockEventData1 = new BlockEventData(par1, par2, par3, par4, par5, par6);
+		ArrayList<BlockEventData> blockEventCache = this.blockEventCache[this.blockEventCacheIndex];
+		for (BlockEventData blockEventData2 : blockEventCache) {
+			if (blockEventData1.equals(blockEventData2)) {
+				return;
+			}
+		}
+		blockEventCache.add(blockEventData1);
+	}
+
+	@Override
+	protected void sendAndApplyBlockEvents() {
+		while (true) {
+			ArrayList<BlockEventData> blockEventCache;
+			synchronized (this) {
+				blockEventCache = this.blockEventCache[blockEventCacheIndex];
+				if (blockEventCache.isEmpty()) {
+					return;
+				}
+				this.blockEventCache[blockEventCacheIndex] = new ServerBlockEventList();
+			}
+
+			for (BlockEventData blockEventData : blockEventCache) {
+				if (this.onBlockEventReceived(blockEventData)) {
+					this.mcServer.getConfigurationManager().sendToAllNear((double) blockEventData.getX(), (double) blockEventData.getY(), (double) blockEventData.getZ(), 64.0D, this.provider.dimensionId, new Packet54PlayNoteBlock(blockEventData.getX(), blockEventData.getY(), blockEventData.getZ(), blockEventData.getBlockID(), blockEventData.getEventID(), blockEventData.getEventParameter()));
+				}
+			}
+
+			blockEventCache.clear();
+		}
 	}
 }

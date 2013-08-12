@@ -22,7 +22,6 @@ import java.util.regex.Pattern;
 
 import cpw.mods.fml.common.FMLLog;
 import nallar.reporting.Reporter;
-import nallar.tickthreading.util.MappingUtil;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.gui.GuiLogOutputHandler;
 import net.minecraft.tileentity.TileEntity;
@@ -295,7 +294,7 @@ public class Log {
 	}
 
 	public static String classString(Object o) {
-		return "c " + MappingUtil.debobfuscate(o.getClass().getName()) + ' ';
+		return "c " + o.getClass().getName() + ' ';
 	}
 
 	public static String toString(Object o) {

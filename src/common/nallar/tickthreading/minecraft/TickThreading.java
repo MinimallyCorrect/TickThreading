@@ -67,7 +67,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.WorldEvent;
 
 @SuppressWarnings ("WeakerAccess")
-@Mod (modid = "TickThreading", name = "TickThreading", version = "@MOD_VERSION@", acceptedMinecraftVersions = "[1.4.7]")
+@Mod (modid = "TickThreading", name = "TickThreading", version = "@MOD_VERSION@", acceptedMinecraftVersions = "[@MC_VERSION@]")
 @NetworkMod (clientSideRequired = false, serverSideRequired = false)
 public class TickThreading {
 	@Mod.Instance
@@ -149,13 +149,13 @@ public class TickThreading {
 		config.load();
 		String GENERAL = Configuration.CATEGORY_GENERAL;
 
-		TicksCommand.name = config.get(GENERAL, "ticksCommandName", TicksCommand.name, "Name of the command to be used for performance stats. Defaults to ticks.").value;
-		TPSCommand.name = config.get(GENERAL, "tpsCommandName", TPSCommand.name, "Name of the command to be used for TPS reports.").value;
-		ProfileCommand.name = config.get(GENERAL, "profileCommandName", ProfileCommand.name, "Name of the command to be used for profiling reports.").value;
-		DumpCommand.name = config.get(GENERAL, "dumpCommandName", DumpCommand.name, "Name of the command to be used for profiling reports.").value;
-		messageDeadlockDetected = config.get(GENERAL, "messageDeadlockDetected", messageDeadlockDetected, "The message to be displayed if a deadlock is detected. (Only sent if exitOnDeadlock is on)").value;
-		messageDeadlockRecovered = config.get(GENERAL, "messageDeadlockRecovered", messageDeadlockRecovered, "The message to be displayed if the server recovers from an apparent deadlock. (Only sent if exitOnDeadlock is on)").value;
-		messageDeadlockSavingExiting = config.get(GENERAL, "messageDeadlockSavingExiting", messageDeadlockSavingExiting, "The message to be displayed when the server attempts to save and stop after a deadlock. (Only sent if exitOnDeadlock is on)").value;
+		TicksCommand.name = config.get(GENERAL, "ticksCommandName", TicksCommand.name, "Name of the command to be used for performance stats. Defaults to ticks.").getString();
+		TPSCommand.name = config.get(GENERAL, "tpsCommandName", TPSCommand.name, "Name of the command to be used for TPS reports.").getString();
+		ProfileCommand.name = config.get(GENERAL, "profileCommandName", ProfileCommand.name, "Name of the command to be used for profiling reports.").getString();
+		DumpCommand.name = config.get(GENERAL, "dumpCommandName", DumpCommand.name, "Name of the command to be used for profiling reports.").getString();
+		messageDeadlockDetected = config.get(GENERAL, "messageDeadlockDetected", messageDeadlockDetected, "The message to be displayed if a deadlock is detected. (Only sent if exitOnDeadlock is on)").getString();
+		messageDeadlockRecovered = config.get(GENERAL, "messageDeadlockRecovered", messageDeadlockRecovered, "The message to be displayed if the server recovers from an apparent deadlock. (Only sent if exitOnDeadlock is on)").getString();
+		messageDeadlockSavingExiting = config.get(GENERAL, "messageDeadlockSavingExiting", messageDeadlockSavingExiting, "The message to be displayed when the server attempts to save and stop after a deadlock. (Only sent if exitOnDeadlock is on)").getString();
 		tickThreads = config.get(GENERAL, "tickThreads", tickThreads, "number of threads to use to tick. 0 = automatic").getInt(tickThreads);
 		regionSize = config.get(GENERAL, "regionSize", regionSize, "width/length of tick regions, specified in blocks. Should be a power of 2 (eg: 16/32)").getInt(regionSize);
 		saveInterval = config.get(GENERAL, "saveInterval", saveInterval, "Time between auto-saves, in ticks.").getInt(saveInterval);
@@ -182,7 +182,7 @@ public class TickThreading {
 		allowWorldUnloading = config.get(GENERAL, "allowWorldUnloading", allowWorldUnloading, "Whether worlds should be allowed to unload.").getBoolean(allowWorldUnloading);
 		enableBugWarningMessage = config.get(GENERAL, "enableBugWarningMessage", enableBugWarningMessage, "Whether to enable warning if there are severe known compatibility issues with the current TT build you are using and your installed mods. Highly recommend leaving this enabled, if you disable it chances are you'll get users experiencing these issues annoying mod authors, which I really don't want to happen.").getBoolean(enableBugWarningMessage);
 		profilingInterval = config.get(GENERAL, "profilingInterval", profilingInterval, "Interval, in minutes, to record profiling information to disk. 0 = never. Recommended >= 2.").getInt();
-		profilingFileName = config.get(GENERAL, "profilingFileName", profilingFileName, "Location to store profiling information to, relative to the server folder. For example, why not store it in a computercraft computer's folder?").value;
+		profilingFileName = config.get(GENERAL, "profilingFileName", profilingFileName, "Location to store profiling information to, relative to the server folder. For example, why not store it in a computercraft computer's folder?").getString();
 		profilingJson = config.get(GENERAL, "profilingJson", profilingJson, "Whether to write periodic profiling in JSON format").getBoolean(profilingJson);
 		rateLimitChunkUpdates = config.get(GENERAL, "rateLimitChunkUpdates", rateLimitChunkUpdates, "Whether to prevent repeated chunk updates which can cause rendering issues and disconnections for slow clients/connections.").getBoolean(rateLimitChunkUpdates);
 		config.save();

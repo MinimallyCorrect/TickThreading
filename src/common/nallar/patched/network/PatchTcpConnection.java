@@ -7,11 +7,13 @@ import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Queue;
 
 import nallar.collections.ConcurrentQueueList;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.patcher.Declare;
 import nallar.tickthreading.util.ReflectUtil;
+import net.minecraft.logging.ILogAgent;
 import net.minecraft.network.TcpConnection;
 import net.minecraft.network.packet.IPacketHandler;
 import net.minecraft.network.packet.NetHandler;
@@ -20,8 +22,8 @@ import net.minecraft.network.packet.Packet;
 public abstract class PatchTcpConnection extends TcpConnection {
 	private static List<IPacketHandler> packetHandlers;
 
-	public PatchTcpConnection(Socket par1Socket, String par2Str, NetHandler par3NetHandler) throws IOException {
-		super(par1Socket, par2Str, par3NetHandler);
+	public PatchTcpConnection(final ILogAgent par1ILogAgent, final Socket par2Socket, final String par3Str, final NetHandler par4NetHandler) throws IOException {
+		super(par1ILogAgent, par2Socket, par3Str, par4NetHandler);
 	}
 
 	public void construct() {
@@ -58,9 +60,9 @@ public abstract class PatchTcpConnection extends TcpConnection {
 			return actualReadPackets = readPackets;
 		} catch (NoSuchFieldError e) {
 			try {
-				return actualReadPackets = (Collection<Packet>) ReflectUtil.getField(TcpConnection.class, "o").get(this); // TODO: Implement reflection obfuscation
-			} catch (IllegalAccessException e1) {
-				Log.severe("Failed to get readPackets collection", e1);
+				return actualReadPackets = (Collection<Packet>) ReflectUtil.getField(this.getClass(), Queue.class, 0).get(this);
+			} catch (Throwable t) {
+				Log.severe("Failed to get readPackets collection", t);
 			}
 		}
 		throw new Error("Failed to get readPackets collection");

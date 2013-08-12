@@ -27,7 +27,7 @@ public enum PatchUtil {
 	private static boolean written = false;
 
 	private static String getClassPath() {
-		return LocationUtil.locationOf(TickThreading.class).toString() + File.pathSeparator + new File(LocationUtil.getServerDirectory(), "lib/guava-12.0.1.jar");
+		return LocationUtil.locationOf(TickThreading.class).toString() + File.pathSeparator + new File(LocationUtil.getServerDirectory(), "lib/guava-14.0-rc3.jar") + File.pathSeparator + new File(LocationUtil.getServerDirectory(), "lib/asm-all-4.1.jar");
 	}
 
 	public static synchronized void writePatchRunners() throws IOException {

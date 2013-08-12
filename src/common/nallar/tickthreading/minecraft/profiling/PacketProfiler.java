@@ -9,7 +9,6 @@ import com.google.common.base.Functions;
 import com.google.common.collect.Ordering;
 
 import nallar.tickthreading.minecraft.commands.Command;
-import nallar.tickthreading.util.MappingUtil;
 import nallar.tickthreading.util.TableFormatter;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.network.packet.Packet;
@@ -100,7 +99,7 @@ public class PacketProfiler {
 		} catch (NumberFormatException ignored) {
 			return name;
 		}
-		return MappingUtil.debobfuscate(((Class) Packet.packetIdToClassMap.lookup(id)).getName()).replace("net.minecraft.network.packet.Packet", "");
+		return ((Class) Packet.packetIdToClassMap.lookup(id)).getName().replace("net.minecraft.network.packet.Packet", "");
 	}
 
 	public static void record(final Packet packet) {

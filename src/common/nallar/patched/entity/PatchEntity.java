@@ -77,7 +77,7 @@ public abstract class PatchEntity extends Entity {
 			if (sneakingPlayer) {
 				double var21;
 
-				for (var21 = 0.05D; vX != 0.0D && !this.worldObj.hasCollidingBoundingBoxes(this, this.boundingBox.getOffsetBoundingBox(vX, -1.0D, 0.0D)); vX1 = vX) {
+				for (var21 = 0.05D; vX != 0.0D && !this.worldObj.hasCollidingBoundingBoxes(this, this.boundingBox.getOffsetBoundingBox(vX, -1.0D, 0.0D), null); vX1 = vX) {
 					if (vX < var21 && vX >= -var21) {
 						vX = 0.0D;
 					} else if (vX > 0.0D) {
@@ -87,7 +87,7 @@ public abstract class PatchEntity extends Entity {
 					}
 				}
 
-				for (; vZ != 0.0D && !this.worldObj.hasCollidingBoundingBoxes(this, this.boundingBox.getOffsetBoundingBox(0.0D, -1.0D, vZ)); vZ1 = vZ) {
+				for (; vZ != 0.0D && !this.worldObj.hasCollidingBoundingBoxes(this, this.boundingBox.getOffsetBoundingBox(0.0D, -1.0D, vZ), null); vZ1 = vZ) {
 					if (vZ < var21 && vZ >= -var21) {
 						vZ = 0.0D;
 					} else if (vZ > 0.0D) {
@@ -97,7 +97,7 @@ public abstract class PatchEntity extends Entity {
 					}
 				}
 
-				while (vX != 0.0D && vZ != 0.0D && !this.worldObj.hasCollidingBoundingBoxes(this, this.boundingBox.getOffsetBoundingBox(vX, -1.0D, vZ))) {
+				while (vX != 0.0D && vZ != 0.0D && !this.worldObj.hasCollidingBoundingBoxes(this, this.boundingBox.getOffsetBoundingBox(vX, -1.0D, vZ), null)) {
 					if (vX < var21 && vX >= -var21) {
 						vX = 0.0D;
 					} else if (vX > 0.0D) {
@@ -119,7 +119,7 @@ public abstract class PatchEntity extends Entity {
 				}
 			}
 
-			List<AxisAlignedBB> collidingBoundingBoxes = this.worldObj.getCollidingBoundingBoxes(this, this.boundingBox.addCoord(vX, vY, vZ), 12);
+			List<AxisAlignedBB> collidingBoundingBoxes = this.worldObj.getCollidingBoundingBoxes(this, this.boundingBox.addCoord(vX, vY, vZ), null, 12);
 			int collidingBoundingBoxesSize = collidingBoundingBoxes.size();
 			collisionSkipCounter = collidingBoundingBoxesSize / 11;
 			if (collisionSkipCounter != 0 && tickRegion != null) {
@@ -179,7 +179,7 @@ public abstract class PatchEntity extends Entity {
 				vZ = vZ1;
 				AxisAlignedBB var29 = this.boundingBox.copy();
 				this.boundingBox.setBB(var19);
-				collidingBoundingBoxes = this.worldObj.getCollidingBoundingBoxes(this, this.boundingBox.addCoord(vX1, vY, vZ1), 10);
+				collidingBoundingBoxes = this.worldObj.getCollidingBoundingBoxes(this, this.boundingBox.addCoord(vX1, vY, vZ1), null, 10);
 				collidingBoundingBoxesSize = collidingBoundingBoxes.size();
 
 				for (var30 = 0; var30 < collidingBoundingBoxesSize; ++var30) {
@@ -298,10 +298,10 @@ public abstract class PatchEntity extends Entity {
 				}
 
 				this.distanceWalkedModified = (float) ((double) this.distanceWalkedModified + (double) MathHelper.sqrt_double(var36 * var36 + var27 * var27) * 0.6D);
-				this.field_82151_R = (float) ((double) this.field_82151_R + (double) MathHelper.sqrt_double(var36 * var36 + var25 * var25 + var27 * var27) * 0.6D);
+				this.distanceWalkedOnStepModified = (float) ((double) this.distanceWalkedOnStepModified + (double) MathHelper.sqrt_double(var36 * var36 + var25 * var25 + var27 * var27) * 0.6D);
 
-				if (this.field_82151_R > (float) this.nextStepDistance && var32 > 0) {
-					this.nextStepDistance = (int) this.field_82151_R + 1;
+				if (this.distanceWalkedOnStepModified > (float) this.nextStepDistance && var32 > 0) {
+					this.nextStepDistance = (int) this.distanceWalkedOnStepModified + 1;
 
 					if (this.isInWater()) {
 						float var39 = MathHelper.sqrt_double(this.motionX * this.motionX * 0.20000000298023224D + this.motionY * this.motionY + this.motionZ * this.motionZ * 0.20000000298023224D) * 0.35F;

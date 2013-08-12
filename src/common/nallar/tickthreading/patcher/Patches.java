@@ -49,7 +49,6 @@ import nallar.insecurity.ThisIsNotAnError;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.mappings.MethodDescription;
 import nallar.tickthreading.util.CollectionsUtil;
-import nallar.tickthreading.util.MappingUtil;
 import nallar.tickthreading.util.ReflectUtil;
 import nallar.unsafe.UnsafeUtil;
 import org.omg.CORBA.IntHolder;
@@ -274,7 +273,10 @@ public class Patches {
 		}
 	}
 
-	@Patch
+	@Patch (
+			requiredAttributes = "oldClass,newClass",
+			emptyConstructor = false
+	)
 	public void replaceNew(Object o, Map<String, String> attributes) throws CannotCompileException, NotFoundException {
 		final String type = attributes.get("oldClass");
 		final String code = attributes.get("code");
@@ -625,20 +627,24 @@ public class Patches {
 		int currentIndex = 0;
 		Log.info("Removing until " + attributes.get("opcode") + ':' + opcode + " at " + removeIndex);
 		CtClass ctClass = ctBehavior.getDeclaringClass();
-		MethodInfo methodInfo = ctBehavior.getMethodInfo2();
+		MethodInfo methodInfo = ctBehavior.getMethodInfo();
 		CodeAttribute codeAttribute = methodInfo.getCodeAttribute();
 		if (codeAttribute != null) {
 			CodeIterator iterator = codeAttribute.iterator();
 			while (iterator.hasNext()) {
 				int index = iterator.next();
 				int op = iterator.byteAt(index);
-				if (op == opcode && (removeIndex == -1 || removeIndex == ++currentIndex)) {
+				if (op == opcode && (removeIndex < 0 || removeIndex == ++currentIndex)) {
 					for (int i = 0; i <= index; i++) {
 						iterator.writeByte(Opcode.NOP, i);
 					}
+					Log.info("Removed until " + index);
+					if (removeIndex == -2) {
+						break;
+					}
 				}
 			}
-			methodInfo.rebuildStackMapIf6(ctClass.getClassPool(), ctClass.getClassFile2());
+			methodInfo.rebuildStackMapIf6(ctClass.getClassPool(), ctClass.getClassFile());
 		}
 	}
 
@@ -676,9 +682,8 @@ public class Patches {
 			try {
 				CtClass type = ctClass.getDeclaredField(fieldName).getType();
 				if (type != expectedType) {
-					Log.severe("Field " + fieldName + " already exists, but as a different type. Exists: " + type + ", expected: " + expectedType);
-					removeField(ctClass, CollectionsUtil.<String, String>map("field", fieldName));
-					throw new NotFoundException("");
+					Log.warning("Field " + fieldName + " already exists, but as a different type. Exists: " + type.getName() + ", expected: " + expectedType.getName());
+					ctClass.getDeclaredField(fieldName).setType(expectedType);
 				}
 				boolean isStatic = (ctField.getModifiers() & Modifier.STATIC) == Modifier.STATIC;
 				if (isStatic != expectStatic) {
@@ -774,6 +779,21 @@ public class Patches {
 		publicInnerClasses(fromClass);
 	}
 
+	@Patch (
+			requiredAttributes = "field",
+			emptyConstructor = false
+	)
+	public void removeInitializers(Object o, Map<String, String> attributes) throws NotFoundException, CannotCompileException {
+		if (o instanceof CtClass) {
+			final CtField ctField = ((CtClass) o).getDeclaredField(attributes.get("field"));
+			for (CtBehavior ctBehavior : ((CtClass) o).getDeclaredBehaviors()) {
+				removeInitializers(ctBehavior, ctField);
+			}
+		} else {
+			removeInitializers((CtBehavior) o, ((CtBehavior) o).getDeclaringClass().getDeclaredField(attributes.get("field")));
+		}
+	}
+
 	private void removeInitializers(CtBehavior ctBehavior, final CtField ctField) throws CannotCompileException, NotFoundException {
 		replaceInitializer(ctBehavior, CollectionsUtil.<String, String>map(
 				"field", ctField.getName(),
@@ -782,7 +802,7 @@ public class Patches {
 		replaceFieldUsage(ctBehavior, CollectionsUtil.<String, String>map(
 				"field", ctField.getName(),
 				"writeCode", "{ }",
-				"readCode", "{ }",
+				"readCode", "{ $_ = null; }",
 				"silent", "true"));
 	}
 
@@ -1359,7 +1379,7 @@ public class Patches {
 					if (read && written) {
 						continue;
 					}
-					Log.fine("Field " + fieldName + " in " + MappingUtil.debobfuscate(ctClass.getName()) + " is read: " + read + ", written: " + written);
+					Log.fine("Field " + fieldName + " in " + ctClass.getName() + " is read: " + read + ", written: " + written);
 					if (!written && !read) {
 						ctClass.removeField(ctField);
 					}
