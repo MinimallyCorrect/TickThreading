@@ -1,7 +1,12 @@
 package nallar.tickthreading.patcher;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
@@ -30,6 +35,46 @@ public class PatchMain {
 		}
 	}
 
+	
+	public static FileInputStream getPatchFileStream() {
+        File file = new File("./config/TickThreadingPatches.xml");
+        if (!file.exists()) {
+            InputStream stream = null;
+            OutputStream resStreamOut = null;
+            try {
+                file.createNewFile();
+                stream = PatchMain.class.getResourceAsStream("/patches.xml");
+                if (stream == null) {
+                    return new FileInputStream(file);
+                }
+                int readBytes;
+                byte[] buffer = new byte[4096];
+                resStreamOut = new FileOutputStream(file);
+                while ((readBytes = stream.read(buffer)) > 0) {
+                  resStreamOut.write(buffer, 0, readBytes);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    if (stream != null) {
+                        stream.close();
+                    }
+                    if (resStreamOut != null) {
+                        resStreamOut.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        try {
+            return new FileInputStream(file);
+        } catch (FileNotFoundException e) {
+            return null;
+        }
+    }
+	 
 	private static void patcher(String[] args) {
 		List<String> argsList = Arrays.asList(args);
 		Log.setFileName("patcher", Level.FINEST, Log.LOGGER);
@@ -38,7 +83,7 @@ public class PatchMain {
 		PatchManager patchManager;
 		try {
 			//noinspection IOResourceOpenedButNotSafelyClosed
-			patchManager = new PatchManager(PatchMain.class.getResourceAsStream("/patches.xml"), Patches.class);
+			patchManager = new PatchManager(PatchMain.getPatchFileStream(), Patches.class);
 		} catch (Exception e) {
 			Log.severe("Failed to initialize Patch Manager", e);
 			return;

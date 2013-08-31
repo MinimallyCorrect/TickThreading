@@ -55,7 +55,7 @@ public enum PatchUtil {
 
 	public static boolean shouldPatch(Iterable<File> files) {
 		try {
-			PatchManager patchManager = new PatchManager(PatchMain.class.getResourceAsStream("/patches.xml"), Patches.class);
+			PatchManager patchManager = new PatchManager(PatchMain.getPatchFileStream(), Patches.class);
 			ArrayList<File> fileList = new ArrayList<File>();
 			for (File file : files) {
 				fileList.add(file.getAbsoluteFile());
