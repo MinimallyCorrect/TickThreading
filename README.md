@@ -2,6 +2,8 @@ TickThreading [![Build Status](http://nallar.me/buildservice/job/TickThreading/b
 ==========
 Multi-threaded minecraft server implementation. Compatible with Forge and MCPC+.
 
+Currently on extended hiatus due to school work.
+
 Copyright &copy; 2012, nallar <rallan.pcl+tt@gmail.com>
 
 TickThreading is licensed under the [N Open License, Version 1][License]
