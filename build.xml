@@ -111,7 +111,7 @@
 
 		<delete dir="${forge.dir}" failonerror="false"/>
 
-		<unzip dest="${forge.dir}/.." src="${download.dir}/${forge.name}"/>
+		<unzip dest="${forge.dir}/.." src="${download.dir}"/>
 
 		<!-- Fix executable permissions -->
 		<chmod dir="${forge.dir}" perm="ugo+rx" includes="**.sh"/>
