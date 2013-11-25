@@ -42,7 +42,7 @@
 		</fileset>
 	</path>
 
-	<mkdir dir="${download.dir}"/>
+	<!--<mkdir dir="${download.dir}"/> -->
 	<mkdir dir="${lib.dir}"/>
 	<mkdir dir="${build.dir}"/>
 
