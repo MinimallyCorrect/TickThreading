@@ -98,8 +98,6 @@
 			<artifact:dependency groupId="org.codehaus.jackson" artifactId="jackson-core-lgpl" version="1.9.12"/>
 			<artifact:dependency groupId="org.codehaus.jackson" artifactId="jackson-mapper-lgpl" version="1.9.12"/>
 			<artifact:dependency groupId="com.google.guava" artifactId="guava" version="15.0"/>
-</dependency>
-			
 		</artifact:dependencies>
 		<copy todir="${lib.dir}">
 			<fileset refid="dependency.fileset"/>
