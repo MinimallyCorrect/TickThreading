@@ -2,7 +2,6 @@
 <project name="TickThreading" default="main" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
 	<property environment="env"/>
 	<!-- Properties -->
-
 	<property name="build.dir" value="build"/>
 	<property name="src.dir" value="src"/>
 	<property name="lib.dir" value="libs"/>
