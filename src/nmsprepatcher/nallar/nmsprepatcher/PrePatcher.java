@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.google.common.base.Splitter;
+import com.google.common.base.*;
 
 // The prepatcher adds method declarations in superclasses,
 // so javac can compile the patch classes if they need to use a method/field they
