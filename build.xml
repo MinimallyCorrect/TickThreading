@@ -17,8 +17,8 @@
 
 	<property name="mcpsrc.dir" value="${mcp.dir}/src"/>
 
-	<property name="mc.version" value="1.5.2"/>
-	<property name="forge.version" value="7.8.1.737"/>
+	<property name="mc.version" value="1.6.4"/>
+	<property name="forge.version" value="9.11.1.953"/>
 
 	<property name="forge.name" value="minecraftforge-src-${mc.version}-${forge.version}.zip"/>
 	<property name="maven-ant-tasks.name" value="maven-ant-tasks-2.1.3.jar"/>
@@ -39,6 +39,9 @@
 
 	<path id="class.path">
 		<fileset dir="${mcp.dir}/lib">
+			<include name="**/*.jar"/>
+		</fileset>
+		<fileset dir="${mcp.dir}/jars">
 			<include name="**/*.jar"/>
 		</fileset>
 	</path>
