@@ -26,8 +26,9 @@ public class TicksCommand extends Command {
 		return TickThreading.instance.requireOpForTicksCommand;
 	}
 
-	private static void usage(ICommandSender commandSender) {
-		sendChat(commandSender, "Usage: /ticks [b/d/e/l/t/r [radius]/?] [dimensionid]");
+	@Override
+	public String getCommandUsage(ICommandSender commandSender) {
+		return "Usage: /ticks [b/d/e/l/t/r [radius]/?] [dimensionid]";
 	}
 
 	private static World getWorld(ICommandSender commandSender, List<String> arguments) {
@@ -101,7 +102,7 @@ public class TicksCommand extends Command {
 			world = null;
 		}
 		if (world == null) {
-			usage(commandSender);
+			sendChat(commandSender, usage());
 			return;
 		}
 		if ("e".equals(type)) {
@@ -118,7 +119,7 @@ public class TicksCommand extends Command {
 		} else if ("l".equals(type)) {
 			sendChat(commandSender, String.valueOf(TickThreading.instance.getManager(world).writeTECounts(new TableFormatter(commandSender))));
 		} else {
-			usage(commandSender);
+			sendChat(commandSender, usage());
 		}
 	}
 }

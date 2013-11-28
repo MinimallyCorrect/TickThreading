@@ -11,11 +11,16 @@ import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ChatMessageComponent;
 import ru.tehkode.permissions.IPermissions;
 
 public abstract class Command extends CommandBase {
 	protected boolean requireOp() {
 		return false;
+	}
+
+	public String usage() {
+		return getCommandUsage(null);
 	}
 
 	@Override
@@ -55,7 +60,7 @@ public abstract class Command extends CommandBase {
 				sent = message.substring(0, nlIndex);
 				message = message.substring(nlIndex + 1);
 			}
-			commandSender.sendChatToPlayer(sent);
+			commandSender.sendChatToPlayer(new ChatMessageComponent().addText(sent));
 		}
 	}
 

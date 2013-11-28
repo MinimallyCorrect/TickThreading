@@ -22,6 +22,11 @@ public class TPSCommand extends Command {
 	}
 
 	@Override
+	public String getCommandUsage(ICommandSender commandSender) {
+		return "Usage: /tps";
+	}
+
+	@Override
 	public void processCommand(ICommandSender commandSender, List<String> arguments) {
 		StatsHolder statsHolder = new StatsHolder();
 		TableFormatter tf = new TableFormatter(commandSender);

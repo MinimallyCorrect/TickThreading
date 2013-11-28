@@ -33,6 +33,11 @@ public class ProfileCommand extends Command {
 	}
 
 	@Override
+	public String getCommandUsage(ICommandSender commandSender) {
+		return "Usage: /profile [type=a/e/l/p/u/(c [chunk x] [chunk z])] [time=7] [dimensionid=current dimension]";
+	}
+
+	@Override
 	public void processCommand(final ICommandSender commandSender, List<String> arguments) {
 		World world = null;
 		int time_ = 7;
@@ -77,7 +82,7 @@ public class ProfileCommand extends Command {
 				}
 			}
 		} catch (Exception e) {
-			sendChat(commandSender, "Usage: /profile [type=a/e/l/p/u/(c [chunk x] [chunk z])] [time=7] [dimensionid=current dimension]");
+			sendChat(commandSender, usage());
 			return;
 		}
 		final int time = time_;

@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 import cpw.mods.fml.common.FMLLog;
 import nallar.reporting.Reporter;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.gui.GuiLogOutputHandler;
+import net.minecraft.server.gui.TextAreaLogHandler;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
@@ -79,7 +79,7 @@ public class Log {
 			setFileName("tickthreading", Level.INFO, LOGGER);
 			Logger minecraftLogger = Logger.getLogger("Minecraft");
 			for (Handler handler : minecraftLogger.getHandlers()) {
-				if (handler instanceof GuiLogOutputHandler) {
+				if (handler instanceof TextAreaLogHandler) {
 					if (!Arrays.asList(parent.getHandlers()).contains(handlerWrapper)) {
 						wrappedHandler = handler;
 						parent.addHandler(handlerWrapper);

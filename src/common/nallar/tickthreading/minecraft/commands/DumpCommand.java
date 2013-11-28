@@ -28,6 +28,11 @@ public class DumpCommand extends Command {
 	}
 
 	@Override
+	public String getCommandUsage(ICommandSender commandSender) {
+		return "Usage: /dump x y z [world=currentworld]\\nRight clicking a block with a clock will execute /dump on that block.";
+	}
+
+	@Override
 	public void processCommand(final ICommandSender commandSender, List<String> arguments) {
 		World world = DimensionManager.getWorld(0);
 		int x = 0;
@@ -47,7 +52,7 @@ public class DumpCommand extends Command {
 			world = null;
 		}
 		if (world == null) {
-			sendChat(commandSender, "Usage: /dump x y z [world=currentworld]\nRight clicking a block with a clock will execute /dump on that block.");
+			sendChat(commandSender, usage());
 			return;
 		}
 		sendChat(commandSender, dump(new TableFormatter(commandSender), world, x, y, z, commandSender instanceof Entity ? 35 : 70).toString());
