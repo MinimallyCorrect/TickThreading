@@ -208,7 +208,7 @@ public final class TickManager {
 				}
 			}
 
-			world.releaseEntitySkin(entity);
+			world.onEntityRemoved(entity);
 
 			EntityTickRegion tickRegion = entity.tickRegion;
 			if (tickRegion != null) {
