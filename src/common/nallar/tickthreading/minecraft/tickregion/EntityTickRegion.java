@@ -80,7 +80,7 @@ public class EntityTickRegion extends TickRegion {
 
 						entitiesIterator.remove();
 						manager.removed(entity);
-						world.releaseEntitySkin(entity);
+						world.onEntityRemoved(entity);
 					} else if (TickManager.getHashCode(entity) != hashCode) {
 						entitiesIterator.remove();
 						manager.add(entity, false);
