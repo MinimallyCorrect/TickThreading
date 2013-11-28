@@ -15,6 +15,7 @@ import net.minecraft.network.packet.Packet250CustomPayload;
 import net.minecraft.network.packet.Packet9Respawn;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.ServerConfigurationManager;
+import net.minecraft.util.ChatMessageComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 
@@ -42,8 +43,8 @@ public class Redirects {
 			for (Object aPlayerEntityList : MinecraftServer.getServer().getConfigurationManager().playerEntityList) {
 				EntityPlayerMP var7 = (EntityPlayerMP) aPlayerEntityList;
 
-				if (MinecraftServer.getServer().getConfigurationManager().areCommandsAllowed(var7.username)) {
-					var7.sendChatToPlayer(message);
+				if (MinecraftServer.getServer().getConfigurationManager().isPlayerOpped(var7.username)) {
+					var7.sendChatToPlayer(new ChatMessageComponent().addText(message));
 				}
 			}
 		} finally {
