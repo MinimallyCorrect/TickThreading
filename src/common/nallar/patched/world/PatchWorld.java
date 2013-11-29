@@ -265,7 +265,7 @@ public abstract class PatchWorld extends World {
 				}
 
 				if (playerEntity.isInvisible()) {
-					float f = playerEntity.func_82243_bO();
+					float f = playerEntity.getArmorVisibility();
 
 					if (f < 0.1F) {
 						f = 0.1F;
@@ -470,7 +470,7 @@ public abstract class PatchWorld extends World {
 				par1List.remove(var2--);
 			} else if (entityTracker == null || !entityTracker.isTracking(entity.entityId)) {
 				loadedEntityList.add(entity);
-				this.obtainEntitySkin(entity);
+				this.onEntityAdded(entity);
 			}
 		}
 	}
@@ -759,7 +759,7 @@ public abstract class PatchWorld extends World {
 					}
 				}
 
-				releaseEntitySkin(entity);
+				onEntityRemoved(entity);
 			}
 			unloadedEntitySet.clear();
 			theProfiler.endStartSection("entities");
@@ -783,7 +783,7 @@ public abstract class PatchWorld extends World {
 					} catch (Throwable var7) {
 						var4 = CrashReport.makeCrashReport(var7, "Ticking entity");
 						var5 = var4.makeCategory("Entity being ticked");
-						weatherEffect.func_85029_a(var5);
+						weatherEffect.addEntityCrashInfo(var5);
 
 						throw new ReportedException(var4);
 					}
@@ -804,7 +804,7 @@ public abstract class PatchWorld extends World {
 					}
 
 					loadedEntityList.remove(var1--);
-					releaseEntitySkin(weatherEffect);
+					onEntityRemoved(weatherEffect);
 				}
 
 				theProfiler.endSection();
@@ -817,7 +817,7 @@ public abstract class PatchWorld extends World {
 			while (var14.hasNext()) {
 				TileEntity var9 = (TileEntity) var14.next();
 
-				if (!var9.isInvalid() && var9.func_70309_m() && blockExists(var9.xCoord, var9.yCoord, var9.zCoord)) {
+				if (!var9.isInvalid() && var9.hasWorldObj() && blockExists(var9.xCoord, var9.yCoord, var9.zCoord)) {
 					try {
 						var9.updateEntity();
 					} catch (Throwable var8) {
@@ -1059,7 +1059,7 @@ public abstract class PatchWorld extends World {
 					double y = target.minY + (target.maxY - target.minY) * (double) var12;
 					double z = target.minZ + (target.maxZ - target.minZ) * (double) var13;
 
-					if (rayTraceBlocks(center.setComponents(x, y, z), start) == null) {
+					if (clip(center.setComponents(x, y, z), start) == null) {
 						++hit;
 					}
 
