@@ -1,8 +1,6 @@
 package nallar.patched.entity;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -164,13 +162,13 @@ public abstract class PatchDataWatcher extends DataWatcher {
 	}
 
 	@Override
-	public void writeWatchableObjects(DataOutputStream par1DataOutputStream) throws IOException {
+	public void writeWatchableObjects(DataOutput dataOutput) throws IOException {
 		for (WatchableObject watchableobject : watchedObjects) {
 			if (watchableobject != null) {
-				a(par1DataOutputStream, watchableobject);
+				a(dataOutput, watchableobject);
 			}
 		}
-		par1DataOutputStream.writeByte(127);
+		dataOutput.writeByte(127);
 	}
 
 	@Override
@@ -189,42 +187,42 @@ public abstract class PatchDataWatcher extends DataWatcher {
 		return arraylist;
 	}
 
-	protected static void a(DataOutputStream par0DataOutputStream, WatchableObject par1WatchableObject) throws IOException {
+	protected static void a(DataOutput dataOutput, WatchableObject par1WatchableObject) throws IOException {
 		int i = (par1WatchableObject.getObjectType() << 5 | par1WatchableObject.getDataValueId() & 31) & 255;
-		par0DataOutputStream.writeByte(i);
+		dataOutput.writeByte(i);
 
 		switch (par1WatchableObject.getObjectType()) {
 			case 0:
-				par0DataOutputStream.writeByte(((Byte) par1WatchableObject.getObject()).byteValue());
+				dataOutput.writeByte((Byte) par1WatchableObject.getObject());
 				break;
 			case 1:
-				par0DataOutputStream.writeShort(((Short) par1WatchableObject.getObject()).shortValue());
+				dataOutput.writeShort((Short) par1WatchableObject.getObject());
 				break;
 			case 2:
-				par0DataOutputStream.writeInt(((Integer) par1WatchableObject.getObject()).intValue());
+				dataOutput.writeInt((Integer) par1WatchableObject.getObject());
 				break;
 			case 3:
-				par0DataOutputStream.writeFloat(((Float) par1WatchableObject.getObject()).floatValue());
+				dataOutput.writeFloat((Float) par1WatchableObject.getObject());
 				break;
 			case 4:
-				Packet.writeString((String) par1WatchableObject.getObject(), par0DataOutputStream);
+				Packet.writeString((String) par1WatchableObject.getObject(), dataOutput);
 				break;
 			case 5:
 				ItemStack itemstack = (ItemStack) par1WatchableObject.getObject();
-				Packet.writeItemStack(itemstack, par0DataOutputStream);
+				Packet.writeItemStack(itemstack, dataOutput);
 				break;
 			case 6:
 				ChunkCoordinates chunkcoordinates = (ChunkCoordinates) par1WatchableObject.getObject();
-				par0DataOutputStream.writeInt(chunkcoordinates.posX);
-				par0DataOutputStream.writeInt(chunkcoordinates.posY);
-				par0DataOutputStream.writeInt(chunkcoordinates.posZ);
+				dataOutput.writeInt(chunkcoordinates.posX);
+				dataOutput.writeInt(chunkcoordinates.posY);
+				dataOutput.writeInt(chunkcoordinates.posZ);
 		}
 	}
 
-	public static List a(DataInputStream par0DataInputStream) throws IOException {
+	public static List a(DataInput dataInput) throws IOException {
 		ArrayList arraylist = null;
 
-		for (byte b0 = par0DataInputStream.readByte(); b0 != 127; b0 = par0DataInputStream.readByte()) {
+		for (byte b0 = dataInput.readByte(); b0 != 127; b0 = dataInput.readByte()) {
 			if (arraylist == null) {
 				arraylist = new ArrayList();
 			}
@@ -235,27 +233,27 @@ public abstract class PatchDataWatcher extends DataWatcher {
 
 			switch (i) {
 				case 0:
-					watchableobject = new WatchableObject(i, j, par0DataInputStream.readByte());
+					watchableobject = new WatchableObject(i, j, dataInput.readByte());
 					break;
 				case 1:
-					watchableobject = new WatchableObject(i, j, par0DataInputStream.readShort());
+					watchableobject = new WatchableObject(i, j, dataInput.readShort());
 					break;
 				case 2:
-					watchableobject = new WatchableObject(i, j, par0DataInputStream.readInt());
+					watchableobject = new WatchableObject(i, j, dataInput.readInt());
 					break;
 				case 3:
-					watchableobject = new WatchableObject(i, j, par0DataInputStream.readFloat());
+					watchableobject = new WatchableObject(i, j, dataInput.readFloat());
 					break;
 				case 4:
-					watchableobject = new WatchableObject(i, j, Packet.readString(par0DataInputStream, 64));
+					watchableobject = new WatchableObject(i, j, Packet.readString(dataInput, 64));
 					break;
 				case 5:
-					watchableobject = new WatchableObject(i, j, Packet.readItemStack(par0DataInputStream));
+					watchableobject = new WatchableObject(i, j, Packet.readItemStack(dataInput));
 					break;
 				case 6:
-					int k = par0DataInputStream.readInt();
-					int l = par0DataInputStream.readInt();
-					int i1 = par0DataInputStream.readInt();
+					int k = dataInput.readInt();
+					int l = dataInput.readInt();
+					int i1 = dataInput.readInt();
 					watchableobject = new WatchableObject(i, j, new ChunkCoordinates(k, l, i1));
 			}
 
