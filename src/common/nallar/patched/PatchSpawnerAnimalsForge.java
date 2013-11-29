@@ -8,6 +8,7 @@ import java.util.logging.Level;
 
 import cpw.mods.fml.common.FMLLog;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingData;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
@@ -84,6 +85,7 @@ public abstract class PatchSpawnerAnimalsForge extends SpawnerAnimals {
 								int var20 = var15;
 								byte var21 = 6;
 								SpawnListEntry var22 = null;
+								EntityLivingData unusedEntityLivingData = null;
 								int var23 = 0;
 
 								while (true) {
@@ -125,7 +127,10 @@ public abstract class PatchSpawnerAnimalsForge extends SpawnerAnimals {
 															if (canSpawn == Event.Result.ALLOW || (canSpawn == Event.Result.DEFAULT && var39.getCanSpawnHere())) {
 																++var16;
 																par0WorldServer.spawnEntityInWorld(var39);
-																creatureSpecificInit(var39, par0WorldServer, var24, var25, var26);
+																if (!ForgeEventFactory.doSpecialSpawn(var39, par0WorldServer, var24, var25, var26))
+																{
+																	unusedEntityLivingData = var39.onSpawnWithEgg(unusedEntityLivingData);
+																}
 
 																if (var16 >= var39.getMaxSpawnedInChunk()) {
 																	continue label110;

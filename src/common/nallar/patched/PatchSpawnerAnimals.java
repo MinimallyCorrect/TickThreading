@@ -11,6 +11,7 @@ import nallar.tickthreading.minecraft.TickThreading;
 import nallar.tickthreading.patcher.Declare;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingData;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.profiler.Profiler;
@@ -172,6 +173,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 				continue;
 			}
 			if (worldServer.getBlockMaterial(sX, sY, sZ) == creatureType.getCreatureMaterial()) {
+				EntityLivingData unusedEntityLivingData = null;
 				for (int i = 0; i < ((clumping * 3) / 2); i++) {
 					int ssX = sX + (worldServer.rand.nextInt(spawnVariance) - spawnVariance / 2);
 					int ssZ = sZ + (worldServer.rand.nextInt(spawnVariance) - spawnVariance / 2);
@@ -204,7 +206,10 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 							Event.Result canSpawn = ForgeEventFactory.canEntitySpawn(spawnedEntity, worldServer, ssX, ssY, ssZ);
 							if (canSpawn == Event.Result.ALLOW || (canSpawn == Event.Result.DEFAULT && spawnedEntity.getCanSpawnHere())) {
 								worldServer.spawnEntityInWorld(spawnedEntity);
-								creatureSpecificInit(spawnedEntity, worldServer, ssX, ssY, ssZ);
+								if (!ForgeEventFactory.doSpecialSpawn(spawnedEntity, worldServer, ssX, ssY, ssZ))
+								{
+									unusedEntityLivingData = spawnedEntity.onSpawnWithEgg(unusedEntityLivingData);
+								}
 							}
 							attemptedSpawnedMobs++;
 						} catch (Exception e) {
