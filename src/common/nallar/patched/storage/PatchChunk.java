@@ -481,7 +481,7 @@ public abstract class PatchChunk extends Chunk {
 			Block oldBlock = oldId > 0 ? Block.blocksList[oldId] : null;
 
 			if (oldBlock != null && !worldObj.isRemote) {
-				oldBlock.onSetBlockIDWithMetaData(worldObj, wX, y, wZ, oldMeta);
+				oldBlock.onBlockPreDestroy(worldObj, wX, y, wZ, oldMeta);
 			}
 
 			ebs.setExtBlockID(x, y & 15, z, id);
