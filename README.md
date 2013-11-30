@@ -1,8 +1,6 @@
-TickThreading [![Build Status](http://nallar.me/buildservice/job/TickThreading/badge/icon)](http://nallar.me/buildservice/job/TickThreading/)
+TickThreading [![Build Status](http://nallar.me/buildservice/job/TickThreading-1.6.4/badge/icon)](http://nallar.me/buildservice/job/TickThreading-1.6.4/)
 ==========
 Multi-threaded minecraft server implementation. Compatible with Forge and MCPC+.
-
-Currently on extended hiatus due to school work.
 
 Copyright &copy; 2012, nallar <rallan.pcl+tt@gmail.com>
 
