@@ -83,7 +83,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		}
 		threadManager = new ThreadManager(TickThreading.instance.getThreadCount(), "Chunk Updates for " + Log.name(this));
 		try {
-			field_73064_N = null;
+			pendingTickListEntriesHashSet = null;
 		} catch (NoSuchFieldError ignored) {
 			//MCPC+ compatibility - they also remove this.
 		}
@@ -262,10 +262,12 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	}
 
 	@Override
-	public void func_82740_a(int x, int y, int z, int blockID, int timeOffset, int par6) {
+	public void scheduleBlockUpdateWithPriority(int x, int y, int z, int blockID, int timeOffset, int par6) {
 		NextTickListEntry nextTickListEntry = new NextTickListEntry(x, y, z, blockID);
-		boolean isForced = getPersistentChunks().containsKey(new ChunkCoordIntPair(nextTickListEntry.xCoord >> 4, nextTickListEntry.zCoord >> 4));
-		byte range = isForced ? (byte) 0 : 8;
+		//boolean isForced = getPersistentChunks().containsKey(new ChunkCoordIntPair(nextTickListEntry.xCoord >> 4, nextTickListEntry.zCoord >> 4));
+		//byte range = isForced ? (byte) 0 : 8;
+		// Removed in Forge for now.
+		byte range = 0;
 
 		if (blockID > 0 && timeOffset <= 20 && worldGenInProgress.get() == Boolean.TRUE && inImmediateBlockUpdate.get() == Boolean.FALSE) {
 			if (Block.blocksList[blockID].func_82506_l()) {
@@ -291,7 +293,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		if (this.checkChunksExist(x - range, y - range, z - range, x + range, y + range, z + range)) {
 			if (blockID > 0) {
 				nextTickListEntry.setScheduledTime((long) timeOffset + worldInfo.getWorldTotalTime());
-				nextTickListEntry.func_82753_a(par6);
+				nextTickListEntry.setPriority(par6);
 			}
 
 			pendingTickListEntries.add(nextTickListEntry);
@@ -301,7 +303,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	@Override
 	public void scheduleBlockUpdateFromLoad(int x, int y, int z, int blockID, int timeOffset, int par6) {
 		NextTickListEntry nextTickListEntry = new NextTickListEntry(x, y, z, blockID);
-		nextTickListEntry.func_82753_a(par6);
+		nextTickListEntry.setPriority(par6);
 
 		if (blockID > 0) {
 			nextTickListEntry.setScheduledTime((long) timeOffset + worldInfo.getWorldTotalTime());
@@ -395,7 +397,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 			if (TickThreading.instance.shouldFastSpawn(this)) {
 				SpawnerAnimals.spawnMobsQuickly(this, spawnHostileMobs && (ticksPerMonsterSpawns != 0 && tickCount % ticksPerMonsterSpawns == 0L), spawnPeacefulMobs && (ticksPerAnimalSpawns != 0 && tickCount % ticksPerAnimalSpawns == 0L), worldInfo.getWorldTotalTime() % 400L == 0L);
 			} else {
-				SpawnerAnimals.findChunksForSpawning(this, spawnHostileMobs && (ticksPerMonsterSpawns != 0 && tickCount % ticksPerMonsterSpawns == 0L), spawnPeacefulMobs && (ticksPerAnimalSpawns != 0 && tickCount % ticksPerAnimalSpawns == 0L), worldInfo.getWorldTotalTime() % 400L == 0L);
+				animalSpawner.findChunksForSpawning(this, spawnHostileMobs && (ticksPerMonsterSpawns != 0 && tickCount % ticksPerMonsterSpawns == 0L), spawnPeacefulMobs && (ticksPerAnimalSpawns != 0 && tickCount % ticksPerAnimalSpawns == 0L), worldInfo.getWorldTotalTime() % 400L == 0L);
 			}
 		}
 
@@ -417,7 +419,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		this.villageCollectionObj.tick();
 		this.villageSiegeObj.tick();
 		profiler.endStartSection("portalForcer");
-		this.field_85177_Q.removeStalePortalLocations(this.getTotalWorldTime());
+		this.worldTeleporter.removeStalePortalLocations(this.getTotalWorldTime());
 		for (Teleporter tele : customTeleporters) {
 			tele.removeStalePortalLocations(getTotalWorldTime());
 		}

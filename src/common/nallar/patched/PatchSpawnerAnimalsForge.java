@@ -24,7 +24,8 @@ import net.minecraftforge.event.Event;
 import net.minecraftforge.event.ForgeEventFactory;
 
 public abstract class PatchSpawnerAnimalsForge extends SpawnerAnimals {
-	public static int a(WorldServer par0WorldServer, boolean par1, boolean par2, boolean par3) {
+	@Override
+	public int findChunksForSpawning(WorldServer par0WorldServer, boolean par1, boolean par2, boolean par3) {
 		if (!par1 && !par2) {
 			return 0;
 		}
