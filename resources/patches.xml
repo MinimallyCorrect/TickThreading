@@ -296,6 +296,9 @@
 		<class id="net.minecraft.entity.EntityLiving">
 			<addAll fromClass="nallar.patched.entity.PatchEntityLiving"/>
 		</class>
+		<class id="net.minecraft.entity.EntityLivingBase">
+			<addAll fromClass="nallar.patched.entity.PatchEntityLivingBase"/>
+		</class>
 		<class id="net.minecraft.entity.item.EntityItem">
 			<addAll fromClass="nallar.patched.entity.PatchEntityItem"/>
 			<insertSuper>onUpdate</insertSuper>
