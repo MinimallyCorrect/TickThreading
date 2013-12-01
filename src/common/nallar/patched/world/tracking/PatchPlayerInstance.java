@@ -70,7 +70,7 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 	@Declare
 	public synchronized void clearTileCount() {
 		this.numberOfTilesToUpdate = 0;
-		this.field_73260_f = 0;
+		this.flagsYAreasToUpdate = 0;
 		this.watched = false;
 	}
 
@@ -135,7 +135,7 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 		markRequiresUpdate();
 
 		synchronized (this) {
-			this.field_73260_f |= 1 << (par2 >> 4);
+			this.flagsYAreasToUpdate |= 1 << (par2 >> 4);
 
 			short mask = (short) (par1 << 12 | par3 << 8 | par2);
 			short[] locationOfBlockChange = this.locationOfBlockChange;
@@ -252,7 +252,7 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 					}
 				} else {
 					if (numberOfTilesToUpdate >= ForgeDummyContainer.clumpingThreshold) {
-						sendToAllPlayersWatchingChunk(new Packet51MapChunk(chunk, false, field_73260_f));
+						sendToAllPlayersWatchingChunk(new Packet51MapChunk(chunk, false, flagsYAreasToUpdate));
 					} else {
 						sendToAllPlayersWatchingChunk(new Packet52MultiBlockChange(chunkLocation.chunkXPos, chunkLocation.chunkZPos, locationOfBlockChange, numberOfTilesToUpdate, worldServer));
 					}
