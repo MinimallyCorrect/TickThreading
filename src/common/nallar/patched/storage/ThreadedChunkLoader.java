@@ -338,7 +338,7 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 					nbttagcompound1 = new NBTTagCompound();
 
 					try {
-						if (entity.addEntityID(nbttagcompound1)) {
+						if (entity.writeToNBTOptional(nbttagcompound1)) {
 							par1Chunk.hasEntities = true;
 							nbttaglist1.appendTag(nbttagcompound1);
 						}
@@ -393,7 +393,7 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 				nbttagcompound2.setInteger("y", nextticklistentry.yCoord);
 				nbttagcompound2.setInteger("z", nextticklistentry.zCoord);
 				nbttagcompound2.setInteger("t", (int) (nextticklistentry.scheduledTime - k));
-				nbttagcompound2.setInteger("p", nextticklistentry.field_82754_f);
+				nbttagcompound2.setInteger("p", nextticklistentry.priority);
 				nbttaglist3.appendTag(nbttagcompound2);
 			}
 
@@ -482,7 +482,7 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 			if (nbttaglist3 != null) {
 				for (int j1 = 0; j1 < nbttaglist3.tagCount(); ++j1) {
 					NBTTagCompound nbttagcompound5 = (NBTTagCompound) nbttaglist3.tagAt(j1);
-					world.func_82740_a(nbttagcompound5.getInteger("x"), nbttagcompound5.getInteger("y"), nbttagcompound5.getInteger("z"), nbttagcompound5.getInteger("i"), nbttagcompound5.getInteger("t"), nbttagcompound5.getInteger("p"));
+					world.scheduleBlockUpdateFromLoad(nbttagcompound5.getInteger("x"), nbttagcompound5.getInteger("y"), nbttagcompound5.getInteger("z"), nbttagcompound5.getInteger("i"), nbttagcompound5.getInteger("t"), nbttagcompound5.getInteger("p"));
 				}
 			}
 		}
