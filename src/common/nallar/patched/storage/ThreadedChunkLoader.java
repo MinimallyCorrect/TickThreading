@@ -482,7 +482,7 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 			if (nbttaglist3 != null) {
 				for (int j1 = 0; j1 < nbttaglist3.tagCount(); ++j1) {
 					NBTTagCompound nbttagcompound5 = (NBTTagCompound) nbttaglist3.tagAt(j1);
-					world.func_82740_a(nbttagcompound5.getInteger("x"), nbttagcompound5.getInteger("y"), nbttagcompound5.getInteger("z"), nbttagcompound5.getInteger("i"), nbttagcompound5.getInteger("t"), nbttagcompound5.getInteger("p"));
+					world.scheduleBlockUpdateWithPriority(nbttagcompound5.getInteger("x"), nbttagcompound5.getInteger("y"), nbttagcompound5.getInteger("z"), nbttagcompound5.getInteger("i"), nbttagcompound5.getInteger("t"), nbttagcompound5.getInteger("p"));
 				}
 			}
 		}
