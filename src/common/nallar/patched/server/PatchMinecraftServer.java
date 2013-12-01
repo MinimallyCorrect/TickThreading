@@ -518,8 +518,9 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				if (tickCount % 30 == 0) {
 					profiler.startSection("timeSync");
 					long totalTime = world.getTotalWorldTime();
+					boolean doDaylightCycle = world.getGameRules().getGameRuleBooleanValue("doDaylightCycle");
 					for (EntityPlayerMP entityPlayerMP : (Iterable<EntityPlayerMP>) world.playerEntities) {
-						entityPlayerMP.playerNetServerHandler.sendPacketToPlayer(new Packet4UpdateTime(totalTime, entityPlayerMP.getPlayerTime()));
+						entityPlayerMP.playerNetServerHandler.sendPacketToPlayer(new Packet4UpdateTime(totalTime, entityPlayerMP.getPlayerTime(), doDaylightCycle));
 					}
 					profiler.endSection();
 				}
