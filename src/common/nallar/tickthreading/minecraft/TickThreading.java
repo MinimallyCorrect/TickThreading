@@ -18,9 +18,11 @@ import cpw.mods.fml.common.IScheduledTickHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.TickType;
+import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
+
 import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.TickRegistry;
@@ -122,7 +124,7 @@ public class TickThreading {
 		PatchUtil.checkPatches();
 	}
 
-	@Mod.Init
+	@EventHandler
 	public void init(FMLInitializationEvent event) {
 		MinecraftForge.EVENT_BUS.register(this);
 		initPeriodicProfiling();
@@ -141,7 +143,7 @@ public class TickThreading {
 	}
 
 	@SuppressWarnings ("FieldRepeatedlyAccessedInMethod")
-	@Mod.PreInit
+	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
 		Configuration config = new Configuration(event.getSuggestedConfigurationFile());
 		config.load();
@@ -192,7 +194,7 @@ public class TickThreading {
 		PacketCount.allowCounting = false;
 	}
 
-	@Mod.ServerStarting
+	@EventHandler
 	public void serverStarting(FMLServerStartingEvent event) {
 		if (Loader.isModLoaded("TickProfiler")) {
 			Log.severe("You're using TickProfiler with TT - TT includes TP's features. Please uninstall TickProfiler, it can cause problems with TT.");
