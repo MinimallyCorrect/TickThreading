@@ -30,6 +30,7 @@ public abstract class PatchIntHashMap<V> extends IntHashMap<V> {
 		initialize();
 	}
 
+	@Override
 	public Set getKeySet() {
 		return new KeySet();
 	}

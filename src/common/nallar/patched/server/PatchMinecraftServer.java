@@ -519,7 +519,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 					profiler.startSection("timeSync");
 					long totalTime = world.getTotalWorldTime();
 					for (EntityPlayerMP entityPlayerMP : (Iterable<EntityPlayerMP>) world.playerEntities) {
-						entityPlayerMP.playerNetServerHandler.sendPacketToPlayer(new Packet4UpdateTime(totalTime, entityPlayerMP.getPlayerTime(),true));//set to true for now. come back later
+						entityPlayerMP.playerNetServerHandler.sendPacketToPlayer(new Packet4UpdateTime(totalTime, entityPlayerMP.getPlayerTime(), true));//set to true for now. come back later
 					}
 					profiler.endSection();
 				}
