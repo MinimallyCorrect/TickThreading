@@ -50,7 +50,7 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 	}
 
 	@Override
-	public void addPlayerToChunkWatchingList(final EntityPlayerMP entityPlayerMP) {
+	public void addPlayer(final EntityPlayerMP entityPlayerMP) {
 		if (this.playersInChunk.contains(entityPlayerMP)) {
 			throw new IllegalStateException("Failed to add player. " + entityPlayerMP + " already is in chunk " + this.chunkLocation.chunkXPos + ", " + this.chunkLocation.chunkZPos);
 		} else {
@@ -75,7 +75,7 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 	}
 
 	@Override
-	public void sendThisChunkToPlayer(EntityPlayerMP entityPlayerMP) {
+	public void removePlayer(EntityPlayerMP entityPlayerMP) {
 		if (this.playersInChunk.remove(entityPlayerMP)) {
 			Packet51MapChunk packet51MapChunk = new Packet51MapChunk();
 			packet51MapChunk.includeInitialize = true;
