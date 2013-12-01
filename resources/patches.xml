@@ -594,10 +594,6 @@
 			<addAll fromClass="nallar.patched.forge.PatchFMLCommonHandler"/>
 			<profile>onPreServerTick,onPostServerTick,onPreWorldTick,onPostWorldTick</profile>
 		</class>
-		<class id="cpw.mods.fml.relauncher.RelaunchClassLoader">
-			<addAll fromClass="nallar.patched.forge.PatchRelaunchClassLoader"/>
-			<synchronize>findClass</synchronize>
-		</class>
 		<class id="cpw.mods.fml.common.network.PacketDispatcher">
 			<addAll fromClass="nallar.patched.forge.PatchPacketDispatcher"/>
 		</class>
