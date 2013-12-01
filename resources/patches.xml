@@ -594,10 +594,6 @@
 			<addAll fromClass="nallar.patched.forge.PatchFMLCommonHandler"/>
 			<profile>onPreServerTick,onPostServerTick,onPreWorldTick,onPostWorldTick</profile>
 		</class>
-		<class id="cpw.mods.fml.relauncher.RelaunchClassLoader">
-			<addAll fromClass="nallar.patched.forge.PatchRelaunchClassLoader"/>
-			<synchronize>findClass</synchronize>
-		</class>
 		<class id="cpw.mods.fml.common.network.PacketDispatcher">
 			<addAll fromClass="nallar.patched.forge.PatchPacketDispatcher"/>
 		</class>
@@ -795,39 +791,6 @@
 			</replaceMethod>
 		</class>
 	</thremalExpansionFactory>
-	<redPowerCore>
-		<class id="com.eloraam.redpower.core.RedPowerLib">
-			<threadLocal field="blockUpdates" type="java.util.HashSet" threadLocalField="nallar.tickthreading.global.ThreadLocals.redPowerBlockUpdateSet"/>
-			<threadLocal field="powerSearchTest" type="java.util.HashSet" threadLocalField="nallar.tickthreading.global.ThreadLocals.redPowerPowerSearchTest"/>
-			<threadLocal field="powerSearch" type="java.util.LinkedList" threadLocalField="nallar.tickthreading.global.ThreadLocals.redPowerPowerSearch"/>
-			<threadLocalBoolean field="searching" threadLocalField="nallar.tickthreading.global.ThreadLocals.redPowerIsSearching"/>
-		</class>
-		<class id="com.eloraam.redpower.core.TileExtended">
-			<replaceMethod code="this.sendTile();">updateBlock</replaceMethod>
-			<replaceMethod code="this.sendTileWithNotify();">updateBlockChange</replaceMethod>
-		</class>
-		<class id="com.eloraam.redpower.core.TubeBuffer">
-			<synchronize>onRemove,pop,addNew,addNewColor,addBounce,addAll,getLast,readFromNBT,writeToNBT</synchronize>
-		</class>
-		<class id="com.eloraam.redpower.core.TubeFlow">
-			<replaceInitializer field="contents" class="nallar.collections.ConcurrentLinkedQueueList"/>
-			<replaceInitializer field="contents" code="contents.clear(); $_ = null;">readFromNBT</replaceInitializer>
-			<replaceFieldUsage field="contents" writeCode="{ }">readFromNBT</replaceFieldUsage>
-			<final field="contents"/>
-		</class>
-		<class id="com.eloraam.redpower.core.PipeLib">
-			<replaceMethodCall index="0" code="{ $_ = null; }" method="printf">registerForgeFluid</replaceMethodCall>
-		</class>
-	</redPowerCore>
-	<redPowerMechanical>
-		<class id="com.eloraam.redpower.machine.TileMotor">
-			<replaceFieldUsage class="^class:World^" field="^field:World/isRemote^" writeCode="{ }" readCode="{ $_ = false; }">dropFrame,pickFrame</replaceFieldUsage>
-			<replaceMethodCall newMethod="setBlockAndMetadataWithUpdateWithoutValidate" method="^class:World^.^method:World/setBlockAndMetadataWithUpdate^">dropFrame,pickFrame</replaceMethodCall>
-		</class>
-		<class id="com.eloraam.redpower.machine.TileTranspose">
-			<synchronize field="buffer">drainBuffer</synchronize>
-		</class>
-	</redPowerMechanical>
 	<industrialCraft>
 		<class id="ic2.core.IC2">
 			<synchronize>addSingleTickCallback</synchronize>
@@ -1126,13 +1089,7 @@
 		<class id="codechicken.core.world.WorldExtension">
 			<replaceInitializer field="chunkMap" class="nallar.collections.CHashMap"/>
 		</class>
-		<class id="codechicken.xycraftcopy.core.world.WorldExtension">
-			<replaceInitializer field="chunkMap" class="nallar.collections.CHashMap"/>
-		</class>
 		<class id="codechicken.core.world.WorldExtensionManager$WorldExtensionEventHandler">
-			<synchronize>onChunkLoad,onChunkUnLoad,onChunkDataLoad,onChunkDataSave</synchronize>
-		</class>
-		<class id="codechicken.xycraftcopy.core.world.WorldExtensionManager$WorldExtensionEventHandler">
 			<synchronize>onChunkLoad,onChunkUnLoad,onChunkDataLoad,onChunkDataSave</synchronize>
 		</class>
 		<class id="codechicken.core.CommonUtils">
@@ -1513,9 +1470,6 @@
 			<replaceMethod code="((ArrayList) noteBlockEvents.get($1)).addAll($1.getNoteBlockEvents());">getNoteBlockEvents</replaceMethod>
 		</class>
 	</thaumcraft>
-	<universalElectricity>
-		<!-- TODO: Rework UE patches. API changed a lot. -->
-	</universalElectricity>
 	<appliedEnergistics>
 		<class id="appeng.proxy.ProxyGregTech">
 			<replaceMethod code="{
@@ -1640,16 +1594,6 @@
 			<synchronize field="getNetworkLock()">getCellArray,resetCache</synchronize>
 		</class>
 	</appliedEnergistics>
-	<xyCraft>
-		<class id="soaryn.xycraft.machines.block.XyCraftWorldExtension">
-			<replaceInitializer field="multiBlocks" class="nallar.collections.CHashMap"/>
-			<replaceInitializer field="deferredLoadSet" class="nallar.collections.HashSetReplaceIterateTempListNoClear"/>
-			<synchronize>defer,remMultiBlock</synchronize>
-			<replaceFieldUsage field="useTemp" writeCode="$1 = false;">updateDeffered</replaceFieldUsage>
-			<insertAfter code="deferredLoadSet.clear();">updateDeffered</insertAfter>
-			<replaceMethod code="synchronized (tempList) { return this.nextMultiBlockID++; }">getNextMultiBlockID</replaceMethod>
-		</class>
-	</xyCraft>
 	<denLib>
 		<class id="denoflionsx.denLib">
 			<replaceMethod code="return $1;">Hash</replaceMethod>
@@ -1754,20 +1698,6 @@
 			<replaceMethod code="return this.cps.readChunkNBT($1, $2);">readChunk</replaceMethod>
 		</class>
 	</dynmap>
-	<mmmPowerSuits>
-		<class id="net.machinemuse.powersuits.network.packets.MusePacketPlayerUpdate" srg="true">
-			<replaceMethod code="{
-				if (net.minecraft.server.MinecraftServer.currentTick % 2 == 0) {
-					net.machinemuse.powersuits.network.packets.MusePacketPlayerUpdate updatePacket = new net.machinemuse.powersuits.network.packets.MusePacketPlayerUpdate((cpw.mods.fml.common.network.Player) $1, this.inputMap);
-					$1.^field:Entity/motionX^ = this.inputMap.motionX;
-					$1.^field:Entity/motionY^ = this.inputMap.motionY;
-					$1.^field:Entity/motionZ^ = this.inputMap.motionZ;
-					cpw.mods.fml.common.network.PacketDispatcher.sendPacketAroundPlayer((^class:EntityPlayerMP^) $1, updatePacket.getPacket250(), 4096);
-				}
-			}">handleServer
-			</replaceMethod>
-		</class>
-	</mmmPowerSuits>
 	<gregsLighting>
 		<class id="gcewing.lighting.Floodlight">
 			<synchronize static="true"/>
@@ -1829,17 +1759,6 @@
 			<replaceMethodCall code="{}" method="println">onCrafting</replaceMethodCall>
 		</class>
 	</xReliquary>
-	<notEnoughItems>
-		<class id="codechicken.nei.NEISPH">
-			<insertBefore code="{
-				if ($1.getType() != 10 &amp;&amp; !$3.^method:EntityPlayerMP/canCommandSenderUseCommand^(4, &quot;give&quot;)) {
-					Redirects.notifyAdmins(&quot;Modified NotEnoughItems. Probably duping and/or in creative mode. Packet type &quot; + $1.getType());
-					return;
-				}
-			}">handlePacket
-			</insertBefore>
-		</class>
-	</notEnoughItems>
 	<tubestuff>
 		<class id="immibis.tubestuff.TubeStuff">
 			<insertBefore code="{
