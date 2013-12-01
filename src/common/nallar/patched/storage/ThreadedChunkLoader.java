@@ -338,7 +338,7 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 					nbttagcompound1 = new NBTTagCompound();
 
 					try {
-						if (entity.addEntityID(nbttagcompound1)) {
+						if (entity.writeToNBTOptional(nbttagcompound1)) {
 							par1Chunk.hasEntities = true;
 							nbttaglist1.appendTag(nbttagcompound1);
 						}
@@ -393,7 +393,7 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 				nbttagcompound2.setInteger("y", nextticklistentry.yCoord);
 				nbttagcompound2.setInteger("z", nextticklistentry.zCoord);
 				nbttagcompound2.setInteger("t", (int) (nextticklistentry.scheduledTime - k));
-				nbttagcompound2.setInteger("p", nextticklistentry.field_82754_f);
+				nbttagcompound2.setInteger("p", nextticklistentry.priority);
 				nbttaglist3.appendTag(nbttagcompound2);
 			}
 

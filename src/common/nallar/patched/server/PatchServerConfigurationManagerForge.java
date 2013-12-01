@@ -38,7 +38,7 @@ public abstract class PatchServerConfigurationManagerForge extends ServerConfigu
 				entityPlayerMP.playerNetServerHandler.sendPacketToPlayer(new Packet9Respawn(entityPlayerMP.dimension, (byte) entityPlayerMP.worldObj.difficultySetting, toDimension.getWorldInfo().getTerrainType(), toDimension.getHeight(), entityPlayerMP.theItemInWorldManager.getGameType()));
 				fromDimension.playerEntities.remove(entityPlayerMP);
 				fromDimension.loadedEntityList.remove(entityPlayerMP);
-				fromDimension.releaseEntitySkin(entityPlayerMP);
+				//fromDimension.releaseEntitySkin(entityPlayerMP);
 				fromDimension.updateAllPlayersSleepingFlag();
 				int x = entityPlayerMP.chunkCoordX;
 				int z = entityPlayerMP.chunkCoordZ;

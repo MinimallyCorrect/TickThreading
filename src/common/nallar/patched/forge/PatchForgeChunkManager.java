@@ -130,7 +130,7 @@ public abstract class PatchForgeChunkManager extends ForgeChunkManager {
 					ticket.setCompoundTag("ModData", tick.getModData());
 				}
 				Entity e = tick.getType() == Type.ENTITY ? tick.getEntity() : null;
-				if (e != null && e.addEntityID(new NBTTagCompound())) {
+				if (e != null && e.writeToNBTOptional(new NBTTagCompound())) {
 					ticket.setInteger("chunkX", MathHelper.floor_double(e.chunkCoordX));
 					ticket.setInteger("chunkZ", MathHelper.floor_double(e.chunkCoordZ));
 					ticket.setLong("PersistentIDMSB", e.getPersistentID().getMostSignificantBits());

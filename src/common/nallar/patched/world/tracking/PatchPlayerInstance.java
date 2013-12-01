@@ -49,7 +49,7 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 		startTime = MinecraftServer.currentTick + 30;
 	}
 
-	@Override
+	
 	public void addPlayerToChunkWatchingList(final EntityPlayerMP entityPlayerMP) {
 		if (this.playersInChunk.contains(entityPlayerMP)) {
 			throw new IllegalStateException("Failed to add player. " + entityPlayerMP + " already is in chunk " + this.chunkLocation.chunkXPos + ", " + this.chunkLocation.chunkZPos);
@@ -74,7 +74,7 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 		this.watched = false;
 	}
 
-	@Override
+	
 	public void sendThisChunkToPlayer(EntityPlayerMP entityPlayerMP) {
 		if (this.playersInChunk.remove(entityPlayerMP)) {
 			Packet51MapChunk packet51MapChunk = new Packet51MapChunk();
