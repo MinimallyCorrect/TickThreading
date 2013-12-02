@@ -69,7 +69,6 @@ public class TickThreading {
 	public boolean requireOpForProfileCommand = true;
 	public boolean shouldLoadSpawn = false;
 	public boolean concurrentNetworkTicks = false;
-	public boolean antiCheatKick = false;
 	public boolean antiCheatNotify = false;
 	public boolean cleanWorlds = true;
 	public boolean allowWorldUnloading = true;
@@ -159,7 +158,6 @@ public class TickThreading {
 		waitForEntityTickCompletion = config.get(GENERAL, "waitForEntityTickCompletion", waitForEntityTickCompletion, "Whether we should wait until all Tile/Entity tick threads are finished before moving on with world tick. False = experimental, but may improve performance.").getBoolean(waitForEntityTickCompletion);
 		concurrentNetworkTicks = config.get(GENERAL, "concurrentNetworkTicks", concurrentNetworkTicks, "Whether network ticks should be ran in a separate thread from the main minecraft thread. This is likely to be very buggy, especially with mods doing custom networking such as IC2!").getBoolean(concurrentNetworkTicks);
 		concurrentMovementUpdates = config.get(GENERAL, "concurrentMovementUpdates", concurrentMovementUpdates, "Whether movement updates should be processed asynchronously. Improves performance, but may cause spontaneous fall damage in some (still not sure what) situations.").getBoolean(concurrentMovementUpdates);
-		antiCheatKick = config.get(GENERAL, "antiCheatKick", antiCheatKick, "Whether to kick players for detected cheating").getBoolean(antiCheatKick);
 		antiCheatNotify = config.get(GENERAL, "antiCheatNotify", antiCheatNotify, "Whether to notify admins if TT anti-cheat detects cheating").getBoolean(antiCheatNotify);
 		cleanWorlds = config.get(GENERAL, "cleanWorlds", cleanWorlds, "Whether to clean worlds on unload - this should fix some memory leaks due to mods holding on to world objects").getBoolean(cleanWorlds);
 		allowWorldUnloading = config.get(GENERAL, "allowWorldUnloading", allowWorldUnloading, "Whether worlds should be allowed to unload.").getBoolean(allowWorldUnloading);
