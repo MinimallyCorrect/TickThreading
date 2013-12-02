@@ -107,7 +107,7 @@ public class TickThreading {
 		PatchUtil.checkPatches();
 	}
 
-	@Mod.Init
+	@Mod.EventHandler
 	public void init(FMLInitializationEvent event) {
 		MinecraftForge.EVENT_BUS.register(this);
 		initPeriodicProfiling();
@@ -126,7 +126,7 @@ public class TickThreading {
 	}
 
 	@SuppressWarnings("FieldRepeatedlyAccessedInMethod")
-	@Mod.PreInit
+	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
 		Configuration config = new Configuration(event.getSuggestedConfigurationFile());
 		config.load();
@@ -177,7 +177,7 @@ public class TickThreading {
 		PacketCount.allowCounting = false;
 	}
 
-	@Mod.ServerStarting
+	@Mod.EventHandler
 	public void serverStarting(FMLServerStartingEvent event) {
 		if (Loader.isModLoaded("TickProfiler")) {
 			Log.severe("You're using TickProfiler with TT - TT includes TP's features. Please uninstall TickProfiler, it can cause problems with TT.");
