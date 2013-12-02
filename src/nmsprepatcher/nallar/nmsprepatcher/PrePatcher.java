@@ -1,5 +1,7 @@
 package nallar.nmsprepatcher;
 
+import com.google.common.base.Splitter;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -11,8 +13,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.google.common.base.Splitter;
 
 // The prepatcher adds method declarations in superclasses,
 // so javac can compile the patch classes if they need to use a method/field they

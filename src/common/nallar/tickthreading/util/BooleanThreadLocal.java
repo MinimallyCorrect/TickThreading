@@ -10,7 +10,7 @@ import sun.misc.Unsafe;
  * ThreadLocal.get(), assuming the variable is normally false in all threads.
  */
 public class BooleanThreadLocal extends ThreadLocal<Boolean> {
-	@SuppressWarnings ({"FieldCanBeLocal", "FieldMayBeFinal"})
+	@SuppressWarnings({"FieldCanBeLocal", "FieldMayBeFinal"})
 	private int count = 0;
 	private static final Unsafe $ = UnsafeAccess.$;
 	private static final long index = $.objectFieldOffset(ReflectUtil.getField(BooleanThreadLocal.class, "count"));
@@ -23,8 +23,8 @@ public class BooleanThreadLocal extends ThreadLocal<Boolean> {
 
 	/**
 	 * @param value Must be Boolean.TRUE or Boolean.FALSE. No new Boolean(true/false)!
-	 * Must always set back to false before the thread stops, else performance will be worse.
-	 * Not going to break anything, but bad for performance.
+	 *              Must always set back to false before the thread stops, else performance will be worse.
+	 *              Not going to break anything, but bad for performance.
 	 */
 	@Override
 	public void set(Boolean value) {
@@ -53,8 +53,8 @@ public class BooleanThreadLocal extends ThreadLocal<Boolean> {
 
 	/**
 	 * @param value Must be Boolean.TRUE or Boolean.FALSE. No new Boolean(true/false)!
-	 * Must always set back to false before the thread stops, else performance will be worse.
-	 * Not going to break anything, but bad for performance.
+	 *              Must always set back to false before the thread stops, else performance will be worse.
+	 *              Not going to break anything, but bad for performance.
 	 */
 	public Boolean getAndSet(Boolean value) {
 		Boolean oldValue = get();

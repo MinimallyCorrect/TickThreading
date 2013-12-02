@@ -1,18 +1,6 @@
 package nallar.patched.storage;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
-
 import com.google.common.collect.ImmutableSetMultimap;
-
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.registry.GameRegistry;
 import nallar.collections.ConcurrentQueueSet;
@@ -46,6 +34,17 @@ import net.minecraft.world.gen.ChunkProviderServer;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.ForgeChunkManager;
 import org.cliffc.high_scale_lib.NonBlockingHashMapLong;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 
 /**
  * This is a replacement for ChunkProviderServer
@@ -94,7 +93,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	public Set<Long> chunksToUnload;
 	public final List<Chunk> loadedChunks;
 	public final IChunkLoader currentChunkLoader;
-	@SuppressWarnings ("UnusedDeclaration")
+	@SuppressWarnings("UnusedDeclaration")
 	public boolean loadChunkOnProvideRequest;
 
 	public ThreadedChunkProvider(WorldServer world, IChunkLoader loader, IChunkProvider generator) {
@@ -134,7 +133,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		return generator.unloadQueuedChunks();
 	}
 
-	@SuppressWarnings ({"ConstantConditions", "FieldRepeatedlyAccessedInMethod"})
+	@SuppressWarnings({"ConstantConditions", "FieldRepeatedlyAccessedInMethod"})
 	@Override
 	@Declare
 	public void tick() {
@@ -521,7 +520,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		return getChunkAtInternal(x, z, allowGenerate, regenerate);
 	}
 
-	@SuppressWarnings ("ConstantConditions")
+	@SuppressWarnings("ConstantConditions")
 	private Chunk getChunkAtInternal(final int x, final int z, boolean allowGenerate, boolean regenerate) {
 		if (!safeToGenerate()) {
 			return defaultEmptyChunk;

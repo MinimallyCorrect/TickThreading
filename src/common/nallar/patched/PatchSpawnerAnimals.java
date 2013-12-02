@@ -1,9 +1,5 @@
 package nallar.patched;
 
-import java.util.Collection;
-import java.util.EnumMap;
-import java.util.Map;
-
 import nallar.collections.LongList;
 import nallar.collections.LongSet;
 import nallar.tickthreading.Log;
@@ -24,6 +20,10 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.event.Event;
 import net.minecraftforge.event.ForgeEventFactory;
 
+import java.util.Collection;
+import java.util.EnumMap;
+import java.util.Map;
+
 public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 	private static long hash(int x, int z) {
 		return (((long) x) << 32) | (z & 0xffffffffL);
@@ -42,7 +42,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 	}
 
 	// Spigot compatibility
-	@SuppressWarnings ("UnusedDeclaration")
+	@SuppressWarnings("UnusedDeclaration")
 	public static int getEntityCount(WorldServer server, Class oClass) {
 		return server.countEntities(oClass);
 	}
@@ -206,8 +206,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 							Event.Result canSpawn = ForgeEventFactory.canEntitySpawn(spawnedEntity, worldServer, ssX, ssY, ssZ);
 							if (canSpawn == Event.Result.ALLOW || (canSpawn == Event.Result.DEFAULT && spawnedEntity.getCanSpawnHere())) {
 								worldServer.spawnEntityInWorld(spawnedEntity);
-								if (!ForgeEventFactory.doSpecialSpawn(spawnedEntity, worldServer, ssX, ssY, ssZ))
-								{
+								if (!ForgeEventFactory.doSpecialSpawn(spawnedEntity, worldServer, ssX, ssY, ssZ)) {
 									unusedEntityLivingData = spawnedEntity.onSpawnWithEgg(unusedEntityLivingData);
 								}
 							}

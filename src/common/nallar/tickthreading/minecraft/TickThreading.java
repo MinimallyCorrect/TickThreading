@@ -1,23 +1,8 @@
 package nallar.tickthreading.minecraft;
 
-import java.io.File;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
-
-import cpw.mods.fml.common.IPlayerTracker;
-import cpw.mods.fml.common.IScheduledTickHandler;
-import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.common.Mod;
-import cpw.mods.fml.common.TickType;
+import cpw.mods.fml.common.*;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
@@ -29,11 +14,7 @@ import nallar.collections.IntSet;
 import nallar.reporting.LeakDetector;
 import nallar.reporting.Metrics;
 import nallar.tickthreading.Log;
-import nallar.tickthreading.minecraft.commands.Command;
-import nallar.tickthreading.minecraft.commands.DumpCommand;
-import nallar.tickthreading.minecraft.commands.ProfileCommand;
-import nallar.tickthreading.minecraft.commands.TPSCommand;
-import nallar.tickthreading.minecraft.commands.TicksCommand;
+import nallar.tickthreading.minecraft.commands.*;
 import nallar.tickthreading.minecraft.entitylist.EntityList;
 import nallar.tickthreading.minecraft.entitylist.LoadedEntityList;
 import nallar.tickthreading.minecraft.entitylist.LoadedTileEntityList;
@@ -64,9 +45,13 @@ import net.minecraftforge.event.ForgeSubscribe;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.WorldEvent;
 
-@SuppressWarnings ("WeakerAccess")
-@Mod (modid = "TickThreading", name = "TickThreading", version = "@MOD_VERSION@", acceptedMinecraftVersions = "[@MC_VERSION@]")
-@NetworkMod (clientSideRequired = false, serverSideRequired = false)
+import java.io.File;
+import java.lang.reflect.Field;
+import java.util.*;
+
+@SuppressWarnings("WeakerAccess")
+@Mod(modid = "TickThreading", name = "TickThreading", version = "@MOD_VERSION@", acceptedMinecraftVersions = "[@MC_VERSION@]")
+@NetworkMod(clientSideRequired = false, serverSideRequired = false)
 public class TickThreading {
 	@Mod.Instance
 	public static TickThreading instance;
@@ -140,7 +125,7 @@ public class TickThreading {
 		TickRegistry.registerScheduledTickHandler(new ProfilingScheduledTickHandler(profilingInterval, MinecraftServer.getServer().getFile(profilingFileName), profilingJson), Side.SERVER);
 	}
 
-	@SuppressWarnings ("FieldRepeatedlyAccessedInMethod")
+	@SuppressWarnings("FieldRepeatedlyAccessedInMethod")
 	@Mod.PreInit
 	public void preInit(FMLPreInitializationEvent event) {
 		Configuration config = new Configuration(event.getSuggestedConfigurationFile());
@@ -224,7 +209,7 @@ public class TickThreading {
 		}
 	}
 
-	@ForgeSubscribe (
+	@ForgeSubscribe(
 			priority = EventPriority.HIGHEST
 	)
 	public synchronized void onWorldLoad(WorldEvent.Load event) {

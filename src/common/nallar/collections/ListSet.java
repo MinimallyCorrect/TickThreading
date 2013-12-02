@@ -1,10 +1,10 @@
 package nallar.collections;
 
-import java.util.Iterator;
-
 import nallar.tickthreading.Log;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldProvider;
+
+import java.util.Iterator;
 
 public class ListSet extends SynchronizedList {
 	@Override

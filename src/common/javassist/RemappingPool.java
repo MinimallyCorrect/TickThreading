@@ -1,15 +1,15 @@
 package javassist;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-
 import nallar.collections.PartiallySynchronizedMap;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.patcher.remapping.ByteSource;
 import nallar.tickthreading.patcher.remapping.StringExtractor;
 import nallar.tickthreading.patcher.remapping.Transformer;
 import nallar.tickthreading.util.ReflectUtil;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
 
 public class RemappingPool extends ClassPool {
 	private final PartiallySynchronizedMap<String, CtClass> srgClasses = new PartiallySynchronizedMap<String, CtClass>();

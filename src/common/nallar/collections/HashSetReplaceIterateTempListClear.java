@@ -1,11 +1,11 @@
 package nallar.collections;
 
+import nallar.tickthreading.util.BooleanThreadLocal;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
-
-import nallar.tickthreading.util.BooleanThreadLocal;
 
 public class HashSetReplaceIterateTempListClear<T> extends HashSet<T> {
 	private volatile boolean defer = false;

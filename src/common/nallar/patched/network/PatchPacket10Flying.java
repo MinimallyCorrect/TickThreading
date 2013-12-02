@@ -1,8 +1,5 @@
 package nallar.patched.network;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-
 import nallar.tickthreading.Log;
 import nallar.tickthreading.minecraft.TickThreading;
 import nallar.tickthreading.minecraft.profiling.Timings;
@@ -21,6 +18,9 @@ import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.ChunkWatchEvent;
+
+import java.util.ArrayList;
+import java.util.Iterator;
 
 public abstract class PatchPacket10Flying extends Packet10Flying {
 	private static final boolean concurrent = TickThreading.instance.concurrentMovementUpdates;

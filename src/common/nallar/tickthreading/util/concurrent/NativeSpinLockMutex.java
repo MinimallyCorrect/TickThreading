@@ -1,11 +1,11 @@
 package nallar.tickthreading.util.concurrent;
 
+import nallar.unsafe.UnsafeAccess;
+import sun.misc.Unsafe;
+
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
-
-import nallar.unsafe.UnsafeAccess;
-import sun.misc.Unsafe;
 
 public final class NativeSpinLockMutex implements Lock {
 	private static final Unsafe $ = UnsafeAccess.$;

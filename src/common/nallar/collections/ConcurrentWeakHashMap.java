@@ -1,12 +1,12 @@
 package nallar.collections;
 
+import com.google.common.collect.MapMaker;
+
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import com.google.common.collect.MapMaker;
 
 public class ConcurrentWeakHashMap extends WeakHashMap {
 	private static final MapMaker mapMaker = new MapMaker().weakKeys();

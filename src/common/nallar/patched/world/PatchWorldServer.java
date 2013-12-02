@@ -1,17 +1,6 @@
 package nallar.patched.world;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.ConcurrentModificationException;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
-import java.util.TreeSet;
-
 import com.google.common.collect.ImmutableSetMultimap;
-
 import nallar.collections.TreeHashSet;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.minecraft.DeadLockDetector;
@@ -29,16 +18,7 @@ import net.minecraft.network.packet.Packet54PlayNoteBlock;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.IProgressUpdate;
-import net.minecraft.world.ChunkCoordIntPair;
-import net.minecraft.world.IWorldAccess;
-import net.minecraft.world.MinecraftException;
-import net.minecraft.world.NextTickListEntry;
-import net.minecraft.world.ServerBlockEventList;
-import net.minecraft.world.SpawnerAnimals;
-import net.minecraft.world.Teleporter;
-import net.minecraft.world.WorldProvider;
-import net.minecraft.world.WorldServer;
-import net.minecraft.world.WorldSettings;
+import net.minecraft.world.*;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.AnvilChunkLoader;
@@ -52,7 +32,10 @@ import net.minecraftforge.common.ForgeChunkManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.WorldEvent;
 
-@SuppressWarnings ("unchecked") // Can't make the code in WorldServer checked. Yet. // TODO: Add type parameters via prepatcher?
+import java.util.*;
+
+@SuppressWarnings("unchecked")
+// Can't make the code in WorldServer checked. Yet. // TODO: Add type parameters via prepatcher?
 public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	public long ticksPerAnimalSpawns;
 	public long ticksPerMonsterSpawns;

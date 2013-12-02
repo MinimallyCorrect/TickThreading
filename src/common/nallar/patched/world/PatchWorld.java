@@ -1,12 +1,6 @@
 package nallar.patched.world;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-
 import com.google.common.collect.ImmutableSetMultimap;
-
 import nallar.collections.SynchronizedSet;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.minecraft.TickThreading;
@@ -30,11 +24,7 @@ import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ReportedException;
 import net.minecraft.util.Vec3;
-import net.minecraft.world.ChunkCoordIntPair;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldProvider;
-import net.minecraft.world.WorldServer;
-import net.minecraft.world.WorldSettings;
+import net.minecraft.world.*;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.AnvilChunkLoader;
 import net.minecraft.world.gen.ChunkProviderServer;
@@ -45,7 +35,12 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import org.cliffc.high_scale_lib.NonBlockingHashMapLong;
 
-@SuppressWarnings ("unchecked")
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+
+@SuppressWarnings("unchecked")
 public abstract class PatchWorld extends World {
 	private static final double COLLISION_RANGE = 2D;
 	private int forcedUpdateCount;
@@ -249,7 +244,7 @@ public abstract class PatchWorld extends World {
 		return target;
 	}
 
-	@SuppressWarnings ("ConstantConditions")
+	@SuppressWarnings("ConstantConditions")
 	@Override
 	public EntityPlayer getClosestVulnerablePlayer(double x, double y, double z, double maxRange) {
 		double closestRange = Double.MAX_VALUE;

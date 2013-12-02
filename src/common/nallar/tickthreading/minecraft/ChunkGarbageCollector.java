@@ -1,8 +1,5 @@
 package nallar.tickthreading.minecraft;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
@@ -10,6 +7,9 @@ import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.ChunkProviderServer;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class ChunkGarbageCollector {
 	private static final Profiler profiler = MinecraftServer.getServer().theProfiler;

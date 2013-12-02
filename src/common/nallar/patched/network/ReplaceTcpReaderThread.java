@@ -11,7 +11,7 @@ public abstract class ReplaceTcpReaderThread extends ThreadMinecraftServer {
 		this.tcpConnection = tcpConnection;
 	}
 
-	@SuppressWarnings ("InfiniteLoopStatement")
+	@SuppressWarnings("InfiniteLoopStatement")
 	@Override
 	public void run() {
 		TcpConnection.field_74471_a.getAndIncrement();

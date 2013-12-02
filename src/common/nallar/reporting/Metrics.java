@@ -28,25 +28,6 @@
  */
 package nallar.reporting;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.Proxy;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.UUID;
-import java.util.zip.GZIPOutputStream;
-
 import cpw.mods.fml.common.IScheduledTickHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.TickType;
@@ -56,6 +37,14 @@ import nallar.tickthreading.Log;
 import nallar.tickthreading.minecraft.commands.TPSCommand;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.Configuration;
+
+import java.io.*;
+import java.net.Proxy;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
+import java.util.*;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * <p>
@@ -164,6 +153,7 @@ public class Metrics {
 	 * Construct and create a Graph that can be used to separate specific
 	 * plotters to their own graphs on the metrics website. Plotters can be
 	 * added to the graph object returned.
+	 *
 	 * @param name The name of the graph
 	 * @return Graph object created. Will never return NULL under normal
 	 *         circumstances unless bad parameters are given
@@ -186,6 +176,7 @@ public class Metrics {
 	/**
 	 * Add a Graph object to Metrics that represents data for the plugin that
 	 * should be sent to the backend
+	 *
 	 * @param graph The name of the graph
 	 */
 	public void addGraph(final Graph graph) {
@@ -198,6 +189,7 @@ public class Metrics {
 
 	/**
 	 * Adds a custom data plotter to the default graph
+	 *
 	 * @param plotter The plotter to use to plot custom data
 	 */
 	public void addCustomData(final Plotter plotter) {
@@ -217,6 +209,7 @@ public class Metrics {
 	 * repeating task as the plugin and send the initial data to the metrics
 	 * backend, and then after that it will post in increments of PING_INTERVAL
 	 * * 1200 ticks.
+	 *
 	 * @return True if statistics measuring is running, otherwise false.
 	 */
 	public boolean start() {
@@ -319,6 +312,7 @@ public class Metrics {
 
 	/**
 	 * Has the server owner denied plugin metrics?
+	 *
 	 * @return true if metrics should be opted out of it
 	 */
 	public boolean isOptOut() {
@@ -331,6 +325,7 @@ public class Metrics {
 	/**
 	 * Enables metrics for the server by setting "opt-out" to false in the
 	 * config file and starting the metrics task.
+	 *
 	 * @throws java.io.IOException
 	 */
 	public void enable() throws IOException {
@@ -348,6 +343,7 @@ public class Metrics {
 	/**
 	 * Disables metrics for the server by setting "opt-out" to true in the
 	 * config file and canceling the metrics task.
+	 *
 	 * @throws java.io.IOException
 	 */
 	public void disable() throws IOException {
@@ -361,6 +357,7 @@ public class Metrics {
 	/**
 	 * Gets the File object of the config file that should be used to store data
 	 * such as the GUID and opt-out status
+	 *
 	 * @return the File object for the config file
 	 */
 	public static File getConfigFile() {
@@ -523,6 +520,7 @@ public class Metrics {
 
 	/**
 	 * GZip compress a string of bytes
+	 *
 	 * @param input
 	 * @return
 	 */
@@ -549,6 +547,7 @@ public class Metrics {
 
 	/**
 	 * Check if mineshafter is present. If it is, we need to bypass it to send POST requests
+	 *
 	 * @return true if mineshafter is installed on the server
 	 */
 	private static boolean isMineshafterPresent() {
@@ -562,6 +561,7 @@ public class Metrics {
 
 	/**
 	 * Appends a json encoded key/value pair to the given string builder.
+	 *
 	 * @param json
 	 * @param key
 	 * @param value
@@ -595,6 +595,7 @@ public class Metrics {
 
 	/**
 	 * Escape a string to create a valid JSON string
+	 *
 	 * @param text
 	 * @return
 	 */
@@ -640,6 +641,7 @@ public class Metrics {
 
 	/**
 	 * Encode text as UTF-8
+	 *
 	 * @param text the text to encode
 	 * @return the encoded text, as UTF-8
 	 */
@@ -667,6 +669,7 @@ public class Metrics {
 
 		/**
 		 * Gets the graph's name
+		 *
 		 * @return the Graph's name
 		 */
 		public String getName() {
@@ -675,6 +678,7 @@ public class Metrics {
 
 		/**
 		 * Add a plotter to the graph, which will be used to plot entries
+		 *
 		 * @param plotter the plotter to add to the graph
 		 */
 		public void addPlotter(final Plotter plotter) {
@@ -683,6 +687,7 @@ public class Metrics {
 
 		/**
 		 * Remove a plotter from the graph
+		 *
 		 * @param plotter the plotter to remove from the graph
 		 */
 		public void removePlotter(final Plotter plotter) {
@@ -691,6 +696,7 @@ public class Metrics {
 
 		/**
 		 * Gets an <b>unmodifiable</b> set of the plotter objects in the graph
+		 *
 		 * @return an unmodifiable {@link java.util.Set} of the plotter objects
 		 */
 		public Set<Plotter> getPlotters() {
@@ -738,8 +744,9 @@ public class Metrics {
 
 		/**
 		 * Construct a plotter with a specific plot name
+		 *
 		 * @param name the name of the plotter to use, which will show up on the
-		 * website
+		 *             website
 		 */
 		public Plotter(final String name) {
 			this.name = name;
@@ -751,12 +758,14 @@ public class Metrics {
 		 * thus cannot be guaranteed to be thread friendly or safe. This
 		 * function can be called from any thread so care should be taken when
 		 * accessing resources that need to be synchronized.
+		 *
 		 * @return the current value for the point to be plotted.
 		 */
 		public abstract int getValue();
 
 		/**
 		 * Get the column name for the plotted point
+		 *
 		 * @return the plotted point's column name
 		 */
 		public String getColumnName() {

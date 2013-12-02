@@ -1,9 +1,9 @@
 package nallar.unsafe;
 
-import java.lang.reflect.Field;
-
 import nallar.tickthreading.Log;
 import sun.misc.Unsafe;
+
+import java.lang.reflect.Field;
 
 public class UnsafeAccess {
 	public static final Unsafe $;

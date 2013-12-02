@@ -1,5 +1,9 @@
 package nallar.tickthreading.patcher.remapping;
 
+import nallar.tickthreading.Log;
+import nallar.tickthreading.util.IterableEnumerationWrapper;
+import nallar.tickthreading.util.NormalFileFilter;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -8,10 +12,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-
-import nallar.tickthreading.Log;
-import nallar.tickthreading.util.IterableEnumerationWrapper;
-import nallar.tickthreading.util.NormalFileFilter;
 
 public class ByteSource {
 	public static final Map<String, byte[]> classes = new HashMap<String, byte[]>();

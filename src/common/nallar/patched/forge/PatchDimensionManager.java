@@ -1,10 +1,5 @@
 package nallar.patched.forge;
 
-import java.util.Collections;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.logging.Level;
-
 import cpw.mods.fml.common.FMLLog;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.minecraft.TickThreading;
@@ -14,9 +9,14 @@ import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.WorldEvent;
 
+import java.util.Collections;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.logging.Level;
+
 public abstract class PatchDimensionManager extends DimensionManager {
 	public static void unloadWorlds(
-			@SuppressWarnings ("UseOfObsoleteCollectionType")
+			@SuppressWarnings("UseOfObsoleteCollectionType")
 			Hashtable<Integer, long[]> worldTickTimes) {
 		//noinspection SynchronizationOnStaticField
 		if (unloadQueue.isEmpty()) {

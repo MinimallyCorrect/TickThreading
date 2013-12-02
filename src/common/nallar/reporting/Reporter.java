@@ -1,9 +1,9 @@
 package nallar.reporting;
 
+import nallar.tickthreading.minecraft.ThreadManager;
+
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
-
-import nallar.tickthreading.minecraft.ThreadManager;
 
 public class Reporter {
 	private static final Set<Long> reportedHashes = new ConcurrentSkipListSet<Long>();

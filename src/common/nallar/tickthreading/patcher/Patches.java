@@ -1,50 +1,9 @@
 package nallar.tickthreading.patcher;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.google.common.base.Splitter;
-
-import javassist.CannotCompileException;
-import javassist.ClassMap;
-import javassist.CtBehavior;
-import javassist.CtClass;
-import javassist.CtConstructor;
-import javassist.CtField;
-import javassist.CtMethod;
-import javassist.CtNewMethod;
-import javassist.CtPrimitiveType;
-import javassist.Modifier;
-import javassist.NotFoundException;
-import javassist.bytecode.AnnotationsAttribute;
-import javassist.bytecode.AttributeInfo;
-import javassist.bytecode.BadBytecode;
-import javassist.bytecode.ClassFile;
-import javassist.bytecode.CodeAttribute;
-import javassist.bytecode.CodeIterator;
-import javassist.bytecode.ConstPool;
-import javassist.bytecode.Descriptor;
-import javassist.bytecode.DuplicateMemberException;
-import javassist.bytecode.MethodInfo;
-import javassist.bytecode.Mnemonic;
-import javassist.bytecode.Opcode;
-import javassist.expr.Cast;
-import javassist.expr.ConstructorCall;
-import javassist.expr.ExprEditor;
-import javassist.expr.FieldAccess;
-import javassist.expr.Handler;
-import javassist.expr.Instanceof;
-import javassist.expr.MethodCall;
-import javassist.expr.NewArray;
-import javassist.expr.NewExpr;
+import javassist.*;
+import javassist.bytecode.*;
+import javassist.expr.*;
 import nallar.insecurity.ThisIsNotAnError;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.mappings.MethodDescription;
@@ -53,7 +12,10 @@ import nallar.tickthreading.util.ReflectUtil;
 import nallar.unsafe.UnsafeUtil;
 import org.omg.CORBA.IntHolder;
 
-@SuppressWarnings ({"MethodMayBeStatic", "ObjectAllocationInLoop"})
+import java.io.IOException;
+import java.util.*;
+
+@SuppressWarnings({"MethodMayBeStatic", "ObjectAllocationInLoop"})
 public class Patches {
 	private final PatchManager patchManager;
 	private final ClassRegistry classRegistry;
@@ -63,7 +25,7 @@ public class Patches {
 		this.classRegistry = classRegistry;
 	}
 
-	@SuppressWarnings ("EmptyMethod")
+	@SuppressWarnings("EmptyMethod")
 	@Patch
 	public void markDirty(CtClass ctClass) {
 		// A NOOP patch to make sure META-INF is removed
@@ -74,7 +36,7 @@ public class Patches {
 		ctMethod.setName(ctMethod.getName() + "_rem");
 	}
 
-	@Patch (
+	@Patch(
 			requiredAttributes = "code"
 	)
 	public void newMethod(CtClass ctClass, Map<String, String> attributes) throws CannotCompileException {
@@ -87,7 +49,7 @@ public class Patches {
 		}
 	}
 
-	@Patch (
+	@Patch(
 			requiredAttributes = "type,field"
 	)
 	public void changeFieldType(final CtClass ctClass, Map<String, String> attributes) throws CannotCompileException, NotFoundException {
@@ -130,7 +92,7 @@ public class Patches {
 		}
 	}
 
-	@Patch (
+	@Patch(
 			requiredAttributes = "from,to"
 	)
 	public void replaceConstants(CtClass ctClass, Map<String, String> attributes) {
@@ -157,7 +119,7 @@ public class Patches {
 		}
 	}
 
-	@Patch (
+	@Patch(
 			requiredAttributes = "field",
 			emptyConstructor = false
 	)
@@ -273,7 +235,7 @@ public class Patches {
 		}
 	}
 
-	@Patch (
+	@Patch(
 			requiredAttributes = "oldClass,newClass",
 			emptyConstructor = false
 	)
@@ -340,7 +302,7 @@ public class Patches {
 		ctClass.addMethod(replacement);
 	}
 
-	@Patch (
+	@Patch(
 			name = "volatile",
 			requiredAttributes = "field"
 	)
@@ -358,7 +320,7 @@ public class Patches {
 		}
 	}
 
-	@Patch (
+	@Patch(
 			requiredAttributes = "field"
 	)
 	public void unvolatile(CtClass ctClass, Map<String, String> attributes) throws NotFoundException {
@@ -375,7 +337,7 @@ public class Patches {
 		}
 	}
 
-	@Patch (
+	@Patch(
 			name = "final"
 	)
 	public void final_(CtClass ctClass, Map<String, String> attributes) throws NotFoundException {
@@ -397,7 +359,7 @@ public class Patches {
 		ctMethod.setBody("{ }");
 	}
 
-	@Patch (
+	@Patch(
 			requiredAttributes = "class"
 	)
 	public CtClass replace(CtClass clazz, Map<String, String> attributes) throws NotFoundException, CannotCompileException, BadBytecode {
@@ -481,7 +443,7 @@ public class Patches {
 		oldMethod.getMethodInfo().rebuildStackMapForME(classRegistry.classes);
 	}
 
-	@Patch (
+	@Patch(
 			requiredAttributes = "field"
 	)
 	public void replaceFieldUsage(final CtBehavior ctBehavior, Map<String, String> attributes) throws CannotCompileException {
@@ -599,7 +561,7 @@ public class Patches {
 		}
 	}
 
-	@Patch (
+	@Patch(
 			requiredAttributes = "code,return,name"
 	)
 	public void addMethod(CtClass ctClass, Map<String, String> attributes) throws NotFoundException, CannotCompileException {
@@ -617,7 +579,7 @@ public class Patches {
 		ctClass.addMethod(newMethod);
 	}
 
-	@Patch (
+	@Patch(
 			requiredAttributes = "opcode"
 	)
 	public void removeUntilOpcode(CtBehavior ctBehavior, Map<String, String> attributes) throws BadBytecode {
@@ -664,7 +626,7 @@ public class Patches {
 		}
 	}
 
-	@Patch (
+	@Patch(
 			requiredAttributes = "fromClass"
 	)
 	public void addAll(CtClass ctClass, Map<String, String> attributes) throws NotFoundException, CannotCompileException, BadBytecode {
@@ -779,7 +741,7 @@ public class Patches {
 		publicInnerClasses(fromClass);
 	}
 
-	@Patch (
+	@Patch(
 			requiredAttributes = "field",
 			emptyConstructor = false
 	)
@@ -806,7 +768,7 @@ public class Patches {
 				"silent", "true"));
 	}
 
-	@Patch (
+	@Patch(
 			requiredAttributes = "field,threadLocalField,type"
 	)
 	public void threadLocal(CtClass ctClass, Map<String, String> attributes) throws CannotCompileException {
@@ -830,7 +792,7 @@ public class Patches {
 		});
 	}
 
-	@Patch (
+	@Patch(
 			requiredAttributes = "field,threadLocalField"
 	)
 	public void threadLocalBoolean(CtClass ctClass, Map<String, String> attributes) throws CannotCompileException {
@@ -863,7 +825,7 @@ public class Patches {
 		});
 	}
 
-	@Patch (
+	@Patch(
 			name = "public",
 			emptyConstructor = false
 	)
@@ -895,7 +857,7 @@ public class Patches {
 		}
 	}
 
-	@Patch (
+	@Patch(
 			emptyConstructor = false
 	)
 	public void noFinal(Object o, Map<String, String> attributes) throws NotFoundException {
@@ -916,7 +878,7 @@ public class Patches {
 		}
 	}
 
-	@Patch (
+	@Patch(
 			requiredAttributes = "field"
 	)
 	public void newInitializer(CtClass ctClass, Map<String, String> attributes) throws NotFoundException, CannotCompileException, IOException {
@@ -943,7 +905,7 @@ public class Patches {
 		}
 	}
 
-	@Patch (
+	@Patch(
 			requiredAttributes = "field"
 	)
 	public void replaceField(CtClass ctClass, Map<String, String> attributes) throws NotFoundException, CannotCompileException, IOException {
@@ -966,7 +928,7 @@ public class Patches {
 		}
 	}
 
-	@Patch (
+	@Patch(
 			requiredAttributes = "field,class"
 	)
 	public void newField(CtClass ctClass, Map<String, String> attributes) throws NotFoundException, CannotCompileException, IOException {
@@ -996,7 +958,7 @@ public class Patches {
 		}
 	}
 
-	@Patch (
+	@Patch(
 			requiredAttributes = "code"
 	)
 	public void insertBefore(CtBehavior ctBehavior, Map<String, String> attributes) throws NotFoundException, CannotCompileException, IOException {
@@ -1008,7 +970,7 @@ public class Patches {
 		ctBehavior.insertBefore(code);
 	}
 
-	@Patch (
+	@Patch(
 			requiredAttributes = "code"
 	)
 	public void insertAfter(CtBehavior ctBehavior, Map<String, String> attributes) throws NotFoundException, CannotCompileException, IOException {
@@ -1025,7 +987,7 @@ public class Patches {
 		ctBehavior.insertBefore("super." + ctBehavior.getName() + "($$);");
 	}
 
-	@Patch (
+	@Patch(
 			requiredAttributes = "field"
 	)
 	public void lock(CtMethod ctMethod, Map<String, String> attributes) throws NotFoundException, CannotCompileException, IOException {
@@ -1034,7 +996,7 @@ public class Patches {
 		ctMethod.insertAfter("this." + field + ".unlock();", true);
 	}
 
-	@Patch (
+	@Patch(
 			requiredAttributes = "field"
 	)
 	public void lockMethodCall(final CtBehavior ctBehavior, Map<String, String> attributes) throws CannotCompileException {
@@ -1071,7 +1033,7 @@ public class Patches {
 		});
 	}
 
-	@Patch (
+	@Patch(
 			requiredAttributes = "name,interface"
 	)
 	public void renameInterfaceMethod(CtMethod ctMethod, Map<String, String> attributes) throws CannotCompileException, NotFoundException {
@@ -1106,14 +1068,14 @@ public class Patches {
 		ctMethod.setName(newName);
 	}
 
-	@Patch (
+	@Patch(
 			requiredAttributes = "name"
 	)
 	public void rename(CtMethod ctMethod, Map<String, String> attributes) {
 		ctMethod.setName(attributes.get("name"));
 	}
 
-	@Patch (
+	@Patch(
 			requiredAttributes = "field"
 	)
 	public void synchronizeMethodCall(final CtBehavior ctBehavior, Map<String, String> attributes) throws CannotCompileException {
@@ -1155,7 +1117,7 @@ public class Patches {
 		ctBehavior.setModifiers(ctBehavior.getModifiers() & ~Modifier.SYNCHRONIZED);
 	}
 
-	@Patch (
+	@Patch(
 			emptyConstructor = false
 	)
 	public void synchronize(Object o, Map<String, String> attributes) throws CannotCompileException {
@@ -1216,7 +1178,7 @@ public class Patches {
 		}
 	}
 
-	@Patch (
+	@Patch(
 			requiredAttributes = "field"
 	)
 	public void synchronizeNotNull(CtMethod ctMethod, Map<String, String> attributes) throws CannotCompileException {
@@ -1314,14 +1276,14 @@ public class Patches {
 		Log.fine("Replaced " + done + " lock/unlock calls.");
 	}
 
-	@Patch (
+	@Patch(
 			requiredAttributes = "field"
 	)
 	public void removeField(CtClass ctClass, Map<String, String> attributes) throws NotFoundException {
 		ctClass.removeField(ctClass.getDeclaredField(attributes.get("field")));
 	}
 
-	@Patch (
+	@Patch(
 			requiredAttributes = "field"
 	)
 	public void removeFieldAndInitializers(CtClass ctClass, Map<String, String> attributes) throws CannotCompileException, NotFoundException {

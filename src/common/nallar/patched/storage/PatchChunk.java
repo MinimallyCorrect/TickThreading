@@ -1,10 +1,5 @@
 package nallar.patched.storage;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import cpw.mods.fml.common.FMLLog;
 import nallar.collections.SynchronizedList;
 import nallar.tickthreading.Log;
@@ -26,7 +21,12 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.world.ChunkEvent;
 
-@SuppressWarnings ("unchecked")
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+@SuppressWarnings("unchecked")
 public abstract class PatchChunk extends Chunk {
 	@Declare
 	public List pendingBlockUpdates_;
@@ -221,7 +221,7 @@ public abstract class PatchChunk extends Chunk {
 		throw new Error("Not supported with TT");
 	}
 
-	@SuppressWarnings ("FieldRepeatedlyAccessedInMethod") // Patcher makes worldObj final
+	@SuppressWarnings("FieldRepeatedlyAccessedInMethod") // Patcher makes worldObj final
 	@Override
 	@Declare
 	public void onChunkUnloadTT() {
@@ -277,7 +277,7 @@ public abstract class PatchChunk extends Chunk {
 		}
 	}
 
-	@SuppressWarnings ("FieldRepeatedlyAccessedInMethod") // Patcher makes worldObj final
+	@SuppressWarnings("FieldRepeatedlyAccessedInMethod") // Patcher makes worldObj final
 	@Override
 	@Declare
 	public void threadUnsafeChunkLoad() {
@@ -296,7 +296,7 @@ public abstract class PatchChunk extends Chunk {
 		}
 	}
 
-	@SuppressWarnings ("FieldRepeatedlyAccessedInMethod") // Patcher makes x/zPosition and worldObj final
+	@SuppressWarnings("FieldRepeatedlyAccessedInMethod") // Patcher makes x/zPosition and worldObj final
 	@Override
 	public void addEntity(Entity par1Entity) {
 		int entityChunkX = MathHelper.floor_double(par1Entity.posX / 16.0D);

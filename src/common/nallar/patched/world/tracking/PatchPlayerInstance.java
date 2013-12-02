@@ -1,10 +1,5 @@
 package nallar.patched.world.tracking;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
 import nallar.patched.annotation.Public;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.minecraft.TickThreading;
@@ -25,6 +20,11 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.ForgeDummyContainer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.ChunkWatchEvent;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Public
 public abstract class PatchPlayerInstance extends PlayerInstance {

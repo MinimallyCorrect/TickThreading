@@ -1,13 +1,13 @@
 package nallar.patched.block;
 
-import java.util.Random;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRedstoneTorch;
 import net.minecraft.network.packet.Packet61DoorChange;
 import net.minecraft.server.management.PlayerInstance;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+
+import java.util.Random;
 
 public abstract class PatchBlockRedstoneTorch extends BlockRedstoneTorch {
 	public PatchBlockRedstoneTorch(final int par1, final boolean par2) {

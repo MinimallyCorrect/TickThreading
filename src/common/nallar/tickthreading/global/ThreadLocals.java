@@ -1,13 +1,13 @@
 package nallar.tickthreading.global;
 
+import nallar.tickthreading.util.BooleanThreadLocal;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 
-import nallar.tickthreading.util.BooleanThreadLocal;
-
-@SuppressWarnings ("UnusedDeclaration")
+@SuppressWarnings("UnusedDeclaration")
 public class ThreadLocals {
 	public static final ThreadLocal redPowerBlockUpdateSet = new HashSetThreadLocal();
 	public static final ThreadLocal redPowerPowerSearch = new LinkedListThreadLocal();

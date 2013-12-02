@@ -92,7 +92,7 @@ public class CHashMap<K, V> extends HashMap<K, V> {
 		return hashMap.entrySet();
 	}
 
-	@SuppressWarnings ("EqualsWhichDoesntCheckParameterClass")
+	@SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
 	@Override
 	public boolean equals(Object o) {
 		return hashMap.equals(o);
