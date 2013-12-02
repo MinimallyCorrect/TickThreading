@@ -1,42 +1,8 @@
 package nallar.tickthreading.patcher;
 
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-
-import javassist.CannotCompileException;
-import javassist.ClassPool;
-import javassist.CtBehavior;
-import javassist.CtClass;
-import javassist.CtConstructor;
-import javassist.CtMethod;
-import javassist.NotFoundException;
-import javassist.RemappingPool;
+import javassist.*;
 import nallar.tickthreading.Log;
-import nallar.tickthreading.mappings.ClassDescription;
-import nallar.tickthreading.mappings.FieldDescription;
-import nallar.tickthreading.mappings.MCPMappings;
-import nallar.tickthreading.mappings.Mappings;
-import nallar.tickthreading.mappings.MethodDescription;
+import nallar.tickthreading.mappings.*;
 import nallar.tickthreading.util.CollectionsUtil;
 import nallar.tickthreading.util.DomUtil;
 import nallar.tickthreading.util.LocationUtil;
@@ -45,6 +11,17 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.*;
 
 public class PatchManager {
 	private Document configDocument;

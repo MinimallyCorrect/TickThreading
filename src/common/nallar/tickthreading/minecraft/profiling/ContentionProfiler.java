@@ -1,15 +1,6 @@
 package nallar.tickthreading.minecraft.profiling;
 
-import java.lang.management.LockInfo;
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadInfo;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.google.common.primitives.Longs;
-
 import nallar.tickthreading.Log;
 import nallar.tickthreading.minecraft.commands.Command;
 import nallar.tickthreading.util.CollectionsUtil;
@@ -17,6 +8,14 @@ import nallar.tickthreading.util.TableFormatter;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ThreadMinecraftServer;
+
+import java.lang.management.LockInfo;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ContentionProfiler {
 	public static void profile(final ICommandSender commandSender, int seconds, int resolution) {

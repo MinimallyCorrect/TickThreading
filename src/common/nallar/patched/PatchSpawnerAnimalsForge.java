@@ -1,11 +1,5 @@
 package nallar.patched;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.logging.Level;
-
 import cpw.mods.fml.common.FMLLog;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingData;
@@ -14,14 +8,16 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.MathHelper;
-import net.minecraft.world.ChunkCoordIntPair;
-import net.minecraft.world.ChunkPosition;
-import net.minecraft.world.SpawnerAnimals;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
+import net.minecraft.world.*;
 import net.minecraft.world.biome.SpawnListEntry;
 import net.minecraftforge.event.Event;
 import net.minecraftforge.event.ForgeEventFactory;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.logging.Level;
 
 public abstract class PatchSpawnerAnimalsForge extends SpawnerAnimals {
 	@Override
@@ -128,8 +124,7 @@ public abstract class PatchSpawnerAnimalsForge extends SpawnerAnimals {
 															if (canSpawn == Event.Result.ALLOW || (canSpawn == Event.Result.DEFAULT && var39.getCanSpawnHere())) {
 																++var16;
 																par0WorldServer.spawnEntityInWorld(var39);
-																if (!ForgeEventFactory.doSpecialSpawn(var39, par0WorldServer, var24, var25, var26))
-																{
+																if (!ForgeEventFactory.doSpecialSpawn(var39, par0WorldServer, var24, var25, var26)) {
 																	unusedEntityLivingData = var39.onSpawnWithEgg(unusedEntityLivingData);
 																}
 

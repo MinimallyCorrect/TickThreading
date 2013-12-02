@@ -1,19 +1,18 @@
 package nallar.tickthreading.minecraft.profiling;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.google.common.base.Functions;
 import com.google.common.collect.Ordering;
-
 import nallar.tickthreading.minecraft.commands.Command;
 import nallar.tickthreading.util.TableFormatter;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet250CustomPayload;
 import org.cliffc.high_scale_lib.NonBlockingHashMap;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class PacketProfiler {
 	private static boolean profiling = false;

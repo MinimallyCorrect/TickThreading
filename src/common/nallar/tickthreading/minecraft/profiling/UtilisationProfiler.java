@@ -1,5 +1,13 @@
 package nallar.tickthreading.minecraft.profiling;
 
+import com.google.common.primitives.Longs;
+import nallar.tickthreading.Log;
+import nallar.tickthreading.minecraft.commands.Command;
+import nallar.tickthreading.util.CollectionsUtil;
+import nallar.tickthreading.util.TableFormatter;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.server.MinecraftServer;
+
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
@@ -8,15 +16,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import com.google.common.primitives.Longs;
-
-import nallar.tickthreading.Log;
-import nallar.tickthreading.minecraft.commands.Command;
-import nallar.tickthreading.util.CollectionsUtil;
-import nallar.tickthreading.util.TableFormatter;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.server.MinecraftServer;
 
 public class UtilisationProfiler {
 	public static void profile(final ICommandSender commandSender, int seconds) {

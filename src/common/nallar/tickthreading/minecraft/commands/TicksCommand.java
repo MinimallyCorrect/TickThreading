@@ -1,7 +1,5 @@
 package nallar.tickthreading.minecraft.commands;
 
-import java.util.List;
-
 import nallar.tickthreading.minecraft.TickManager;
 import nallar.tickthreading.minecraft.TickThreading;
 import nallar.tickthreading.util.TableFormatter;
@@ -12,6 +10,8 @@ import net.minecraft.server.management.PlayerInstance;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
+
+import java.util.List;
 
 public class TicksCommand extends Command {
 	public static String name = "ticks";

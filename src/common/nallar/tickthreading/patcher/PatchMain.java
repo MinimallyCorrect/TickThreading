@@ -1,11 +1,5 @@
 package nallar.tickthreading.patcher;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.logging.Level;
-
 import javassist.NotFoundException;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.mappings.MCPMappings;
@@ -13,6 +7,12 @@ import nallar.tickthreading.patcher.remapping.ByteSource;
 import nallar.tickthreading.patcher.remapping.Deobfuscator;
 import nallar.tickthreading.util.CollectionsUtil;
 import nallar.tickthreading.util.VersionUtil;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Level;
 
 public class PatchMain {
 	public static void main(String[] argv) {

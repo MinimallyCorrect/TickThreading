@@ -1,7 +1,5 @@
 package nallar.tickthreading.minecraft.tickregion;
 
-import java.util.Iterator;
-
 import nallar.collections.LinkedHashSetTempSetNoClear;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.minecraft.TickManager;
@@ -14,6 +12,8 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.ChunkProviderServer;
 import sun.misc.Unsafe;
+
+import java.util.Iterator;
 
 public class EntityTickRegion extends TickRegion {
 	private final LinkedHashSetTempSetNoClear<Entity> entitySet = new LinkedHashSetTempSetNoClear<Entity>();

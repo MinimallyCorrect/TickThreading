@@ -4,17 +4,17 @@
  */
 package nallar.patched.collection;
 
-import java.util.Arrays;
-import java.util.ConcurrentModificationException;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-
 import nallar.patched.annotation.FakeExtend;
 import nallar.patched.annotation.Generic;
 import nallar.tickthreading.patcher.Declare;
 import net.minecraft.util.IntHashMap;
 
-@SuppressWarnings ("unchecked")
+import java.util.Arrays;
+import java.util.ConcurrentModificationException;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
+@SuppressWarnings("unchecked")
 @FakeExtend
 public abstract class PatchIntHashMap<V> extends IntHashMap<V> {
 	private static final int EMPTY_KEY = Integer.MIN_VALUE;

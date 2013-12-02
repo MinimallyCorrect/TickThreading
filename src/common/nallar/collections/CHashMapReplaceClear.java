@@ -1,9 +1,9 @@
 package nallar.collections;
 
-import java.util.concurrent.ConcurrentHashMap;
-
 import nallar.exception.ConcurrencyError;
 import nallar.tickthreading.util.BooleanThreadLocal;
+
+import java.util.concurrent.ConcurrentHashMap;
 
 public class CHashMapReplaceClear<K, V> extends CHashMap<K, V> {
 	private final BooleanThreadLocal inReplace = new BooleanThreadLocal();

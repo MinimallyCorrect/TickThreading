@@ -1,9 +1,5 @@
 package nallar.tickthreading.minecraft.commands;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
 import nallar.tickthreading.Log;
@@ -13,6 +9,10 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatMessageComponent;
 import ru.tehkode.permissions.IPermissions;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public abstract class Command extends CommandBase {
 	protected boolean requireOp() {

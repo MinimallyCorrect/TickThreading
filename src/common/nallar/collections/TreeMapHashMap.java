@@ -1,12 +1,6 @@
 package nallar.collections;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 
 public class TreeMapHashMap extends TreeMap {
 	private final Map map = new HashMap();

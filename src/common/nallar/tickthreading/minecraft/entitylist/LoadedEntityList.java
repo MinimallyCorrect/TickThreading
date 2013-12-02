@@ -1,10 +1,10 @@
 package nallar.tickthreading.minecraft.entitylist;
 
-import java.lang.reflect.Field;
-
 import nallar.tickthreading.minecraft.TickManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
+
+import java.lang.reflect.Field;
 
 public class LoadedEntityList extends EntityList<Entity> {
 	public LoadedEntityList(World world, Field overriddenField, TickManager manager) {

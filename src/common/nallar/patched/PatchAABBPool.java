@@ -20,7 +20,7 @@ public abstract class PatchAABBPool extends AABBPool {
 	}
 
 	@Override
-	@SideOnly (Side.CLIENT)
+	@SideOnly(Side.CLIENT)
 	public void clearPool() {
 	}
 

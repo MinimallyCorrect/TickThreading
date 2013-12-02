@@ -1,14 +1,9 @@
 package nallar.collections;
 
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Vector;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 import nallar.tickthreading.util.EnumerationIteratorWrapper;
+
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class CopyOnWriteVector extends Vector {
 	CopyOnWriteArrayList copyOnWriteArrayList = new CopyOnWriteArrayList();

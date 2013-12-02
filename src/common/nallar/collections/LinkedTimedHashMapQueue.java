@@ -1,16 +1,8 @@
 package nallar.collections;
 
-import java.util.AbstractSet;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-
 import nallar.tickthreading.Log;
+
+import java.util.*;
 
 public class LinkedTimedHashMapQueue<K> extends HashMap<K, Integer> {
 	int ticks = Integer.MIN_VALUE;
@@ -125,7 +117,7 @@ public class LinkedTimedHashMapQueue<K> extends HashMap<K, Integer> {
 		throw new UnsupportedOperationException("Doesn't make sense with this collection choice.");
 	}
 
-	@SuppressWarnings ("EqualsWhichDoesntCheckParameterClass")
+	@SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
 	@Override
 	public boolean equals(Object o) {
 		return map.equals(o);

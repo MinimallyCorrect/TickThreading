@@ -1,26 +1,7 @@
 package nallar.tickthreading.patcher;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
-
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
-
 import javassist.ClassPath;
 import javassist.CtClass;
 import javassist.NotFoundException;
@@ -34,10 +15,14 @@ import nallar.tickthreading.util.NormalFileFilter;
 import nallar.unsafe.UnsafeUtil;
 import net.minecraft.server.MinecraftServer;
 
+import java.io.*;
+import java.util.*;
+import java.util.zip.*;
+
 // Unchecked - Enumeration cast due to old java APIs.
 // ResultOfMethodCallIgnored - No, I do not care if mkdir fails to make the directory.
 // FieldRepeatedlyAccessedInMethod - I don't care about minor optimisations in patcher code, can't find a way to change inspections per package.
-@SuppressWarnings ({"unchecked", "ResultOfMethodCallIgnored", "FieldRepeatedlyAccessedInMethod"})
+@SuppressWarnings({"unchecked", "ResultOfMethodCallIgnored", "FieldRepeatedlyAccessedInMethod"})
 public class ClassRegistry {
 	private final String hashFileName = "patcher.hash";
 	private final String patchedModsFolderName = "patchedMods";
@@ -120,7 +105,7 @@ public class ClassRegistry {
 		replacementFiles.put(className.replace('.', '/') + ".class", replacement);
 	}
 
-	@SuppressWarnings ("IOResourceOpenedButNotSafelyClosed")
+	@SuppressWarnings("IOResourceOpenedButNotSafelyClosed")
 	public void save(File backupDirectory) throws IOException {
 		closeClassPath();
 		File tempFile = null, renameFile = null;
@@ -356,7 +341,7 @@ public class ClassRegistry {
 		f.delete();
 	}
 
-	@SuppressWarnings ("StatementWithEmptyBody")
+	@SuppressWarnings("StatementWithEmptyBody")
 	private int writeChanges(File zipFile, ZipInputStream zin, ZipOutputStream zout, boolean onlyClasses) throws Exception {
 		int patchedClasses = 0;
 		Set<String> replacements = new HashSet<String>();

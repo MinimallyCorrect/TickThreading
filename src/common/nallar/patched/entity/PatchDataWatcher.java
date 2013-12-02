@@ -1,10 +1,5 @@
 package nallar.patched.entity;
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import nallar.patched.annotation.FakeExtend;
@@ -13,6 +8,14 @@ import net.minecraft.entity.WatchableObject;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.util.ChunkCoordinates;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 @FakeExtend
 public abstract class PatchDataWatcher extends DataWatcher {
@@ -264,7 +267,7 @@ public abstract class PatchDataWatcher extends DataWatcher {
 	}
 
 	@Override
-	@SideOnly (Side.CLIENT)
+	@SideOnly(Side.CLIENT)
 	public void updateWatchedObjectsFromList(List par1List) {
 		throw new UnsupportedOperationException();
 	}

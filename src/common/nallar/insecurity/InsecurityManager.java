@@ -1,18 +1,18 @@
 package nallar.insecurity;
 
-import java.security.Permission;
-import java.util.logging.Handler;
-
 import cpw.mods.fml.common.FMLLog;
 import nallar.tickthreading.Log;
 import net.minecraft.server.MinecraftServer;
+
+import java.security.Permission;
+import java.util.logging.Handler;
 
 public class InsecurityManager extends java.lang.SecurityManager {
 	static {
 		System.setSecurityManager(new InsecurityManager());
 	}
 
-	@SuppressWarnings ("EmptyMethod")
+	@SuppressWarnings("EmptyMethod")
 	public static void init() {
 	}
 

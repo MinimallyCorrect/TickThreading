@@ -1,7 +1,5 @@
 package nallar.patched.entity;
 
-import java.util.List;
-
 import nallar.tickthreading.patcher.Declare;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -10,6 +8,8 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
+
+import java.util.List;
 
 public abstract class PatchEntity extends Entity {
 	@Declare
@@ -71,7 +71,7 @@ public abstract class PatchEntity extends Entity {
 			double vY1 = vY;
 			double vZ1 = vZ;
 			AxisAlignedBB var19 = this.boundingBox.copy();
-			@SuppressWarnings ("RedundantCast")
+			@SuppressWarnings("RedundantCast")
 			boolean sneakingPlayer = this.onGround && this.isSneaking() && (Object) this instanceof EntityPlayer;
 
 			if (sneakingPlayer) {

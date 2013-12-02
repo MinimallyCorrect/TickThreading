@@ -1,12 +1,5 @@
 package nallar.tickthreading.minecraft;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import cpw.mods.fml.common.FMLCommonHandler;
 import nallar.collections.ConcurrentIterableArrayList;
 import nallar.exception.ThreadStuckError;
@@ -14,6 +7,13 @@ import nallar.tickthreading.Log;
 import nallar.tickthreading.util.FakeServerThread;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
+
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public final class ThreadManager {
 	public static final Map<Long, String> threadIdToManager = new ConcurrentHashMap<Long, String>();
@@ -28,7 +28,7 @@ public final class ThreadManager {
 	private final Runnable killTask = new KillRunnable();
 	private long endTime = 0;
 	private final Runnable workerTask = new Runnable() {
-		@SuppressWarnings ("FieldRepeatedlyAccessedInMethod")
+		@SuppressWarnings("FieldRepeatedlyAccessedInMethod")
 		@Override
 		public void run() {
 			try {

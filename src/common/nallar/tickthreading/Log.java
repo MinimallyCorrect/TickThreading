@@ -1,25 +1,5 @@
 package nallar.tickthreading;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.text.Normalizer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.FileHandler;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
-
 import cpw.mods.fml.common.FMLLog;
 import nallar.reporting.Reporter;
 import net.minecraft.server.MinecraftServer;
@@ -29,7 +9,13 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
 
-@SuppressWarnings ({"UnusedDeclaration", "UseOfSystemOutOrSystemErr"})
+import java.io.*;
+import java.text.Normalizer;
+import java.util.*;
+import java.util.logging.*;
+import java.util.regex.Pattern;
+
+@SuppressWarnings({"UnusedDeclaration", "UseOfSystemOutOrSystemErr"})
 public class Log {
 	public static final Logger LOGGER = Logger.getLogger("TickThreading");
 	public static final boolean debug = System.getProperty("tickthreading.debug") != null;
@@ -37,7 +23,7 @@ public class Log {
 		// Inner class as constructors are protected.
 	};
 	private static Handler handler;
-	@SuppressWarnings ("UseOfArchaicSystemPropertyAccessors") // Need a default value.
+	@SuppressWarnings("UseOfArchaicSystemPropertyAccessors") // Need a default value.
 	private static final int numberOfLogFiles = Integer.getInteger("tickthreading.numberOfLogFiles", 5);
 	private static final File logFolder = new File("TickThreadingLogs");
 	private static Handler wrappedHandler;

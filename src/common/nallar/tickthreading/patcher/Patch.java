@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * Describes basic information for a patch
  */
-@Retention (RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.RUNTIME)
 public @interface Patch {
 	// The name for the patch in the patch xml
 	// default (or "") is treated as the name of the method

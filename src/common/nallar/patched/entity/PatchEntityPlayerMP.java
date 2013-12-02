@@ -1,13 +1,13 @@
 package nallar.patched.entity;
 
-import java.util.Iterator;
-import java.util.List;
-
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemInWorldManager;
 import net.minecraft.network.packet.Packet29DestroyEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
+
+import java.util.Iterator;
+import java.util.List;
 
 public abstract class PatchEntityPlayerMP extends EntityPlayerMP {
 	public PatchEntityPlayerMP(MinecraftServer par1MinecraftServer, World par2World, String par3Str, ItemInWorldManager par4ItemInWorldManager) {

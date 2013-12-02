@@ -1,16 +1,12 @@
 package nallar.tickthreading.minecraft.entitylist;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-
 import nallar.collections.ConcurrentUnsafeIterableArrayList;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.minecraft.TickManager;
 import net.minecraft.world.World;
+
+import java.lang.reflect.Field;
+import java.util.*;
 
 /*
 * Used to override World.loadedTile/EntityList.
@@ -118,7 +114,7 @@ public abstract class EntityList<T> extends ArrayList<T> {
 		return innerList.lastIndexOf(o);
 	}
 
-	@SuppressWarnings ("CloneDoesntCallSuperClone")
+	@SuppressWarnings("CloneDoesntCallSuperClone")
 	@Override
 	public Object clone() {
 		return innerList.clone();

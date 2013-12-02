@@ -1,17 +1,8 @@
 package nallar.patched.entity;
 
-import java.util.List;
-
 import net.minecraft.block.Block;
-import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemArmor;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemSword;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
@@ -25,7 +16,7 @@ public abstract class PatchEntityLivingBase extends EntityLivingBase {
 	public void moveEntityWithHeading(float par1, float par2) {
 		double var9;
 
-		@SuppressWarnings ("RedundantCast")
+		@SuppressWarnings("RedundantCast")
 		boolean isPlayer = (Object) this instanceof EntityPlayer;
 		boolean canFly = isPlayer && ((EntityPlayer) (Object) this).capabilities.isFlying;
 

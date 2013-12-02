@@ -1,26 +1,20 @@
 package nallar.tickthreading.util;
 
-import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Scanner;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-
 import com.google.common.io.Files;
-
 import nallar.tickthreading.Log;
 import nallar.tickthreading.minecraft.TickThreading;
 import nallar.tickthreading.patcher.PatchMain;
 import nallar.tickthreading.patcher.PatchManager;
 import nallar.tickthreading.patcher.Patches;
 import nallar.tickthreading.util.contextaccess.ContextAccess;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Scanner;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 public enum PatchUtil {
 	;
@@ -72,7 +66,7 @@ public enum PatchUtil {
 		return false;
 	}
 
-	@SuppressWarnings ("IOResourceOpenedButNotSafelyClosed")
+	@SuppressWarnings("IOResourceOpenedButNotSafelyClosed")
 	public static void startPatch() {
 		String classPath = getClassPath();
 		String separator = System.getProperty("file.separator");

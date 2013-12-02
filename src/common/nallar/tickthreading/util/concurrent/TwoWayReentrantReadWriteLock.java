@@ -78,7 +78,7 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 		}
 	}
 
-	@SuppressWarnings ("FieldRepeatedlyAccessedInMethod")
+	@SuppressWarnings("FieldRepeatedlyAccessedInMethod")
 	public final synchronized void lockWrite() {
 		writeRequests++;
 		Thread callingThread = Thread.currentThread();

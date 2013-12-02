@@ -1,12 +1,8 @@
 package nallar.collections;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.ListIterator;
-import java.util.NoSuchElementException;
-
 import nallar.unsafe.UnsafeUtil;
+
+import java.util.*;
 
 public class ConcurrentLinkedQueueList<T> extends LinkedList<T> {
 	private final ConcurrentQueueList<T> internalList = new ConcurrentQueueList<T>();

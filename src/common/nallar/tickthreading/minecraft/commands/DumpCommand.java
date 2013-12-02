@@ -1,8 +1,5 @@
 package nallar.tickthreading.minecraft.commands;
 
-import java.lang.reflect.Field;
-import java.util.List;
-
 import javassist.Modifier;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.minecraft.TickThreading;
@@ -13,6 +10,9 @@ import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
+
+import java.lang.reflect.Field;
+import java.util.List;
 
 public class DumpCommand extends Command {
 	public static String name = "dump";
@@ -59,7 +59,7 @@ public class DumpCommand extends Command {
 	}
 
 	public static TableFormatter dump(TableFormatter tf, World world, int x, int y, int z, int maxLen) {
-		@SuppressWarnings ("MismatchedQueryAndUpdateOfStringBuilder")
+		@SuppressWarnings("MismatchedQueryAndUpdateOfStringBuilder")
 		StringBuilder sb = tf.sb;
 		int blockId = world.getBlockIdWithoutLoad(x, y, z);
 		if (blockId < 1) {

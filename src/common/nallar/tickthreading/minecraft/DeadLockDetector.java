@@ -1,25 +1,9 @@
 package nallar.tickthreading.minecraft;
 
-import java.lang.management.LockInfo;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MonitorInfo;
-import java.lang.management.ThreadInfo;
-import java.lang.management.ThreadMXBean;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.ConcurrentModificationException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
-
 import com.google.common.base.Function;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-
 import cpw.mods.fml.common.FMLCommonHandler;
 import nallar.exception.ThreadStuckError;
 import nallar.tickthreading.Log;
@@ -29,6 +13,10 @@ import nallar.unsafe.UnsafeUtil;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.packet.Packet3Chat;
 import net.minecraft.server.MinecraftServer;
+
+import java.lang.management.*;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DeadLockDetector {
 	private static final StackTraceElement[] EMPTY_STACK_TRACE = new StackTraceElement[0];
