@@ -33,8 +33,6 @@ public class PatchMain {
 	private static void patcher(String[] args) {
 		List<String> argsList = Arrays.asList(args);
 		Log.setFileName("patcher", Level.FINEST, Log.LOGGER);
-		// TODO: Auto force-patch if Patches.class changes
-		boolean forcePatching = true;//  args.length >= 2 && "force".equalsIgnoreCase(args[1]);
 		PatchManager patchManager;
 		try {
 			//noinspection IOResourceOpenedButNotSafelyClosed
@@ -53,7 +51,6 @@ public class PatchMain {
 			ClassRegistry classRegistry = patchManager.classRegistry;
 			classRegistry.writeAllClasses = argsList.contains("all");
 			classRegistry.serverFile = filesToLoad.get(0);
-			classRegistry.forcePatching = forcePatching;
 			patchManager.loadBackups(filesToLoad);
 			classRegistry.loadFiles(filesToLoad);
 			try {
