@@ -156,7 +156,7 @@ public class Metrics {
 	 *
 	 * @param name The name of the graph
 	 * @return Graph object created. Will never return NULL under normal
-	 *         circumstances unless bad parameters are given
+	 * circumstances unless bad parameters are given
 	 */
 	public Graph createGraph(final String name) {
 		if (name == null) {

@@ -111,14 +111,14 @@ public enum LocationUtil {
 
 	public static List<File> getJarLocations() {
 		List<File> jarLocations = new ArrayList<File>();
-		File forgeJar = locationOf(net.minecraft.server.MinecraftServer.class);
+		File forgeJar = locationOf(net.minecraftforge.common.ForgeDummyContainer.class);
 		// Tuple = class not likely to be modified by forge
 		// Minecraft and forge aren't necessarily in the same place
 		File minecraftJar = locationOf(net.minecraft.util.Tuple.class);
+		jarLocations.add(minecraftJar);
 		if (!minecraftJar.equals(forgeJar)) {
 			jarLocations.add(forgeJar);
 		}
-		jarLocations.add(minecraftJar);
 		jarLocations.add(getCoreModsDirectory());
 		jarLocations.add(getModsDirectory());
 		jarLocations.add(getPluginsDirectory());

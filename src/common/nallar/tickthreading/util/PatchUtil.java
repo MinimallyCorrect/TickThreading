@@ -21,7 +21,24 @@ public enum PatchUtil {
 	private static boolean written = false;
 
 	private static String getClassPath() {
-		return LocationUtil.locationOf(TickThreading.class).toString() + File.pathSeparator + new File(LocationUtil.getServerDirectory(), "lib/guava-14.0-rc3.jar") + File.pathSeparator + new File(LocationUtil.getServerDirectory(), "lib/asm-all-4.1.jar");
+		return LocationUtil.locationOf(TickThreading.class).toString() + File.pathSeparator
+				+ LocationUtil.locationOf(net.minecraft.util.Tuple.class).toString() + File.pathSeparator
+				+ CollectionsUtil.join(getLibraries(new File(LocationUtil.getServerDirectory(), "libraries")), File.pathSeparator);
+	}
+
+	private static List<File> getLibraries(File start) {
+		ArrayList<File> list = new ArrayList<File>();
+		for (File file : start.listFiles()) {
+			if (file.isDirectory()) {
+				list.addAll(getLibraries(file));
+			} else {
+				String name = file.getName().toLowerCase();
+				if (name.endsWith(".zip") || name.endsWith(".jar")) {
+					list.add(file);
+				}
+			}
+		}
+		return list;
 	}
 
 	public static synchronized void writePatchRunners() throws IOException {

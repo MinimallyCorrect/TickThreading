@@ -7,11 +7,17 @@ import nallar.tickthreading.patcher.remapping.ByteSource;
 import nallar.tickthreading.patcher.remapping.Deobfuscator;
 import nallar.tickthreading.util.CollectionsUtil;
 import nallar.tickthreading.util.VersionUtil;
+import nallar.unsafe.UnsafeUtil;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.List;
+import java.util.jar.JarFile;
 import java.util.logging.Level;
 
 public class PatchMain {
@@ -27,6 +33,16 @@ public class PatchMain {
 			patcher(args);
 		} else {
 			Log.severe(type + " is not a valid action.");
+		}
+	}
+
+	private static void addToClassPath(File file) {
+		try {
+			Method method = URLClassLoader.class.getDeclaredMethod("addURL", new Class[]{URL.class});
+			method.setAccessible(true);
+			method.invoke(ClassLoader.getSystemClassLoader(), file.toURI().toURL());
+		} catch (Exception e) {
+			throw UnsafeUtil.throwIgnoreChecked(e);
 		}
 	}
 
@@ -46,8 +62,26 @@ public class PatchMain {
 			for (int i = 0; i < filesToLoad.size(); i++) {
 				filesToLoad.set(i, filesToLoad.get(i).getAbsoluteFile());
 			}
+			File minecraft = filesToLoad.get(0);
+			File forge = filesToLoad.get(1);
+			Log.info("Minecraft jar: " + minecraft + ", Forge jar: " + forge);
 			ByteSource.addFiles(filesToLoad.toArray(new File[filesToLoad.size()]));
-			Deobfuscator.INSTANCE.setup(new File("lib/deobfuscation_data_1.5.2.zip"));
+			JarFile jarFile = null;
+			try {
+				jarFile = new JarFile(forge);
+				InputStream inputStream = jarFile.getInputStream(jarFile.getJarEntry("deobfuscation_data-1.6.4.lzma"));
+				try {
+					Deobfuscator.INSTANCE.setup(inputStream);
+				} finally {
+					inputStream.close();
+				}
+			} catch (IOException e) {
+				Log.warning("Exception reading deobfuscation data", e);
+			} finally {
+				if (jarFile != null) {
+					jarFile.close();
+				}
+			}
 			ClassRegistry classRegistry = patchManager.classRegistry;
 			classRegistry.writeAllClasses = argsList.contains("all");
 			classRegistry.serverFile = filesToLoad.get(0);
