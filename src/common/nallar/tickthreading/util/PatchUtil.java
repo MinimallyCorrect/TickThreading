@@ -48,14 +48,14 @@ public enum PatchUtil {
 		written = true;
 		String java = System.getProperties().getProperty("java.home") + File.separator + "bin" + File.separator + "java";
 		String CP = getClassPath();
-		String MS = CollectionsUtil.join(LocationUtil.getJarLocations());
+		String patchArguments = '"' + CollectionsUtil.join(LocationUtil.getJarLocations()) + "\" \"" + CollectionsUtil.join(LocationUtil.getForgeJarLocations()) + '"';
 
 		ZipFile zipFile = new ZipFile(new File(LocationUtil.locationOf(TickThreading.class).toString()));
 		try {
 			for (ZipEntry zipEntry : new IterableEnumerationWrapper<ZipEntry>((Enumeration<ZipEntry>) zipFile.entries())) {
 				if (zipEntry.getName().startsWith("patchrun/") && !(!zipEntry.getName().isEmpty() && zipEntry.getName().charAt(zipEntry.getName().length() - 1) == '/')) {
 					String data = new Scanner(zipFile.getInputStream(zipEntry), "UTF-8").useDelimiter("\\A").next();
-					data = data.replace("%JAVA%", java).replace("%CP%", CP).replace("%MS%", MS).replace("\r\n", "\n");
+					data = data.replace("%JAVA%", java).replace("%CP%", CP).replace("%patchArguments%", patchArguments).replace("\r\n", "\n");
 					Files.write(data.getBytes("UTF-8"), new File(LocationUtil.getServerDirectory(), zipEntry.getName().replace("patchrun/", "")));
 				}
 			}
@@ -89,7 +89,7 @@ public enum PatchUtil {
 		String separator = System.getProperty("file.separator");
 		String path = System.getProperty("java.home")
 				+ separator + "bin" + separator + "java";
-		ProcessBuilder processBuilder = new ProcessBuilder(path, "-Dunattend=true", "-cp", classPath, PatchMain.class.getCanonicalName(), "patcher", CollectionsUtil.join(LocationUtil.getJarLocations()));
+		ProcessBuilder processBuilder = new ProcessBuilder(path, "-Dunattend=true", "-cp", classPath, PatchMain.class.getCanonicalName(), "patcher", CollectionsUtil.join(LocationUtil.getJarLocations(), CollectionsUtil.join(LocationUtil.getForgeJarLocations())));
 		Process p;
 		try {
 			p = processBuilder.start();

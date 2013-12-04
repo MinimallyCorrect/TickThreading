@@ -5,7 +5,9 @@ import nallar.tickthreading.Log;
 import nallar.tickthreading.mappings.MCPMappings;
 import nallar.tickthreading.patcher.remapping.ByteSource;
 import nallar.tickthreading.patcher.remapping.Deobfuscator;
+import nallar.tickthreading.patcher.remapping.JarPatcher;
 import nallar.tickthreading.util.CollectionsUtil;
+import nallar.tickthreading.util.FileUtil;
 import nallar.tickthreading.util.VersionUtil;
 import nallar.unsafe.UnsafeUtil;
 
@@ -62,8 +64,17 @@ public class PatchMain {
 			for (int i = 0; i < filesToLoad.size(); i++) {
 				filesToLoad.set(i, filesToLoad.get(i).getAbsoluteFile());
 			}
-			File minecraft = filesToLoad.get(0);
-			File forge = filesToLoad.get(1);
+			List<File> forgeFiles = CollectionsUtil.toObjects(CollectionsUtil.split(args[0]), File.class);
+			File minecraft = forgeFiles.get(0);
+			File forge = forgeFiles.size() < 2 ? minecraft : forgeFiles.get(1);
+			File minecraftLibCopy = new File(minecraft.getName() + ".lib");
+			File forgeLibCopy = new File(forge.getName() + ".lib");
+			FileUtil.copyFile(minecraft, minecraftLibCopy);
+			addToClassPath(minecraftLibCopy);
+			if (minecraft != forge) {
+				FileUtil.copyFile(forge, forgeLibCopy);
+				addToClassPath(forgeLibCopy);
+			}
 			Log.info("Minecraft jar: " + minecraft + ", Forge jar: " + forge);
 			ByteSource.addFiles(filesToLoad.toArray(new File[filesToLoad.size()]));
 			JarFile jarFile = null;
@@ -75,12 +86,22 @@ public class PatchMain {
 				} finally {
 					inputStream.close();
 				}
+				inputStream = jarFile.getInputStream(jarFile.getJarEntry("binpatches.pack.lzma"));
+				try {
+					JarPatcher.INSTANCE.setup(inputStream);
+				} finally {
+					inputStream.close();
+				}
 			} catch (IOException e) {
 				Log.warning("Exception reading deobfuscation data", e);
 			} finally {
 				if (jarFile != null) {
 					jarFile.close();
 				}
+			}
+			if (true) {
+				Log.severe("1.6.4 patcher not yet finished. It just breaks your install, so disabled for now. Why are you even running this build?");
+				return;
 			}
 			ClassRegistry classRegistry = patchManager.classRegistry;
 			classRegistry.writeAllClasses = argsList.contains("all");
