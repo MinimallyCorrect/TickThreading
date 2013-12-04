@@ -5,13 +5,21 @@ import nallar.tickthreading.Log;
 import nallar.tickthreading.mappings.MCPMappings;
 import nallar.tickthreading.patcher.remapping.ByteSource;
 import nallar.tickthreading.patcher.remapping.Deobfuscator;
+import nallar.tickthreading.patcher.remapping.JarPatcher;
 import nallar.tickthreading.util.CollectionsUtil;
+import nallar.tickthreading.util.FileUtil;
 import nallar.tickthreading.util.VersionUtil;
+import nallar.unsafe.UnsafeUtil;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.List;
+import java.util.jar.JarFile;
 import java.util.logging.Level;
 
 public class PatchMain {
@@ -30,11 +38,19 @@ public class PatchMain {
 		}
 	}
 
+	private static void addToClassPath(File file) {
+		try {
+			Method method = URLClassLoader.class.getDeclaredMethod("addURL", new Class[]{URL.class});
+			method.setAccessible(true);
+			method.invoke(ClassLoader.getSystemClassLoader(), file.toURI().toURL());
+		} catch (Exception e) {
+			throw UnsafeUtil.throwIgnoreChecked(e);
+		}
+	}
+
 	private static void patcher(String[] args) {
 		List<String> argsList = Arrays.asList(args);
 		Log.setFileName("patcher", Level.FINEST, Log.LOGGER);
-		// TODO: Auto force-patch if Patches.class changes
-		boolean forcePatching = true;//  args.length >= 2 && "force".equalsIgnoreCase(args[1]);
 		PatchManager patchManager;
 		try {
 			//noinspection IOResourceOpenedButNotSafelyClosed
@@ -48,12 +64,48 @@ public class PatchMain {
 			for (int i = 0; i < filesToLoad.size(); i++) {
 				filesToLoad.set(i, filesToLoad.get(i).getAbsoluteFile());
 			}
+			List<File> forgeFiles = CollectionsUtil.toObjects(CollectionsUtil.split(args[0]), File.class);
+			File minecraft = forgeFiles.get(0);
+			File forge = forgeFiles.size() < 2 ? minecraft : forgeFiles.get(1);
+			File minecraftLibCopy = new File(minecraft.getName() + ".lib");
+			File forgeLibCopy = new File(forge.getName() + ".lib");
+			FileUtil.copyFile(minecraft, minecraftLibCopy);
+			addToClassPath(minecraftLibCopy);
+			if (minecraft != forge) {
+				FileUtil.copyFile(forge, forgeLibCopy);
+				addToClassPath(forgeLibCopy);
+			}
+			Log.info("Minecraft jar: " + minecraft + ", Forge jar: " + forge);
 			ByteSource.addFiles(filesToLoad.toArray(new File[filesToLoad.size()]));
-			Deobfuscator.INSTANCE.setup(new File("lib/deobfuscation_data_1.5.2.zip"));
+			JarFile jarFile = null;
+			try {
+				jarFile = new JarFile(forge);
+				InputStream inputStream = jarFile.getInputStream(jarFile.getJarEntry("deobfuscation_data-1.6.4.lzma"));
+				try {
+					Deobfuscator.INSTANCE.setup(inputStream);
+				} finally {
+					inputStream.close();
+				}
+				inputStream = jarFile.getInputStream(jarFile.getJarEntry("binpatches.pack.lzma"));
+				try {
+					JarPatcher.INSTANCE.setup(inputStream);
+				} finally {
+					inputStream.close();
+				}
+			} catch (IOException e) {
+				Log.warning("Exception reading deobfuscation data", e);
+			} finally {
+				if (jarFile != null) {
+					jarFile.close();
+				}
+			}
+			if (true) {
+				Log.severe("1.6.4 patcher not yet finished. It just breaks your install, so disabled for now. Why are you even running this build?");
+				return;
+			}
 			ClassRegistry classRegistry = patchManager.classRegistry;
 			classRegistry.writeAllClasses = argsList.contains("all");
 			classRegistry.serverFile = filesToLoad.get(0);
-			classRegistry.forcePatching = forcePatching;
 			patchManager.loadBackups(filesToLoad);
 			classRegistry.loadFiles(filesToLoad);
 			try {

@@ -183,10 +183,6 @@ public class PatchManager {
 			for (Element classElement : DomUtil.getElementsByTag(modElement, "class")) {
 				boolean isMinecraft = minecraftCommonDeobfuscate(classElement, mappings);
 				String className = classElement.getAttribute("id");
-				if (!classRegistry.shouldPatch(className)) {
-					Log.info(className + " is already patched, skipping.");
-					continue;
-				}
 				String environment = classElement.getAttribute("env");
 				if (!environment.isEmpty() && !environment.equals(patchEnvironment)) {
 					continue;

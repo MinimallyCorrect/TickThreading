@@ -39,7 +39,6 @@ public class ClassRegistry {
 	private File patchedModsFolder;
 	public final RemappingPool classes = new RemappingPool();
 	public boolean disableJavassistLoading = false;
-	public boolean forcePatching = false;
 	public boolean writeAllClasses = false;
 
 	{
@@ -191,12 +190,8 @@ public class ClassRegistry {
 		}
 	}
 
-	public boolean shouldPatch(String className) {
-		return shouldPatch(classNameToLocation.get(className));
-	}
-
 	boolean shouldPatch(File file) {
-		return forcePatching || file == null || !(expectedPatchHashes.get(file).equals(locationToPatchHash.get(file)));
+		return file == null || !(expectedPatchHashes.get(file).equals(locationToPatchHash.get(file)));
 	}
 
 	public boolean shouldPatch() {
@@ -214,33 +209,30 @@ public class ClassRegistry {
 
 	public void restoreBackups(File backupDirectory) {
 		for (Map.Entry<File, Integer> fileIntegerEntry : locationToPatchHash.entrySet()) {
-			Integer expectedHash = expectedPatchHashes.get(fileIntegerEntry.getKey());
 			Integer actualHash = fileIntegerEntry.getValue();
 			if (actualHash == null) {
 				continue;
 			}
-			if (forcePatching || !actualHash.equals(expectedHash)) {
-				File backupFile = new File(backupDirectory, fileIntegerEntry.getKey().getName());
-				if (new File(patchedModsFolder, backupFile.getName()).exists()) {
-					continue;
-				}
-				boolean restoreFailed = false;
-				if (!backupFile.exists()) {
+			File backupFile = new File(backupDirectory, fileIntegerEntry.getKey().getName());
+			if (new File(patchedModsFolder, backupFile.getName()).exists()) {
+				continue;
+			}
+			boolean restoreFailed = false;
+			if (!backupFile.exists()) {
+				restoreFailed = true;
+			} else {
+				fileIntegerEntry.getKey().delete();
+				try {
+					Files.move(backupFile, fileIntegerEntry.getKey());
+				} catch (IOException e) {
 					restoreFailed = true;
-				} else {
-					fileIntegerEntry.getKey().delete();
-					try {
-						Files.move(backupFile, fileIntegerEntry.getKey());
-					} catch (IOException e) {
-						restoreFailed = true;
-						Log.severe("Failed to restore unpatched backup before patching", e);
-					}
+					Log.severe("Failed to restore unpatched backup before patching", e);
 				}
-				if (restoreFailed) {
-					Log.severe("Can't patch - no backup for " + fileIntegerEntry.getKey().getName() + " exists, and a patched copy is already in the mods directory." +
-							"\nYou will need to replace this file with a new unpatched copy.");
-					throw new Error("Missing backup for patched file");
-				}
+			}
+			if (restoreFailed) {
+				Log.severe("Can't patch - no backup for " + fileIntegerEntry.getKey().getName() + " exists, and a patched copy is already in the mods directory." +
+						"\nYou will need to replace this file with a new unpatched copy.");
+				throw new Error("Missing backup for patched file");
 			}
 		}
 	}

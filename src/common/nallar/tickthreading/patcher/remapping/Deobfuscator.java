@@ -29,7 +29,6 @@ import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -78,13 +77,9 @@ public class Deobfuscator extends Remapper {
 		mcpNameBiMap = ImmutableBiMap.of();
 	}
 
-	public void setup(File mapData) {
+	public void setup(InputStream mapData) {
 		try {
-			mapData = mapData.getCanonicalFile();
-			//noinspection IOResourceOpenedButNotSafelyClosed
-			ZipFile mapZip = new ZipFile(mapData);
-			ZipEntry classData = mapZip.getEntry("joined.srg");
-			ZipInputSupplier zis = new ZipInputSupplier(mapZip, classData);
+			LZMAInputSupplier zis = new LZMAInputSupplier(mapData);
 			InputSupplier<InputStreamReader> srgSupplier = CharStreams.newReaderSupplier(zis, Charsets.UTF_8);
 			List<String> srgList = CharStreams.readLines(srgSupplier);
 			rawMethodMaps = Maps.newHashMap();
