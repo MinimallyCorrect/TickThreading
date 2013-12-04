@@ -77,9 +77,8 @@ public class PatchMain {
 			}
 			Log.info("Minecraft jar: " + minecraft + ", Forge jar: " + forge);
 			ByteSource.addFiles(filesToLoad.toArray(new File[filesToLoad.size()]));
-			JarFile jarFile = null;
+			JarFile jarFile = new JarFile(forge);
 			try {
-				jarFile = new JarFile(forge);
 				InputStream inputStream = jarFile.getInputStream(jarFile.getJarEntry("deobfuscation_data-1.6.4.lzma"));
 				try {
 					Deobfuscator.INSTANCE.setup(inputStream);
@@ -95,14 +94,9 @@ public class PatchMain {
 			} catch (IOException e) {
 				Log.warning("Exception reading deobfuscation data", e);
 			} finally {
-				if (jarFile != null) {
-					jarFile.close();
-				}
+				jarFile.close();
 			}
-			if (true) {
-				Log.severe("1.6.4 patcher not yet finished. It just breaks your install, so disabled for now. Why are you even running this build?");
-				return;
-			}
+			JarPatcher.INSTANCE.patchAll(minecraft);
 			ClassRegistry classRegistry = patchManager.classRegistry;
 			classRegistry.writeAllClasses = argsList.contains("all");
 			classRegistry.serverFile = filesToLoad.get(0);
