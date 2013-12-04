@@ -2,7 +2,6 @@ package nallar.tickthreading.minecraft;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
-<<<<<<< HEAD
 
 import cpw.mods.fml.common.IPlayerTracker;
 import cpw.mods.fml.common.IScheduledTickHandler;
@@ -10,9 +9,7 @@ import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.TickType;
 import cpw.mods.fml.common.Mod.EventHandler;
-=======
 import cpw.mods.fml.common.*;
->>>>>>> upstream/master
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
@@ -117,11 +114,7 @@ public class TickThreading {
 		PatchUtil.checkPatches();
 	}
 
-<<<<<<< HEAD
-	@EventHandler
-=======
 	@Mod.EventHandler
->>>>>>> upstream/master
 	public void init(FMLInitializationEvent event) {
 		MinecraftForge.EVENT_BUS.register(this);
 		initPeriodicProfiling();
@@ -139,13 +132,9 @@ public class TickThreading {
 		TickRegistry.registerScheduledTickHandler(new ProfilingScheduledTickHandler(profilingInterval, MinecraftServer.getServer().getFile(profilingFileName), profilingJson), Side.SERVER);
 	}
 
-<<<<<<< HEAD
-	@SuppressWarnings ("FieldRepeatedlyAccessedInMethod")
-	@EventHandler
-=======
+
 	@SuppressWarnings("FieldRepeatedlyAccessedInMethod")
 	@Mod.EventHandler
->>>>>>> upstream/master
 	public void preInit(FMLPreInitializationEvent event) {
 		Configuration config = new Configuration(event.getSuggestedConfigurationFile());
 		config.load();
@@ -195,11 +184,8 @@ public class TickThreading {
 		PacketCount.allowCounting = false;
 	}
 
-<<<<<<< HEAD
-	@EventHandler
-=======
+
 	@Mod.EventHandler
->>>>>>> upstream/master
 	public void serverStarting(FMLServerStartingEvent event) {
 		if (Loader.isModLoaded("TickProfiler")) {
 			Log.severe("You're using TickProfiler with TT - TT includes TP's features. Please uninstall TickProfiler, it can cause problems with TT.");
