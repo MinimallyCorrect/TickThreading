@@ -23,10 +23,8 @@ import java.util.jar.JarFile;
 import java.util.logging.Level;
 
 public class PatchMain {
-	public static void main(String[] argv) {
-		Log.severe("Current version is not compatible with 1.6.4");
-		
-		/*Log.info("Running " + VersionUtil.versionString());
+	public static void main(String[] argv) {		
+		Log.info("Running " + VersionUtil.versionString());
 		if (argv.length < 1) {
 			Log.severe("Type must be passed");
 			return;
@@ -37,7 +35,7 @@ public class PatchMain {
 			patcher(args);
 		} else {
 			Log.severe(type + " is not a valid action.");
-		}*/
+		}
 	}
 
 	private static void addToClassPath(File file) {
