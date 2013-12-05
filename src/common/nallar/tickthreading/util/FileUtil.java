@@ -16,20 +16,17 @@ public enum FileUtil {
 			Log.warning("Failed to create file " + destFile + " when copying from " + sourceFile);
 		}
 
-		FileChannel source = null;
-		FileChannel destination = null;
-
+		FileInputStream fileInputStream = new FileInputStream(sourceFile);
 		try {
-			source = new FileInputStream(sourceFile).getChannel();
-			destination = new FileOutputStream(destFile).getChannel();
-			destination.transferFrom(source, 0, source.size());
+			FileOutputStream fileOutputStream = new FileOutputStream(destFile);
+			try {
+				FileChannel fileChannel = fileInputStream.getChannel();
+				fileOutputStream.getChannel().transferFrom(fileChannel, 0, fileChannel.size());
+			} finally {
+				fileOutputStream.close();
+			}
 		} finally {
-			if (source != null) {
-				source.close();
-			}
-			if (destination != null) {
-				destination.close();
-			}
+			fileInputStream.close();
 		}
 	}
 }

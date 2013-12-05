@@ -193,6 +193,7 @@ public class MCPMappings extends Mappings {
 				srgScanner.nextLine();
 			}
 		}
+		mappings.close();
 	}
 
 	private static void loadCsv(InputStream mappingsCsv, Map<String, String> seargeMappings) throws IOException {
@@ -211,5 +212,6 @@ public class MCPMappings extends Mappings {
 		} finally {
 			in.close();
 		}
+		mappingsCsv.close();
 	}
 }

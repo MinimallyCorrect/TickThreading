@@ -63,11 +63,13 @@ public class Deobfuscator extends Remapper {
 			return null;
 		}
 		try {
-			return ByteStreams.toByteArray(stream);
+			try {
+				return ByteStreams.toByteArray(stream);
+			} finally {
+				stream.close();
+			}
 		} catch (IOException e) {
 			Log.severe("Failed to read class " + name, e);
-		} finally {
-			Closeables.closeQuietly(stream);
 		}
 		return null;
 	}

@@ -6,26 +6,64 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.hash.Hashing;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
+import com.google.common.io.OutputSupplier;
 import cpw.mods.fml.repackage.com.nothome.delta.GDiffPatcher;
 import nallar.tickthreading.Log;
+import nallar.tickthreading.util.FileUtil;
+import nallar.tickthreading.util.IterableEnumerationWrapper;
 import nallar.unsafe.UnsafeUtil;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.util.Enumeration;
 import java.util.List;
-import java.util.jar.JarEntry;
-import java.util.jar.JarInputStream;
-import java.util.jar.JarOutputStream;
-import java.util.jar.Pack200;
+import java.util.jar.*;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 public enum JarPatcher {
 	INSTANCE;
 	private static final Pattern binpatchMatcher = Pattern.compile("binpatch/server/.*.binpatch");
 	private GDiffPatcher patcher = new GDiffPatcher();
 	private ListMultimap<String, DeltaClassPatch> patches;
+
+	private void waitForStupid() {
+		try {
+			// THANKS WINDOWS/JAVA
+			// closing a file handle on time would be stupid, right?
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void patchAll(File file) throws IOException {
+		waitForStupid();
+		File tempFile = new File(file.getName() + ".tmp");
+		FileUtil.copyFile(file, tempFile);
+		waitForStupid();
+		file.delete(); // Yes, we try twice. Because that makes it work. No, I don't know why.
+		file.delete();
+		final JarOutputStream jarOutputStream = new JarOutputStream(new FileOutputStream(file));
+		try {
+			JarFile input = new JarFile(tempFile);
+			try {
+				for (ZipEntry zipEntry : new IterableEnumerationWrapper<ZipEntry>((Enumeration<ZipEntry>) ((ZipFile) input).entries())) {
+					ByteArrayOutputStream baos = new ByteArrayOutputStream();
+					ByteStreams.copy(input.getInputStream(zipEntry), baos);
+					byte[] clazz = baos.toByteArray();
+					clazz = applyPatch(zipEntry.getName(), clazz);
+					ZipEntry outputEntry = new ZipEntry(zipEntry.getName());
+					jarOutputStream.putNextEntry(outputEntry);
+					ByteStreams.copy(new ByteArrayInputStream(clazz), jarOutputStream);
+				}
+			} finally {
+				input.close();
+			}
+		} finally {
+			jarOutputStream.close();
+		}
+	}
 
 	public void setup(InputStream binpatchesCompressed) {
 		JarInputStream jis;
@@ -66,7 +104,7 @@ public enum JarPatcher {
 		Log.info("Read " + patches.size() + " binary patches");
 	}
 
-	private byte[] applyPatch(String name, String mappedName, byte[] inputData) {
+	private byte[] applyPatch(String name, byte[] inputData) {
 		if (patches == null) {
 			return inputData;
 		}
@@ -75,8 +113,8 @@ public enum JarPatcher {
 			return inputData;
 		}
 		for (DeltaClassPatch patch : list) {
-			if (!patch.targetClassName.equals(mappedName) && !patch.sourceClassName.equals(name)) {
-				Log.warning("Binary patch found " + patch.targetClassName + " for wrong class " + mappedName);
+			if (!patch.sourceClassName.equals(name)) {
+				Log.warning("Binary patch found " + patch.targetClassName + " for wrong class " + name);
 			}
 			if (!patch.existsAtTarget && (inputData == null || inputData.length == 0)) {
 				inputData = new byte[0];
