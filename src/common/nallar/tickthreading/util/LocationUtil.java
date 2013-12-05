@@ -97,10 +97,6 @@ public enum LocationUtil {
 		return directoryOf(PatchMain.class).getParentFile();
 	}
 
-	private static File getCoreModsDirectory() {
-		return new File(getServerDirectory(), "coremods");
-	}
-
 	private static File getModsDirectory() {
 		return new File(getServerDirectory(), "mods");
 	}
@@ -112,7 +108,6 @@ public enum LocationUtil {
 	public static List<File> getJarLocations() {
 		List<File> jarLocations = new ArrayList<File>();
 		jarLocations.addAll(getForgeJarLocations());
-		jarLocations.add(getCoreModsDirectory());
 		jarLocations.add(getModsDirectory());
 		jarLocations.add(getPluginsDirectory());
 		return jarLocations;
