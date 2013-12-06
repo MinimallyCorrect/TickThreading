@@ -6,7 +6,6 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.hash.Hashing;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
-import com.google.common.io.OutputSupplier;
 import cpw.mods.fml.repackage.com.nothome.delta.GDiffPatcher;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.util.FileUtil;

@@ -20,7 +20,6 @@ import com.google.common.collect.*;
 import com.google.common.collect.ImmutableBiMap.Builder;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
-import com.google.common.io.Closeables;
 import com.google.common.io.InputSupplier;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.minecraft.TickThreading;
