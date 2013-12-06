@@ -34,15 +34,6 @@ public enum DomUtil {
 		return new NodeListWhichIsActuallyAList(nodeList);
 	}
 
-	public static int getHash(Element node) {
-		int hash = 5381;
-		for (Element child : elementList(node.getChildNodes())) {
-			hash += (hash << 5) + getHash(child);
-		}
-		hash += (hash << 5) + node.getTagName().length();
-		hash += (hash << 5) + node.getAttributes().getLength();
-		return hash;
-	}
 
 	public static Map<String, String> getAttributes(Node node) {
 		NamedNodeMap attributeMap = node.getAttributes();

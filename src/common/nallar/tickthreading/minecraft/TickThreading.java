@@ -20,7 +20,6 @@ import nallar.tickthreading.minecraft.entitylist.LoadedEntityList;
 import nallar.tickthreading.minecraft.entitylist.LoadedTileEntityList;
 import nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
 import nallar.tickthreading.minecraft.profiling.Timings;
-import nallar.tickthreading.util.PatchUtil;
 import nallar.tickthreading.util.ReflectUtil;
 import nallar.tickthreading.util.TableFormatter;
 import nallar.tickthreading.util.VersionUtil;
@@ -103,7 +102,6 @@ public class TickThreading {
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load
-		PatchUtil.checkPatches();
 	}
 
 	@Mod.EventHandler

@@ -14,7 +14,6 @@ import nallar.tickthreading.minecraft.profiling.Timings;
 import nallar.tickthreading.patcher.Declare;
 import nallar.tickthreading.util.EnvironmentInfo;
 import nallar.tickthreading.util.FakeServerThread;
-import nallar.tickthreading.util.PatchUtil;
 import nallar.unsafe.UnsafeUtil;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.entity.Entity;
@@ -78,10 +77,6 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	}
 
 	public static void staticConstruct() {
-		try {
-			PatchUtil.checkPatches();
-		} catch (NoClassDefFoundError ignored) {
-		}
 		setTargetTPS(20);
 		setNetworkTPS(40);
 	}
@@ -158,7 +153,6 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		try {
 			try {
 				InsecurityManager.init();
-				PatchUtil.writePatchRunners();
 			} catch (Throwable t) {
 				FMLLog.log(Level.SEVERE, t, "Failed to set up Security Manager. This is probably not a huge problem - but it could indicate classloading issues.");
 			}

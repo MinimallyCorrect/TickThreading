@@ -1,13 +1,10 @@
 package nallar.tickthreading.util;
 
 import nallar.tickthreading.Log;
-import nallar.tickthreading.patcher.PatchMain;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Pattern;
 
 public enum LocationUtil {
@@ -91,38 +88,5 @@ public enum LocationUtil {
 			Log.severe("", e);
 			return getRelativeFile(new File(path), currentDir);
 		}
-	}
-
-	public static File getServerDirectory() {
-		return directoryOf(PatchMain.class).getParentFile();
-	}
-
-	private static File getModsDirectory() {
-		return new File(getServerDirectory(), "mods");
-	}
-
-	private static File getPluginsDirectory() {
-		return new File(getServerDirectory(), "plugins");
-	}
-
-	public static List<File> getJarLocations() {
-		List<File> jarLocations = new ArrayList<File>();
-		jarLocations.addAll(getForgeJarLocations());
-		jarLocations.add(getModsDirectory());
-		jarLocations.add(getPluginsDirectory());
-		return jarLocations;
-	}
-
-	public static List<File> getForgeJarLocations() {
-		List<File> jarLocations = new ArrayList<File>();
-		File forgeJar = locationOf(net.minecraftforge.common.ForgeDummyContainer.class);
-		// Tuple = class not likely to be modified by forge
-		// Minecraft and forge aren't necessarily in the same place
-		File minecraftJar = locationOf(net.minecraft.util.Tuple.class);
-		jarLocations.add(minecraftJar);
-		if (!minecraftJar.equals(forgeJar)) {
-			jarLocations.add(forgeJar);
-		}
-		return jarLocations;
 	}
 }
