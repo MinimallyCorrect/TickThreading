@@ -8,6 +8,7 @@ import nallar.tickthreading.minecraft.ThreadManager;
 import nallar.tickthreading.minecraft.TickThreading;
 import nallar.tickthreading.patcher.Declare;
 import nallar.tickthreading.util.BlockInfo;
+import nallar.tickthreading.util.BooleanThreadLocalDefaultFalse;
 import nallar.tickthreading.util.contextaccess.ContextAccess;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockEventData;
@@ -44,9 +45,9 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	private static final ThreadLocalRandom randoms = new ThreadLocalRandom();
 	private int lastTickEntries;
 	@Declare
-	public nallar.tickthreading.util.BooleanThreadLocal worldGenInProgress_;
+	public BooleanThreadLocalDefaultFalse worldGenInProgress_;
 	@Declare
-	public nallar.tickthreading.util.BooleanThreadLocal inImmediateBlockUpdate_;
+	public BooleanThreadLocalDefaultFalse inImmediateBlockUpdate_;
 	@Declare
 	public int saveTickCount_;
 	private int chunkTickWait;

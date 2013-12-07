@@ -1,6 +1,6 @@
 package nallar.tickthreading.global;
 
-import nallar.tickthreading.util.BooleanThreadLocal;
+import nallar.tickthreading.util.BooleanThreadLocalDefaultFalse;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,7 +12,7 @@ public class ThreadLocals {
 	public static final ThreadLocal redPowerBlockUpdateSet = new HashSetThreadLocal();
 	public static final ThreadLocal redPowerPowerSearch = new LinkedListThreadLocal();
 	public static final ThreadLocal redPowerPowerSearchTest = new HashSetThreadLocal();
-	public static final BooleanThreadLocal redPowerIsSearching = new BooleanThreadLocal();
+	public static final BooleanThreadLocalDefaultFalse redPowerIsSearching = new BooleanThreadLocalDefaultFalse();
 	public static final ThreadLocal eligibleChunksForSpawning = new HashMapThreadLocal();
 	public static final ThreadLocal factorizationFindLightAirParentToVisit = new HashSetThreadLocal();
 	public static final ThreadLocal mapChunkTempByteArray = new MapChunkTempByteArrayThreadLocal();
