@@ -13,7 +13,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.ChunkProviderServer;
 import sun.misc.Unsafe;
 
-import java.util.Iterator;
+import java.util.*;
 
 public class EntityTickRegion extends TickRegion {
 	private final LinkedHashSetTempSetNoClear<Entity> entitySet = new LinkedHashSetTempSetNoClear<Entity>();

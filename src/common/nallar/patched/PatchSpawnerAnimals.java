@@ -20,9 +20,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.event.Event;
 import net.minecraftforge.event.ForgeEventFactory;
 
-import java.util.Collection;
-import java.util.EnumMap;
-import java.util.Map;
+import java.util.*;
 
 public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 	private static long hash(int x, int z) {

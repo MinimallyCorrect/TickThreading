@@ -3,9 +3,7 @@ package nallar.collections;
 import nallar.unsafe.UnsafeAccess;
 import sun.misc.Unsafe;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.*;
 
 public class LinkedListReplaceIterateTempListClear<T> extends LinkedList<T> {
 	private volatile boolean defer = false;

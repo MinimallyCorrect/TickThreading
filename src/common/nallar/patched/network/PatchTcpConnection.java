@@ -10,14 +10,9 @@ import net.minecraft.network.packet.IPacketHandler;
 import net.minecraft.network.packet.NetHandler;
 import net.minecraft.network.packet.Packet;
 
-import java.io.IOException;
-import java.net.Socket;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Queue;
+import java.io.*;
+import java.net.*;
+import java.util.*;
 
 public abstract class PatchTcpConnection extends TcpConnection {
 	private static List<IPacketHandler> packetHandlers;

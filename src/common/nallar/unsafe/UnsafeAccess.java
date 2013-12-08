@@ -3,7 +3,7 @@ package nallar.unsafe;
 import nallar.tickthreading.Log;
 import sun.misc.Unsafe;
 
-import java.lang.reflect.Field;
+import java.lang.reflect.*;
 
 public class UnsafeAccess {
 	public static final Unsafe $;

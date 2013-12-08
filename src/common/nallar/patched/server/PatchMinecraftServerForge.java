@@ -5,7 +5,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.world.WorldServer;
 
-import java.io.File;
+import java.io.*;
 
 public abstract class PatchMinecraftServerForge extends MinecraftServer {
 	public PatchMinecraftServerForge(File par1File) {

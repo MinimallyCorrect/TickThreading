@@ -3,7 +3,7 @@ package nallar.collections;
 import nallar.exception.ConcurrencyError;
 import nallar.tickthreading.util.BooleanThreadLocalDefaultFalse;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 
 public class CHashMapReplaceClear<K, V> extends CHashMap<K, V> {
 	private final BooleanThreadLocalDefaultFalse inReplace = new BooleanThreadLocalDefaultFalse();

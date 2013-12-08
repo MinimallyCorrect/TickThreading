@@ -1,7 +1,6 @@
 package nallar.tickthreading.patcher;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.*;
 
 /**
  * Describes basic information for a patch

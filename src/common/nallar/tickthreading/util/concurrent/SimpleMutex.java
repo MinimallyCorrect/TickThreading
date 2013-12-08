@@ -1,8 +1,7 @@
 package nallar.tickthreading.util.concurrent;
 
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
+import java.util.concurrent.*;
+import java.util.concurrent.locks.*;
 
 public final class SimpleMutex implements Lock {
 	private boolean locked = false;

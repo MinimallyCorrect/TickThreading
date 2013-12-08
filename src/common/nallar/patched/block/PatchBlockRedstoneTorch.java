@@ -7,7 +7,7 @@ import net.minecraft.server.management.PlayerInstance;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 
-import java.util.Random;
+import java.util.*;
 
 public abstract class PatchBlockRedstoneTorch extends BlockRedstoneTorch {
 	public PatchBlockRedstoneTorch(final int par1, final boolean par2) {

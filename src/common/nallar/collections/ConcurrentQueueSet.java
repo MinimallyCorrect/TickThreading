@@ -1,7 +1,6 @@
 package nallar.collections;
 
-import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.*;
 
 public class ConcurrentQueueSet<T> {
 	private final HashSet<T> set = new HashSet<T>();

@@ -3,11 +3,8 @@ package nallar.patched.nbt;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 
-import java.io.BufferedOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.zip.GZIPOutputStream;
+import java.io.*;
+import java.util.zip.*;
 
 public abstract class PatchCompressedStreamTools extends CompressedStreamTools {
 	public static void a(NBTTagCompound nbtTagCompound, OutputStream outputStream) throws IOException {

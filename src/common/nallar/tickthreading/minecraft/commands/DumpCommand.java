@@ -11,8 +11,8 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 
-import java.lang.reflect.Field;
-import java.util.List;
+import java.lang.reflect.*;
+import java.util.*;
 
 public class DumpCommand extends Command {
 	public static String name = "dump";

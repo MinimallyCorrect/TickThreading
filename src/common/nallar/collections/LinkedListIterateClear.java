@@ -1,6 +1,6 @@
 package nallar.collections;
 
-import java.util.Iterator;
+import java.util.*;
 
 public class LinkedListIterateClear extends ConcurrentLinkedQueueList {
 	public Iterator clearIterator() {

@@ -10,7 +10,7 @@ import net.minecraft.item.ItemSword;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.world.World;
 
-import java.util.List;
+import java.util.*;
 
 public class PatchEntityLiving extends EntityLiving {
 	public PatchEntityLiving(World par1World) {

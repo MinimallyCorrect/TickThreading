@@ -10,10 +10,10 @@ import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
 
 import java.io.*;
-import java.text.Normalizer;
+import java.text.*;
 import java.util.*;
 import java.util.logging.*;
-import java.util.regex.Pattern;
+import java.util.regex.*;
 
 @SuppressWarnings({"UnusedDeclaration", "UseOfSystemOutOrSystemErr"})
 public class Log {

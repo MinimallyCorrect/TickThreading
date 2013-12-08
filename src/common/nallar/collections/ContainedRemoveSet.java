@@ -1,6 +1,6 @@
 package nallar.collections;
 
-import java.util.HashSet;
+import java.util.*;
 
 public class ContainedRemoveSet<T> extends HashSet<T> {
 	@Override

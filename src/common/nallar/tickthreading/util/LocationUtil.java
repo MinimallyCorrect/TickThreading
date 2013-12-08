@@ -2,10 +2,9 @@ package nallar.tickthreading.util;
 
 import nallar.tickthreading.Log;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.regex.Pattern;
+import java.io.*;
+import java.net.*;
+import java.util.regex.*;
 
 public enum LocationUtil {
 	;

@@ -1,8 +1,7 @@
 package nallar.collections;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.concurrent.locks.Lock;
+import java.util.*;
+import java.util.concurrent.locks.*;
 
 public class LockArrayList<T> extends ArrayList<T> {
 	public Lock lock;

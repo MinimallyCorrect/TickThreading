@@ -8,8 +8,7 @@ import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.ChunkProviderServer;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class ChunkGarbageCollector {
 	private static final Profiler profiler = MinecraftServer.getServer().theProfiler;

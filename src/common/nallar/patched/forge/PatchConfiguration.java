@@ -5,9 +5,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.Configuration;
 
 import java.io.*;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
+import java.util.*;
+import java.util.logging.*;
 
 public abstract class PatchConfiguration extends Configuration {
 	private boolean saveQueued;

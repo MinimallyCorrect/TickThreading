@@ -7,7 +7,7 @@ import cpw.mods.fml.common.TickType;
 import cpw.mods.fml.common.modloader.BaseModTicker;
 import nallar.tickthreading.Log;
 
-import java.util.EnumSet;
+import java.util.*;
 
 public class WrappedScheduledTickHandler implements IScheduledTickHandler {
 	public final EnumSet<TickType> ticks;

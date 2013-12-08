@@ -9,10 +9,8 @@ import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.WorldEvent;
 
-import java.util.Collections;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.logging.Level;
+import java.util.*;
+import java.util.logging.*;
 
 public abstract class PatchDimensionManager extends DimensionManager {
 	public static void unloadWorlds(

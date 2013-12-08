@@ -2,7 +2,7 @@ package nallar.patched;
 
 import net.minecraft.profiler.Profiler;
 
-import java.util.List;
+import java.util.*;
 
 public abstract class PatchProfiler extends Profiler {
 	@Override

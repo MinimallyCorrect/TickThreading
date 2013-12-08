@@ -2,8 +2,7 @@ package nallar.collections;
 
 import nallar.tickthreading.Log;
 
-import java.util.Iterator;
-import java.util.LinkedHashSet;
+import java.util.*;
 
 public class LinkedHashSetTempSetNoClear<T> extends LinkedHashSet<T> {
 	private boolean iterating = false;

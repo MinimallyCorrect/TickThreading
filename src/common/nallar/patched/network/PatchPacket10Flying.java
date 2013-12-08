@@ -19,8 +19,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.ChunkWatchEvent;
 
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.*;
 
 public abstract class PatchPacket10Flying extends Packet10Flying {
 	private static final boolean concurrent = TickThreading.instance.concurrentMovementUpdates;

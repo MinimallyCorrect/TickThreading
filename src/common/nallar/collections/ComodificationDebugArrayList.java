@@ -1,9 +1,6 @@
 package nallar.collections;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 public class ComodificationDebugArrayList<T> extends ArrayList<T> {
 	Throwable lastModification = null;

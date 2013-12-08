@@ -9,7 +9,7 @@ import nallar.patched.annotation.Generic;
 import nallar.tickthreading.patcher.Declare;
 import net.minecraft.util.LongHashMap;
 
-import java.util.Arrays;
+import java.util.*;
 
 @SuppressWarnings("unchecked")
 @FakeExtend

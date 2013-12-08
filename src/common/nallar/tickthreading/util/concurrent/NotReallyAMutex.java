@@ -1,8 +1,7 @@
 package nallar.tickthreading.util.concurrent;
 
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
+import java.util.concurrent.*;
+import java.util.concurrent.locks.*;
 
 public final class NotReallyAMutex implements Lock {
 	public static final NotReallyAMutex lock = new NotReallyAMutex();

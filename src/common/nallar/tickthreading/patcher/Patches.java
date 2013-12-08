@@ -1,9 +1,39 @@
 package nallar.tickthreading.patcher;
 
 import com.google.common.base.Splitter;
-import javassist.*;
-import javassist.bytecode.*;
-import javassist.expr.*;
+import javassist.CannotCompileException;
+import javassist.ClassMap;
+import javassist.ClassPool;
+import javassist.CtBehavior;
+import javassist.CtClass;
+import javassist.CtConstructor;
+import javassist.CtField;
+import javassist.CtMethod;
+import javassist.CtNewMethod;
+import javassist.CtPrimitiveType;
+import javassist.Modifier;
+import javassist.NotFoundException;
+import javassist.bytecode.AnnotationsAttribute;
+import javassist.bytecode.AttributeInfo;
+import javassist.bytecode.BadBytecode;
+import javassist.bytecode.ClassFile;
+import javassist.bytecode.CodeAttribute;
+import javassist.bytecode.CodeIterator;
+import javassist.bytecode.ConstPool;
+import javassist.bytecode.Descriptor;
+import javassist.bytecode.DuplicateMemberException;
+import javassist.bytecode.MethodInfo;
+import javassist.bytecode.Mnemonic;
+import javassist.bytecode.Opcode;
+import javassist.expr.Cast;
+import javassist.expr.ConstructorCall;
+import javassist.expr.ExprEditor;
+import javassist.expr.FieldAccess;
+import javassist.expr.Handler;
+import javassist.expr.Instanceof;
+import javassist.expr.MethodCall;
+import javassist.expr.NewArray;
+import javassist.expr.NewExpr;
 import nallar.insecurity.ThisIsNotAnError;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.mappings.MethodDescription;
@@ -12,7 +42,7 @@ import nallar.tickthreading.util.ReflectUtil;
 import nallar.unsafe.UnsafeUtil;
 import org.omg.CORBA.IntHolder;
 
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 @SuppressWarnings({"MethodMayBeStatic", "ObjectAllocationInLoop"})

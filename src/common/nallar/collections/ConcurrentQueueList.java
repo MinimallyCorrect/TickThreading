@@ -1,9 +1,7 @@
 package nallar.collections;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.*;
+import java.util.concurrent.*;
 
 @SuppressWarnings("ConstantConditions")
 public class ConcurrentQueueList<T> extends ConcurrentLinkedQueue<T> implements List<T> {

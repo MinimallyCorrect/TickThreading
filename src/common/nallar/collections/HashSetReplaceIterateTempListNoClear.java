@@ -2,10 +2,7 @@ package nallar.collections;
 
 import nallar.tickthreading.util.BooleanThreadLocalDefaultFalse;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.*;
 
 public class HashSetReplaceIterateTempListNoClear<T> extends HashSet<T> {
 	private volatile boolean defer = false;

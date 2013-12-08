@@ -1,6 +1,6 @@
 package ru.tehkode.permissions;
 
-import java.util.Map;
+import java.util.*;
 
 public interface IPermissionEntity {
 	/**

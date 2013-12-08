@@ -9,10 +9,7 @@ import nallar.patched.annotation.Generic;
 import nallar.tickthreading.patcher.Declare;
 import net.minecraft.util.IntHashMap;
 
-import java.util.Arrays;
-import java.util.ConcurrentModificationException;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 @SuppressWarnings("unchecked")
 @FakeExtend
