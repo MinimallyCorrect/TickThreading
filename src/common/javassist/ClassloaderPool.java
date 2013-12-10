@@ -2,7 +2,7 @@ package javassist;
 
 import nallar.tickthreading.patcher.remapping.StringExtractor;
 
-public class RemappingPool extends ClassPool {
+public class ClassloaderPool extends ClassPool {
 	private static final String target = "net/minecraft/";
 
 	public static boolean classIsSrgObfuscated(byte[] bytes) {
