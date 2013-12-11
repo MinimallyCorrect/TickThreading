@@ -1,13 +1,8 @@
 package nallar.patched;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.logging.Level;
-
 import cpw.mods.fml.common.FMLLog;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingData;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
@@ -22,8 +17,12 @@ import net.minecraft.world.biome.SpawnListEntry;
 import net.minecraftforge.event.Event;
 import net.minecraftforge.event.ForgeEventFactory;
 
+import java.util.*;
+import java.util.logging.*;
+
 public abstract class PatchSpawnerAnimalsForge extends SpawnerAnimals {
-	public static int a(WorldServer par0WorldServer, boolean par1, boolean par2, boolean par3) {
+	@Override
+	public int findChunksForSpawning(WorldServer par0WorldServer, boolean par1, boolean par2, boolean par3) {
 		if (!par1 && !par2) {
 			return 0;
 		}
@@ -84,6 +83,7 @@ public abstract class PatchSpawnerAnimalsForge extends SpawnerAnimals {
 								int var20 = var15;
 								byte var21 = 6;
 								SpawnListEntry var22 = null;
+								EntityLivingData unusedEntityLivingData = null;
 								int var23 = 0;
 
 								while (true) {
@@ -125,7 +125,9 @@ public abstract class PatchSpawnerAnimalsForge extends SpawnerAnimals {
 															if (canSpawn == Event.Result.ALLOW || (canSpawn == Event.Result.DEFAULT && var39.getCanSpawnHere())) {
 																++var16;
 																par0WorldServer.spawnEntityInWorld(var39);
-																creatureSpecificInit(var39, par0WorldServer, var24, var25, var26);
+																if (!ForgeEventFactory.doSpecialSpawn(var39, par0WorldServer, var24, var25, var26)) {
+																	unusedEntityLivingData = var39.onSpawnWithEgg(unusedEntityLivingData);
+																}
 
 																if (var16 >= var39.getMaxSpawnedInChunk()) {
 																	continue label110;

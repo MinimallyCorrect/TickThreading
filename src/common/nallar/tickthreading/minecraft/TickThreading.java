@@ -1,18 +1,7 @@
 package nallar.tickthreading.minecraft;
 
-import java.io.File;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
-
 import cpw.mods.fml.common.IPlayerTracker;
 import cpw.mods.fml.common.IScheduledTickHandler;
 import cpw.mods.fml.common.Loader;
@@ -39,13 +28,11 @@ import nallar.tickthreading.minecraft.entitylist.LoadedEntityList;
 import nallar.tickthreading.minecraft.entitylist.LoadedTileEntityList;
 import nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
 import nallar.tickthreading.minecraft.profiling.Timings;
-import nallar.tickthreading.util.PatchUtil;
 import nallar.tickthreading.util.ReflectUtil;
 import nallar.tickthreading.util.TableFormatter;
 import nallar.tickthreading.util.VersionUtil;
 import nallar.tickthreading.util.contextaccess.ContextAccess;
 import net.minecraft.command.ServerCommandManager;
-import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -62,13 +49,16 @@ import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.EventPriority;
 import net.minecraftforge.event.ForgeSubscribe;
-import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.WorldEvent;
 
-@SuppressWarnings ("WeakerAccess")
-@Mod (modid = "TickThreading", name = "TickThreading", version = "@MOD_VERSION@", acceptedMinecraftVersions = "[@MC_VERSION@]")
-@NetworkMod (clientSideRequired = false, serverSideRequired = false)
+import java.io.*;
+import java.lang.reflect.*;
+import java.util.*;
+
+@SuppressWarnings("WeakerAccess")
+@Mod(modid = "TickThreading", name = "TickThreading", version = "@MOD_VERSION@", acceptedMinecraftVersions = "[@MC_VERSION@]")
+@NetworkMod(clientSideRequired = false, serverSideRequired = false)
 public class TickThreading {
 	@Mod.Instance
 	public static TickThreading instance;
@@ -86,7 +76,6 @@ public class TickThreading {
 	public boolean requireOpForProfileCommand = true;
 	public boolean shouldLoadSpawn = false;
 	public boolean concurrentNetworkTicks = false;
-	public boolean antiCheatKick = false;
 	public boolean antiCheatNotify = false;
 	public boolean cleanWorlds = true;
 	public boolean allowWorldUnloading = true;
@@ -121,10 +110,9 @@ public class TickThreading {
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load
-		PatchUtil.checkPatches();
 	}
 
-	@Mod.Init
+	@Mod.EventHandler
 	public void init(FMLInitializationEvent event) {
 		MinecraftForge.EVENT_BUS.register(this);
 		initPeriodicProfiling();
@@ -142,8 +130,8 @@ public class TickThreading {
 		TickRegistry.registerScheduledTickHandler(new ProfilingScheduledTickHandler(profilingInterval, MinecraftServer.getServer().getFile(profilingFileName), profilingJson), Side.SERVER);
 	}
 
-	@SuppressWarnings ("FieldRepeatedlyAccessedInMethod")
-	@Mod.PreInit
+	@SuppressWarnings("FieldRepeatedlyAccessedInMethod")
+	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
 		Configuration config = new Configuration(event.getSuggestedConfigurationFile());
 		config.load();
@@ -176,7 +164,6 @@ public class TickThreading {
 		waitForEntityTickCompletion = config.get(GENERAL, "waitForEntityTickCompletion", waitForEntityTickCompletion, "Whether we should wait until all Tile/Entity tick threads are finished before moving on with world tick. False = experimental, but may improve performance.").getBoolean(waitForEntityTickCompletion);
 		concurrentNetworkTicks = config.get(GENERAL, "concurrentNetworkTicks", concurrentNetworkTicks, "Whether network ticks should be ran in a separate thread from the main minecraft thread. This is likely to be very buggy, especially with mods doing custom networking such as IC2!").getBoolean(concurrentNetworkTicks);
 		concurrentMovementUpdates = config.get(GENERAL, "concurrentMovementUpdates", concurrentMovementUpdates, "Whether movement updates should be processed asynchronously. Improves performance, but may cause spontaneous fall damage in some (still not sure what) situations.").getBoolean(concurrentMovementUpdates);
-		antiCheatKick = config.get(GENERAL, "antiCheatKick", antiCheatKick, "Whether to kick players for detected cheating").getBoolean(antiCheatKick);
 		antiCheatNotify = config.get(GENERAL, "antiCheatNotify", antiCheatNotify, "Whether to notify admins if TT anti-cheat detects cheating").getBoolean(antiCheatNotify);
 		cleanWorlds = config.get(GENERAL, "cleanWorlds", cleanWorlds, "Whether to clean worlds on unload - this should fix some memory leaks due to mods holding on to world objects").getBoolean(cleanWorlds);
 		allowWorldUnloading = config.get(GENERAL, "allowWorldUnloading", allowWorldUnloading, "Whether worlds should be allowed to unload.").getBoolean(allowWorldUnloading);
@@ -194,7 +181,7 @@ public class TickThreading {
 		PacketCount.allowCounting = false;
 	}
 
-	@Mod.ServerStarting
+	@Mod.EventHandler
 	public void serverStarting(FMLServerStartingEvent event) {
 		if (Loader.isModLoaded("TickProfiler")) {
 			Log.severe("You're using TickProfiler with TT - TT includes TP's features. Please uninstall TickProfiler, it can cause problems with TT.");
@@ -226,7 +213,7 @@ public class TickThreading {
 		}
 	}
 
-	@ForgeSubscribe (
+	@ForgeSubscribe(
 			priority = EventPriority.HIGHEST
 	)
 	public synchronized void onWorldLoad(WorldEvent.Load event) {
@@ -311,15 +298,6 @@ public class TickThreading {
 					event.setCanceled(true);
 				}
 			}
-		}
-	}
-
-	@ForgeSubscribe
-	public void onPlayerFall(LivingFallEvent event) {
-		EntityLiving livingEntity = event.entityLiving;
-		if (livingEntity.fallDistance > 2 && Log.debug && livingEntity instanceof EntityPlayerMP) {
-			EntityPlayerMP entityPlayerMP = (EntityPlayerMP) livingEntity;
-			Log.debug(entityPlayerMP.username + " fell " + entityPlayerMP.fallDistance + " blocks. Teleported counter: " + entityPlayerMP.playerNetServerHandler.teleported, new Throwable());
 		}
 	}
 

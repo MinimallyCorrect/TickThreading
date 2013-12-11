@@ -1,9 +1,8 @@
 package nallar.collections;
 
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-
 import nallar.tickthreading.Log;
+
+import java.util.*;
 
 public class LinkedHashSetTempSetNoClear<T> extends LinkedHashSet<T> {
 	private boolean iterating = false;

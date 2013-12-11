@@ -1,17 +1,12 @@
 package nallar.patched.forge;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-
 import cpw.mods.fml.common.FMLLog;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.Configuration;
+
+import java.io.*;
+import java.util.*;
+import java.util.logging.*;
 
 public abstract class PatchConfiguration extends Configuration {
 	private boolean saveQueued;

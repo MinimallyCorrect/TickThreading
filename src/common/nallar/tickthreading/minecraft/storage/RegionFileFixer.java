@@ -1,15 +1,12 @@
 package nallar.tickthreading.minecraft.storage;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.util.logging.Level;
-
 import com.google.common.io.Files;
-
 import cpw.mods.fml.common.FMLLog;
 import nallar.unsafe.UnsafeUtil;
 import net.minecraft.world.chunk.storage.RegionFile;
+
+import java.io.*;
+import java.util.logging.*;
 
 class RegionFileFixer {
 	public static RegionFile newRegionFile(File regionFileFile) {

@@ -1,14 +1,12 @@
 package nallar.tickthreading.mappings;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import javassist.CtClass;
 import javassist.CtMethod;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.util.CollectionsUtil;
+
+import java.lang.reflect.*;
+import java.util.*;
 
 public class MethodDescription {
 	public final String clazz;

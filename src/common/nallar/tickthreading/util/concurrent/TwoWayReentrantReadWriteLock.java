@@ -1,11 +1,8 @@
 package nallar.tickthreading.util.concurrent;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.locks.*;
 
 public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 	private final Map<Thread, Integer> readingThreads = new HashMap<Thread, Integer>();
@@ -78,7 +75,7 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 		}
 	}
 
-	@SuppressWarnings ("FieldRepeatedlyAccessedInMethod")
+	@SuppressWarnings("FieldRepeatedlyAccessedInMethod")
 	public final synchronized void lockWrite() {
 		writeRequests++;
 		Thread callingThread = Thread.currentThread();

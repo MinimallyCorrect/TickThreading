@@ -1,10 +1,6 @@
 package nallar.collections;
 
-import java.util.AbstractSet;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class PartiallySynchronizedMap<K, V> extends HashMap<K, V> {
 	private KeySet ks;

@@ -1,10 +1,7 @@
 package nallar.collections;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
+import java.util.concurrent.*;
 
 public class TreeHashSet<T> extends TreeSet<T> {
 	private final Set internalHashSet = Collections.newSetFromMap(new ConcurrentHashMap());

@@ -1,13 +1,9 @@
 package nallar.collections;
 
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import nallar.tickthreading.util.EnumerationIteratorWrapper;
+
+import java.util.*;
+import java.util.concurrent.*;
 
 public class CHashtable<K, V> extends Hashtable<K, V> {
 	private final ConcurrentHashMap<K, V> m;

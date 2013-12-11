@@ -4,19 +4,14 @@
  */
 package nallar.patched.collection;
 
-import java.util.AbstractSet;
-import java.util.Arrays;
-import java.util.ConcurrentModificationException;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Set;
-
 import nallar.patched.annotation.FakeExtend;
 import nallar.patched.annotation.Generic;
 import nallar.tickthreading.patcher.Declare;
 import net.minecraft.util.IntHashMap;
 
-@SuppressWarnings ("unchecked")
+import java.util.*;
+
+@SuppressWarnings("unchecked")
 @FakeExtend
 public abstract class PatchIntHashMap<V> extends IntHashMap<V> {
 	private static final int EMPTY_KEY = Integer.MIN_VALUE;
@@ -28,11 +23,6 @@ public abstract class PatchIntHashMap<V> extends IntHashMap<V> {
 
 	public PatchIntHashMap() {
 		initialize();
-	}
-
-	@Override
-	public Set getKeySet() {
-		return new KeySet();
 	}
 
 	@Override
@@ -172,36 +162,6 @@ public abstract class PatchIntHashMap<V> extends IntHashMap<V> {
 		key *= 0xc2b2ae35;
 		key ^= key >> 16;
 		return key;
-	}
-
-	private class KeySet extends AbstractSet {
-		KeySet() {
-		}
-
-		@Override
-		public void clear() {
-			PatchIntHashMap.this.clearMap();
-		}
-
-		@Override
-		public int size() {
-			return PatchIntHashMap.this.size;
-		}
-
-		@Override
-		public boolean contains(Object key) {
-			return key instanceof Integer && PatchIntHashMap.this.containsItem((Integer) key);
-		}
-
-		@Override
-		public boolean remove(Object key) {
-			return PatchIntHashMap.this.removeObject((Integer) key) != null;
-		}
-
-		@Override
-		public Iterator iterator() {
-			return new KeyIterator();
-		}
 	}
 
 	private class KeyIterator implements Iterator {

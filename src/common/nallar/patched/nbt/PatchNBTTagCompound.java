@@ -1,7 +1,5 @@
 package nallar.patched.nbt;
 
-import java.util.Map;
-
 import nallar.tickthreading.patcher.Declare;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagByte;
@@ -16,6 +14,8 @@ import net.minecraft.nbt.NBTTagLong;
 import net.minecraft.nbt.NBTTagShort;
 import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.ReportedException;
+
+import java.util.*;
 
 public abstract class PatchNBTTagCompound extends NBTTagCompound {
 	@Override

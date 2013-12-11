@@ -1,7 +1,5 @@
 package nallar.patched.world.tracking;
 
-import java.util.ArrayList;
-
 import nallar.collections.ConcurrentLinkedQueueList;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.patcher.Declare;
@@ -9,6 +7,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.PlayerInstance;
 import net.minecraft.server.management.PlayerManager;
 import net.minecraft.world.WorldServer;
+
+import java.util.*;
 
 public abstract class PatchPlayerManager extends PlayerManager {
 	public Object chunkWatcherLock;

@@ -4,14 +4,14 @@
  */
 package nallar.patched.collection;
 
-import java.util.Arrays;
-
 import nallar.patched.annotation.FakeExtend;
 import nallar.patched.annotation.Generic;
 import nallar.tickthreading.patcher.Declare;
 import net.minecraft.util.LongHashMap;
 
-@SuppressWarnings ("unchecked")
+import java.util.*;
+
+@SuppressWarnings("unchecked")
 @FakeExtend
 public abstract class PatchLongHashMap<V> extends LongHashMap<V> {
 	private static final long EMPTY_KEY = Long.MIN_VALUE;

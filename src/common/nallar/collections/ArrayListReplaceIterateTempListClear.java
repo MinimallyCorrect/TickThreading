@@ -1,12 +1,9 @@
 package nallar.collections;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
-
 import nallar.unsafe.UnsafeAccess;
 import sun.misc.Unsafe;
+
+import java.util.*;
 
 public class ArrayListReplaceIterateTempListClear<T> extends ArrayList<T> {
 	private volatile boolean defer = false;

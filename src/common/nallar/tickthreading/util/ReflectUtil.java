@@ -1,13 +1,10 @@
 package nallar.tickthreading.util;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import nallar.tickthreading.Log;
 import nallar.unsafe.UnsafeUtil;
+
+import java.lang.reflect.*;
+import java.util.*;
 
 /**
  * Only for use when performance doesn't matter

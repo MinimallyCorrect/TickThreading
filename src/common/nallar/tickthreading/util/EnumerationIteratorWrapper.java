@@ -1,7 +1,6 @@
 package nallar.tickthreading.util;
 
-import java.util.Enumeration;
-import java.util.Iterator;
+import java.util.*;
 
 public class EnumerationIteratorWrapper<T> implements Enumeration<T> {
 	private final Iterator<T> iterator;

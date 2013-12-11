@@ -1,11 +1,11 @@
 package nallar.patched.forge;
 
-import java.util.logging.Level;
-
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.IPlayerTracker;
 import cpw.mods.fml.common.registry.GameRegistry;
 import net.minecraft.entity.player.EntityPlayer;
+
+import java.util.logging.*;
 
 public abstract class PatchGameRegistry extends GameRegistry {
 	public static void onPlayerLogout(EntityPlayer player) {

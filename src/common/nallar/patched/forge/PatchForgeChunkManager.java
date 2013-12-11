@@ -1,14 +1,5 @@
 package nallar.patched.forge;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.logging.Level;
-
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
@@ -17,7 +8,6 @@ import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.Loader;
 import nallar.patched.annotation.Public;
@@ -35,7 +25,11 @@ import net.minecraft.world.gen.ChunkProviderServer;
 import net.minecraftforge.common.ForgeChunkManager;
 import net.minecraftforge.common.MinecraftForge;
 
-@SuppressWarnings ("UnusedDeclaration")
+import java.io.*;
+import java.util.*;
+import java.util.logging.*;
+
+@SuppressWarnings("UnusedDeclaration")
 @Public
 public abstract class PatchForgeChunkManager extends ForgeChunkManager {
 	private static final Map<World, ArrayListMultimap<String, Ticket>> worldLoadedTickets = new HashMap<World, ArrayListMultimap<String, Ticket>>();
@@ -130,7 +124,7 @@ public abstract class PatchForgeChunkManager extends ForgeChunkManager {
 					ticket.setCompoundTag("ModData", tick.getModData());
 				}
 				Entity e = tick.getType() == Type.ENTITY ? tick.getEntity() : null;
-				if (e != null && e.addEntityID(new NBTTagCompound())) {
+				if (e != null && e.writeToNBTOptional(new NBTTagCompound())) {
 					ticket.setInteger("chunkX", MathHelper.floor_double(e.chunkCoordX));
 					ticket.setInteger("chunkZ", MathHelper.floor_double(e.chunkCoordZ));
 					ticket.setLong("PersistentIDMSB", e.getPersistentID().getMostSignificantBits());

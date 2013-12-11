@@ -9,11 +9,11 @@ import sun.misc.Unsafe;
  * In most cases, this allows us to avoid the performance hit of a hashmap lookup in
  * ThreadLocal.get(), assuming the variable is normally false in all threads.
  */
-public class BooleanThreadLocal extends ThreadLocal<Boolean> {
-	@SuppressWarnings ({"FieldCanBeLocal", "FieldMayBeFinal"})
+public class BooleanThreadLocalDefaultFalse extends ThreadLocal<Boolean> {
+	@SuppressWarnings({"FieldCanBeLocal", "FieldMayBeFinal", "CanBeFinal"})
 	private int count = 0;
 	private static final Unsafe $ = UnsafeAccess.$;
-	private static final long index = $.objectFieldOffset(ReflectUtil.getField(BooleanThreadLocal.class, "count"));
+	private static final long index = $.objectFieldOffset(ReflectUtil.getField(BooleanThreadLocalDefaultFalse.class, "count"));
 	// Unsafe magics.
 
 	@Override
@@ -23,8 +23,8 @@ public class BooleanThreadLocal extends ThreadLocal<Boolean> {
 
 	/**
 	 * @param value Must be Boolean.TRUE or Boolean.FALSE. No new Boolean(true/false)!
-	 * Must always set back to false before the thread stops, else performance will be worse.
-	 * Not going to break anything, but bad for performance.
+	 *              Must always set back to false before the thread stops, else performance will be worse.
+	 *              Not going to break anything, but bad for performance.
 	 */
 	@Override
 	public void set(Boolean value) {
@@ -53,8 +53,8 @@ public class BooleanThreadLocal extends ThreadLocal<Boolean> {
 
 	/**
 	 * @param value Must be Boolean.TRUE or Boolean.FALSE. No new Boolean(true/false)!
-	 * Must always set back to false before the thread stops, else performance will be worse.
-	 * Not going to break anything, but bad for performance.
+	 *              Must always set back to false before the thread stops, else performance will be worse.
+	 *              Not going to break anything, but bad for performance.
 	 */
 	public Boolean getAndSet(Boolean value) {
 		Boolean oldValue = get();
@@ -83,6 +83,7 @@ public class BooleanThreadLocal extends ThreadLocal<Boolean> {
 
 	@Override
 	public Boolean get() {
+		// Not volatile, this is good. If we miss another thread's update, that just saves time.
 		if (count == 0) {
 			return Boolean.FALSE;
 		}

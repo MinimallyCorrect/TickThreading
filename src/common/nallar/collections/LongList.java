@@ -1,6 +1,6 @@
 package nallar.collections;
 
-import java.util.Arrays;
+import java.util.*;
 
 public class LongList {
 	private static final long[] EMPTY_LIST = new long[0];

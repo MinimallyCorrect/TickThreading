@@ -1,13 +1,10 @@
 package nallar.tickthreading.util;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import nallar.tickthreading.util.stringfillers.StringFiller;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
+
+import java.util.*;
 
 public class TableFormatter {
 	public final StringFiller stringFiller;

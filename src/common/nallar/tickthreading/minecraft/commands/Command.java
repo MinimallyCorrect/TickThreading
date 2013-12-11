@@ -1,9 +1,5 @@
 package nallar.tickthreading.minecraft.commands;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
 import nallar.tickthreading.Log;
@@ -11,11 +7,18 @@ import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ChatMessageComponent;
 import ru.tehkode.permissions.IPermissions;
+
+import java.util.*;
 
 public abstract class Command extends CommandBase {
 	protected boolean requireOp() {
 		return false;
+	}
+
+	public String usage() {
+		return getCommandUsage(null);
 	}
 
 	@Override
@@ -55,7 +58,7 @@ public abstract class Command extends CommandBase {
 				sent = message.substring(0, nlIndex);
 				message = message.substring(nlIndex + 1);
 			}
-			commandSender.sendChatToPlayer(sent);
+			commandSender.sendChatToPlayer(new ChatMessageComponent().addText(sent));
 		}
 	}
 

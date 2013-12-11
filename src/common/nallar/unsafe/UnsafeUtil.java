@@ -1,19 +1,14 @@
 package nallar.unsafe;
 
-import java.lang.ref.Reference;
-import java.lang.reflect.Array;
-import java.lang.reflect.Field;
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-
 import javassist.Modifier;
 import nallar.tickthreading.Log;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 import sun.misc.Unsafe;
+
+import java.lang.ref.*;
+import java.lang.reflect.*;
+import java.util.*;
 
 public class UnsafeUtil {
 	private static final Unsafe $ = UnsafeAccess.$;
@@ -195,6 +190,7 @@ public class UnsafeUtil {
 	/**
 	 * Creates an instance of class c without calling any constructors - all fields will be null/default primitive values, INCLUDING FINAL FIELDS.
 	 * This kinda' breaks the java memory model.
+	 *
 	 * @param c Class to instantiate
 	 * @return the instance of c
 	 */
@@ -279,6 +275,7 @@ public class UnsafeUtil {
 	/**
 	 * Sets all non-primitive/array fields of o to null. For use when you know some stupid mod/plugin is going to leak this object,
 	 * and want to leak only the size of the object, not everything it references.
+	 *
 	 * @param o Object to clean.
 	 */
 	public static void clean(Object o) {

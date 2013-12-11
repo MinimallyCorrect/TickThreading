@@ -1,9 +1,5 @@
 package nallar.patched;
 
-import java.util.Collection;
-import java.util.EnumMap;
-import java.util.Map;
-
 import nallar.collections.LongList;
 import nallar.collections.LongSet;
 import nallar.tickthreading.Log;
@@ -11,6 +7,7 @@ import nallar.tickthreading.minecraft.TickThreading;
 import nallar.tickthreading.patcher.Declare;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingData;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.profiler.Profiler;
@@ -22,6 +19,8 @@ import net.minecraft.world.biome.SpawnListEntry;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.event.Event;
 import net.minecraftforge.event.ForgeEventFactory;
+
+import java.util.*;
 
 public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 	private static long hash(int x, int z) {
@@ -41,7 +40,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 	}
 
 	// Spigot compatibility
-	@SuppressWarnings ("UnusedDeclaration")
+	@SuppressWarnings("UnusedDeclaration")
 	public static int getEntityCount(WorldServer server, Class oClass) {
 		return server.countEntities(oClass);
 	}
@@ -172,6 +171,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 				continue;
 			}
 			if (worldServer.getBlockMaterial(sX, sY, sZ) == creatureType.getCreatureMaterial()) {
+				EntityLivingData unusedEntityLivingData = null;
 				for (int i = 0; i < ((clumping * 3) / 2); i++) {
 					int ssX = sX + (worldServer.rand.nextInt(spawnVariance) - spawnVariance / 2);
 					int ssZ = sZ + (worldServer.rand.nextInt(spawnVariance) - spawnVariance / 2);
@@ -204,7 +204,9 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 							Event.Result canSpawn = ForgeEventFactory.canEntitySpawn(spawnedEntity, worldServer, ssX, ssY, ssZ);
 							if (canSpawn == Event.Result.ALLOW || (canSpawn == Event.Result.DEFAULT && spawnedEntity.getCanSpawnHere())) {
 								worldServer.spawnEntityInWorld(spawnedEntity);
-								creatureSpecificInit(spawnedEntity, worldServer, ssX, ssY, ssZ);
+								if (!ForgeEventFactory.doSpecialSpawn(spawnedEntity, worldServer, ssX, ssY, ssZ)) {
+									unusedEntityLivingData = spawnedEntity.onSpawnWithEgg(unusedEntityLivingData);
+								}
 							}
 							attemptedSpawnedMobs++;
 						} catch (Exception e) {

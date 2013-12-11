@@ -1,6 +1,6 @@
 package nallar.collections;
 
-import java.util.Arrays;
+import java.util.*;
 
 public class IntSet {
 	private static final int EMPTY_KEY = Integer.MIN_VALUE;

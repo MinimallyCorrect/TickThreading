@@ -1,7 +1,6 @@
 package nallar.tickthreading.util;
 
-import java.io.File;
-import java.io.FileFilter;
+import java.io.*;
 
 public enum NormalFileFilter implements FileFilter {
 	$;

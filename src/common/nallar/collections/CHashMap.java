@@ -1,10 +1,7 @@
 package nallar.collections;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * Concurrent HashMap, which extends HashMap.
@@ -92,7 +89,7 @@ public class CHashMap<K, V> extends HashMap<K, V> {
 		return hashMap.entrySet();
 	}
 
-	@SuppressWarnings ("EqualsWhichDoesntCheckParameterClass")
+	@SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
 	@Override
 	public boolean equals(Object o) {
 		return hashMap.equals(o);

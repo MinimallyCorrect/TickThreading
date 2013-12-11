@@ -40,6 +40,9 @@
 		<fileset dir="${mcp.dir}/lib">
 			<include name="**/*.jar"/>
 		</fileset>
+		<fileset dir="${mcp.dir}/jars">
+			<include name="**/*.jar"/>
+		</fileset>
 	</path>
 
 	<!--<mkdir dir="${download.dir}"/> -->
@@ -126,6 +129,7 @@
 			<arg value="install.sh"/>
 		</exec>
 
+		<replace file="${mcp.dir}/conf/mcp.cfg" token=" -Xlint:-options -deprecation " value=" -XDignore.symbol.file -Xlint:none "/>
 	</target>
 
 	<target name="prepatch">
@@ -173,7 +177,7 @@
 
 		<exec dir="${mcp.dir}" executable="sh" osfamily="unix" failifexecutionfails="true">
 			<arg value="recompile.sh"/>
-		</exec>
+        </exec>
 
 		<!-- Reset src dir to post-forge-install state -->
 		<parallel>

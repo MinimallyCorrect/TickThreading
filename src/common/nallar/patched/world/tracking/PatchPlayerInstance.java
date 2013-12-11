@@ -1,10 +1,5 @@
 package nallar.patched.world.tracking;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
 import nallar.patched.annotation.Public;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.minecraft.TickThreading;
@@ -25,6 +20,9 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.ForgeDummyContainer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.ChunkWatchEvent;
+
+import java.util.*;
+import java.util.concurrent.*;
 
 @Public
 public abstract class PatchPlayerInstance extends PlayerInstance {
@@ -50,7 +48,7 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 	}
 
 	@Override
-	public void addPlayerToChunkWatchingList(final EntityPlayerMP entityPlayerMP) {
+	public void addPlayer(final EntityPlayerMP entityPlayerMP) {
 		if (this.playersInChunk.contains(entityPlayerMP)) {
 			throw new IllegalStateException("Failed to add player. " + entityPlayerMP + " already is in chunk " + this.chunkLocation.chunkXPos + ", " + this.chunkLocation.chunkZPos);
 		} else {
@@ -70,12 +68,12 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 	@Declare
 	public synchronized void clearTileCount() {
 		this.numberOfTilesToUpdate = 0;
-		this.field_73260_f = 0;
+		this.flagsYAreasToUpdate = 0;
 		this.watched = false;
 	}
 
 	@Override
-	public void sendThisChunkToPlayer(EntityPlayerMP entityPlayerMP) {
+	public void removePlayer(EntityPlayerMP entityPlayerMP) {
 		if (this.playersInChunk.remove(entityPlayerMP)) {
 			Packet51MapChunk packet51MapChunk = new Packet51MapChunk();
 			packet51MapChunk.includeInitialize = true;
@@ -135,7 +133,7 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 		markRequiresUpdate();
 
 		synchronized (this) {
-			this.field_73260_f |= 1 << (par2 >> 4);
+			this.flagsYAreasToUpdate |= 1 << (par2 >> 4);
 
 			short mask = (short) (par1 << 12 | par3 << 8 | par2);
 			short[] locationOfBlockChange = this.locationOfBlockChange;
@@ -252,7 +250,7 @@ public abstract class PatchPlayerInstance extends PlayerInstance {
 					}
 				} else {
 					if (numberOfTilesToUpdate >= ForgeDummyContainer.clumpingThreshold) {
-						sendToAllPlayersWatchingChunk(new Packet51MapChunk(chunk, false, field_73260_f));
+						sendToAllPlayersWatchingChunk(new Packet51MapChunk(chunk, false, flagsYAreasToUpdate));
 					} else {
 						sendToAllPlayersWatchingChunk(new Packet52MultiBlockChange(chunkLocation.chunkXPos, chunkLocation.chunkZPos, locationOfBlockChange, numberOfTilesToUpdate, worldServer));
 					}

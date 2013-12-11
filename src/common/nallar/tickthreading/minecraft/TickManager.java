@@ -1,19 +1,5 @@
 package nallar.tickthreading.minecraft;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.locks.Lock;
-
 import nallar.collections.ConcurrentIterableArrayList;
 import nallar.collections.ConcurrentUnsafeIterableArrayList;
 import nallar.collections.ContainedRemoveSet;
@@ -35,6 +21,10 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.ChunkProviderServer;
+
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.locks.*;
 
 public final class TickManager {
 	private static final byte lockXPlus = 1 << 1;
@@ -73,7 +63,7 @@ public final class TickManager {
 		return tileEntityCallables.get(hashCode);
 	}
 
-	@SuppressWarnings ("NumericCastThatLosesPrecision")
+	@SuppressWarnings("NumericCastThatLosesPrecision")
 	private TileEntityTickRegion getOrCreateRegion(TileEntity tileEntity) {
 		int regionX = tileEntity.xCoord >> regionSizePower;
 		int regionZ = tileEntity.zCoord >> regionSizePower;
@@ -96,7 +86,7 @@ public final class TickManager {
 		return entityCallables.get(hashCode);
 	}
 
-	@SuppressWarnings ("NumericCastThatLosesPrecision")
+	@SuppressWarnings("NumericCastThatLosesPrecision")
 	private EntityTickRegion getOrCreateRegion(Entity entity) {
 		int regionX = (entity.chunkCoordX << 4) >> regionSizePower;
 		int regionZ = (entity.chunkCoordZ << 4) >> regionSizePower;
@@ -208,7 +198,7 @@ public final class TickManager {
 				}
 			}
 
-			world.releaseEntitySkin(entity);
+			world.onEntityRemoved(entity);
 
 			EntityTickRegion tickRegion = entity.tickRegion;
 			if (tickRegion != null) {
@@ -708,7 +698,7 @@ public final class TickManager {
 	}
 
 	public TableFormatter writeDetailedStats(TableFormatter tf) {
-		@SuppressWarnings ("MismatchedQueryAndUpdateOfStringBuilder")
+		@SuppressWarnings("MismatchedQueryAndUpdateOfStringBuilder")
 		StringBuilder stats = tf.sb;
 		stats.append("World: ").append(Log.name(world)).append('\n');
 		stats.append("---- Slowest tick regions ----").append('\n');

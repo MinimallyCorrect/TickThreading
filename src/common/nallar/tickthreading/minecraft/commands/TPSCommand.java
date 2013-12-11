@@ -1,9 +1,6 @@
 package nallar.tickthreading.minecraft.commands;
 
-import java.util.List;
-
 import com.google.common.base.Strings;
-
 import nallar.tickthreading.minecraft.TickManager;
 import nallar.tickthreading.minecraft.TickThreading;
 import nallar.tickthreading.util.ChatFormat;
@@ -13,12 +10,19 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 
+import java.util.*;
+
 public class TPSCommand extends Command {
 	public static String name = "tps";
 
 	@Override
 	public String getCommandName() {
 		return name;
+	}
+
+	@Override
+	public String getCommandUsage(ICommandSender commandSender) {
+		return "Usage: /tps";
 	}
 
 	@Override

@@ -1,8 +1,5 @@
 package nallar.tickthreading.minecraft.commands;
 
-import java.lang.reflect.Field;
-import java.util.List;
-
 import javassist.Modifier;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.minecraft.TickThreading;
@@ -13,6 +10,9 @@ import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
+
+import java.lang.reflect.*;
+import java.util.*;
 
 public class DumpCommand extends Command {
 	public static String name = "dump";
@@ -25,6 +25,11 @@ public class DumpCommand extends Command {
 	@Override
 	public boolean requireOp() {
 		return TickThreading.instance.requireOpForDumpCommand;
+	}
+
+	@Override
+	public String getCommandUsage(ICommandSender commandSender) {
+		return "Usage: /dump x y z [world=currentworld]\\nRight clicking a block with a clock will execute /dump on that block.";
 	}
 
 	@Override
@@ -47,14 +52,14 @@ public class DumpCommand extends Command {
 			world = null;
 		}
 		if (world == null) {
-			sendChat(commandSender, "Usage: /dump x y z [world=currentworld]\nRight clicking a block with a clock will execute /dump on that block.");
+			sendChat(commandSender, usage());
 			return;
 		}
 		sendChat(commandSender, dump(new TableFormatter(commandSender), world, x, y, z, commandSender instanceof Entity ? 35 : 70).toString());
 	}
 
 	public static TableFormatter dump(TableFormatter tf, World world, int x, int y, int z, int maxLen) {
-		@SuppressWarnings ("MismatchedQueryAndUpdateOfStringBuilder")
+		@SuppressWarnings("MismatchedQueryAndUpdateOfStringBuilder")
 		StringBuilder sb = tf.sb;
 		int blockId = world.getBlockIdWithoutLoad(x, y, z);
 		if (blockId < 1) {

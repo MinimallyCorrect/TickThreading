@@ -1,10 +1,9 @@
 package nallar.tickthreading.mappings;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public abstract class Mappings {
-	@SuppressWarnings ("unchecked")
+	@SuppressWarnings("unchecked")
 	public List<?> map(List<?> things) {
 		List mappedThings = new ArrayList();
 		for (Object thing : things) {

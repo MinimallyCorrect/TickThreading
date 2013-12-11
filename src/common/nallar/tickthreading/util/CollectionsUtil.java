@@ -1,18 +1,12 @@
 package nallar.tickthreading.util;
 
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.collect.Ordering;
-
 import nallar.tickthreading.Log;
+
+import java.lang.reflect.*;
+import java.util.*;
 
 public enum CollectionsUtil {
 	;
@@ -89,7 +83,7 @@ public enum CollectionsUtil {
 		return stringBuilder.toString();
 	}
 
-	@SuppressWarnings ("unchecked")
+	@SuppressWarnings("unchecked")
 	public static <K, V> Map<K, V> map(Object... objects) {
 		HashMap map = new HashMap();
 		Object key = null;

@@ -1,15 +1,5 @@
 package nallar.tickthreading.minecraft.profiling;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-
 import nallar.tickthreading.minecraft.TickManager;
 import nallar.tickthreading.minecraft.TickThreading;
 import nallar.tickthreading.minecraft.commands.ProfileCommand;
@@ -22,6 +12,10 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import org.cliffc.high_scale_lib.NonBlockingHashMap;
 import org.codehaus.jackson.map.ObjectMapper;
+
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.atomic.*;
 
 public class EntityTickProfiler {
 	public static final EntityTickProfiler ENTITY_TICK_PROFILER = new EntityTickProfiler();

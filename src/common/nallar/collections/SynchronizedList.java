@@ -1,8 +1,8 @@
 package nallar.collections;
 
-import java.util.Collection;
-
 import nallar.tickthreading.Log;
+
+import java.util.*;
 
 public class SynchronizedList<T> extends ConcurrentUnsafeIterableArrayList<T> {
 	public SynchronizedList(final int initialCapacity) {

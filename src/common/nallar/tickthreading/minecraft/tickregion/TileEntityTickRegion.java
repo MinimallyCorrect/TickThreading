@@ -1,8 +1,5 @@
 package nallar.tickthreading.minecraft.tickregion;
 
-import java.util.Iterator;
-import java.util.concurrent.locks.Lock;
-
 import nallar.collections.LinkedHashSetTempSetNoClear;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.minecraft.TickManager;
@@ -11,6 +8,9 @@ import nallar.tickthreading.util.TableFormatter;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
+
+import java.util.*;
+import java.util.concurrent.locks.*;
 
 public class TileEntityTickRegion extends TickRegion {
 	private int checkTime = 0;

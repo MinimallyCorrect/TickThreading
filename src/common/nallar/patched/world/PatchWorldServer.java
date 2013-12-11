@@ -1,17 +1,6 @@
 package nallar.patched.world;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.ConcurrentModificationException;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
-import java.util.TreeSet;
-
 import com.google.common.collect.ImmutableSetMultimap;
-
 import nallar.collections.TreeHashSet;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.minecraft.DeadLockDetector;
@@ -52,7 +41,10 @@ import net.minecraftforge.common.ForgeChunkManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.WorldEvent;
 
-@SuppressWarnings ("unchecked") // Can't make the code in WorldServer checked. Yet. // TODO: Add type parameters via prepatcher?
+import java.util.*;
+
+@SuppressWarnings("unchecked")
+// Can't make the code in WorldServer checked. Yet. // TODO: Add type parameters via prepatcher?
 public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	public long ticksPerAnimalSpawns;
 	public long ticksPerMonsterSpawns;
@@ -61,9 +53,9 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	private static final ThreadLocalRandom randoms = new ThreadLocalRandom();
 	private int lastTickEntries;
 	@Declare
-	public nallar.tickthreading.util.BooleanThreadLocal worldGenInProgress_;
+	public nallar.tickthreading.util.BooleanThreadLocalDefaultFalse worldGenInProgress_;
 	@Declare
-	public nallar.tickthreading.util.BooleanThreadLocal inImmediateBlockUpdate_;
+	public nallar.tickthreading.util.BooleanThreadLocalDefaultFalse inImmediateBlockUpdate_;
 	@Declare
 	public int saveTickCount_;
 	private int chunkTickWait;
@@ -83,7 +75,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		}
 		threadManager = new ThreadManager(TickThreading.instance.getThreadCount(), "Chunk Updates for " + Log.name(this));
 		try {
-			field_73064_N = null;
+			pendingTickListEntriesHashSet = null;
 		} catch (NoSuchFieldError ignored) {
 			//MCPC+ compatibility - they also remove this.
 		}
@@ -262,14 +254,18 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	}
 
 	@Override
-	public void func_82740_a(int x, int y, int z, int blockID, int timeOffset, int par6) {
+	public void scheduleBlockUpdateWithPriority(int x, int y, int z, int blockID, int timeOffset, int par6) {
 		NextTickListEntry nextTickListEntry = new NextTickListEntry(x, y, z, blockID);
-		boolean isForced = getPersistentChunks().containsKey(new ChunkCoordIntPair(nextTickListEntry.xCoord >> 4, nextTickListEntry.zCoord >> 4));
-		byte range = isForced ? (byte) 0 : 8;
+		//boolean isForced = getPersistentChunks().containsKey(new ChunkCoordIntPair(nextTickListEntry.xCoord >> 4, nextTickListEntry.zCoord >> 4));
+		//byte range = isForced ? (byte) 0 : 8;
+		// Removed in Forge for now.
+		// byte range = 0;
 
 		if (blockID > 0 && timeOffset <= 20 && worldGenInProgress.get() == Boolean.TRUE && inImmediateBlockUpdate.get() == Boolean.FALSE) {
 			if (Block.blocksList[blockID].func_82506_l()) {
-				if (this.checkChunksExist(nextTickListEntry.xCoord - range, nextTickListEntry.yCoord - range, nextTickListEntry.zCoord - range, nextTickListEntry.xCoord + range, nextTickListEntry.yCoord + range, nextTickListEntry.zCoord + range)) {
+				// Not needed currently due to forge change removal.
+				// if (this.checkChunksExist(x - range, y - range, z - range, x + range, y + range, z + range)) {
+				if (this.chunkExists(x >> 4, z >> 4)) {
 					int realBlockID = this.getBlockIdWithoutLoad(nextTickListEntry.xCoord, nextTickListEntry.yCoord, nextTickListEntry.zCoord);
 
 					if (realBlockID > 0 && realBlockID == nextTickListEntry.blockID) {
@@ -288,10 +284,11 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 			timeOffset = 1;
 		}
 
-		if (this.checkChunksExist(x - range, y - range, z - range, x + range, y + range, z + range)) {
+		// if (this.checkChunksExist(x - range, y - range, z - range, x + range, y + range, z + range)) {
+		if (this.chunkExists(x >> 4, z >> 4)) {
 			if (blockID > 0) {
 				nextTickListEntry.setScheduledTime((long) timeOffset + worldInfo.getWorldTotalTime());
-				nextTickListEntry.func_82753_a(par6);
+				nextTickListEntry.setPriority(par6);
 			}
 
 			pendingTickListEntries.add(nextTickListEntry);
@@ -301,7 +298,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	@Override
 	public void scheduleBlockUpdateFromLoad(int x, int y, int z, int blockID, int timeOffset, int par6) {
 		NextTickListEntry nextTickListEntry = new NextTickListEntry(x, y, z, blockID);
-		nextTickListEntry.func_82753_a(par6);
+		nextTickListEntry.setPriority(par6);
 
 		if (blockID > 0) {
 			nextTickListEntry.setScheduledTime((long) timeOffset + worldInfo.getWorldTotalTime());
@@ -340,16 +337,13 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		}
 
 		ImmutableSetMultimap<ChunkCoordIntPair, ForgeChunkManager.Ticket> persistentChunks = getPersistentChunks();
-		for (NextTickListEntry var4 : runningTickListEntries) {
-			boolean isForced = persistentChunks.containsKey(new ChunkCoordIntPair(var4.xCoord >> 4, var4.zCoord >> 4));
-			byte range = isForced ? (byte) 0 : 8;
+		for (NextTickListEntry entry : runningTickListEntries) {
+			if (this.chunkExists(entry.xCoord >> 4, entry.zCoord >> 4)) {
+				int blockID = this.getBlockIdWithoutLoad(entry.xCoord, entry.yCoord, entry.zCoord);
 
-			if (this.checkChunksExist(var4.xCoord - range, var4.yCoord - range, var4.zCoord - range, var4.xCoord + range, var4.yCoord + range, var4.zCoord + range)) {
-				int blockID = this.getBlockIdWithoutLoad(var4.xCoord, var4.yCoord, var4.zCoord);
-
-				if (blockID == var4.blockID && blockID > 0) {
+				if (blockID == entry.blockID && blockID > 0) {
 					try {
-						Block.blocksList[blockID].updateTick(this, var4.xCoord, var4.yCoord, var4.zCoord, rand);
+						Block.blocksList[blockID].updateTick(this, entry.xCoord, entry.yCoord, entry.zCoord, rand);
 					} catch (Throwable var13) {
 						Log.severe("Exception while ticking a block", var13);
 					}
@@ -395,7 +389,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 			if (TickThreading.instance.shouldFastSpawn(this)) {
 				SpawnerAnimals.spawnMobsQuickly(this, spawnHostileMobs && (ticksPerMonsterSpawns != 0 && tickCount % ticksPerMonsterSpawns == 0L), spawnPeacefulMobs && (ticksPerAnimalSpawns != 0 && tickCount % ticksPerAnimalSpawns == 0L), worldInfo.getWorldTotalTime() % 400L == 0L);
 			} else {
-				SpawnerAnimals.findChunksForSpawning(this, spawnHostileMobs && (ticksPerMonsterSpawns != 0 && tickCount % ticksPerMonsterSpawns == 0L), spawnPeacefulMobs && (ticksPerAnimalSpawns != 0 && tickCount % ticksPerAnimalSpawns == 0L), worldInfo.getWorldTotalTime() % 400L == 0L);
+				animalSpawner.findChunksForSpawning(this, spawnHostileMobs && (ticksPerMonsterSpawns != 0 && tickCount % ticksPerMonsterSpawns == 0L), spawnPeacefulMobs && (ticksPerAnimalSpawns != 0 && tickCount % ticksPerAnimalSpawns == 0L), worldInfo.getWorldTotalTime() % 400L == 0L);
 			}
 		}
 
@@ -417,7 +411,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		this.villageCollectionObj.tick();
 		this.villageSiegeObj.tick();
 		profiler.endStartSection("portalForcer");
-		this.field_85177_Q.removeStalePortalLocations(this.getTotalWorldTime());
+		this.worldTeleporter.removeStalePortalLocations(this.getTotalWorldTime());
 		for (Teleporter tele : customTeleporters) {
 			tele.removeStalePortalLocations(getTotalWorldTime());
 		}
