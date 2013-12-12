@@ -22,10 +22,11 @@ public class MCPMappings extends Mappings {
 	private final Map<String, MethodDescription> parameterlessMethodMappings = new HashMap<String, MethodDescription>();
 	private final Map<String, MethodDescription> parameterlessSrgMethodMappings = new HashMap<String, MethodDescription>();
 	private final Map<String, String> shortClassNameToFullName = new HashMap<String, String>();
-	public boolean seargeMappings = false;
+	private final boolean seargeMappings;
 
 	@SuppressWarnings("IOResourceOpenedButNotSafelyClosed")
-	public MCPMappings() throws IOException {
+	public MCPMappings(boolean seargeMappings) throws IOException {
+		this.seargeMappings = seargeMappings;
 		loadCsv(Mappings.class.getResourceAsStream("/mappings/methods.csv"), methodSeargeMappings);
 		loadCsv(Mappings.class.getResourceAsStream("/mappings/fields.csv"), fieldSeargeMappings);
 		loadSrg(Mappings.class.getResourceAsStream("/mappings/packaged.srg"));
