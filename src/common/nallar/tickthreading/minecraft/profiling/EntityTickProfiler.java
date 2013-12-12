@@ -10,6 +10,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldProvider;
 import org.cliffc.high_scale_lib.NonBlockingHashMap;
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -170,18 +171,23 @@ public class EntityTickProfiler {
 			}
 		};
 		for (final Map.Entry<Object, Long> singleTimeEntry : singleTime.entrySet()) {
-			int x = Integer.MIN_VALUE;
-			int z = Integer.MIN_VALUE;
+			int x;
+			int z;
+			int dimension;
 			Object o = singleTimeEntry.getKey();
 			if (o instanceof Entity) {
 				x = ((Entity) o).chunkCoordX;
 				z = ((Entity) o).chunkCoordZ;
+				dimension = getDimension((Entity) o);
 			} else if (o instanceof TileEntity) {
 				x = ((TileEntity) o).xCoord >> 4;
 				z = ((TileEntity) o).zCoord >> 4;
+				dimension = getDimension((TileEntity) o);
+			} else {
+				throw new RuntimeException("Wrong type: " + o.getClass());
 			}
 			if (x != Integer.MIN_VALUE) {
-				chunkTimeMap.get(new ChunkCoords(x, z)).value += singleTimeEntry.getValue();
+				chunkTimeMap.get(new ChunkCoords(x, z, dimension)).value += singleTimeEntry.getValue();
 			}
 		}
 		tf
@@ -191,7 +197,7 @@ public class EntityTickProfiler {
 		for (ChunkCoords chunkCoords : CollectionsUtil.sortedKeys(chunkTimeMap, elements)) {
 			long chunkTime = chunkTimeMap.get(chunkCoords).value;
 			tf
-					.row(chunkCoords.chunkXPos + ", " + chunkCoords.chunkZPos)
+					.row(chunkCoords.dimension + ": " + chunkCoords.chunkXPos + ", " + chunkCoords.chunkZPos)
 					.row(chunkTime / (1000000d * ticks))
 					.row((chunkTime / totalTime) * 100);
 		}
@@ -227,11 +233,21 @@ public class EntityTickProfiler {
 		return tf;
 	}
 
+	private static int getDimension(TileEntity o) {
+		WorldProvider worldProvider = o.worldObj.provider;
+		return worldProvider == null ? -999 : worldProvider.dimensionId;
+	}
+
+	private static int getDimension(Entity o) {
+		WorldProvider worldProvider = o.worldObj.provider;
+		return worldProvider == null ? -999 : worldProvider.dimensionId;
+	}
+
 	private static Object niceName(Object o) {
 		if (o instanceof TileEntity) {
-			return niceName(o.getClass()) + ' ' + ((TileEntity) o).xCoord + ',' + ((TileEntity) o).yCoord + ',' + ((TileEntity) o).zCoord;
+			return niceName(o.getClass()) + ' ' + ((TileEntity) o).xCoord + ',' + ((TileEntity) o).yCoord + ',' + ((TileEntity) o).zCoord + ':' + getDimension((TileEntity) o);
 		} else if (o instanceof Entity) {
-			return niceName(o.getClass()) + ' ' + (int) ((Entity) o).posX + ',' + (int) ((Entity) o).posY + ',' + (int) ((Entity) o).posZ;
+			return niceName(o.getClass()) + ' ' + (int) ((Entity) o).posX + ',' + (int) ((Entity) o).posY + ',' + (int) ((Entity) o).posZ + ':' + getDimension((Entity) o);
 		}
 		return o.toString().substring(0, 48);
 	}
@@ -329,20 +345,22 @@ public class EntityTickProfiler {
 	private static final class ChunkCoords {
 		public final int chunkXPos;
 		public final int chunkZPos;
+		public final int dimension;
 
-		ChunkCoords(final int chunkXPos, final int chunkZPos) {
+		ChunkCoords(final int chunkXPos, final int chunkZPos, final int dimension) {
 			this.chunkXPos = chunkXPos;
 			this.chunkZPos = chunkZPos;
+			this.dimension = dimension;
 		}
 
 		@Override
 		public boolean equals(Object o) {
-			return o instanceof ChunkCoords && ((ChunkCoords) o).chunkXPos == this.chunkXPos && ((ChunkCoords) o).chunkZPos == this.chunkZPos;
+			return o instanceof ChunkCoords && ((ChunkCoords) o).chunkXPos == this.chunkXPos && ((ChunkCoords) o).chunkZPos == this.chunkZPos && ((ChunkCoords) o).dimension == this.dimension;
 		}
 
 		@Override
 		public int hashCode() {
-			return (chunkXPos * 7907) + chunkXPos;
+			return (chunkXPos << 16) ^ (chunkZPos << 4) ^ dimension;
 		}
 	}
 }
