@@ -120,6 +120,10 @@
 		<!-- Fix executable permissions -->
 		<chmod dir="${forge.dir}" perm="ugo+rx" includes="**.sh"/>
 
+		<!-- Fix library URLs -->
+		<replace file="${forge.dir}/fml/fml.py" token="default_url = 'http://s3.amazonaws.com/Minecraft.Download/libraries'" value="default_url = 'https://libraries.minecraft.net'"/>
+		<replace file="${forge.dir}/fml/fml.py" token="base_url = 'http://s3.amazonaws.com/Minecraft.Resources'" value="base_url = 'http://resources.download.minecraft.net'"/>
+
 		<!-- Install forge -->
 		<exec dir="${forge.dir}" executable="cmd" osfamily="windows">
 			<arg line="/c install.cmd"/>
