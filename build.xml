@@ -2,6 +2,7 @@
 <project name="TickThreading" default="main" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
 	<property environment="env"/>
 	<!-- Properties -->
+
 	<property name="build.dir" value="build"/>
 	<property name="src.dir" value="src"/>
 	<property name="lib.dir" value="libs"/>
@@ -22,7 +23,7 @@
 	<property name="forge.name" value="minecraftforge-src-${mc.version}-${forge.version}.zip"/>
 	<property name="maven-ant-tasks.name" value="maven-ant-tasks-2.1.3.jar"/>
 
-	<property name="maven-ant-tasks.url" value="http://apache.cs.utah.edu/maven/ant-tasks/2.1.3/binaries/${maven-ant-tasks.name}"/>
+	<property name="maven-ant-tasks.url" value="http://apache.mirrors.timporter.net/maven/ant-tasks/2.1.3/binaries/${maven-ant-tasks.name}"/>
 
 	<available property="forge-exists" file="${download.dir}/${forge.name}"/>
 	<available property="maven-ant-tasks-exists" file="${lib.dir}/${maven-ant-tasks.name}"/>
@@ -45,7 +46,7 @@
 		</fileset>
 	</path>
 
-	<!--<mkdir dir="${download.dir}"/> -->
+	<mkdir dir="${download.dir}"/>
 	<mkdir dir="${lib.dir}"/>
 	<mkdir dir="${build.dir}"/>
 
@@ -82,7 +83,7 @@
 
 	<!-- Download forge (if it doesn't exist) -->
 	<target name="download-forge" unless="forge-exists">
-		<get src="http://files.minecraftforge.net/${forge.name}" dest="${download.dir}/" usetimestamp="True"/>
+		<get src="http://files.minecraftforge.net/${forge.name}" dest="${download.dir}" usetimestamp="True"/>
 	</target>
 
 	<!-- Downloads libs -->
@@ -100,7 +101,6 @@
 			<artifact:dependency groupId="com.github.stephenc.high-scale-lib" artifactId="high-scale-lib" version="1.1.4"/>
 			<artifact:dependency groupId="org.codehaus.jackson" artifactId="jackson-core-lgpl" version="1.9.12"/>
 			<artifact:dependency groupId="org.codehaus.jackson" artifactId="jackson-mapper-lgpl" version="1.9.12"/>
-			<artifact:dependency groupId="com.google.guava" artifactId="guava" version="15.0"/>
 		</artifact:dependencies>
 		<copy todir="${lib.dir}">
 			<fileset refid="dependency.fileset"/>
@@ -115,7 +115,7 @@
 
 		<delete dir="${forge.dir}" failonerror="false"/>
 
-		<unzip dest="${forge.dir}/.." src="${download.dir}"/>
+		<unzip dest="${forge.dir}/.." src="${download.dir}/${forge.name}"/>
 
 		<!-- Fix executable permissions -->
 		<chmod dir="${forge.dir}" perm="ugo+rx" includes="**.sh"/>
