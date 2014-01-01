@@ -88,7 +88,6 @@ public enum LocationUtil {
 			return getRelativeFile(new File(path), currentDir);
 		}
 	}
-<<<<<<< HEAD
 
 	public static File getServerDirectory() {
 		return directoryOf(PatchMain.class).getParentFile();
@@ -122,6 +121,5 @@ public enum LocationUtil {
 		}
 		return jarLocations;
 	}
-=======
->>>>>>> upstream/master
+
 }

@@ -2,20 +2,15 @@ package nallar.tickthreading.minecraft;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
-<<<<<<< HEAD
 
-=======
->>>>>>> upstream/master
 import cpw.mods.fml.common.IPlayerTracker;
 import cpw.mods.fml.common.IScheduledTickHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.TickType;
-<<<<<<< HEAD
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.*;
-=======
->>>>>>> upstream/master
+
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
