@@ -16,7 +16,7 @@ import net.minecraft.server.MinecraftServer;
 
 import java.lang.management.*;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 
 public class DeadLockDetector {
 	private static final StackTraceElement[] EMPTY_STACK_TRACE = new StackTraceElement[0];

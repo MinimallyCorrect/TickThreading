@@ -3,7 +3,7 @@ package nallar.collections;
 import nallar.tickthreading.util.EnumerationIteratorWrapper;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 
 public class CHashtable<K, V> extends Hashtable<K, V> {
 	private final ConcurrentHashMap<K, V> m;

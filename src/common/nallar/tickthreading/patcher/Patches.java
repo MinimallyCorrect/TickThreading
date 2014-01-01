@@ -1,9 +1,39 @@
 package nallar.tickthreading.patcher;
 
 import com.google.common.base.Splitter;
-import javassist.*;
-import javassist.bytecode.*;
-import javassist.expr.*;
+import javassist.CannotCompileException;
+import javassist.ClassMap;
+import javassist.ClassPool;
+import javassist.CtBehavior;
+import javassist.CtClass;
+import javassist.CtConstructor;
+import javassist.CtField;
+import javassist.CtMethod;
+import javassist.CtNewMethod;
+import javassist.CtPrimitiveType;
+import javassist.Modifier;
+import javassist.NotFoundException;
+import javassist.bytecode.AnnotationsAttribute;
+import javassist.bytecode.AttributeInfo;
+import javassist.bytecode.BadBytecode;
+import javassist.bytecode.ClassFile;
+import javassist.bytecode.CodeAttribute;
+import javassist.bytecode.CodeIterator;
+import javassist.bytecode.ConstPool;
+import javassist.bytecode.Descriptor;
+import javassist.bytecode.DuplicateMemberException;
+import javassist.bytecode.MethodInfo;
+import javassist.bytecode.Mnemonic;
+import javassist.bytecode.Opcode;
+import javassist.expr.Cast;
+import javassist.expr.ConstructorCall;
+import javassist.expr.ExprEditor;
+import javassist.expr.FieldAccess;
+import javassist.expr.Handler;
+import javassist.expr.Instanceof;
+import javassist.expr.MethodCall;
+import javassist.expr.NewArray;
+import javassist.expr.NewExpr;
 import nallar.insecurity.ThisIsNotAnError;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.mappings.MethodDescription;
@@ -12,17 +42,15 @@ import nallar.tickthreading.util.ReflectUtil;
 import nallar.unsafe.UnsafeUtil;
 import org.omg.CORBA.IntHolder;
 
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 @SuppressWarnings({"MethodMayBeStatic", "ObjectAllocationInLoop"})
 public class Patches {
-	private final PatchManager patchManager;
-	private final ClassRegistry classRegistry;
+	private final ClassPool classPool;
 
-	public Patches(PatchManager patchManager, ClassRegistry classRegistry) {
-		this.patchManager = patchManager;
-		this.classRegistry = classRegistry;
+	public Patches(ClassPool classPool) {
+		this.classPool = classPool;
 	}
 
 	@SuppressWarnings("EmptyMethod")
@@ -57,7 +85,7 @@ public class Patches {
 		CtField oldField = ctClass.getDeclaredField(field);
 		oldField.setName(field + "_old");
 		String newType = attributes.get("type");
-		CtField ctField = new CtField(classRegistry.getClass(newType), field, ctClass);
+		CtField ctField = new CtField(classPool.get(newType), field, ctClass);
 		ctField.setModifiers(oldField.getModifiers());
 		ctClass.addField(ctField);
 		Set<CtBehavior> allBehaviours = new HashSet<CtBehavior>();
@@ -137,7 +165,7 @@ public class Patches {
 				Log.info("Must set methods to run on if using fieldClass.");
 				return;
 			}
-			ctClass = classRegistry.getClass(ctFieldClass);
+			ctClass = classPool.get(ctFieldClass);
 		}
 		final CtField ctField = ctClass.getDeclaredField(field);
 		String code = attributes.get("code");
@@ -168,7 +196,7 @@ public class Patches {
 					lastNewExpr = null;
 					newPos++;
 					try {
-						if (classRegistry.getClass(e.getClassName()).subtypeOf(ctField.getType())) {
+						if (classPool.get(e.getClassName()).subtypeOf(ctField.getType())) {
 							lastNewExpr = e;
 						}
 					} catch (NotFoundException ignored) {
@@ -366,7 +394,7 @@ public class Patches {
 		String fromClass = attributes.get("class");
 		String oldName = clazz.getName();
 		clazz.setName(oldName + "_old");
-		CtClass newClass = classRegistry.getClass(fromClass);
+		CtClass newClass = classPool.get(fromClass);
 		ClassFile classFile = newClass.getClassFile2();
 		if (classFile.getSuperclass().equals(oldName)) {
 			classFile.setSuperclass(null);
@@ -394,24 +422,7 @@ public class Patches {
 		}
 		newClass.setName(oldName);
 		newClass.setModifiers(newClass.getModifiers() & ~Modifier.ABSTRACT);
-		publicInnerClasses(fromClass);
 		return newClass;
-	}
-
-	@Patch
-	public void publicInnerClasses(String outer) {
-		boolean exists = true;
-		for (int i = 1; exists; i++) {
-			try {
-				String innerName = outer + '$' + i;
-				CtClass innerClass = classRegistry.getClass(innerName);
-				public_(innerClass, Collections.<String, String>emptyMap());
-				Log.info("Made " + innerName + " public.");
-				patchManager.patchingClasses.put(innerName, innerClass);
-			} catch (NotFoundException e) {
-				exists = false;
-			}
-		}
 	}
 
 	@Patch
@@ -425,8 +436,8 @@ public class Patches {
 		if (fromClass != null) {
 			String fromMethod = attributes.get("fromMethod");
 			CtMethod replacingMethod = fromMethod == null ?
-					classRegistry.getClass(fromClass).getDeclaredMethod(method.getName(), method.getParameterTypes())
-					: MethodDescription.fromString(fromClass, fromMethod).inClass(classRegistry.getClass(fromClass));
+					classPool.get(fromClass).getDeclaredMethod(method.getName(), method.getParameterTypes())
+					: MethodDescription.fromString(fromClass, fromMethod).inClass(classPool.get(fromClass));
 			replaceMethod((CtMethod) method, replacingMethod);
 		} else if (code != null) {
 			method.setBody(code);
@@ -439,8 +450,8 @@ public class Patches {
 		ClassMap classMap = new ClassMap();
 		classMap.put(newMethod.getDeclaringClass().getName(), oldMethod.getDeclaringClass().getName());
 		oldMethod.setBody(newMethod, classMap);
-		oldMethod.getMethodInfo().rebuildStackMap(classRegistry.classes);
-		oldMethod.getMethodInfo().rebuildStackMapForME(classRegistry.classes);
+		oldMethod.getMethodInfo().rebuildStackMap(classPool);
+		oldMethod.getMethodInfo().rebuildStackMapForME(classPool);
 	}
 
 	@Patch(
@@ -572,9 +583,9 @@ public class Patches {
 		parameterNamesList = parameterNamesList == null ? "" : parameterNamesList;
 		List<CtClass> parameterList = new ArrayList<CtClass>();
 		for (String parameterName : Splitter.on(',').trimResults().omitEmptyStrings().split(parameterNamesList)) {
-			parameterList.add(classRegistry.getClass(parameterName));
+			parameterList.add(classPool.get(parameterName));
 		}
-		CtMethod newMethod = new CtMethod(classRegistry.getClass(return_), name, parameterList.toArray(new CtClass[parameterList.size()]), ctClass);
+		CtMethod newMethod = new CtMethod(classPool.get(return_), name, parameterList.toArray(new CtClass[parameterList.size()]), ctClass);
 		newMethod.setBody('{' + code + '}');
 		ctClass.addMethod(newMethod);
 	}
@@ -631,7 +642,7 @@ public class Patches {
 	)
 	public void addAll(CtClass ctClass, Map<String, String> attributes) throws NotFoundException, CannotCompileException, BadBytecode {
 		String fromClass = attributes.get("fromClass");
-		CtClass from = classRegistry.getClass(fromClass);
+		CtClass from = classPool.get(fromClass);
 		ClassMap classMap = new ClassMap();
 		classMap.put(fromClass, ctClass.getName());
 		for (CtField ctField : from.getDeclaredFields()) {
@@ -713,7 +724,7 @@ public class Patches {
 						try {
 							ctClass.getField("isConstructed");
 						} catch (NotFoundException ignore) {
-							ctClass.addField(new CtField(classRegistry.getClass("boolean"), "isConstructed", ctClass));
+							ctClass.addField(new CtField(classPool.get("boolean"), "isConstructed", ctClass));
 						}
 						for (CtBehavior ctBehavior : ctClass.getDeclaredConstructors()) {
 							ctBehavior.insertAfter("{ if(!this.isConstructed) { this.isConstructed = true; this.runConstructors(); } }");
@@ -738,7 +749,6 @@ public class Patches {
 			ctClass.addMethod(initializer.toMethod("patchStaticInitializer", ctClass));
 			ctClass.makeClassInitializer().insertAfter("patchStaticInitializer();");
 		}
-		publicInnerClasses(fromClass);
 	}
 
 	@Patch(
@@ -896,7 +906,7 @@ public class Patches {
 			} catch (NotFoundException e) {
 				runConstructors = CtNewMethod.make("public void runConstructors() { }", ctClass);
 				ctClass.addMethod(runConstructors);
-				ctClass.addField(new CtField(classRegistry.getClass("boolean"), "isConstructed", ctClass), CtField.Initializer.constant(false));
+				ctClass.addField(new CtField(classPool.get("boolean"), "isConstructed", ctClass), CtField.Initializer.constant(false));
 				for (CtBehavior ctBehavior : ctClass.getDeclaredConstructors()) {
 					ctBehavior.insertAfter("{ if(!this.isConstructed) { this.isConstructed = true; this.runConstructors(); } }");
 				}
@@ -920,7 +930,7 @@ public class Patches {
 		initialise = "{ " + field + " = " + (initialise == null ? ("new " + clazz + (arraySize == null ? "()" : '[' + arraySize + ']')) : initialise) + "; }";
 		CtField oldField = ctClass.getDeclaredField(field);
 		oldField.setName(oldField.getName() + "_rem");
-		CtField newField = new CtField(classRegistry.getClass(type), field, ctClass);
+		CtField newField = new CtField(classPool.get(type), field, ctClass);
 		newField.setModifiers(oldField.getModifiers());
 		ctClass.addField(newField);
 		for (CtConstructor ctConstructor : ctClass.getConstructors()) {
@@ -944,7 +954,7 @@ public class Patches {
 			return;
 		} catch (NotFoundException ignored) {
 		}
-		CtClass newType = classRegistry.getClass(clazz);
+		CtClass newType = classPool.get(clazz);
 		CtField ctField = new CtField(newType, field, ctClass);
 		if (attributes.get("static") != null) {
 			ctField.setModifiers(ctField.getModifiers() | Modifier.STATIC);
@@ -1050,7 +1060,7 @@ public class Patches {
 			}
 			currentClass = currentClass.getSuperclass();
 			superClassNames.add(currentClass.getName());
-		} while (currentClass != classRegistry.getClass("java.lang.Object"));
+		} while (currentClass != classPool.get("java.lang.Object"));
 		final String newName = attributes.get("name");
 		if (!contains) {
 			ctMethod.setName(newName);
@@ -1218,7 +1228,7 @@ public class Patches {
 			exceptionType = "java.lang.Throwable";
 		}
 		Log.info("Ignoring " + exceptionType + " in " + ctMethod + ", returning with " + returnCode);
-		ctMethod.addCatch("{ " + returnCode + '}', classRegistry.getClass(exceptionType));
+		ctMethod.addCatch("{ " + returnCode + '}', classPool.get(exceptionType));
 	}
 
 	@Patch

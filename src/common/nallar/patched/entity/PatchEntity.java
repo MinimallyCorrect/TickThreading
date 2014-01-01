@@ -9,7 +9,7 @@ import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 
-import java.util.List;
+import java.util.*;
 
 public abstract class PatchEntity extends Entity {
 	@Declare

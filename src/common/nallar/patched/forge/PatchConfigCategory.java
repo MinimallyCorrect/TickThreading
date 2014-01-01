@@ -4,8 +4,7 @@ import com.google.common.base.Splitter;
 import net.minecraftforge.common.ConfigCategory;
 import net.minecraftforge.common.Property;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
+import java.io.*;
 
 import static net.minecraftforge.common.Configuration.allowedProperties;
 

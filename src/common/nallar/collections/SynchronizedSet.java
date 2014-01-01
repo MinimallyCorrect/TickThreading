@@ -1,7 +1,6 @@
 package nallar.collections;
 
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.*;
 
 public class SynchronizedSet<T> extends HashSet<T> {
 	public SynchronizedSet() {

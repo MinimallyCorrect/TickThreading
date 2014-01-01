@@ -4,13 +4,9 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import nallar.tickthreading.Log;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.io.*;
+import java.util.*;
+import java.util.regex.*;
 
 public class MCPMappings extends Mappings {
 	private static final Pattern classObfuscatePattern = Pattern.compile("\\^class:([^\\^]+)\\^", Pattern.DOTALL | Pattern.MULTILINE);
@@ -26,10 +22,11 @@ public class MCPMappings extends Mappings {
 	private final Map<String, MethodDescription> parameterlessMethodMappings = new HashMap<String, MethodDescription>();
 	private final Map<String, MethodDescription> parameterlessSrgMethodMappings = new HashMap<String, MethodDescription>();
 	private final Map<String, String> shortClassNameToFullName = new HashMap<String, String>();
-	public boolean seargeMappings = false;
+	private final boolean seargeMappings;
 
 	@SuppressWarnings("IOResourceOpenedButNotSafelyClosed")
-	public MCPMappings() throws IOException {
+	public MCPMappings(boolean seargeMappings) throws IOException {
+		this.seargeMappings = seargeMappings;
 		loadCsv(Mappings.class.getResourceAsStream("/mappings/methods.csv"), methodSeargeMappings);
 		loadCsv(Mappings.class.getResourceAsStream("/mappings/fields.csv"), fieldSeargeMappings);
 		loadSrg(Mappings.class.getResourceAsStream("/mappings/packaged.srg"));

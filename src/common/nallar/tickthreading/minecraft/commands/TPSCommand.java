@@ -10,7 +10,7 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 
-import java.util.List;
+import java.util.*;
 
 public class TPSCommand extends Command {
 	public static String name = "tps";

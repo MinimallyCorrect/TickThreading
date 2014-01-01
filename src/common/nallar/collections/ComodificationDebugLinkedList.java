@@ -1,9 +1,6 @@
 package nallar.collections;
 
-import java.util.ConcurrentModificationException;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 public class ComodificationDebugLinkedList<T> extends LinkedList<T> {
 	Throwable lastModification = null;

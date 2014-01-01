@@ -3,7 +3,11 @@ package nallar.tickthreading.minecraft.commands;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.minecraft.TickManager;
 import nallar.tickthreading.minecraft.TickThreading;
-import nallar.tickthreading.minecraft.profiling.*;
+import nallar.tickthreading.minecraft.profiling.ContentionProfiler;
+import nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
+import nallar.tickthreading.minecraft.profiling.PacketProfiler;
+import nallar.tickthreading.minecraft.profiling.Timings;
+import nallar.tickthreading.minecraft.profiling.UtilisationProfiler;
 import nallar.tickthreading.minecraft.tickregion.TickRegion;
 import nallar.tickthreading.util.TableFormatter;
 import net.minecraft.command.ICommandSender;
@@ -11,9 +15,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class ProfileCommand extends Command {
 	public static String name = "profile";

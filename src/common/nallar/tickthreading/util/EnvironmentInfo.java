@@ -3,8 +3,7 @@ package nallar.tickthreading.util;
 import com.sun.management.UnixOperatingSystemMXBean;
 import nallar.tickthreading.Log;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.OperatingSystemMXBean;
+import java.lang.management.*;
 
 public class EnvironmentInfo {
 	public static String getJavaVersion() {

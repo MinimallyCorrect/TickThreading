@@ -18,7 +18,16 @@ import net.minecraft.network.packet.Packet54PlayNoteBlock;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.IProgressUpdate;
-import net.minecraft.world.*;
+import net.minecraft.world.ChunkCoordIntPair;
+import net.minecraft.world.IWorldAccess;
+import net.minecraft.world.MinecraftException;
+import net.minecraft.world.NextTickListEntry;
+import net.minecraft.world.ServerBlockEventList;
+import net.minecraft.world.SpawnerAnimals;
+import net.minecraft.world.Teleporter;
+import net.minecraft.world.WorldProvider;
+import net.minecraft.world.WorldServer;
+import net.minecraft.world.WorldSettings;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.AnvilChunkLoader;
@@ -44,9 +53,9 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	private static final ThreadLocalRandom randoms = new ThreadLocalRandom();
 	private int lastTickEntries;
 	@Declare
-	public nallar.tickthreading.util.BooleanThreadLocal worldGenInProgress_;
+	public nallar.tickthreading.util.BooleanThreadLocalDefaultFalse worldGenInProgress_;
 	@Declare
-	public nallar.tickthreading.util.BooleanThreadLocal inImmediateBlockUpdate_;
+	public nallar.tickthreading.util.BooleanThreadLocalDefaultFalse inImmediateBlockUpdate_;
 	@Declare
 	public int saveTickCount_;
 	private int chunkTickWait;
@@ -250,11 +259,13 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		//boolean isForced = getPersistentChunks().containsKey(new ChunkCoordIntPair(nextTickListEntry.xCoord >> 4, nextTickListEntry.zCoord >> 4));
 		//byte range = isForced ? (byte) 0 : 8;
 		// Removed in Forge for now.
-		byte range = 0;
+		// byte range = 0;
 
 		if (blockID > 0 && timeOffset <= 20 && worldGenInProgress.get() == Boolean.TRUE && inImmediateBlockUpdate.get() == Boolean.FALSE) {
 			if (Block.blocksList[blockID].func_82506_l()) {
-				if (this.checkChunksExist(nextTickListEntry.xCoord - range, nextTickListEntry.yCoord - range, nextTickListEntry.zCoord - range, nextTickListEntry.xCoord + range, nextTickListEntry.yCoord + range, nextTickListEntry.zCoord + range)) {
+				// Not needed currently due to forge change removal.
+				// if (this.checkChunksExist(x - range, y - range, z - range, x + range, y + range, z + range)) {
+				if (this.chunkExists(x >> 4, z >> 4)) {
 					int realBlockID = this.getBlockIdWithoutLoad(nextTickListEntry.xCoord, nextTickListEntry.yCoord, nextTickListEntry.zCoord);
 
 					if (realBlockID > 0 && realBlockID == nextTickListEntry.blockID) {
@@ -273,7 +284,8 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 			timeOffset = 1;
 		}
 
-		if (this.checkChunksExist(x - range, y - range, z - range, x + range, y + range, z + range)) {
+		// if (this.checkChunksExist(x - range, y - range, z - range, x + range, y + range, z + range)) {
+		if (this.chunkExists(x >> 4, z >> 4)) {
 			if (blockID > 0) {
 				nextTickListEntry.setScheduledTime((long) timeOffset + worldInfo.getWorldTotalTime());
 				nextTickListEntry.setPriority(par6);
@@ -325,16 +337,13 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		}
 
 		ImmutableSetMultimap<ChunkCoordIntPair, ForgeChunkManager.Ticket> persistentChunks = getPersistentChunks();
-		for (NextTickListEntry var4 : runningTickListEntries) {
-			boolean isForced = persistentChunks.containsKey(new ChunkCoordIntPair(var4.xCoord >> 4, var4.zCoord >> 4));
-			byte range = isForced ? (byte) 0 : 8;
+		for (NextTickListEntry entry : runningTickListEntries) {
+			if (this.chunkExists(entry.xCoord >> 4, entry.zCoord >> 4)) {
+				int blockID = this.getBlockIdWithoutLoad(entry.xCoord, entry.yCoord, entry.zCoord);
 
-			if (this.checkChunksExist(var4.xCoord - range, var4.yCoord - range, var4.zCoord - range, var4.xCoord + range, var4.yCoord + range, var4.zCoord + range)) {
-				int blockID = this.getBlockIdWithoutLoad(var4.xCoord, var4.yCoord, var4.zCoord);
-
-				if (blockID == var4.blockID && blockID > 0) {
+				if (blockID == entry.blockID && blockID > 0) {
 					try {
-						Block.blocksList[blockID].updateTick(this, var4.xCoord, var4.yCoord, var4.zCoord, rand);
+						Block.blocksList[blockID].updateTick(this, entry.xCoord, entry.yCoord, entry.zCoord, rand);
 					} catch (Throwable var13) {
 						Log.severe("Exception while ticking a block", var13);
 					}

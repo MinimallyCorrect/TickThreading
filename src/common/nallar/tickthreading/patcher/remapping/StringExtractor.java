@@ -3,12 +3,8 @@ package nallar.tickthreading.patcher.remapping;
 import javassist.bytecode.ConstPool;
 import nallar.tickthreading.Log;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.io.*;
+import java.util.*;
 
 public enum StringExtractor {
 	;

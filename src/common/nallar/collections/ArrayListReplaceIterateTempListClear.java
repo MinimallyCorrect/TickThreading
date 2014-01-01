@@ -3,10 +3,7 @@ package nallar.collections;
 import nallar.unsafe.UnsafeAccess;
 import sun.misc.Unsafe;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.*;
 
 public class ArrayListReplaceIterateTempListClear<T> extends ArrayList<T> {
 	private volatile boolean defer = false;

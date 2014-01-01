@@ -1,17 +1,14 @@
 package nallar.collections;
 
-import nallar.tickthreading.util.BooleanThreadLocal;
+import nallar.tickthreading.util.BooleanThreadLocalDefaultFalse;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.*;
 
 public class HashSetReplaceIterateTempListClear<T> extends HashSet<T> {
 	private volatile boolean defer = false;
 	private final LinkedList<T> deferred = new LinkedList<T>();
 	private static final Iterator emptyIterator = Collections.emptyList().iterator();
-	private final BooleanThreadLocal noDefer = new BooleanThreadLocal();
+	private final BooleanThreadLocalDefaultFalse noDefer = new BooleanThreadLocalDefaultFalse();
 
 	@Override
 	public synchronized boolean add(T t) {

@@ -4,9 +4,8 @@ import cpw.mods.fml.common.FMLLog;
 import net.minecraft.world.chunk.storage.RegionFile;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Level;
+import java.util.*;
+import java.util.logging.*;
 
 public class RegionFileCache {
 	private final Map<Long, RegionFile> regionFileMap = new HashMap<Long, RegionFile>();

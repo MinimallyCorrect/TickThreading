@@ -5,7 +5,7 @@ import com.google.common.base.Functions;
 import com.google.common.collect.Ordering;
 import nallar.tickthreading.Log;
 
-import java.lang.reflect.Constructor;
+import java.lang.reflect.*;
 import java.util.*;
 
 public enum CollectionsUtil {

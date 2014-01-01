@@ -3,7 +3,7 @@ package nallar.collections;
 import nallar.tickthreading.util.EnumerationIteratorWrapper;
 
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.*;
 
 public class CopyOnWriteVector extends Vector {
 	CopyOnWriteArrayList copyOnWriteArrayList = new CopyOnWriteArrayList();

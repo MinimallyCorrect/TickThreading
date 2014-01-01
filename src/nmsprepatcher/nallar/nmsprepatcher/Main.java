@@ -1,6 +1,6 @@
 package nallar.nmsprepatcher;
 
-import java.io.File;
+import java.io.*;
 
 public class Main {
 	public static void main(String[] args) {

@@ -1,6 +1,6 @@
 package nallar.collections;
 
-import java.util.PriorityQueue;
+import java.util.*;
 
 public class SynchronizedPriorityQueue<T> extends PriorityQueue<T> {
 	@Override

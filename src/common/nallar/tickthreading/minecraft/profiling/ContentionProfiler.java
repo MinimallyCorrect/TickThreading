@@ -9,13 +9,8 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ThreadMinecraftServer;
 
-import java.lang.management.LockInfo;
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadInfo;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.lang.management.*;
+import java.util.*;
 
 public class ContentionProfiler {
 	public static void profile(final ICommandSender commandSender, int seconds, int resolution) {

@@ -5,7 +5,7 @@ import nallar.tickthreading.minecraft.TickThreading;
 import nallar.tickthreading.util.TableFormatter;
 import net.minecraft.world.World;
 
-import java.util.Random;
+import java.util.*;
 
 public abstract class TickRegion implements Runnable {
 	private static final boolean variableTickRate = TickThreading.instance.variableTickRate;

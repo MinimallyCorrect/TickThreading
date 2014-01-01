@@ -9,8 +9,8 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
-import java.util.Iterator;
-import java.util.concurrent.locks.Lock;
+import java.util.*;
+import java.util.concurrent.locks.*;
 
 public class TileEntityTickRegion extends TickRegion {
 	private int checkTime = 0;

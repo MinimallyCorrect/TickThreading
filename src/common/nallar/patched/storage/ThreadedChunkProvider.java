@@ -10,7 +10,7 @@ import nallar.tickthreading.minecraft.ChunkGarbageCollector;
 import nallar.tickthreading.minecraft.DeadLockDetector;
 import nallar.tickthreading.minecraft.TickThreading;
 import nallar.tickthreading.patcher.Declare;
-import nallar.tickthreading.util.BooleanThreadLocal;
+import nallar.tickthreading.util.BooleanThreadLocalDefaultFalse;
 import nallar.tickthreading.util.DoNothingRunnable;
 import nallar.tickthreading.util.ServerThreadFactory;
 import nallar.tickthreading.util.concurrent.NativeMutex;
@@ -35,16 +35,10 @@ import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.ForgeChunkManager;
 import org.cliffc.high_scale_lib.NonBlockingHashMapLong;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.*;
+import java.util.logging.*;
 
 /**
  * This is a replacement for ChunkProviderServer
@@ -79,8 +73,8 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	private final IChunkLoader loader;
 	private final WorldServer world;
 	private final Chunk defaultEmptyChunk;
-	private final BooleanThreadLocal inUnload = new BooleanThreadLocal();
-	private final BooleanThreadLocal worldGenInProgress;
+	private final BooleanThreadLocalDefaultFalse inUnload = new BooleanThreadLocalDefaultFalse();
+	private final BooleanThreadLocalDefaultFalse worldGenInProgress;
 	private boolean loadChunksInProvideChunk = true;
 	private int loadChunksInProvideChunkTicks = 0;
 	private int overloadCount = 0;
@@ -103,8 +97,8 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		currentChunkLoader = this.loader = loader;
 		loadedChunks = Collections.synchronizedList(new ArrayList<Chunk>());
 		world.emptyChunk = defaultEmptyChunk = new EmptyChunk(world, 0, 0);
-		world.worldGenInProgress = worldGenInProgress = new BooleanThreadLocal();
-		world.inImmediateBlockUpdate = new BooleanThreadLocal();
+		world.worldGenInProgress = worldGenInProgress = new BooleanThreadLocalDefaultFalse();
+		world.inImmediateBlockUpdate = new BooleanThreadLocalDefaultFalse();
 	}
 
 	@Declare

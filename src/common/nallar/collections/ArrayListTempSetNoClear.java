@@ -2,9 +2,7 @@ package nallar.collections;
 
 import nallar.tickthreading.Log;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
+import java.util.*;
 
 public class ArrayListTempSetNoClear<T> extends ArrayList<T> {
 	private boolean iterating = false;

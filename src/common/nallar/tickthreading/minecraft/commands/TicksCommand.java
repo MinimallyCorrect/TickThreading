@@ -11,7 +11,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
 
-import java.util.List;
+import java.util.*;
 
 public class TicksCommand extends Command {
 	public static String name = "ticks";

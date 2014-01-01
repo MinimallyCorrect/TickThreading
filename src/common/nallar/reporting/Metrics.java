@@ -39,12 +39,9 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.Configuration;
 
 import java.io.*;
-import java.net.Proxy;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
+import java.net.*;
 import java.util.*;
-import java.util.zip.GZIPOutputStream;
+import java.util.zip.*;
 
 /**
  * <p>

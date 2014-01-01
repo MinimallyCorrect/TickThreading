@@ -1,14 +1,10 @@
 package nallar.tickthreading.util;
 
 import nallar.tickthreading.Log;
-import nallar.tickthreading.patcher.PatchMain;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Pattern;
+import java.io.*;
+import java.net.*;
+import java.util.regex.*;
 
 public enum LocationUtil {
 	;
@@ -92,6 +88,7 @@ public enum LocationUtil {
 			return getRelativeFile(new File(path), currentDir);
 		}
 	}
+<<<<<<< HEAD
 
 	public static File getServerDirectory() {
 		return directoryOf(PatchMain.class).getParentFile();
@@ -125,4 +122,6 @@ public enum LocationUtil {
 		}
 		return jarLocations;
 	}
+=======
+>>>>>>> upstream/master
 }

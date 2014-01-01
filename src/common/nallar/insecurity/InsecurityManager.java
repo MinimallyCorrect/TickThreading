@@ -4,8 +4,8 @@ import cpw.mods.fml.common.FMLLog;
 import nallar.tickthreading.Log;
 import net.minecraft.server.MinecraftServer;
 
-import java.security.Permission;
-import java.util.logging.Handler;
+import java.security.*;
+import java.util.logging.*;
 
 public class InsecurityManager extends java.lang.SecurityManager {
 	static {

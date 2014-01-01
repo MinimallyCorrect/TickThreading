@@ -8,7 +8,7 @@ import net.minecraft.server.management.PlayerInstance;
 import net.minecraft.server.management.PlayerManager;
 import net.minecraft.world.WorldServer;
 
-import java.util.ArrayList;
+import java.util.*;
 
 public abstract class PatchPlayerManager extends PlayerManager {
 	public Object chunkWatcherLock;

@@ -2,14 +2,20 @@ package nallar.tickthreading.minecraft;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
+<<<<<<< HEAD
 
+=======
+>>>>>>> upstream/master
 import cpw.mods.fml.common.IPlayerTracker;
 import cpw.mods.fml.common.IScheduledTickHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.TickType;
+<<<<<<< HEAD
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.*;
+=======
+>>>>>>> upstream/master
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
@@ -22,23 +28,30 @@ import nallar.collections.IntSet;
 import nallar.reporting.LeakDetector;
 import nallar.reporting.Metrics;
 import nallar.tickthreading.Log;
-import nallar.tickthreading.minecraft.commands.*;
+import nallar.tickthreading.minecraft.commands.Command;
+import nallar.tickthreading.minecraft.commands.DumpCommand;
+import nallar.tickthreading.minecraft.commands.ProfileCommand;
+import nallar.tickthreading.minecraft.commands.TPSCommand;
+import nallar.tickthreading.minecraft.commands.TicksCommand;
 import nallar.tickthreading.minecraft.entitylist.EntityList;
 import nallar.tickthreading.minecraft.entitylist.LoadedEntityList;
 import nallar.tickthreading.minecraft.entitylist.LoadedTileEntityList;
 import nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
 import nallar.tickthreading.minecraft.profiling.Timings;
-import nallar.tickthreading.util.PatchUtil;
+import nallar.tickthreading.util.CollectionsUtil;
 import nallar.tickthreading.util.ReflectUtil;
 import nallar.tickthreading.util.TableFormatter;
 import nallar.tickthreading.util.VersionUtil;
 import nallar.tickthreading.util.contextaccess.ContextAccess;
+import nallar.tickthreading.util.stringfillers.StringFiller;
+import nallar.unsafe.UnsafeUtil;
 import net.minecraft.command.ServerCommandManager;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.launchwrapper.LaunchClassLoader;
 import net.minecraft.network.NetServerHandler;
 import net.minecraft.network.packet.PacketCount;
 import net.minecraft.server.MinecraftServer;
@@ -53,8 +66,8 @@ import net.minecraftforge.event.ForgeSubscribe;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.WorldEvent;
 
-import java.io.File;
-import java.lang.reflect.Field;
+import java.io.*;
+import java.lang.reflect.*;
 import java.util.*;
 
 @SuppressWarnings("WeakerAccess")
@@ -111,7 +124,10 @@ public class TickThreading {
 
 	public TickThreading() {
 		Log.LOGGER.getLevel(); // Force log class to load
-		PatchUtil.checkPatches();
+		LaunchClassLoader classLoader = (LaunchClassLoader) TickThreading.class.getClassLoader();
+		Log.info(CollectionsUtil.join(classLoader.getTransformers(), "\n"));
+		Log.severe("TT has not yet been updated for 1.6.4 fully, and will not attempt to start. It doesn't work yet :P");
+		System.exit(1);
 	}
 
 	@Mod.EventHandler

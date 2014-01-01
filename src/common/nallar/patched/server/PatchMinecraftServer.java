@@ -14,7 +14,6 @@ import nallar.tickthreading.minecraft.profiling.Timings;
 import nallar.tickthreading.patcher.Declare;
 import nallar.tickthreading.util.EnvironmentInfo;
 import nallar.tickthreading.util.FakeServerThread;
-import nallar.tickthreading.util.PatchUtil;
 import nallar.unsafe.UnsafeUtil;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.entity.Entity;
@@ -34,13 +33,12 @@ import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.WorldEvent;
 
-import java.io.File;
-import java.text.SimpleDateFormat;
+import java.io.*;
+import java.text.*;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.*;
+import java.util.logging.*;
 
 public abstract class PatchMinecraftServer extends MinecraftServer {
 	private ThreadManager threadManager;
@@ -78,10 +76,6 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	}
 
 	public static void staticConstruct() {
-		try {
-			PatchUtil.checkPatches();
-		} catch (NoClassDefFoundError ignored) {
-		}
 		setTargetTPS(20);
 		setNetworkTPS(40);
 	}
@@ -158,7 +152,6 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		try {
 			try {
 				InsecurityManager.init();
-				PatchUtil.writePatchRunners();
 			} catch (Throwable t) {
 				FMLLog.log(Level.SEVERE, t, "Failed to set up Security Manager. This is probably not a huge problem - but it could indicate classloading issues.");
 			}

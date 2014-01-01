@@ -2,10 +2,7 @@ package nallar.collections;
 
 import net.minecraft.util.LongHashMap;
 
-import java.util.AbstractSet;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 
 public class LongSet extends AbstractSet<Long> implements Set<Long> {
 	private static final Object set = new Object();

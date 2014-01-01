@@ -2,7 +2,7 @@ package nallar.patched.forge;
 
 import cpw.mods.fml.common.FMLLog;
 
-import java.util.logging.Level;
+import java.util.logging.*;
 
 public abstract class PatchIMCMessage {
 	private String sender;

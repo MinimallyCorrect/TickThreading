@@ -23,7 +23,7 @@
 	<property name="forge.name" value="minecraftforge-src-${mc.version}-${forge.version}.zip"/>
 	<property name="maven-ant-tasks.name" value="maven-ant-tasks-2.1.3.jar"/>
 
-	<property name="maven-ant-tasks.url" value="http://apache.mirrors.timporter.net/maven/ant-tasks/2.1.3/binaries/${maven-ant-tasks.name}"/>
+	<property name="maven-ant-tasks.url" value="http://apache.cs.utah.edu/maven/ant-tasks/2.1.3/binaries/${maven-ant-tasks.name}"/>
 
 	<available property="forge-exists" file="${download.dir}/${forge.name}"/>
 	<available property="maven-ant-tasks-exists" file="${lib.dir}/${maven-ant-tasks.name}"/>
@@ -119,6 +119,10 @@
 
 		<!-- Fix executable permissions -->
 		<chmod dir="${forge.dir}" perm="ugo+rx" includes="**.sh"/>
+
+		<!-- Fix library URLs -->
+		<replace file="${forge.dir}/fml/fml.py" token="default_url = 'http://s3.amazonaws.com/Minecraft.Download/libraries'" value="default_url = 'https://libraries.minecraft.net'"/>
+		<replace file="${forge.dir}/fml/fml.py" token="base_url = 'http://s3.amazonaws.com/Minecraft.Resources'" value="base_url = 'http://resources.download.minecraft.net'"/>
 
 		<!-- Install forge -->
 		<exec dir="${forge.dir}" executable="cmd" osfamily="windows">
