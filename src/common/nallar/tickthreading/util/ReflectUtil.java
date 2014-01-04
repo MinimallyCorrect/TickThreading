@@ -6,9 +6,6 @@ import nallar.unsafe.UnsafeUtil;
 import java.lang.reflect.*;
 import java.util.*;
 
-/**
- * Only for use when performance doesn't matter
- */
 public enum ReflectUtil {
 	;
 

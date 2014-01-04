@@ -188,6 +188,7 @@
 			<delete dir="${mcpsrc.dir}/minecraft/me/nallar"/>
 			<delete dir="${mcpsrc.dir}/minecraft/nallar"/>
 			<delete dir="${mcpsrc.dir}/minecraft/javassist"/>
+			<delete dir="${mcpsrc.dir}/minecraft/net/minecraft/launchwrapper"/>
 			<delete file="${mcpsrc.dir}/minecraft/net/minecraft/network/packet/IPacketHandler.java"/>
 		</parallel>
 
@@ -253,7 +254,11 @@
 
 		<delete dir="${jar.dir}"/>
 		<mkdir dir="${jar.dir}"/>
-		<jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${classes.dir}"/>
+		<jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${classes.dir}">
+			<manifest>
+				<attribute name="Main-Class" value="nallar.tickthreading.patcher.PatchLauncher"/>
+			</manifest>
+		</jar>
 		<copy file="${jar.dir}/${ant.project.name}.jar" tofile="${jar.dir}/${ant.project.name}-${project.version.full}.jar"/>
 
 	</target>

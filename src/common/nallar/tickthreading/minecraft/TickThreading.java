@@ -28,20 +28,16 @@ import nallar.tickthreading.minecraft.entitylist.LoadedEntityList;
 import nallar.tickthreading.minecraft.entitylist.LoadedTileEntityList;
 import nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
 import nallar.tickthreading.minecraft.profiling.Timings;
-import nallar.tickthreading.util.CollectionsUtil;
 import nallar.tickthreading.util.ReflectUtil;
 import nallar.tickthreading.util.TableFormatter;
 import nallar.tickthreading.util.VersionUtil;
 import nallar.tickthreading.util.contextaccess.ContextAccess;
-import nallar.tickthreading.util.stringfillers.StringFiller;
-import nallar.unsafe.UnsafeUtil;
 import net.minecraft.command.ServerCommandManager;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.launchwrapper.LaunchClassLoader;
 import net.minecraft.network.NetServerHandler;
 import net.minecraft.network.packet.PacketCount;
 import net.minecraft.server.MinecraftServer;
@@ -112,16 +108,12 @@ public class TickThreading {
 		new Metrics("TickThreading", VersionUtil.TTVersionNumber());
 	}
 
-	public TickThreading() {
-		Log.LOGGER.getLevel(); // Force log class to load
-		LaunchClassLoader classLoader = (LaunchClassLoader) TickThreading.class.getClassLoader();
-		Log.info(CollectionsUtil.join(classLoader.getTransformers(), "\n"));
-		Log.severe("TT has not yet been updated for 1.6.4 fully, and will not attempt to start. It doesn't work yet :P");
-		System.exit(1);
-	}
-
 	@Mod.EventHandler
 	public void init(FMLInitializationEvent event) {
+		if (!MinecraftServer.getServer().getServerModName().contains("tickthreading")) {
+			Log.severe("TT should not be installed in the mods directory. TT is now a server wrapper, put it in the main server directory and launch the TT jar.");
+			System.exit(1);
+		}
 		MinecraftForge.EVENT_BUS.register(this);
 		initPeriodicProfiling();
 		if (!enableBugWarningMessage) {
@@ -195,9 +187,9 @@ public class TickThreading {
 			Log.severe("You're using TickProfiler with TT - TT includes TP's features. Please uninstall TickProfiler, it can cause problems with TT.");
 			Runtime.getRuntime().exit(1);
 		}
-		Log.severe(VersionUtil.versionString() + " is installed on this server!"
+		Log.severe(VersionUtil.versionString() + " is installed on this server."
 				+ "\nIf anything breaks, check if it is still broken without TickThreading"
-				+ "\nWe don't want to annoy mod devs with issue reports caused by TickThreading."
+				+ "\nWe don't want to annoy mod developers with issue reports caused by TickThreading."
 				+ "\nSeriously, please don't."
 				+ "\nIf it's only broken with TickThreading, report it at https://github.com/nallar/TickThreading/issues/new"
 				+ "\n\nAlso, you really should be making regular backups. (You should be doing that even when not using TT.)");
