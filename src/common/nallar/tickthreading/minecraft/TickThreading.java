@@ -2,19 +2,14 @@ package nallar.tickthreading.minecraft;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
-
 import cpw.mods.fml.common.IPlayerTracker;
 import cpw.mods.fml.common.IScheduledTickHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.TickType;
-import cpw.mods.fml.common.Mod.EventHandler;
-import cpw.mods.fml.common.*;
-
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
-
 import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.TickRegistry;
@@ -135,7 +130,6 @@ public class TickThreading {
 		TickRegistry.registerScheduledTickHandler(new ProfilingScheduledTickHandler(profilingInterval, MinecraftServer.getServer().getFile(profilingFileName), profilingJson), Side.SERVER);
 	}
 
-
 	@SuppressWarnings("FieldRepeatedlyAccessedInMethod")
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
@@ -186,7 +180,6 @@ public class TickThreading {
 		}
 		PacketCount.allowCounting = false;
 	}
-
 
 	@Mod.EventHandler
 	public void serverStarting(FMLServerStartingEvent event) {
