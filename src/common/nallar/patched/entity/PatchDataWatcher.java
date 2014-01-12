@@ -16,7 +16,7 @@ import java.util.*;
 public abstract class PatchDataWatcher extends DataWatcher {
 	private boolean isBlank = true;
 	private static final HashMap<Class, Integer> dataTypes = new HashMap<Class, Integer>();
-	private final WatchableObject[] watchedObjects = new WatchableObject[31];
+	private final WatchableObject[] watchedObjects = new WatchableObject[32];
 	/**
 	 * true if one or more object was changed
 	 */
