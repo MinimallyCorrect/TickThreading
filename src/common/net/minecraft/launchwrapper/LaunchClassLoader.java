@@ -1,6 +1,7 @@
 package net.minecraft.launchwrapper;
 
 import cpw.mods.fml.relauncher.FMLRelaunchLog;
+import nallar.tickthreading.patcher.PatchHook;
 import nallar.unsafe.UnsafeUtil;
 
 import java.io.*;
@@ -36,9 +37,11 @@ public class LaunchClassLoader extends URLClassLoader {
 	private static final boolean DEBUG_FINER = DEBUG && Boolean.parseBoolean(System.getProperty("legacy.debugClassLoadingFiner", "false"));
 	private static final boolean DEBUG_SAVE = DEBUG && Boolean.parseBoolean(System.getProperty("legacy.debugClassLoadingSave", "false"));
 	private static File tempFolder = null;
+	public static LaunchClassLoader instance;
 
 	public LaunchClassLoader(URL[] sources) {
 		super(sources, null);
+		instance = this;
 		this.sources = new ArrayList<URL>(Arrays.asList(sources));
 		Thread.currentThread().setContextClassLoader(this);
 
@@ -89,16 +92,23 @@ public class LaunchClassLoader extends URLClassLoader {
 		}
 	}
 
+	public boolean excluded(String name) {
+		for (final String exception : classLoaderExceptions) {
+			if (name.startsWith(exception)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	@Override
 	public Class<?> findClass(final String name) throws ClassNotFoundException {
 		if (invalidClasses.contains(name)) {
 			throw new ClassNotFoundException(name);
 		}
 
-		for (final String exception : classLoaderExceptions) {
-			if (name.startsWith(exception)) {
-				return parent.loadClass(name);
-			}
+		if (excluded(name)) {
+			return parent.loadClass(name);
 		}
 
 		if (cachedClasses.containsKey(name)) {
@@ -257,11 +267,7 @@ public class LaunchClassLoader extends URLClassLoader {
 
 	private byte[] runTransformer(final String name, final String transformedName, byte[] basicClass, final IClassTransformer transformer) {
 		try {
-			basicClass = transformer.transform(name, transformedName, basicClass);
-			if (transformer == prePatchTransformer) {
-				System.err.println("TT patch hook for " + transformedName + " after " + transformer);
-			}
-			return basicClass;
+			return transformer.transform(name, transformedName, basicClass);
 		} catch (Throwable t) {
 			String message = t.getMessage();
 			if (message != null && message.contains("for invalid side")) {
@@ -274,21 +280,47 @@ public class LaunchClassLoader extends URLClassLoader {
 	}
 
 	private byte[] runTransformers(final String name, final String transformedName, byte[] basicClass) {
-		if (DEBUG_FINER) {
-			LogWrapper.finest("Beginning transform of {%s (%s)} Start Length: %d", name, transformedName, (basicClass == null ? 0 : basicClass.length));
-			for (final IClassTransformer transformer : transformers) {
-				final String transName = transformer.getClass().getName();
-				LogWrapper.finest("Before Transformer {%s (%s)} %s: %d", name, transformedName, transName, (basicClass == null ? 0 : basicClass.length));
-				basicClass = runTransformer(name, transformedName, basicClass, transformer);
-				LogWrapper.finest("After  Transformer {%s (%s)} %s: %d", name, transformedName, transName, (basicClass == null ? 0 : basicClass.length));
-			}
-			LogWrapper.finest("Ending transform of {%s (%s)} Start Length: %d", name, transformedName, (basicClass == null ? 0 : basicClass.length));
-		} else {
-			for (final IClassTransformer transformer : transformers) {
-				basicClass = runTransformer(name, transformedName, basicClass, transformer);
+		basicClass = transformUpToSrg(name, transformedName, basicClass);
+		basicClass = PatchHook.hook(name, transformedName, basicClass);
+		basicClass = transformAfterSrg(name, transformedName, basicClass);
+		return basicClass;
+	}
+
+	private byte[] transformUpToSrg(final String name, final String transformedName, byte[] basicClass) {
+		for (final IClassTransformer transformer : transformers) {
+			basicClass = runTransformer(name, transformedName, basicClass, transformer);
+			if (transformer == prePatchTransformer) {
+				return basicClass;
 			}
 		}
+		throw new RuntimeException("No SRG transformer!");
+	}
+
+	private byte[] transformAfterSrg(final String name, final String transformedName, byte[] basicClass) {
+		boolean pastSrg = false;
+		for (final IClassTransformer transformer : transformers) {
+			if (pastSrg) {
+				basicClass = runTransformer(name, transformedName, basicClass, transformer);
+			}
+			if (transformer == prePatchTransformer) {
+				pastSrg = true;
+			}
+		}
+		if (!pastSrg) {
+			throw new RuntimeException("No SRG transformer!");
+		}
 		return basicClass;
+	}
+
+	public byte[] getSrgBytes(String name) {
+		final String transformedName = transformName(name);
+		name = untransformName(name);
+		try {
+			byte[] bytes = getClassBytes(name);
+			return transformUpToSrg(name, transformedName, bytes);
+		} catch (Throwable t) {
+			throw new RuntimeException(t);
+		}
 	}
 
 	@Override

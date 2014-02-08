@@ -17,9 +17,18 @@ public class PatchLauncher {
 		}
 	}
 
+	private static final String serverJarArgument = "--serverjar=";
+
 	private static void run(String[] args) throws Exception {
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		addLibraries((URLClassLoader) classLoader);
+		String loc = null;
+		for (int i = 0; i < args.length; i++) {
+			if (args[i].toLowerCase().startsWith(serverJarArgument)) {
+				loc = args[i].substring(serverJarArgument.length());
+			}
+		}
+		Arrays.copyOfRange(args, 0, args.length - 1);
+		addLibraries((URLClassLoader) classLoader, loc);
 		//JavassistClassLoader javassistClassLoader = new JavassistClassLoader(classLoader);
 		//Thread.currentThread().setContextClassLoader(javassistClassLoader);
 
@@ -48,7 +57,7 @@ public class PatchLauncher {
 		}
 	}
 
-	private static void addLibraries(URLClassLoader classLoader) {
+	private static void addLibraries(URLClassLoader classLoader, String loc) {
 		File libraries = new File("libraries");
 		addLibraries(classLoader, libraries);
 		File current = new File(".");
@@ -59,7 +68,21 @@ public class PatchLauncher {
 				return o2.getName().compareTo(o1.getName());
 			}
 		});
-		boolean found = false;
+		boolean found = loc != null;
+		if (found) {
+			File locFile = new File(loc);
+			try {
+				locFile = locFile.getCanonicalFile();
+			} catch (IOException e) {
+				Log.severe("", e);
+			}
+			Log.info("Adding specified server jar: " + loc + " @ " + locFile + " to libraries.");
+			addPathToClassLoader(locFile, classLoader);
+		} else {
+			Log.severe("You have not specified a server jar, attempting to guess the forge jar location.");
+			Log.severe("Please add --serverJar=<minecraft/forge/mcpc jar name here> at the end of your java arguments.");
+			Log.severe("Example: java -Xmx=2G -XX:MaxPermSize=256m -XX:+AgressiveOpts -jar TT.jar --serverJar=mcpcIsFast.jar");
+		}
 		for (File file : files) {
 			String lowerCase = file.getName().toLowerCase();
 			if (lowerCase.contains("forge") && (lowerCase.endsWith(".jar") || lowerCase.endsWith(".zip"))) {
@@ -72,8 +95,7 @@ public class PatchLauncher {
 			}
 		}
 		if (!found) {
-			Log.info("Failed to find forge jar, rename your forge jar so that forge is in its name. If you have no forge jar, rename the server jar in the same manner.");
-			System.exit(1);
+			Log.info("Failed to find forge jar. Unless you have installed TT inside the server/forge jar, this won't work. Make sure 'forge' is in the name of the server jar.");
 		}
 	}
 

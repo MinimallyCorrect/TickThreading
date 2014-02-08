@@ -560,10 +560,10 @@ public abstract class PatchChunk extends Chunk {
 
 		if (tileEntity == null) {
 			int id = this.getBlockID(par1, par2, par3);
-			int meta = this.getBlockMetadata(par1, par2, par3);
+			int meta;
 			Block block;
 
-			if (id <= 0 || (block = Block.blocksList[id]) == null || !block.hasTileEntity(meta)) {
+			if (id <= 0 || (block = Block.blocksList[id]) == null || !block.hasTileEntity(meta = this.getBlockMetadata(par1, par2, par3))) {
 				return null;
 			}
 

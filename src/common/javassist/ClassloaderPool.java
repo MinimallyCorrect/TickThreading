@@ -1,22 +1,8 @@
 package javassist;
 
-import nallar.tickthreading.patcher.remapping.StringExtractor;
+import net.minecraft.launchwrapper.LaunchClassLoader;
 
 public class ClassloaderPool extends ClassPool {
-	private static final String target = "net/minecraft/";
-
-	public static boolean classIsSrgObfuscated(byte[] bytes) {
-		if (bytes == null) {
-			return false;
-		}
-		for (String entry : StringExtractor.getStrings(bytes)) {
-			if (entry.contains(target) && !entry.contains("server/MinecraftServer") && !entry.contains("client/Minecraft") && !entry.contains("network/packet/IPacketHandler")) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 	@Override
 	protected void cacheCtClass(String className, CtClass c, boolean dynamic) {
 		super.cacheCtClass(className, c, dynamic);
@@ -50,6 +36,9 @@ public class ClassloaderPool extends ClassPool {
 
 	@Override
 	protected CtClass createCtClass(String className, boolean useCache) {
-		return super.createCtClass(className, useCache);
+		if (LaunchClassLoader.instance.excluded(className)) {
+			return super.createCtClass(className, useCache);
+		}
+		return LaunchClassLoader.instance.getSrgBytes(className);
 	}
 }
