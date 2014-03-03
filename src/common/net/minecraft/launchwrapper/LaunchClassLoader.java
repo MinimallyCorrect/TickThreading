@@ -296,7 +296,13 @@ public class LaunchClassLoader extends URLClassLoader {
 		throw new RuntimeException("No SRG transformer!");
 	}
 
+	HashMap<String, byte[]> cachedSrgBytes = new HashMap<String, byte[]>();
+
 	private byte[] transformAfterSrg(final String name, final String transformedName, byte[] basicClass) {
+		byte[] cached = cachedSrgBytes.get(transformedName);
+		if (cached != null) {
+			return cached;
+		}
 		boolean pastSrg = false;
 		for (final IClassTransformer transformer : transformers) {
 			if (pastSrg) {
@@ -309,11 +315,16 @@ public class LaunchClassLoader extends URLClassLoader {
 		if (!pastSrg) {
 			throw new RuntimeException("No SRG transformer!");
 		}
+		cachedSrgBytes.put(transformedName, basicClass);
 		return basicClass;
 	}
 
 	public byte[] getSrgBytes(String name) {
 		final String transformedName = transformName(name);
+		byte[] cached = cachedSrgBytes.get(transformedName);
+		if (cached != null) {
+			return cached;
+		}
 		name = untransformName(name);
 		try {
 			byte[] bytes = getClassBytes(name);

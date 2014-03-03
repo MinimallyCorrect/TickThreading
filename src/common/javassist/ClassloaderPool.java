@@ -1,6 +1,9 @@
 package javassist;
 
+import com.google.common.base.Throwables;
 import net.minecraft.launchwrapper.LaunchClassLoader;
+
+import java.io.*;
 
 public class ClassloaderPool extends ClassPool {
 	@Override
@@ -39,6 +42,14 @@ public class ClassloaderPool extends ClassPool {
 		if (LaunchClassLoader.instance.excluded(className)) {
 			return super.createCtClass(className, useCache);
 		}
-		return LaunchClassLoader.instance.getSrgBytes(className);
+		byte[] srgBytes = LaunchClassLoader.instance.getSrgBytes(className);
+		if (srgBytes == null) {
+			return super.createCtClass(className, useCache);
+		}
+		try {
+			return new CtClassType(new ByteArrayInputStream(srgBytes), this);
+		} catch (IOException e) {
+			throw Throwables.propagate(e);
+		}
 	}
 }
