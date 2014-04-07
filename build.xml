@@ -4,8 +4,11 @@
 	<!-- Properties -->
 
 	<property name="build.dir" value="build"/>
-	<property name="src.dir" value="src"/>
 	<property name="lib.dir" value="libs"/>
+
+	<property name="src.dir" value="src"/>
+	<property name="src.prepatcher.dir" value="${src.dir}/nmsprepatcher"/>
+	<property name="src.minecraft.dir" value="${mcp.dir}/src/minecraft"/>
 
 	<property name="download.dir" value="download"/>
 
@@ -15,12 +18,11 @@
 	<property name="forge.dir" value="${build.dir}/forge"/>
 	<property name="mcp.dir" value="${forge.dir}/mcp"/>
 
-	<property name="mcpsrc.dir" value="${mcp.dir}/src"/>
-
 	<property name="mc.version" value="1.6.4"/>
-	<property name="forge.version" value="9.11.1.953"/>
+	<property name="forge.version" value="9.11.1.964"/>
 
-	<property name="forge.name" value="minecraftforge-src-${mc.version}-${forge.version}.zip"/>
+	<property name="forge.name" value="forge-${mc.version}-${forge.version}-src.zip"/>
+	<property name="forge.url" value="http://files.minecraftforge.net/maven/net/minecraftforge/forge/${mc.version}-${forge.version}/${forge.name}"/>
 	<property name="maven-ant-tasks.name" value="maven-ant-tasks-2.1.3.jar"/>
 
 	<property name="maven-ant-tasks.url" value="http://apache.cs.utah.edu/maven/ant-tasks/2.1.3/binaries/${maven-ant-tasks.name}"/>
@@ -32,7 +34,7 @@
 		<not>
 			<and>
 				<available file="${download.dir}/${forge.name}"/>
-				<available file="${mcpsrc.dir}"/>
+				<available file="${src.minecraft.dir}"/>
 			</and>
 		</not>
 	</condition>
@@ -83,30 +85,31 @@
 
 	<!-- Download forge (if it doesn't exist) -->
 	<target name="download-forge" unless="forge-exists">
-		<get src="http://files.minecraftforge.net/${forge.name}" dest="${download.dir}" usetimestamp="True"/>
+		<get src="${forge.url}" dest="${download.dir}" usetimestamp="True"/>
 	</target>
 
 	<!-- Downloads libs -->
 	<target name="download-libs">
 		<path
-						id="maven-ant-tasks.classpath"
-						path="${lib.dir}/${maven-ant-tasks.name}"/>
+				id="maven-ant-tasks.classpath"
+				path="${lib.dir}/${maven-ant-tasks.name}"/>
 		<typedef resource="org/apache/maven/artifact/ant/antlib.xml"
-						 uri="antlib:org.apache.maven.artifact.ant"
-						 classpathref="maven-ant-tasks.classpath">
+				 uri="antlib:org.apache.maven.artifact.ant"
+				 classpathref="maven-ant-tasks.classpath">
 		</typedef>
 		<artifact:dependencies filesetId="dependency.fileset"
-													 versionsId="dependency.versions">
+							   versionsId="dependency.versions">
 			<artifact:dependency groupId="org.javassist" artifactId="javassist" version="3.17.1-GA"/>
-			<artifact:dependency groupId="com.github.stephenc.high-scale-lib" artifactId="high-scale-lib" version="1.1.4"/>
+			<artifact:dependency groupId="com.github.stephenc.high-scale-lib" artifactId="high-scale-lib"
+								 version="1.1.4"/>
 			<artifact:dependency groupId="org.codehaus.jackson" artifactId="jackson-core-lgpl" version="1.9.12"/>
 			<artifact:dependency groupId="org.codehaus.jackson" artifactId="jackson-mapper-lgpl" version="1.9.12"/>
 		</artifact:dependencies>
 		<copy todir="${lib.dir}">
 			<fileset refid="dependency.fileset"/>
 			<mapper classpathref="maven-ant-tasks.classpath"
-							classname="org.apache.maven.artifact.ant.VersionMapper"
-							from="${dependency.versions}" to="flatten"/>
+					classname="org.apache.maven.artifact.ant.VersionMapper"
+					from="${dependency.versions}" to="flatten"/>
 		</copy>
 	</target>
 
@@ -115,30 +118,27 @@
 
 		<delete dir="${forge.dir}" failonerror="false"/>
 
-		<unzip dest="${forge.dir}/.." src="${download.dir}/${forge.name}"/>
+		<unzip dest="${forge.dir}" src="${download.dir}/${forge.name}"/>
 
 		<!-- Fix executable permissions -->
 		<chmod dir="${forge.dir}" perm="ugo+rx" includes="**.sh"/>
 
-		<!-- Fix library URLs -->
-		<replace file="${forge.dir}/fml/fml.py" token="default_url = 'http://s3.amazonaws.com/Minecraft.Download/libraries'" value="default_url = 'https://libraries.minecraft.net'"/>
-		<replace file="${forge.dir}/fml/fml.py" token="base_url = 'http://s3.amazonaws.com/Minecraft.Resources'" value="base_url = 'http://resources.download.minecraft.net'"/>
-
 		<!-- Install forge -->
 		<exec dir="${forge.dir}" executable="cmd" osfamily="windows">
-			<arg line="/c install.cmd"/>
+			<arg line="/c gradlew.bat setupDecompWorkspace --refresh-dependencies idea"/>
 		</exec>
 
 		<exec dir="${forge.dir}" executable="sh" osfamily="unix">
-			<arg value="install.sh"/>
+			<arg value="gradlew"/>
 		</exec>
 
-		<replace file="${mcp.dir}/conf/mcp.cfg" token=" -Xlint:-options -deprecation " value=" -XDignore.symbol.file -Xlint:none "/>
+		<!--<replace file="${mcp.dir}/conf/mcp.cfg" token=" -Xlint:-options -deprecation " value=" -XDignore.symbol.file -Xlint:none "/>-->
 	</target>
 
 	<target name="prepatch">
 		<mkdir dir="${classes.dir}"/>
-		<javac includeantruntime="false" srcdir="${src.dir}/nmsprepatcher" destdir="${classes.dir}" debug="on" source="1.6">
+		<javac includeantruntime="false" srcdir="${src.prepatcher.dir}" destdir="${classes.dir}" debug="on"
+			   source="1.6">
 			<classpath>
 				<path refid="class.path"/>
 			</classpath>
@@ -149,7 +149,7 @@
 				<pathelement location="${classes.dir}"/>
 			</classpath>
 			<arg value="${src.dir}/common/nallar/patched"/>
-			<arg value="${mcpsrc.dir}/minecraft"/>
+			<arg value="${src.minecraft.dir}"/>
 		</java>
 	</target>
 
@@ -159,7 +159,7 @@
 		<mkdir dir="${classes.dir}"/>
 
 		<!-- Copy sources -->
-		<copy todir="${mcpsrc.dir}/minecraft">
+		<copy todir="${src.minecraft.dir}">
 			<fileset dir="${src.dir}/common"/>
 			<filterset>
 				<filter token="MC_VERSION" value="${mc.version}"/>
@@ -181,15 +181,15 @@
 
 		<exec dir="${mcp.dir}" executable="sh" osfamily="unix" failifexecutionfails="true">
 			<arg value="recompile.sh"/>
-        </exec>
+		</exec>
 
 		<!-- Reset src dir to post-forge-install state -->
 		<parallel>
-			<delete dir="${mcpsrc.dir}/minecraft/me/nallar"/>
-			<delete dir="${mcpsrc.dir}/minecraft/nallar"/>
-			<delete dir="${mcpsrc.dir}/minecraft/javassist"/>
-			<delete dir="${mcpsrc.dir}/minecraft/net/minecraft/launchwrapper"/>
-			<delete file="${mcpsrc.dir}/minecraft/net/minecraft/network/packet/IPacketHandler.java"/>
+			<delete dir="${src.minecraft.dir}/me/nallar"/>
+			<delete dir="${src.minecraft.dir}/nallar"/>
+			<delete dir="${src.minecraft.dir}/javassist"/>
+			<delete dir="${src.minecraft.dir}/net/minecraft/launchwrapper"/>
+			<delete file="${src.minecraft.dir}/net/minecraft/network/packet/IPacketHandler.java"/>
 		</parallel>
 
 		<fail message="MCP failed to build">
@@ -259,7 +259,8 @@
 				<attribute name="Main-Class" value="nallar.tickthreading.patcher.PatchLauncher"/>
 			</manifest>
 		</jar>
-		<copy file="${jar.dir}/${ant.project.name}.jar" tofile="${jar.dir}/${ant.project.name}-${project.version.full}.jar"/>
+		<copy file="${jar.dir}/${ant.project.name}.jar"
+			  tofile="${jar.dir}/${ant.project.name}-${project.version.full}.jar"/>
 
 	</target>
 
