@@ -1,8 +1,8 @@
 TickThreading [![Build Status](http://nallar.me/buildservice/job/TickThreading-1.6.4/badge/icon)](http://nallar.me/buildservice/job/TickThreading-1.6.4/)
 ==========
-Multi-threaded minecraft server implementation. Compatible with Forge and MCPC+.
+Multi-threaded minecraft server wrapper. Requires Forge, compatible with MCPC+.
 
-Copyright &copy; 2012, nallar <rallan.pcl+tt@gmail.com>
+Copyright &copy; 2012-2014, nallar <rallan.pcl+tt@gmail.com>
 
 TickThreading is licensed under the [N Open License, Version 1][License]
 
@@ -50,8 +50,6 @@ Donations
 ![QR Code](http://i.imgur.com/U2ftDFQ.png)
 
 [1BUjvwxxGH23Fkj7vdGtbrgLEF91u8npQu](bitcoin:1BUjvwxxGH23Fkj7vdGtbrgLEF91u8npQu)
-
-![](http://ansrv.com/png?s=http://blockexplorer.com/q/getreceivedbyaddress/1BUjvwxxGH23Fkj7vdGtbrgLEF91u8npQu&amp;c=000000&amp;b=FFFFFF&amp;size=5)
 
 Alternatively, you can donate via paypal to rossallan3+pp@googlemail.com
 
