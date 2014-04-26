@@ -34,6 +34,7 @@ TickThreading is built using Ant. astyle is also required for linux users.
 
 * Install [Ant](http://ant.apache.org/)
 * Checkout this repo and run: `ant`
+* Make some Tea/Coffee/Yuanyang and watch youtube videos while Forge takes 15 minutes to set up
 
 Coding and Pull Request Formatting
 ----------------------------------
@@ -41,17 +42,16 @@ Coding and Pull Request Formatting
 * Tabs, no spaces.
 * Pull requests must compile and work.
 * Pull requests must be formatted properly.
+* Code should be self-documenting - when possible meaningful names and good design should make comments unnecessary
 
 Please follow the above conventions if you want your pull requests accepted.
 
 Donations
 ----------------------------------
 
-![QR Code](http://i.imgur.com/U2ftDFQ.png)
+Bitcoin address: [1BUjvwxxGH23Fkj7vdGtbrgLEF91u8npQu](bitcoin:1BUjvwxxGH23Fkj7vdGtbrgLEF91u8npQu)
 
-[1BUjvwxxGH23Fkj7vdGtbrgLEF91u8npQu](bitcoin:1BUjvwxxGH23Fkj7vdGtbrgLEF91u8npQu)
-
-Alternatively, you can donate via paypal to rossallan3+pp@googlemail.com
+Paypal address: rossallan3+pp@googlemail.com
 
 Contributors
 ----------------------------------
