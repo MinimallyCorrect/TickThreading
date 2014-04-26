@@ -48,6 +48,13 @@ Coding and Pull Request Formatting
 
 Please follow the above conventions if you want your pull requests accepted.
 
+IRC
+----------------------------------
+
+Chat with us at [irc.esper.net #TickThreading](irc://irc.esper.net/TickThreading)
+
+Build service alerts of new builds are available at #n-builds.
+
 Donations
 ----------------------------------
 
