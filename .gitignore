@@ -46,6 +46,8 @@ Thumbs.db
 gradle/wrapper/gradle-wrapper.properties
 MANIFEST.MF
 *.iml
+*.ipr
+*.iws
 .idea
 build
 eclipse

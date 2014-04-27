@@ -26,9 +26,9 @@ minecraft {
 }
 
 compileJava {
-    options.compilerArgs << '-XDignore.symbol.file'
-	options.fork = true // may not needed on 1.8
-    options.forkOptions.executable = 'javac' // may not needed on 1.8
+    options.compilerArgs << '-XDignore.symbol.file' // Kills the warnings about using the sun.* classes
+	options.fork = true
+    options.forkOptions.executable = 'javac'
 }
 
 processResources
@@ -55,6 +55,7 @@ def prepatchInputs = {
     inputs.dir file("src/main/java/nallar/patched")
     inputs.dir file("buildSrc/src")
 }
+deobfBinJar prepatchInputs
 
 project.tasks.deobfBinJar.setDirty()  // just added this. run with --refresh-dependencies
 
@@ -63,6 +64,8 @@ import nallar.nmsprepatcher.Main;  // used later to call the main stuff.
 afterEvaluate {
     deobfBinJar prepatchInputs
     decompile prepatchInputs
+    doForgePatches prepatchInputs
+    Main.loadPatches(file("src/main/java/nallar/patched"))
     project.tasks.deobfBinJar.doLast { task ->
         Main.editJar(task.getOutDirtyJar(), false)
     }

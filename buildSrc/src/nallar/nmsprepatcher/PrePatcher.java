@@ -19,11 +19,17 @@ class PrePatcher {
 	private static final Pattern declareVariablePattern = Pattern.compile("@Declare\\s+?(public [^;\r\n]+?)_?( = [^;\r\n]+?)?;", Pattern.DOTALL | Pattern.MULTILINE);
 	private static final Pattern packageVariablePattern = Pattern.compile("\n    ? ?([^ ]+  ? ?[^ ]+);");
 	private static final Pattern innerClassPattern = Pattern.compile("[^\n]public (?:static )?class ([^ \n]+)[ \n]", Pattern.MULTILINE);
+	private static final Map<String, String> patchClasses = new HashMap<String, String>();
+	private static final Map<String, String> generics = new HashMap<String, String>();
 
-	private static void recursiveSearch(File patchDirectory, File sourceDirectory, Map<File, String> patchClasses, Map<File, String> generics) {
+	public static void loadPatches(File patchDirectory) {
+		recursiveSearch(patchDirectory, patchClasses, generics);
+	}
+
+	private static void recursiveSearch(File patchDirectory, Map<String, String> patchClasses, Map<String, String> generics) {
 		for (File file : patchDirectory.listFiles()) {
 			if (file.isDirectory()) {
-				recursiveSearch(file, sourceDirectory, patchClasses, generics);
+				recursiveSearch(file, patchClasses, generics);
 				continue;
 			}
 			if (!file.getName().endsWith(".java")) {
@@ -52,116 +58,101 @@ class PrePatcher {
 				log.info("Unable to find class " + shortClassName + " for " + file);
 				continue;
 			}
-			File sourceFile = new File(sourceDirectory, className.replace('.', '/') + ".java");
-			if (!sourceFile.exists()) {
-				log.severe("Can't find " + sourceFile + " for " + file + ", not patching.");
-				continue;
-			}
 			String generic = extendsMatcher.group(2);
 			if (generic != null) {
-				generics.put(sourceFile, generic);
+				generics.put(className, generic);
 			}
-			String current = patchClasses.get(sourceFile);
-			patchClasses.put(sourceFile, (current == null ? "" : current) + contents);
+			String current = patchClasses.get(className);
+			patchClasses.put(className, (current == null ? "" : current) + contents);
 		}
 	}
 
-	public static void patch(File patchDirectory, File sourceDirectory) {
-		if (!patchDirectory.isDirectory()) {
-			throw new IllegalArgumentException("Not a directory! " + patchDirectory + ", " + sourceDirectory);
+	public static String patchSource(String inputSource, String inputClassName) {
+		inputSource = inputSource.trim().replace("\t", "    ");
+		String contents = patchClasses.get(inputClassName);
+		String shortClassName = inputClassName;
+		shortClassName = shortClassName.substring(shortClassName.lastIndexOf('/') + 1);
+		shortClassName = shortClassName.substring(0, shortClassName.indexOf('.'));
+		int previousIndex = inputSource.indexOf("\n//PREPATCH\n");
+		int cutIndex = previousIndex == -1 ? inputSource.lastIndexOf('}') : previousIndex;
+		StringBuilder sourceBuilder = new StringBuilder(inputSource.substring(0, cutIndex)).append("\n//PREPATCH\n");
+		Matcher matcher = declareMethodPattern.matcher(contents);
+		while (matcher.find()) {
+			String type = matcher.group(2);
+			String ret = "null";
+			if ("static".equals(type)) {
+				type = matcher.group(3);
+			}
+			if ("boolean".equals(type)) {
+				ret = "false";
+			} else if ("void".equals(type)) {
+				ret = "";
+			} else if ("long".equals(type)) {
+				ret = "0L";
+			} else if ("int".equals(type)) {
+				ret = "0";
+			} else if ("float".equals(type)) {
+				ret = "0f";
+			} else if ("double".equals(type)) {
+				ret = "0.0";
+			}
+			String decl = matcher.group(1) + "return " + ret + ";}";
+			if (sourceBuilder.indexOf(decl) == -1) {
+				sourceBuilder.append(decl).append('\n');
+			}
 		}
-		Map<File, String> patchClasses = new HashMap<File, String>();
-		Map<File, String> generics = new HashMap<File, String>();
-		recursiveSearch(patchDirectory, sourceDirectory, patchClasses, generics);
+		Matcher variableMatcher = declareVariablePattern.matcher(contents);
+		while (variableMatcher.find()) {
+			String var = variableMatcher.group(1);
+			sourceBuilder.append(var.replace(" final ", " ")).append(";\n");
+		}
+		sourceBuilder.append("\n}");
+		inputSource = sourceBuilder.toString();
+		String generic = generics.get(inputClassName);
+		if (generic != null) {
+			inputSource = inputSource.replaceAll("class " + shortClassName + "(<[^>]>)?", "class " + shortClassName + '<' + generic + '>');
+		}
+		Matcher genericMatcher = genericMethodPattern.matcher(contents);
+		while (genericMatcher.find()) {
+			String original = genericMatcher.group(1);
+			String withoutGenerics = original.replace(' ' + generic + ' ', " Object ");
+			int index = inputSource.indexOf(withoutGenerics);
+			if (index == -1) {
+				continue;
+			}
+			int endIndex = inputSource.indexOf("\n    }", index);
+			String body = inputSource.substring(index, endIndex);
+			inputSource = inputSource.replace(body, body.replace(withoutGenerics, original).replace("return ", "return (" + generic + ") "));
+		}
+		inputSource = inputSource.replace("\nfinal ", " ");
+		inputSource = inputSource.replace(" final ", " ");
+		inputSource = inputSource.replace("\nclass", "\npublic class");
+		inputSource = inputSource.replace("\n    " + shortClassName, "\n    public " + shortClassName);
+		inputSource = inputSource.replace("\n    protected " + shortClassName, "\n    public " + shortClassName);
+		inputSource = inputSource.replace("private class", "public class");
+		inputSource = inputSource.replace("protected class", "public class");
+		inputSource = privatePattern.matcher(inputSource).replaceAll("$1protected");
+		if (contents.contains("\n@Public")) {
+			inputSource = inputSource.replace("protected ", "public ");
+		}
+		inputSource = inputSource.replace("protected void save(", "public void save(");
+		Matcher packageMatcher = packageVariablePattern.matcher(inputSource);
+		StringBuffer sb = new StringBuffer();
+		while (packageMatcher.find()) {
+			packageMatcher.appendReplacement(sb, "\n    public " + packageMatcher.group(1) + ';');
+		}
+		packageMatcher.appendTail(sb);
+		inputSource = sb.toString();
+		Matcher innerClassMatcher = innerClassPattern.matcher(inputSource);
+		while (innerClassMatcher.find()) {
+			String name = innerClassMatcher.group(1);
+			inputSource = inputSource.replace("    " + name + '(', "    public " + name + '(');
+		}
+		return inputSource.replace("    ", "\t");
+	}
 
-		for (Map.Entry<File, String> classPatchEntry : patchClasses.entrySet()) {
-			String contents = classPatchEntry.getValue();
-			File sourceFile = classPatchEntry.getKey();
-			String shortClassName = sourceFile.getName();
-			shortClassName = shortClassName.substring(shortClassName.lastIndexOf('/') + 1);
-			shortClassName = shortClassName.substring(0, shortClassName.indexOf('.'));
-			String sourceString = readFile(sourceFile).trim().replace("\t", "    ");
-			int previousIndex = sourceString.indexOf("\n//PREPATCH\n");
-			int cutIndex = previousIndex == -1 ? sourceString.lastIndexOf('}') : previousIndex;
-			StringBuilder source = new StringBuilder(sourceString.substring(0, cutIndex)).append("\n//PREPATCH\n");
-			Matcher matcher = declareMethodPattern.matcher(contents);
-			while (matcher.find()) {
-				String type = matcher.group(2);
-				String ret = "null";
-				if ("static".equals(type)) {
-					type = matcher.group(3);
-				}
-				if ("boolean".equals(type)) {
-					ret = "false";
-				} else if ("void".equals(type)) {
-					ret = "";
-				} else if ("long".equals(type)) {
-					ret = "0L";
-				} else if ("int".equals(type)) {
-					ret = "0";
-				} else if ("float".equals(type)) {
-					ret = "0f";
-				} else if ("double".equals(type)) {
-					ret = "0.0";
-				}
-				String decl = matcher.group(1) + "return " + ret + ";}";
-				if (source.indexOf(decl) == -1) {
-					source.append(decl).append('\n');
-				}
-			}
-			Matcher variableMatcher = declareVariablePattern.matcher(contents);
-			while (variableMatcher.find()) {
-				String var = variableMatcher.group(1);
-				source.append(var.replace(" final ", " ")).append(";\n");
-			}
-			source.append("\n}");
-			sourceString = source.toString();
-			String generic = generics.get(sourceFile);
-			if (generic != null) {
-				sourceString = sourceString.replaceAll("class " + shortClassName + "(<[^>]>)?", "class " + shortClassName + '<' + generic + '>');
-			}
-			Matcher genericMatcher = genericMethodPattern.matcher(contents);
-			while (genericMatcher.find()) {
-				String original = genericMatcher.group(1);
-				String withoutGenerics = original.replace(' ' + generic + ' ', " Object ");
-				int index = sourceString.indexOf(withoutGenerics);
-				if (index == -1) {
-					continue;
-				}
-				int endIndex = sourceString.indexOf("\n    }", index);
-				String body = sourceString.substring(index, endIndex);
-				sourceString = sourceString.replace(body, body.replace(withoutGenerics, original).replace("return ", "return (" + generic + ") "));
-			}
-			sourceString = sourceString.replace("\nfinal ", " ");
-			sourceString = sourceString.replace(" final ", " ");
-			sourceString = sourceString.replace("\nclass", "\npublic class");
-			sourceString = sourceString.replace("\n    " + shortClassName, "\n    public " + shortClassName);
-			sourceString = sourceString.replace("\n    protected " + shortClassName, "\n    public " + shortClassName);
-			sourceString = sourceString.replace("private class", "public class");
-			sourceString = sourceString.replace("protected class", "public class");
-			sourceString = privatePattern.matcher(sourceString).replaceAll("$1protected");
-			if (contents.contains("\n@Public")) {
-				sourceString = sourceString.replace("protected ", "public ");
-			}
-			sourceString = sourceString.replace("protected void save(", "public void save(");
-			Matcher packageMatcher = packageVariablePattern.matcher(sourceString);
-			StringBuffer sb = new StringBuffer();
-			while (packageMatcher.find()) {
-				packageMatcher.appendReplacement(sb, "\n    public " + packageMatcher.group(1) + ';');
-			}
-			packageMatcher.appendTail(sb);
-			sourceString = sb.toString();
-			Matcher innerClassMatcher = innerClassPattern.matcher(sourceString);
-			while (innerClassMatcher.find()) {
-				String name = innerClassMatcher.group(1);
-				sourceString = sourceString.replace("    " + name + '(', "    public " + name + '(');
-			}
-			try {
-				writeFile(sourceFile, sourceString.replace("    ", "\t"));
-			} catch (IOException e) {
-				log.log(Level.SEVERE, "Failed to save " + sourceFile, e);
-			}
-		}
+	public static byte[] patchCode(byte[] inputCode, String inputClassName) {
+		return inputCode;
 	}
 
 	private static String readFile(File file) {

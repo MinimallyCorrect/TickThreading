@@ -3,6 +3,10 @@ package nallar.nmsprepatcher;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
 import com.google.common.io.ByteStreams;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.tree.ClassNode;
 
 import java.io.*;
 import java.util.*;
@@ -10,10 +14,8 @@ import java.util.Map.*;
 import java.util.jar.*;
 
 public class Main {
-	public static void main(String[] args) {
-		File patchDirectory = new File(args[0]);
-		File sourceDirectory = new File(args[1]);
-		PrePatcher.patch(patchDirectory, sourceDirectory);
+	public static void loadPatches(File patchDirectory) {
+		PrePatcher.loadPatches(patchDirectory);
 	}
 
 	/**
@@ -23,8 +25,14 @@ public class Main {
 	 */
 	private static byte[] manipulateBinary(String path, byte[] bytes) {
 		// TODO: IMPLEMENT.
-		System.out.println("BINARY: " + path);
-		return bytes;
+		System.out.println(" BINARY: " + path);
+		ClassReader classReader = new ClassReader(bytes);
+		ClassNode classNode = new ClassNode();
+		classReader.accept(classNode, 0);
+		classNode.access = classNode.access & ~Opcodes.ACC_FINAL;
+		ClassWriter classWriter = new ClassWriter(classReader, 0);
+		classNode.accept(classWriter);
+		return classWriter.toByteArray();
 	}
 
 	/**
@@ -35,7 +43,7 @@ public class Main {
 	private static String manipulateSource(String path, String source) {
 		// TODO: IMPLEMENT.
 		System.out.println("SOURCE: " + path);
-		return source;
+		return PrePatcher.patchSource(source, path);
 	}
 
 
