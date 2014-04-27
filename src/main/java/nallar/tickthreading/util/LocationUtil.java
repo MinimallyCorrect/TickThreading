@@ -60,7 +60,7 @@ public enum LocationUtil {
 			int numDirsUp = baseIsFile ? base.length - commonIndex - 1 : base.length - commonIndex;
 
 			for (int i = 0; i < numDirsUp; i++) {
-				relative.append("..").append(pathSeparator);
+				relative.append("").append(pathSeparator);
 			}
 		}
 		relative.append(normalizedTargetPath.substring(common.length()));

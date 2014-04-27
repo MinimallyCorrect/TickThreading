@@ -42,10 +42,13 @@ Thumbs.db
 .classpath
 .project
 .settings
+.gradle
+gradle/gradle-wrapper.properties
 MANIFEST.MF
 *.iml
 .idea
 build
+eclipse
 out/
 dist
 nbproject
