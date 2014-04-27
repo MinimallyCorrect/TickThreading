@@ -47,45 +47,4 @@ processResources
             }
         }
 
-// binary ASM stuff
-/*
-task injectASM(type: Zip) {
-    // just gonna edit the jar in-place
-    from deobfBinJar.project.tasks.deobfBinJar.getOutDirtyJar()
-
-    // deobfBinJar is the task that deobfuscates the jar after its been binPatched
-    // we want the same output so whatever depends on this file still works.
-    archivePath = project.tasks.deobfBinJar.getOutDirtyJar()
-
-    eachFile { details -> // http://www.gradle.org/docs/current/javadoc/org/gradle/api/file/FileCopyDetails.html
-        if (details.isDirectory())
-            return; // skip  yes, return. This is a closure, not a loop.
-        String path = details.getRelativePath()
-        byte[] bytes = details.file.bytes
-
-        // have fun
-
-        details.file.bytes = bytes;
-    }
-
-    dependsOn "deobfBinJar"
-}
-
-// make sure this happens, since IIRC deobfBinJar is the last task in the process
-project.tasks.setupCIWorkspace.dependsOn "injectAsm"
-project.tasks.setupDevWorkspace.dependsOn "injectAsm"
-
-// Source stuff
-
-project.tasks.extractMinecraftSrc.doLast { task -> // yes, we are just tacking on functionality to the task.
-    String rootPath = task.destinationDir.getCanonicalPath()
-    task.destinationDir.eachFileRecurse(FileType.FILES) { file ->
-        String relPath = file.getCanonicalPath().subString(rootPath.length() + 1)
-        String text = file.text
-
-        // have fun
-
-        file.text = text
-    }
-}
-*/
+apply from "prepatcher.gradle"
