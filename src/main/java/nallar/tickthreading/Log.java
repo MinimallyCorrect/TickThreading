@@ -20,7 +20,7 @@ public class Log {
 	public static final Logger LOGGER = Logger.getLogger("TickThreading");
 	public static final boolean debug = System.getProperty("tickthreading.debug") != null;
 	public static final Level DEBUG = new Level("DEBUG", Level.SEVERE.intValue(), null) {
-		// Inner class as constructors are protected.
+		// Inner class as Level's constructor is protected, so that user log levels will be of their own class.
 	};
 	private static Handler handler;
 	@SuppressWarnings("UseOfArchaicSystemPropertyAccessors") // Need a default value.

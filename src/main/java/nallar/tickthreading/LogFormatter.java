@@ -48,6 +48,8 @@ public class LogFormatter extends Formatter {
 			}
 		}
 
+		// Avoid cases where console spam could run for days and days eating all your disk space, for example the
+		// infamous IC2 energy net warning spam.
 		if ((writtenSize += formattedMessage.length()) > (1024 * 1024 * 50)) { // 50MB
 			writtenSize = Integer.MIN_VALUE;
 			Log.disableDiskWriting("No more log messages will be recorded to disk, exceeded 50MB log size.");

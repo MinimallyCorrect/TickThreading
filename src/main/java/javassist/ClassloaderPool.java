@@ -5,6 +5,10 @@ import net.minecraft.launchwrapper.LaunchClassLoader;
 
 import java.io.*;
 
+/**
+ * This is in the javassist package (which isn't sealed) to access package-local javassist internals needed to load
+ * from the classloader at runtime for patching purposes.
+ */
 public class ClassloaderPool extends ClassPool {
 	@Override
 	protected void cacheCtClass(String className, CtClass c, boolean dynamic) {

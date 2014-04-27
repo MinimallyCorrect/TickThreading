@@ -3,6 +3,11 @@ package nallar.tickthreading.global;
 import java.util.*;
 
 @SuppressWarnings("UnusedDeclaration")
+/**
+ * A small utility class containing fields with ThreadLocals to be used in patched mod classes.
+ * Also has utility inner classes with correct initialValues for ThreadLocals, as inner classes with patch XML
+ * are a pain
+ */
 public class ThreadLocals {
 	public static final ThreadLocal eligibleChunksForSpawning = new HashMapThreadLocal();
 	public static final ThreadLocal factorizationFindLightAirParentToVisit = new HashSetThreadLocal();
