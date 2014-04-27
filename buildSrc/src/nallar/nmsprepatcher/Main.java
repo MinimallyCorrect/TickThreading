@@ -1,5 +1,9 @@
 package nallar.nmsprepatcher;
 
+import com.google.common.base.Charsets;
+import com.google.common.collect.Maps;
+import com.google.common.io.ByteStreams;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -8,10 +12,6 @@ import java.util.Map.Entry;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
-
-import com.google.common.base.Charsets;
-import com.google.common.collect.Maps;
-import com.google.common.io.ByteStreams;
 
 public class Main {
 	public static void main(String[] args) {
@@ -58,28 +58,24 @@ public class Main {
         JarEntry entry;
         while ((entry = istream.getNextJarEntry()) != null)
         {
+			byte[] classBytes = ByteStreams.toByteArray(istream);
             if (entry.getName().endsWith( source ? ".java" : ".class"))
             {
                 // PARSING
-                
-                byte[] array = ByteStreams.toByteArray(istream);
                 String name = entry.getName().replace('\\', '/');
                 
                 if (source)
                 {
-                    String str = new String(array, Charsets.UTF_8);
+                    String str = new String(classBytes, Charsets.UTF_8);
                     str = manipulateSource(name, str);
-                    array = str.getBytes(Charsets.UTF_8);
+                    classBytes = str.getBytes(Charsets.UTF_8);
                 }
                 else
                 {
-                    array = manipulateBinary(name, array);
+                    classBytes = manipulateBinary(name, classBytes);
                 }
             }
-            else
-            {   
-                stuff.put(entry.getName(), ByteStreams.toByteArray(istream));
-            }
+            stuff.put(entry.getName(), classBytes);
             
             istream.closeEntry();
         }
