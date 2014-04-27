@@ -43,7 +43,7 @@ Thumbs.db
 .project
 .settings
 .gradle
-gradle/gradle-wrapper.properties
+gradle/wrapper/gradle-wrapper.properties
 MANIFEST.MF
 *.iml
 .idea

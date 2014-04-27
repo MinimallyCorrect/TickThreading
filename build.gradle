@@ -49,25 +49,20 @@ processResources
     from(sourceSets.main.resources.srcDirs) { exclude 'mcmod.info' }
 }
 
-inputs_ = {
+def prepatchInputs = {
     // Prepatching must run if either patch code is updated,
     // or the prepatching code is updated.
     inputs.dir file("src/main/java/nallar/patched")
     inputs.dir file("buildSrc/src")
 }
-deobfBinJar inputs_
-/*
-Not sure which tasks to set the inputs for - TODO
-applyBinPatches inputs_
-compileApiJava inputs_
-*/
-
 
 project.tasks.deobfBinJar.setDirty()  // just added this. run with --refresh-dependencies
 
 import nallar.nmsprepatcher.Main;  // used later to call the main stuff.
 
 afterEvaluate {
+    deobfBinJar prepatchInputs
+    decompile prepatchInputs
     project.tasks.deobfBinJar.doLast { task ->
         Main.editJar(task.getOutDirtyJar(), false)
     }
