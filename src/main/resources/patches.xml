@@ -61,10 +61,12 @@
 		<class id="net.minecraft.network.NetServerHandler">
 			<addAll fromClass="nallar.patched.network.PatchNetServerHandler"/>
 			<replaceMethodCall method="warning"
-												 code="{ nallar.tickthreading.global.Redirects.notifyAdmins($1); }"
-							>handleFlying
+							   code="{ nallar.tickthreading.global.Redirects.notifyAdmins($1); }"
+					>handleFlying
 			</replaceMethodCall>
-			<insertBefore code="if (nallar.tickthreading.global.Redirects.interceptPacket($1, this)) { return; }">sendPacketToPlayer</insertBefore>
+			<insertBefore code="if (nallar.tickthreading.global.Redirects.interceptPacket($1, this)) { return; }">
+				sendPacketToPlayer
+			</insertBefore>
 		</class>
 		<class id="net.minecraft.network.NetServerHandler" env="mcpc">
 			<insertAfter code="handleTeleport($1.getX(), $1.getY(), $1.getZ());">teleport</insertAfter>
@@ -83,7 +85,10 @@
 		<class id="net.minecraft.network.packet.Packet51MapChunk">
 			<volatile field="chunkData"/>
 			<addAll fromClass="nallar.patched.network.PatchPacket51MapChunk"/>
-			<threadLocal field="temp" type="byte[]" threadLocalField="nallar.tickthreading.global.ThreadLocals.mapChunkTempByteArray">getMapChunkData</threadLocal>
+			<threadLocal field="temp" type="byte[]"
+						 threadLocalField="nallar.tickthreading.global.ThreadLocals.mapChunkTempByteArray">
+				getMapChunkData
+			</threadLocal>
 			<synchronize field="$1">getMapChunkData</synchronize>
 		</class>
 		<class id="net.minecraft.network.packet.Packet56MapChunks">
@@ -117,7 +122,8 @@
 			<removeMethod>forceChunk,unforceChunk</removeMethod>
 		</class>
 		<class id="net.minecraft.world.ChunkCache">
-			<replaceMethodCall code="$_ = $0.getChunkIfExists($$);" method="^class:World^.^method:World/getChunkFromChunkCoords^"/>
+			<replaceMethodCall code="$_ = $0.getChunkIfExists($$);"
+							   method="^class:World^.^method:World/getChunkFromChunkCoords^"/>
 		</class>
 		<class id="net.minecraft.world.NextTickListEntry">
 			<newField static="" field="nextEntryID_" class="java.util.concurrent.atomic.AtomicLong"/>
@@ -180,11 +186,15 @@
 			<replaceInitializer field="instance" code="$_ = null;"/>
 			<replaceMethod code="throw new UnsupportedOperationException();">tick</replaceMethod>
 			<disable>adjustPoolSize</disable>
-			<replaceMethod code="((^class:ChunkProviderServer^)$1.^method:World/getChunkProvider^()).getChunkAt($2, $3, true, false, null);">waitForChunkLoad</replaceMethod>
+			<replaceMethod
+					code="((^class:ChunkProviderServer^)$1.^method:World/getChunkProvider^()).getChunkAt($2, $3, true, false, null);">
+				waitForChunkLoad
+			</replaceMethod>
 			<replaceMethod code="$3.getChunkAt($4, $5, true, false, $6);">queueChunkLoad</replaceMethod>
 		</class>
 		<class id="net.minecraft.world.gen.ChunkProviderServer" env="mcpc">
-			<changeFieldType field="chunksToUnload" type="org.bukkit.craftbukkit.v1_5_R3.util.LongHashSet" remove="true"/>
+			<changeFieldType field="chunksToUnload" type="org.bukkit.craftbukkit.v1_5_R3.util.LongHashSet"
+							 remove="true"/>
 			<insertAfter field="chunksToUnload" code="$field = new org.bukkit.craftbukkit.v1_5_R3.util.LongHashSet();"/>
 		</class>
 		<class id="net.minecraft.world.chunk.NibbleArray" env="forge">
@@ -291,7 +301,8 @@
 			<final field="rand"/>
 			<newField static="" field="nextEntityID_" class="java.util.concurrent.atomic.AtomicInteger"/>
 			<insertAfter field="entityId" code="this.$field = this.nextEntityID_.getAndIncrement();"/>
-			<insertBefore code="if ($1 == 0 &amp;&amp; $2 == 0 &amp;&amp; $3 == 0) { return; }">moveEntity</insertBefore>
+			<insertBefore code="if ($1 == 0 &amp;&amp; $2 == 0 &amp;&amp; $3 == 0) { return; }">moveEntity
+			</insertBefore>
 		</class>
 		<class id="net.minecraft.entity.EntityLiving">
 			<addAll fromClass="nallar.patched.entity.PatchEntityLiving"/>
@@ -310,10 +321,13 @@
 			<addAll fromClass="nallar.patched.PatchTileEntity"/>
 		</class>
 		<class id="net.minecraft.entity.EntityTrackerEntry" env="mcpc">
-			<removeUntilOpcode index="-2" opcode="ATHROW">tryStartWachingThis,removePlayerFromTracker</removeUntilOpcode>
+			<removeUntilOpcode index="-2" opcode="ATHROW">tryStartWachingThis,removePlayerFromTracker
+			</removeUntilOpcode>
 		</class>
 		<class id="net.minecraft.entity.EntityTracker" env="mcpc">
-			<removeUntilOpcode index="-2" opcode="ATHROW">removeEntityFromAllTrackingPlayers,addEntityToTracker(Lnet/minecraft/entity/Entity;IIZ)V</removeUntilOpcode>
+			<removeUntilOpcode index="-2" opcode="ATHROW">
+				removeEntityFromAllTrackingPlayers,addEntityToTracker(Lnet/minecraft/entity/Entity;IIZ)V
+			</removeUntilOpcode>
 		</class>
 		<class id="net.minecraft.entity.EntityTracker">
 			<!-- Yet more comodification exceptions -->
@@ -321,7 +335,9 @@
 			<newField field="readWriteLock" class="nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock"/>
 			<newField field="writeLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>
 			<newField field="readLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.readLock();"/>
-			<lock field="writeLock">addEntityToTracker(Lnet/minecraft/entity/Entity;)V,addEntityToTracker(Lnet/minecraft/entity/Entity;IIZ)V,removeEntityFromAllTrackingPlayers</lock>
+			<lock field="writeLock">
+				addEntityToTracker(Lnet/minecraft/entity/Entity;)V,addEntityToTracker(Lnet/minecraft/entity/Entity;IIZ)V,removeEntityFromAllTrackingPlayers
+			</lock>
 			<lock field="readLock">updateTrackedEntities,removeAllTrackingPlayers,func_85172_a</lock>
 		</class>
 		<class id="net.minecraft.village.Village">
@@ -342,15 +358,22 @@
 		<class id="net.minecraft.server.management.ServerConfigurationManager">
 			<addAll fromClass="nallar.patched.server.PatchServerConfigurationManager"/>
 			<newField field="readWriteLock" class="nallar.tickthreading.util.concurrent.TwoWayReentrantReadWriteLock"/>
-			<newField field="playersUpdateLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.writeLock();"/>
-			<newField field="playerUpdateLock" class="java.util.concurrent.locks.Lock" code="this.readWriteLock.readLock();"/>
+			<newField field="playersUpdateLock" class="java.util.concurrent.locks.Lock"
+					  code="this.readWriteLock.writeLock();"/>
+			<newField field="playerUpdateLock" class="java.util.concurrent.locks.Lock"
+					  code="this.readWriteLock.readLock();"/>
 			<lock field="playerUpdateLock">createPlayerForUser,sendPacketToAllPlayers,sendPlayerInfoToAllPlayers</lock>
-			<lock field="playerUpdateLock">sendPacketToAllPlayersInDimension,getPlayerListAsString,getAllUsernames,getPlayerForUsername,findPlayers,sendToAllNearExcept</lock>
+			<lock field="playerUpdateLock">
+				sendPacketToAllPlayersInDimension,getPlayerListAsString,getAllUsernames,getPlayerForUsername,findPlayers,sendToAllNearExcept
+			</lock>
 			<lock field="playerUpdateLock">saveAllPlayerData,getPlayerList</lock>
 			<replaceInitializer field="playerEntityList" class="nallar.collections.LockArrayList"/>
-			<insertAfter code="((nallar.collections.LockArrayList)^field:ServerConfigurationManager/playerEntityList^).lock = playersUpdateLock;"/>
+			<insertAfter
+					code="((nallar.collections.LockArrayList)^field:ServerConfigurationManager/playerEntityList^).lock = playersUpdateLock;"/>
 			<synchronize field="$1.playerNetServerHandler">respawnPlayer</synchronize>
-			<synchronize field="$1.^field:EntityPlayerMP/playerNetServerHandler^">transferPlayerToDimension(L^class:EntityPlayerMP^;IL^class:Teleporter^;)V</synchronize>
+			<synchronize field="$1.^field:EntityPlayerMP/playerNetServerHandler^">
+				transferPlayerToDimension(L^class:EntityPlayerMP^;IL^class:Teleporter^;)V
+			</synchronize>
 		</class>
 		<class id="net.minecraft.server.management.ServerConfigurationManager" env="forge">
 			<addAll fromClass="nallar.patched.server.PatchServerConfigurationManagerForge"/>
@@ -364,7 +387,8 @@
 			<profile>updatePlayerInstances</profile>
 		</class>
 		<class id="net.minecraft.server.management.PlayerInstance" env="forge">
-			<replaceMethodCall method="^class:ChunkProviderServer^.^method:ChunkProviderServer/loadChunk^" code="{ $_ = null; }"/>
+			<replaceMethodCall method="^class:ChunkProviderServer^.^method:ChunkProviderServer/loadChunk^"
+							   code="{ $_ = null; }"/>
 		</class>
 		<class id="net.minecraft.server.management.PlayerInstance">
 			<replaceInitializer field="playersInChunk" code="$_ = Collections.synchronizedList(new ArrayList());"/>
@@ -381,8 +405,12 @@
 			<noFinal field="chunkZPos"/>
 		</class>
 		<class id="net.minecraft.world.Teleporter">
-			<replaceMethodCall newMethod="getTEWithLoad" method="^class:WorldServer^.^method:World/getBlockTileEntity^">^all^</replaceMethodCall>
-			<replaceMethodCall newMethod="getBlockIdWithLoad" method="^class:WorldServer^.^method:World/getBlockId^">^all^</replaceMethodCall>
+			<replaceMethodCall newMethod="getTEWithLoad" method="^class:WorldServer^.^method:World/getBlockTileEntity^">
+				^all^
+			</replaceMethodCall>
+			<replaceMethodCall newMethod="getBlockIdWithLoad" method="^class:WorldServer^.^method:World/getBlockId^">
+				^all^
+			</replaceMethodCall>
 		</class>
 		<class id="net.minecraft.crash.CrashReport">
 			<addAll fromClass="nallar.patched.server.PatchCrashReport"/>
@@ -399,8 +427,8 @@
 				See https://issues.jboss.org/browse/JASSIST-197
 			-->
 			<replaceMethodCall
-							code="if (((org.bukkit.craftbukkit.v1_5_R3.CraftWorld) ((org.bukkit.event.block.BlockEvent) $1).getBlock().getWorld()).getHandle().safeToGenerate()) { $0.callEvent($$); }"
-							method="callEvent">updateTick
+					code="if (((org.bukkit.craftbukkit.v1_5_R3.CraftWorld) ((org.bukkit.event.block.BlockEvent) $1).getBlock().getWorld()).getHandle().safeToGenerate()) { $0.callEvent($$); }"
+					method="callEvent">updateTick
 			</replaceMethodCall>
 		</class>
 		<class id="net.minecraft.network.TcpConnection">
@@ -468,13 +496,20 @@
 	</forge>
 	<bukkit>
 		<class id="org.bukkit.plugin.SimplePluginManager">
-			<synchronize>subscribeToPermission,unsubscribeFromPermission,subscribeToDefaultPerms,unsubscribeFromDefaultPerms,getPermissionSubscriptions,getDefaultPermSubscriptions</synchronize>
+			<synchronize>
+				subscribeToPermission,unsubscribeFromPermission,subscribeToDefaultPerms,unsubscribeFromDefaultPerms,getPermissionSubscriptions,getDefaultPermSubscriptions
+			</synchronize>
 			<replaceMethod code="{ fireEvent($$); }">callEvent</replaceMethod>
 		</class>
 		<class id="org.bukkit.craftbukkit.v1_5_R3.CraftServer">
-			<replaceMethodCall method="registerDimension" code="{ }">createWorld(Lorg.bukkit.WorldCreator;)Lorg.bukkit.World;</replaceMethodCall>
-			<replaceMethodCall method="addMVDimension" code="{ }">createWorld(Lorg.bukkit.WorldCreator;)Lorg.bukkit.World;</replaceMethodCall>
-			<ignoreExceptions code="System.err.println(&quot;Loading world failed&quot; + $e); $e.printStackTrace(); throw new java.lang.Error($e);">
+			<replaceMethodCall method="registerDimension" code="{ }">
+				createWorld(Lorg.bukkit.WorldCreator;)Lorg.bukkit.World;
+			</replaceMethodCall>
+			<replaceMethodCall method="addMVDimension" code="{ }">
+				createWorld(Lorg.bukkit.WorldCreator;)Lorg.bukkit.World;
+			</replaceMethodCall>
+			<ignoreExceptions
+					code="System.err.println(&quot;Loading world failed&quot; + $e); $e.printStackTrace(); throw new java.lang.Error($e);">
 				createWorld(Lorg.bukkit.WorldCreator;)Lorg.bukkit.World;
 			</ignoreExceptions>
 			<replaceMethod code="{
@@ -488,7 +523,7 @@
 		<class id="org.bukkit.craftbukkit.v1_5_R3.CraftWorld">
 			<removeUntilOpcode index="-2" opcode="ATHROW">unloadChunkRequest,unloadChunk,loadChunk</removeUntilOpcode>
 			<replaceMethod
-							code=" {
+					code=" {
 							Object[] chunks = world.getChunks();
 							org.bukkit.Chunk[] craftChunks = new org.bukkit.Chunk[chunks.length];
 							for (int i = 0; i &lt; craftChunks.length; i++) {
@@ -496,20 +531,23 @@
 							}
 							return craftChunks;
 							} "
-							>getLoadedChunks
+					>getLoadedChunks
 			</replaceMethod>
-			<replaceFieldUsage class="^class:WorldServer^" field="^field:World/loadedEntityList^" readCode="$_ = world.getEntities();">
+			<replaceFieldUsage class="^class:WorldServer^" field="^field:World/loadedEntityList^"
+							   readCode="$_ = world.getEntities();">
 				getLivingEntities,getEntities,getEntitiesByClass(Ljava.lang.Class;)Ljava.util.Collection;,getEntitiesByClasses
 			</replaceFieldUsage>
-			<replaceFieldUsage class="^class:WorldServer^" field="^field:World/loadedEntityList^" readCode="$_ = world.getPlayerEntities();">getPlayers</replaceFieldUsage>
+			<replaceFieldUsage class="^class:WorldServer^" field="^field:World/loadedEntityList^"
+							   readCode="$_ = world.getPlayerEntities();">getPlayers
+			</replaceFieldUsage>
 			<replaceMethod
-							code=" {
+					code=" {
 								return world.^field:WorldServer/theChunkProviderServer^.getChunkAt($1, $2, $3, null) != null;
 							} "
-							>loadChunk(IIZ)Z
+					>loadChunk(IIZ)Z
 			</replaceMethod>
 			<replaceMethod
-							code=" {
+					code=" {
 								if ($4 &amp;&amp; isChunkInUse($1, $2)) {
 										return false;
 								}
@@ -518,19 +556,21 @@
 
 								return true;
 							} "
-							>unloadChunk(IIZZ)Z
+					>unloadChunk(IIZZ)Z
 			</replaceMethod>
 			<replaceMethod
-							code=" {
+					code=" {
 								world.^field:WorldServer/theChunkProviderServer^.regenerateChunk($1, $2);
 
 								refreshChunk($1, $2);
 
 								return true;
 							} "
-							>regenerateChunk
+					>regenerateChunk
 			</replaceMethod>
-			<replaceMethod code="throw new UnsupportedOperationException(&quot;Not threadsafe.&quot;);">chunkLoadPostProcess</replaceMethod>
+			<replaceMethod code="throw new UnsupportedOperationException(&quot;Not threadsafe.&quot;);">
+				chunkLoadPostProcess
+			</replaceMethod>
 			<disable>processChunkGC</disable>
 		</class>
 	</bukkit>
@@ -652,9 +692,13 @@
 			<synchronize>addReflector</synchronize>
 		</class>
 		<class id="factorization.common.TileEntityWrathLamp">
-			<replaceInitializer field="airToUpdate" class="nallar.collections.SynchronizedPriorityQueue">^static^</replaceInitializer>
-			<threadLocal field="toVisit" type="java.util.HashSet" threadLocalField="nallar.tickthreading.global.ThreadLocals.factorizationFindLightAirParentToVisit"/>
-			<replaceMethodCall code="$_ = $0.getChunkFromBlockCoordsIfExists($$);" method="^class:World^.^method:World/getChunkFromBlockCoords^">findLightAirParent</replaceMethodCall>
+			<replaceInitializer field="airToUpdate" class="nallar.collections.SynchronizedPriorityQueue">^static^
+			</replaceInitializer>
+			<threadLocal field="toVisit" type="java.util.HashSet"
+						 threadLocalField="nallar.tickthreading.global.ThreadLocals.factorizationFindLightAirParentToVisit"/>
+			<replaceMethodCall code="$_ = $0.getChunkFromBlockCoordsIfExists($$);"
+							   method="^class:World^.^method:World/getChunkFromBlockCoords^">findLightAirParent
+			</replaceMethodCall>
 		</class>
 		<class id="factorization.api.Charge">
 			<newField field="staticLock" class="java.lang.Object" static=""/>
@@ -698,8 +742,12 @@
 	</buildCraftEnergy>
 	<buildCraftFactory>
 		<class id="buildcraft.BuildCraftFactory$QuarryChunkloadCallback">
-			<replaceMethodCall newMethod="getTEWithLoad" method="^class:World^.^method:World/getBlockTileEntity^">ticketsLoaded(Ljava.util.List;L^class:World^;)V</replaceMethodCall>
-			<replaceMethodCall newMethod="getBlockIdWithLoad" method="^class:World^.^method:World/getBlockId^">ticketsLoaded(Ljava.util.List;L^class:World^;I)Ljava.util.List;</replaceMethodCall>
+			<replaceMethodCall newMethod="getTEWithLoad" method="^class:World^.^method:World/getBlockTileEntity^">
+				ticketsLoaded(Ljava.util.List;L^class:World^;)V
+			</replaceMethodCall>
+			<replaceMethodCall newMethod="getBlockIdWithLoad" method="^class:World^.^method:World/getBlockId^">
+				ticketsLoaded(Ljava.util.List;L^class:World^;I)Ljava.util.List;
+			</replaceMethodCall>
 		</class>
 		<class id="buildcraft.factory.TilePump">
 			<replaceInitializer field="blocksToPump" class="nallar.collections.TreeMapHashMap"/>
@@ -750,7 +798,9 @@
 			<synchronize field="tickLock">updateGridIfNull</synchronize>
 		</class>
 		<class id="thermalexpansion.block.conduit.GridLiquid">
-			<synchronize>transferLiquid,removeNode,removeConduit,setNewGrid,changeMode,increaseTracker,addNode,addConduit</synchronize>
+			<synchronize>
+				transferLiquid,removeNode,removeConduit,setNewGrid,changeMode,increaseTracker,addNode,addConduit
+			</synchronize>
 			<replaceMethod code="{
 				int n = this.conduitList.size() + this.outputList.size() + this.inputList.size();
 				if (n &lt; 1) {
@@ -762,7 +812,9 @@
 			</replaceMethod>
 		</class>
 		<class id="thermalexpansion.block.conduit.GridEnergy">
-			<synchronize>transferEnergy,removeNode,removeConduit,setNewGrid,changeMode,increaseTracker,addNode,addConduit</synchronize>
+			<synchronize>
+				transferEnergy,removeNode,removeConduit,setNewGrid,changeMode,increaseTracker,addNode,addConduit
+			</synchronize>
 		</class>
 	</thermalExpansionTransport>
 	<thremalExpansionFactory>
@@ -805,7 +857,9 @@
 			<synchronize>doExplosion</synchronize>
 		</class>
 		<class id="ic2.core.block.wiring.TileEntityElectricBlock">
-			<replaceMethodCall method="self.^method:TileEntity/onInventoryChanged^" code="{ }">^method:TileEntity/updateEntity^</replaceMethodCall>
+			<replaceMethodCall method="self.^method:TileEntity/onInventoryChanged^" code="{ }">
+				^method:TileEntity/updateEntity^
+			</replaceMethodCall>
 		</class>
 		<class id="ic2.core.network.NetworkManager">
 			<replaceMethod code="{
@@ -840,7 +894,9 @@
 			<synchronize>readIDSUData,writeIDSUData</synchronize>
 		</class>
 		<class id="gregtechmod.common.tileentities.GT_TileEntityMetaID_Machine">
-			<replaceMethodCall method="self.^method:TileEntity/onInventoryChanged^" code="{ }">^method:TileEntity/updateEntity^</replaceMethodCall>
+			<replaceMethodCall method="self.^method:TileEntity/onInventoryChanged^" code="{ }">
+				^method:TileEntity/updateEntity^
+			</replaceMethodCall>
 		</class>
 		<class id="gregtechmod.common.tileentities.GT_TileEntity_IDSU">
 			<replaceMethodCall method="remove" code="{ $_ = null; }">setEnergyVar</replaceMethodCall>
@@ -850,8 +906,14 @@
 			<final field="VERSION"/>
 		</class>
 		<class id="gregtechmod.api.metatileentity.BaseMetaTileEntity">
-			<replaceFieldUsage field="mAverageEUInputIndex" writeCode="mAverageEUInputIndex = $1 >= mAverageEUInput.length ? 0 : $1;">^method:TileEntity/updateEntity^</replaceFieldUsage>
-			<replaceFieldUsage field="mAverageEUOutputIndex" writeCode="mAverageEUOutputIndex = $1 >= mAverageEUOutput.length ? 0 : $1;">^method:TileEntity/updateEntity^</replaceFieldUsage>
+			<replaceFieldUsage field="mAverageEUInputIndex"
+							   writeCode="mAverageEUInputIndex = $1 >= mAverageEUInput.length ? 0 : $1;">
+				^method:TileEntity/updateEntity^
+			</replaceFieldUsage>
+			<replaceFieldUsage field="mAverageEUOutputIndex"
+							   writeCode="mAverageEUOutputIndex = $1 >= mAverageEUOutput.length ? 0 : $1;">
+				^method:TileEntity/updateEntity^
+			</replaceFieldUsage>
 			<replaceMethod code="{
 				gregtechmod.api.metatileentity.MetaTileEntity m = mMetaTileEntity;
 				return m != null &amp;&amp; m.getBaseMetaTileEntity() == this;
@@ -907,11 +969,17 @@
       	revivePlayerLoaders();
 			}
 			"/>
-			<replaceMethodCall newMethod="getTEWithLoad" method="^class:World^.^method:World/getBlockTileEntity^">^all^</replaceMethodCall>
-			<replaceMethodCall newMethod="getBlockIdWithLoad" method="^class:World^.^method:World/getBlockId^">^all^</replaceMethodCall>
+			<replaceMethodCall newMethod="getTEWithLoad" method="^class:World^.^method:World/getBlockTileEntity^">
+				^all^
+			</replaceMethodCall>
+			<replaceMethodCall newMethod="getBlockIdWithLoad" method="^class:World^.^method:World/getBlockId^">^all^
+			</replaceMethodCall>
 		</class>
 		<class id="codechicken.chunkloader.ChunkLoaderEventHandler">
-			<replaceMethod code="return java.util.EnumSet.of(cpw.mods.fml.common.TickType.SERVER, cpw.mods.fml.common.TickType.WORLD);">ticks</replaceMethod>
+			<replaceMethod
+					code="return java.util.EnumSet.of(cpw.mods.fml.common.TickType.SERVER, cpw.mods.fml.common.TickType.WORLD);">
+				ticks
+			</replaceMethod>
 			<replaceMethod code="{
 			if($1.contains(cpw.mods.fml.common.TickType.SERVER)) {
 			   codechicken.chunkloader.ChunkLoaderManager.serverTick();
@@ -1071,8 +1139,11 @@
 			<synchronize field="$1.b.g">calculateChunkChanges</synchronize>
 		</class>
 		<class id="codechicken.chunkloader.ChunkLoaderManager$ChunkLoaderOrganiser">
-			<replaceMethodCall newMethod="getTEWithLoad" method="^class:World^.^method:World/getBlockTileEntity^">^all^</replaceMethodCall>
-			<replaceMethodCall newMethod="getBlockIdWithLoad" method="^class:World^.^method:World/getBlockId^">^all^</replaceMethodCall>
+			<replaceMethodCall newMethod="getTEWithLoad" method="^class:World^.^method:World/getBlockTileEntity^">
+				^all^
+			</replaceMethodCall>
+			<replaceMethodCall newMethod="getBlockIdWithLoad" method="^class:World^.^method:World/getBlockId^">^all^
+			</replaceMethodCall>
 			<synchronize>revive(L^class:World^;)V,devive,revive()V,load,save</synchronize>
 			<replaceInitializer field="dormantLoaders" class="nallar.collections.CHashMap"/>
 			<replaceInitializer field="forcedChunksByChunk" class="nallar.collections.CHashMap"/>
@@ -1123,7 +1194,9 @@
 			<synchronize>tickStart</synchronize>
 		</class>
 		<class id="ee.lutsu.alpha.mc.mytown.MyTownDatasource">
-			<synchronize field="$1.intern()">getOrMakeResident(Ljava.lang.String;)Lee.lutsu.alpha.mc.mytown.entities.Resident;</synchronize>
+			<synchronize field="$1.intern()">
+				getOrMakeResident(Ljava.lang.String;)Lee.lutsu.alpha.mc.mytown.entities.Resident;
+			</synchronize>
 		</class>
 	</myTown>
 	<extraBiomesXL>
@@ -1390,11 +1463,14 @@
 			<replaceInitializer field="tags" class="nallar.collections.CHashMap"/>
 		</class>
 		<class id="thaumcraft.common.aura.AuraManager">
-			<replaceNew oldClass="java.util.LinkedList" newClass="nallar.collections.ConcurrentLinkedQueueList">registerAuraNode,addToAuraUpdateList</replaceNew>
+			<replaceNew oldClass="java.util.LinkedList" newClass="nallar.collections.ConcurrentLinkedQueueList">
+				registerAuraNode,addToAuraUpdateList
+			</replaceNew>
 			<synchronize>registerAuraNode</synchronize>
 		</class>
 		<class id="thaumcraft.common.lib.WorldTicker">
-			<newField code="nallar.tickthreading.util.contextaccess.ContextAccess.$" class="nallar.tickthreading.util.contextaccess.ContextAccess" field="context" static="true"/>
+			<newField code="nallar.tickthreading.util.contextaccess.ContextAccess.$"
+					  class="nallar.tickthreading.util.contextaccess.ContextAccess" field="context" static="true"/>
 			<insertBefore code="{
 				if (context.runningUnder(thaumcraft.common.lib.WorldTicker.class)) {
 					return;
@@ -1464,10 +1540,14 @@
 		</class>
 		<class id="thaumcraft.common.tiles.TileMarker">
 			<replaceInitializer field="markers" class="nallar.collections.CHashMap">^static^</replaceInitializer>
-			<replaceInitializer field="markedForDeletion" class="nallar.collections.ArrayListReplaceIterateTempListClear">^static^</replaceInitializer>
+			<replaceInitializer field="markedForDeletion"
+								class="nallar.collections.ArrayListReplaceIterateTempListClear">^static^
+			</replaceInitializer>
 		</class>
 		<class id="thaumcraft.common.tiles.TileSensor">
-			<replaceMethod code="((ArrayList) noteBlockEvents.get($1)).addAll($1.getNoteBlockEvents());">getNoteBlockEvents</replaceMethod>
+			<replaceMethod code="((ArrayList) noteBlockEvents.get($1)).addAll($1.getNoteBlockEvents());">
+				getNoteBlockEvents
+			</replaceMethod>
 		</class>
 	</thaumcraft>
 	<appliedEnergistics>
@@ -1503,7 +1583,8 @@
 			<newField class="java.util.ArrayList" code="new ArrayList();" field="tiles"/>
 			<synchronize field="$1">requestUpdate</synchronize>
 			<rename name="requestUpdate_">requestUpdate</rename>
-			<newField field="updateQueue" class="java.util.concurrent.ConcurrentLinkedQueue" code="new java.util.concurrent.ConcurrentLinkedQueue()"/>
+			<newField field="updateQueue" class="java.util.concurrent.ConcurrentLinkedQueue"
+					  code="new java.util.concurrent.ConcurrentLinkedQueue()"/>
 			<newMethod code="public void requestUpdate(appeng.api.me.tiles.IGridTileEntity tt) {
 				if (tt instanceof appeng.me.tile.TileInterfaceBase) {
 					updateQueue.add(tt);
@@ -1556,7 +1637,8 @@
 			<synchronize>^all^</synchronize>
 		</class>
 		<class id="appeng.common.grid.MEGridEvents">
-			<replaceInitializer field="requests" class="nallar.collections.ConcurrentQueueList">^static^</replaceInitializer>
+			<replaceInitializer field="requests" class="nallar.collections.ConcurrentQueueList">^static^
+			</replaceInitializer>
 		</class>
 		<class id="
 			appeng.me.tile.TileWireless
@@ -1578,7 +1660,9 @@
 			appeng.me.tile.TileAssembler
 		">
 			<newMethod code="public void updateTileEntity() { }" ignoreDuplicate=""/>
-			<renameInterfaceMethod name="tickNetwork" interface="appeng.api.me.tiles.IGridMachine" allowMissing="">updateTileEntity</renameInterfaceMethod>
+			<renameInterfaceMethod name="tickNetwork" interface="appeng.api.me.tiles.IGridMachine" allowMissing="">
+				updateTileEntity
+			</renameInterfaceMethod>
 			<newMethod code="private Object getNetworkLock() {
 				Object o = getGrid();
 				if (o instanceof appeng.api.TileRef) {
@@ -1603,20 +1687,28 @@
 		<class id="icbm.api.RadarRegistry">
 			<replaceMethod code="detectableEntities.remove($1);">unregister(L^class:Entity^;)V</replaceMethod>
 			<replaceMethod code="detectableTileEntities.remove($1);">unregister(L^class:TileEntity^;)V</replaceMethod>
-			<replaceMethodCall code="$_ = $0.getTEWithoutLoad($$);" method="^class:World^.^method:World/getBlockTileEntity^">cleanUpArray</replaceMethodCall>
+			<replaceMethodCall code="$_ = $0.getTEWithoutLoad($$);"
+							   method="^class:World^.^method:World/getBlockTileEntity^">cleanUpArray
+			</replaceMethodCall>
 			<synchronize>
 				cleanUpArray,getEntitiesWithinRadius,getTileEntitiesInArea,unregister(L^class:Entity^;)V,unregister(L^class:TileEntity^;)V,register(L^class:Entity^;)V,register(L^class:TileEntity^;)V
 			</synchronize>
-			<insertBefore code="if (!Thread.holdsLock(icbm.api.RadarRegistry.class)) { throw new UnsupportedOperationException(&quot;Not threadsafe.&quot;); }">getEntities,getTileEntities</insertBefore>
+			<insertBefore
+					code="if (!Thread.holdsLock(icbm.api.RadarRegistry.class)) { throw new UnsupportedOperationException(&quot;Not threadsafe.&quot;); }">
+				getEntities,getTileEntities
+			</insertBefore>
 		</class>
 	</icbm>
 	<forestry>
 		<class id="forestry.apiculture.gadgets.TileAlvearyPlain">
-			<replaceInitializer field="modifiers" code="$_ = java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap());"/>
-			<replaceInitializer field="eventHandlers" code="$_ = java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap());"/>
+			<replaceInitializer field="modifiers"
+								code="$_ = java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap());"/>
+			<replaceInitializer field="eventHandlers"
+								code="$_ = java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap());"/>
 		</class>
 		<class id="forestry.core.utils.Localization">
-			<newField class="nallar.collections.PartiallySynchronizedMap" code="new nallar.collections.PartiallySynchronizedMap()" field="map" static=""/>
+			<newField class="nallar.collections.PartiallySynchronizedMap"
+					  code="new nallar.collections.PartiallySynchronizedMap()" field="map" static=""/>
 			<final>mappings,defaultMappings</final>
 			<synchronize field="forestry.core.utils.Localization.class">load</synchronize>
 			<insertAfter code="{
@@ -1668,7 +1760,8 @@
 			<replaceMethodCall method="error" code="{ }">registerInGlobalList</replaceMethodCall>
 		</class>
 		<class id="org.millenaire.common.MillWorld">
-			<replaceMethod code="{ return (org.millenaire.common.Building) this.buildings.get($1);	}">getBuilding</replaceMethod>
+			<replaceMethod code="{ return (org.millenaire.common.Building) this.buildings.get($1);	}">getBuilding
+			</replaceMethod>
 		</class>
 		<class id="org.millenaire.common.Point">
 			<replaceMethod code="{
@@ -1779,17 +1872,21 @@
 	</mekanism>
 	<magicBees>
 		<class id="magicbees.world.WorldTicker">
-			<replaceNew oldClass="java.util.LinkedList" newClass="nallar.collections.ConcurrentLinkedQueueList">queueChunkCoords</replaceNew>
+			<replaceNew oldClass="java.util.LinkedList" newClass="nallar.collections.ConcurrentLinkedQueueList">
+				queueChunkCoords
+			</replaceNew>
 		</class>
 	</magicBees>
 	<tagApi>
 		<class id="org.kitteh.tag.TagAPI">
-			<replaceMethodCall method="equals" code="$_ = true;" index="0">getName,check,handlePacket</replaceMethodCall>
+			<replaceMethodCall method="equals" code="$_ = true;" index="0">getName,check,handlePacket
+			</replaceMethodCall>
 		</class>
 	</tagApi>
 	<dimensionalDoors>
 		<class id="StevenDimDoors.mod_pocketDim.CommonTickHandler">
-			<replaceFieldUsage field="hasGrownRifts" writeCode="if ($0 != null) { $proceed($$); }">onTickInGame</replaceFieldUsage>
+			<replaceFieldUsage field="hasGrownRifts" writeCode="if ($0 != null) { $proceed($$); }">onTickInGame
+			</replaceFieldUsage>
 		</class>
 	</dimensionalDoors>
 	<mobHats>
@@ -1801,7 +1898,9 @@
 				}
 			}">worldTick
 			</insertBefore>
-			<replaceMethodCall method="^class:EntityLiving^.^method:Entity/isEntityAlive^" code="$_ = $0.^method:Entity/isEntityAlive^() &amp;&amp; $0.chunk != null;">worldTick</replaceMethodCall>
+			<replaceMethodCall method="^class:EntityLiving^.^method:Entity/isEntityAlive^"
+							   code="$_ = $0.^method:Entity/isEntityAlive^() &amp;&amp; $0.chunk != null;">worldTick
+			</replaceMethodCall>
 		</class>
 	</mobHats>
 </mods>
