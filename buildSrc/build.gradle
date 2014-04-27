@@ -1,0 +1,16 @@
+apply plugin: "java"
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	compile 'org.javassist:javassist:3.18.1-GA'
+	compile 'com.google.guava:guava:17.0'
+	// any other libs you want here
+}
+
+sourceSets {
+	main.java.srcDir "src"
+	main.resources.srcDir "res"
+}

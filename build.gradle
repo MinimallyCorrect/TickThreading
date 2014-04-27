@@ -10,9 +10,7 @@ buildscript {
             url = "https://oss.sonatype.org/content/repositories/snapshots/"
         }
     }
-    dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:1.0-SNAPSHOT'
-    }
+    dependencies { classpath 'net.minecraftforge.gradle:ForgeGradle:1.0-SNAPSHOT' }
 }
 
 apply plugin: 'forge'
@@ -28,23 +26,32 @@ minecraft {
 }
 
 processResources
-        {
-            // this will ensure that this task is redone when the versions change.
-            inputs.property "version", project.version
-            inputs.property "mcversion", project.minecraft.version
+{
+    // this will ensure that this task is redone when the versions change.
+    inputs.property "version", project.version
+    inputs.property "mcversion", project.minecraft.version
 
-            // replace stuff in mcmod.info, nothing else
-            from(sourceSets.main.resources.srcDirs) {
-                include 'mcmod.info'
+    // replace stuff in mcmod.info, nothing else
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
 
-                // replace version and mcversion
-                expand 'version':project.version, 'mcversion':project.minecraft.version
-            }
+        // replace version and mcversion
+        expand 'version':project.version, 'mcversion':project.minecraft.version
+    }
 
-            // copy everything else, thats not the mcmod.info
-            from(sourceSets.main.resources.srcDirs) {
-                exclude 'mcmod.info'
-            }
-        }
+    // copy everything else, thats not the mcmod.info
+    from(sourceSets.main.resources.srcDirs) { exclude 'mcmod.info' }
+}
 
-apply from "prepatcher.gradle"
+project.tasks.deobfBinJar.setDirty()  // just added this. run with --refresh-dependencies
+
+import nallar.nmsprepatcher.Main;  // used later to call the main stuff.
+
+afterEvaluate {
+    project.tasks.deobfBinJar.doLast { task ->
+        Main.editJar(task.getOutDirtyJar(), false)
+    }
+    project.tasks.doForgePatches.doLast { task ->
+        Main.editJar(task.getOutJar(), true)
+    }
+}
