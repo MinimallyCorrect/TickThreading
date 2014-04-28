@@ -1,6 +1,7 @@
 package nallar.nmsprepatcher;
 
 import com.google.common.base.Charsets;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 import com.google.common.io.ByteStreams;
 
@@ -12,10 +13,16 @@ import java.util.jar.*;
 public class Main {
 	/**
 	 * Called to load patches from a given directory
+	 *
 	 * @param patchDirectory patch directory
 	 */
 	public static void loadPatches(File patchDirectory) {
-		PrePatcher.loadPatches(patchDirectory);
+		try {
+			PrePatcher.loadPatches(patchDirectory);
+		} catch (Throwable t) {
+			t.printStackTrace();
+			Throwables.propagate(t);
+		}
 	}
 
 	/**

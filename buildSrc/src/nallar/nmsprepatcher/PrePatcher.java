@@ -1,9 +1,8 @@
 package nallar.nmsprepatcher;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.dom.AST;
-import org.eclipse.jdt.core.dom.ASTParser;
+import com.google.common.collect.Lists;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
@@ -24,20 +23,22 @@ class PrePatcher {
 	private static final Pattern extendsPattern = Pattern.compile("^public.*?\\s+?extends\\s+?([\\S^<]+?)(?:<(\\S+)>)?[\\s]+?(?:implements [^}]+?)?\\{", Pattern.MULTILINE);
 	private static final Pattern genericMethodPattern = Pattern.compile("@Generic\\s+?(public\\s+?(\\S*?)?\\s+?(\\S*?)\\s*?\\S+?\\s*?\\()[^\\{]*\\)\\s*?\\{", Pattern.DOTALL | Pattern.MULTILINE);
 	private static final Pattern declareMethodPattern = Pattern.compile("@Declare\\s+?(public\\s+?(?:(?:synchronized|static) )*(\\S*?)?\\s+?(\\S*?)\\s*?\\S+?\\s*?\\([^\\{]*\\)\\s*?\\{)", Pattern.DOTALL | Pattern.MULTILINE);
-	private static final Pattern declareVariablePattern = Pattern.compile("@Declare\\s+?(public [^;\r\n]+?)_?( = [^;\r\n]+?)?;", Pattern.DOTALL | Pattern.MULTILINE);
-	private static final Pattern packageVariablePattern = Pattern.compile("\n    ? ?([^ ]+  ? ?[^ ]+);");
+	private static final Pattern declareFieldPattern = Pattern.compile("@Declare\\s+?(public [^;\r\n]+?)_?( = [^;\r\n]+?)?;", Pattern.DOTALL | Pattern.MULTILINE);
+	private static final Pattern packageFieldPattern = Pattern.compile("\n    ? ?([^ ]+  ? ?[^ ]+);");
 	private static final Pattern innerClassPattern = Pattern.compile("[^\n]public (?:static )?class ([^ \n]+)[ \n]", Pattern.MULTILINE);
-	private static final Map<String, String> patchClasses = new HashMap<String, String>();
+	private static final Splitter spaceSplitter = Splitter.on(' ').omitEmptyStrings();
+	private static final Splitter commaSplitter = Splitter.on(',').omitEmptyStrings().trimResults();
+	private static final Map<String, PatchInfo> patchClasses = new HashMap<String, PatchInfo>();
 	private static final Map<String, String> generics = new HashMap<String, String>();
 
 	public static void loadPatches(File patchDirectory) {
-		recursiveSearch(patchDirectory, patchClasses, generics);
+		recursiveSearch(patchDirectory);
 	}
-	
-	private static void recursiveSearch(File patchDirectory, Map<String, String> patchClasses, Map<String, String> generics) {
+
+	private static void recursiveSearch(File patchDirectory) {
 		for (File file : patchDirectory.listFiles()) {
 			if (!file.getName().equals("annotation") && file.isDirectory()) {
-				recursiveSearch(file, patchClasses, generics);
+				recursiveSearch(file);
 				continue;
 			}
 			if (!file.getName().endsWith(".java")) {
@@ -71,50 +72,65 @@ class PrePatcher {
 				generics.put(className, generic);
 			}
 			addPatches(className, contents);
-			String current = patchClasses.get(className);
-			patchClasses.put(className, (current == null ? "" : current) + contents);
 			log.warning("Loaded patch for " + className);
 		}
 	}
 
+	//private static final Pattern methodInfoPattern = Pattern.compile("(?:(public|private|protected) )?(static )?(?:([^ ]+?) )([^\\( ]+?) ?\\((.*?)\\) ?\\{", Pattern.DOTALL);
+	private static final Pattern methodInfoPattern = Pattern.compile("^(.+) ?\\(([^\\(]*)\\) ?\\{", Pattern.DOTALL);
+
 	private static void addPatches(String className, String contents) {
-		/*ASTParser astParser = ASTParser.newParser(AST.JLS4);
-		Map options = JavaCore.getOptions();
-		JavaCore.setComplianceOptions(JavaCore.VERSION_1_7, options);
-		astParser.setCompilerOptions(options);*/
-		//astParser.
-	}
-
-	private static class MethodInfo {
-		public String name;
-		public List<String> parameterTypes = new ArrayList<String>();
-		public String returnType;
-	}
-
-	private static class PatchInfo {
-		List<MethodInfo> methods = new ArrayList<MethodInfo>();
-		Map<String, String> variablesAndTypes = new Hashtable<String, String>();
-
-	}
-
-	private static String patchForClass(String className) {
-		return patchClasses.get(className.replace("/", ".").replace(".java", "").replace(".class", ""));
-	}
-
-	public static String patchSource(String inputSource, String inputClassName) {
-		String contents = patchForClass(inputClassName);
-		if (contents == null) {
-			return inputSource;
+		PatchInfo patchInfo = patchClasses.get(className);
+		if (patchInfo == null) {
+			patchInfo = new PatchInfo();
+			patchClasses.put(className, patchInfo);
 		}
-		log.warning("Prepatching source for " + inputClassName);
-		inputSource = inputSource.trim().replace("\t", "    ");
-		String shortClassName = inputClassName;
+		String shortClassName = className;
 		shortClassName = shortClassName.substring(shortClassName.lastIndexOf('/') + 1);
 		shortClassName = shortClassName.substring(0, shortClassName.indexOf('.'));
-		StringBuilder sourceBuilder = new StringBuilder(inputSource.substring(0, inputSource.lastIndexOf('}'))).append("\n//PREPATCH\n");
+		patchInfo.shortClassName = shortClassName;
 		Matcher matcher = declareMethodPattern.matcher(contents);
 		while (matcher.find()) {
-			String type = matcher.group(2);
+			Matcher methodInfoMatcher = methodInfoPattern.matcher(matcher.group(1));
+
+			if (!methodInfoMatcher.find()) {
+				log.warning("Failed to match method info matcher to method declaration " + matcher.group(1));
+				continue;
+			}
+
+
+			MethodInfo methodInfo = new MethodInfo();
+			patchInfo.methods.add(methodInfo);
+
+			String accessAndNameString = methodInfoMatcher.group(1);
+			String paramString = methodInfoMatcher.group(2);
+
+			for (String parameter : commaSplitter.split(paramString)) {
+				String parameterType = spaceSplitter.split(parameter).iterator().next();
+				methodInfo.parameterTypes.add(parameterType);
+			}
+
+			LinkedList<String> accessAndNames = Lists.newLinkedList(spaceSplitter.split(accessAndNameString));
+
+			methodInfo.name = accessAndNames.removeLast();
+			String type = methodInfo.returnType = accessAndNames.removeLast();
+
+			while (!accessAndNames.isEmpty()) {
+				String thing = accessAndNames.removeLast();
+				if (thing.equals("static")) {
+					methodInfo.static_ = true;
+				} else if (thing.equals("synchronized")) {
+					methodInfo.synchronized_ = true;
+				} else {
+					if (methodInfo.access != null) {
+						log.warning("overwriting access from " + methodInfo.access + " -> " + thing + " in " + matcher.group(1));
+					}
+					methodInfo.access = thing;
+				}
+			}
+
+			//methodInfo.parameterTypes.add();
+
 			String ret = "null";
 			if ("static".equals(type)) {
 				type = matcher.group(3);
@@ -132,15 +148,105 @@ class PrePatcher {
 			} else if ("double".equals(type)) {
 				ret = "0.0";
 			}
-			String decl = matcher.group(1) + "return " + ret + ";}";
-			if (sourceBuilder.indexOf(decl) == -1) {
-				sourceBuilder.append(decl).append('\n');
+			methodInfo.javaCode = matcher.group(1) + "return " + ret + ";}";
+			log.warning(methodInfo.toString());
+		}
+		Matcher FieldMatcher = declareFieldPattern.matcher(contents);
+		while (FieldMatcher.find()) {
+			String var = FieldMatcher.group(1);
+			FieldInfo FieldInfo = new FieldInfo();
+			patchInfo.Fields.add(FieldInfo);
+			LinkedList<String> typeAndName = Lists.newLinkedList(spaceSplitter.split(var));
+
+			FieldInfo.name = typeAndName.removeLast();
+			FieldInfo.type = typeAndName.removeLast();
+
+			while (!typeAndName.isEmpty()) {
+				String thing = typeAndName.removeLast();
+				if (thing.equals("static")) {
+					FieldInfo.static_ = true;
+				} else if (thing.equals("volatile")) {
+					FieldInfo.volatile_ = true;
+				} else {
+					if (FieldInfo.access != null) {
+						log.severe("overwriting access from " + FieldInfo.access + " -> " + thing + " in " + var);
+					}
+					FieldInfo.access = thing;
+				}
+			}
+			FieldInfo.javaCode = var;
+			log.warning(FieldInfo.toString());
+		}
+		String generic = generics.get(className);
+		Matcher genericMatcher = genericMethodPattern.matcher(contents);
+		while (genericMatcher.find()) {
+			String original = genericMatcher.group(1);
+			String withoutGenerics = original.replace(' ' + generic + ' ', " Object ");
+			log.warning(original + " -> " + withoutGenerics);
+		}
+		if (contents.contains("\n@Public")) {
+			patchInfo.makeAllPublic = true;
+		}
+	}
+
+	private static class MethodInfo {
+		public String name;
+		public List<String> parameterTypes = new ArrayList<String>();
+		public String returnType;
+		public String access;
+		public boolean static_;
+		public boolean synchronized_;
+		public String javaCode;
+
+		private static final Joiner parameterJoiner = Joiner.on(", ");
+
+		public String toString() {
+			return "method: " + access + ' ' + (static_ ? "static " : "") + (synchronized_ ? "synchronized " : "") + returnType + ' ' + name + " (" + parameterJoiner.join(parameterTypes) + ')';
+		}
+	}
+
+	private static class FieldInfo {
+		public String name;
+		public String type;
+		public String access;
+		public boolean static_;
+		public boolean volatile_;
+		public String javaCode;
+
+		public String toString() {
+			return "field: " + access + ' ' + (static_ ? "static " : "") + (volatile_ ? "volatile " : "") + type + ' ' + name;
+		}
+	}
+
+	private static class PatchInfo {
+		List<MethodInfo> methods = new ArrayList<MethodInfo>();
+		List<FieldInfo> Fields = new ArrayList<FieldInfo>();
+		boolean makeAllPublic = false;
+		String shortClassName;
+	}
+
+	private static PatchInfo patchForClass(String className) {
+		return patchClasses.get(className.replace("/", ".").replace(".java", "").replace(".class", ""));
+	}
+
+	public static String patchSource(String inputSource, String inputClassName) {
+		PatchInfo patchInfo = patchForClass(inputClassName);
+		if (patchInfo == null) {
+			return inputSource;
+		}
+		log.warning("Prepatching source for " + inputClassName);
+		inputSource = inputSource.trim().replace("\t", "    ");
+		String shortClassName = patchInfo.shortClassName;
+		StringBuilder sourceBuilder = new StringBuilder(inputSource.substring(0, inputSource.lastIndexOf('}'))).append("\n//PREPATCH\n");
+		for (MethodInfo methodInfo : patchInfo.methods) {
+			if (sourceBuilder.indexOf(methodInfo.javaCode) == -1) {
+				sourceBuilder.append(methodInfo.javaCode).append('\n');
 			}
 		}
-		Matcher variableMatcher = declareVariablePattern.matcher(contents);
-		while (variableMatcher.find()) {
-			String var = variableMatcher.group(1);
-			sourceBuilder.append(var.replace(" final ", " ")).append(";\n");
+		for (FieldInfo FieldInfo : patchInfo.Fields) {
+			if (sourceBuilder.indexOf(FieldInfo.javaCode) == -1) {
+				sourceBuilder.append(FieldInfo.javaCode).append('\n');
+			}
 		}
 		sourceBuilder.append("\n}");
 		inputSource = sourceBuilder.toString();
@@ -148,7 +254,7 @@ class PrePatcher {
 		if (generic != null) {
 			inputSource = inputSource.replaceAll("class " + shortClassName + "(<[^>]>)?", "class " + shortClassName + '<' + generic + '>');
 		}
-		Matcher genericMatcher = genericMethodPattern.matcher(contents);
+		/*Matcher genericMatcher = genericMethodPattern.matcher(contents);
 		while (genericMatcher.find()) {
 			String original = genericMatcher.group(1);
 			String withoutGenerics = original.replace(' ' + generic + ' ', " Object ");
@@ -159,7 +265,7 @@ class PrePatcher {
 			int endIndex = inputSource.indexOf("\n    }", index);
 			String body = inputSource.substring(index, endIndex);
 			inputSource = inputSource.replace(body, body.replace(withoutGenerics, original).replace("return ", "return (" + generic + ") "));
-		}
+		}*/
 		inputSource = inputSource.replace("\nfinal ", " ");
 		inputSource = inputSource.replace(" final ", " ");
 		inputSource = inputSource.replace("\nclass", "\npublic class");
@@ -168,11 +274,11 @@ class PrePatcher {
 		inputSource = inputSource.replace("private class", "public class");
 		inputSource = inputSource.replace("protected class", "public class");
 		inputSource = privatePattern.matcher(inputSource).replaceAll("$1protected");
-		if (contents.contains("\n@Public")) {
+		if (patchInfo.makeAllPublic) {
 			inputSource = inputSource.replace("protected ", "public ");
 		}
 		inputSource = inputSource.replace("protected void save(", "public void save(");
-		Matcher packageMatcher = packageVariablePattern.matcher(inputSource);
+		Matcher packageMatcher = packageFieldPattern.matcher(inputSource);
 		StringBuffer sb = new StringBuffer();
 		while (packageMatcher.find()) {
 			packageMatcher.appendReplacement(sb, "\n    public " + packageMatcher.group(1) + ';');
@@ -188,16 +294,11 @@ class PrePatcher {
 	}
 
 	public static byte[] patchCode(byte[] inputCode, String inputClassName) {
-		String contents = patchForClass(inputClassName);
-		if (contents == null) {
+		PatchInfo patchInfo = patchForClass(inputClassName);
+		if (patchInfo == null) {
 			return inputCode;
 		}
-		ASTParser astParser = ASTParser.newParser(AST.JLS3);
 		log.warning("Prepatching code for " + inputClassName);
-		String shortClassName = inputClassName;
-		shortClassName = shortClassName.substring(shortClassName.lastIndexOf('/') + 1);
-		shortClassName = shortClassName.substring(0, shortClassName.indexOf('.'));
-
 		ClassReader classReader = new ClassReader(inputCode);
 		ClassNode classNode = new ClassNode();
 		classReader.accept(classNode, 0);
@@ -208,84 +309,6 @@ class PrePatcher {
 		ClassWriter classWriter = new ClassWriter(classReader, 0);
 		classNode.accept(classWriter);
 		return classWriter.toByteArray();
-		/*
-		int previousIndex = inputSource.indexOf("\n//PREPATCH\n");
-		int cutIndex = previousIndex == -1 ? inputSource.lastIndexOf('}') : previousIndex;
-		StringBuilder sourceBuilder = new StringBuilder(inputSource.substring(0, cutIndex)).append("\n//PREPATCH\n");
-		Matcher matcher = declareMethodPattern.matcher(contents);
-		while (matcher.find()) {
-			String type = matcher.group(2);
-			String ret = "null";
-			if ("static".equals(type)) {
-				type = matcher.group(3);
-			}
-			if ("boolean".equals(type)) {
-				ret = "false";
-			} else if ("void".equals(type)) {
-				ret = "";
-			} else if ("long".equals(type)) {
-				ret = "0L";
-			} else if ("int".equals(type)) {
-				ret = "0";
-			} else if ("float".equals(type)) {
-				ret = "0f";
-			} else if ("double".equals(type)) {
-				ret = "0.0";
-			}
-			String decl = matcher.group(1) + "return " + ret + ";}";
-			if (sourceBuilder.indexOf(decl) == -1) {
-				sourceBuilder.append(decl).append('\n');
-			}
-		}
-		Matcher variableMatcher = declareVariablePattern.matcher(contents);
-		while (variableMatcher.find()) {
-			String var = variableMatcher.group(1);
-			sourceBuilder.append(var.replace(" final ", " ")).append(";\n");
-		}
-		sourceBuilder.append("\n}");
-		inputSource = sourceBuilder.toString();
-		String generic = generics.get(inputClassName);
-		if (generic != null) {
-			inputSource = inputSource.replaceAll("class " + shortClassName + "(<[^>]>)?", "class " + shortClassName + '<' + generic + '>');
-		}
-		Matcher genericMatcher = genericMethodPattern.matcher(contents);
-		while (genericMatcher.find()) {
-			String original = genericMatcher.group(1);
-			String withoutGenerics = original.replace(' ' + generic + ' ', " Object ");
-			int index = inputSource.indexOf(withoutGenerics);
-			if (index == -1) {
-				continue;
-			}
-			int endIndex = inputSource.indexOf("\n    }", index);
-			String body = inputSource.substring(index, endIndex);
-			inputSource = inputSource.replace(body, body.replace(withoutGenerics, original).replace("return ", "return (" + generic + ") "));
-		}
-		inputSource = inputSource.replace("\nfinal ", " ");
-		inputSource = inputSource.replace(" final ", " ");
-		inputSource = inputSource.replace("\nclass", "\npublic class");
-		inputSource = inputSource.replace("\n    " + shortClassName, "\n    public " + shortClassName);
-		inputSource = inputSource.replace("\n    protected " + shortClassName, "\n    public " + shortClassName);
-		inputSource = inputSource.replace("private class", "public class");
-		inputSource = inputSource.replace("protected class", "public class");
-		inputSource = privatePattern.matcher(inputSource).replaceAll("$1protected");
-		if (contents.contains("\n@Public")) {
-			inputSource = inputSource.replace("protected ", "public ");
-		}
-		inputSource = inputSource.replace("protected void save(", "public void save(");
-		Matcher packageMatcher = packageVariablePattern.matcher(inputSource);
-		StringBuffer sb = new StringBuffer();
-		while (packageMatcher.find()) {
-			packageMatcher.appendReplacement(sb, "\n    public " + packageMatcher.group(1) + ';');
-		}
-		packageMatcher.appendTail(sb);
-		inputSource = sb.toString();
-		Matcher innerClassMatcher = innerClassPattern.matcher(inputSource);
-		while (innerClassMatcher.find()) {
-			String name = innerClassMatcher.group(1);
-			inputSource = inputSource.replace("    " + name + '(', "    public " + name + '(');
-		}
-		*/
-		//return inputCode;
 	}
 
 	private static String readFile(File file) {
