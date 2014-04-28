@@ -2,13 +2,27 @@ apply plugin: "java"
 
 repositories {
     mavenCentral()
+    maven {
+        name = "eclipse"
+        url = "https://repo.eclipse.org/content/groups/eclipse/"
+    }
 }
 
 dependencies {
-    compile 'org.javassist:javassist:3.18.1-GA'
     compile 'com.google.guava:guava:17.0'
     compile "org.ow2.asm:asm-all:4.0"
-    // any other libs you want here
+
+    // I can't handle all these imports! Thanks eclipse...
+    compile 'org.eclipse.core:contenttype:3.4.200-v20130326-1255'
+    compile 'org.eclipse.core:jobs:3.5.300-v20130429-1813'
+    compile 'org.eclipse.core:runtime:3.9.0-v20130326-1255'
+    compile 'org.eclipse.core:resources:3.2.1-R32x_v20060914'
+    compile 'org.eclipse:osgi:3.9.1-v20130814-1242'
+    compile 'org.eclipse.text:org.eclipse.text:3.5.101'
+    compile 'org.eclipse.equinox:common:3.6.200-v20130402-1505'
+    compile 'org.eclipse.equinox:preferences:3.5.100-v20130422-1538'
+
+    compile 'org.eclipse.jdt:org.eclipse.jdt.core:3.10.0.v20131029-1755'
 }
 
 sourceSets {

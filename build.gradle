@@ -17,7 +17,7 @@ apply plugin: 'forge'
 
 sourceCompatibility = JavaVersion.VERSION_1_6
 version = "1.6.4.${System.env.BUILD_NUMBER}"
-group= "nallar.tickthreading" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+group = "nallar.tickthreading" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "TickThreading"
 
 minecraft {
@@ -27,12 +27,11 @@ minecraft {
 
 compileJava {
     options.compilerArgs << '-XDignore.symbol.file' // Kills the warnings about using the sun.* classes
-	options.fork = true
+    options.fork = true
     options.forkOptions.executable = 'javac'
 }
 
-processResources
-{
+processResources {
     // this will ensure that this task is redone when the versions change.
     inputs.property "version", project.version
     inputs.property "mcversion", project.minecraft.version
@@ -42,7 +41,7 @@ processResources
         include 'mcmod.info'
 
         // replace version and mcversion
-        expand 'version':project.version, 'mcversion':project.minecraft.version
+        expand 'version': project.version, 'mcversion': project.minecraft.version
     }
 
     // copy everything else, thats not the mcmod.info
@@ -55,15 +54,22 @@ def prepatchInputs = {
     inputs.dir file("src/main/java/nallar/patched")
     inputs.dir file("buildSrc/src")
 }
+applyBinPatches prepatchInputs
+deobfuscateJar prepatchInputs
 deobfBinJar prepatchInputs
 
 project.tasks.deobfBinJar.setDirty()  // just added this. run with --refresh-dependencies
 
-import nallar.nmsprepatcher.Main;  // used later to call the main stuff.
+import nallar.nmsprepatcher.Main;
+
+// used later to call the main stuff.
 
 afterEvaluate {
+    applyBinPatches prepatchInputs
+    deobfuscateJar prepatchInputs
     deobfBinJar prepatchInputs
     decompile prepatchInputs
+    addFmlSources prepatchInputs
     doForgePatches prepatchInputs
     Main.loadPatches(file("src/main/java/nallar/patched"))
     project.tasks.deobfBinJar.doLast { task ->
