@@ -8,6 +8,8 @@ repositories {
     }
 }
 
+sourceCompatibility = JavaVersion.VERSION_1_7
+
 dependencies {
     compile 'com.google.guava:guava:17.0'
     compile "org.ow2.asm:asm-all:4.0"

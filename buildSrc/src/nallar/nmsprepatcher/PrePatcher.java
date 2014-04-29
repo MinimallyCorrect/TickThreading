@@ -27,10 +27,10 @@ class PrePatcher {
 	private static final Pattern declareFieldPattern = Pattern.compile("@Declare\\s+?(public [^;\r\n]+?)_?( = [^;\r\n]+?)?;", Pattern.DOTALL | Pattern.MULTILINE);
 	private static final Pattern packageFieldPattern = Pattern.compile("\n    ? ?([^ ]+  ? ?[^ ]+);");
 	private static final Pattern innerClassPattern = Pattern.compile("[^\n]public (?:static )?class ([^ \n]+)[ \n]", Pattern.MULTILINE);
+	private static final Pattern importPattern = Pattern.compile("\nimport ([^;]+?);", Pattern.MULTILINE | Pattern.DOTALL);
 	private static final Splitter spaceSplitter = Splitter.on(' ').omitEmptyStrings();
 	private static final Splitter commaSplitter = Splitter.on(',').omitEmptyStrings().trimResults();
 	private static final Map<String, PatchInfo> patchClasses = new HashMap<String, PatchInfo>();
-	private static final Map<String, String> generics = new HashMap<String, String>();
 
 	public static void loadPatches(File patchDirectory) {
 		recursiveSearch(patchDirectory);
@@ -45,50 +45,51 @@ class PrePatcher {
 			if (!file.getName().endsWith(".java")) {
 				continue;
 			}
-			String contents = readFile(file);
-			if (contents == null) {
-				log.log(Level.SEVERE, "Failed to read " + file);
-				continue;
-			}
-			Matcher extendsMatcher = extendsPattern.matcher(contents);
-			if (!extendsMatcher.find()) {
-				if (contents.contains(" extends")) {
-					log.warning("Didn't match extends matcher for " + file);
-				}
-				continue;
-			}
-			String shortClassName = extendsMatcher.group(1);
-			String className = null;
-			for (String line : Splitter.on('\n').split(contents)) {
-				if (line.endsWith('.' + shortClassName + ';')) {
-					className = line.substring(7, line.length() - 1);
-				}
-			}
-			if (className == null) {
-				log.warning("Unable to find class " + shortClassName + " for " + file);
-				continue;
-			}
-			String generic = extendsMatcher.group(2);
-			if (generic != null) {
-				generics.put(className, generic);
-			}
-			addPatches(className, contents);
-			log.warning("Loaded patch for " + className);
+			addPatches(file);
 		}
 	}
 
 	//private static final Pattern methodInfoPattern = Pattern.compile("(?:(public|private|protected) )?(static )?(?:([^ ]+?) )([^\\( ]+?) ?\\((.*?)\\) ?\\{", Pattern.DOTALL);
 	private static final Pattern methodInfoPattern = Pattern.compile("^(.+) ?\\(([^\\(]*)\\) ?\\{", Pattern.DOTALL);
 
-	private static void addPatches(String className, String contents) {
+	// TODO - clean up this method. It works, but it's hardly pretty...
+	private static void addPatches(File file) {
+		String contents = readFile(file);
+		if (contents == null) {
+			log.log(Level.SEVERE, "Failed to read " + file);
+			return;
+		}
+		Matcher extendsMatcher = extendsPattern.matcher(contents);
+		if (!extendsMatcher.find()) {
+			if (contents.contains(" extends")) {
+				log.warning("Didn't match extends matcher for " + file);
+			}
+			return;
+		}
+		String shortClassName = extendsMatcher.group(1);
+		String className = null;
+		Matcher importMatcher = importPattern.matcher(contents);
+		List<String> imports = new ArrayList<String>();
+		while (importMatcher.find()) {
+			imports.add(importMatcher.group(1));
+			//log.severe(importMatcher.group(1));
+		}
+		for (String import_ : imports) {
+			if (import_.endsWith('.' + shortClassName)) {
+				className = import_;
+			}
+		}
+		if (className == null) {
+			log.warning("Unable to find class " + shortClassName + " for " + file);
+			return;
+		}
+		String generic = extendsMatcher.group(2);
 		PatchInfo patchInfo = patchClasses.get(className);
 		if (patchInfo == null) {
 			patchInfo = new PatchInfo();
 			patchClasses.put(className, patchInfo);
 		}
-		String shortClassName = className;
-		shortClassName = shortClassName.substring(shortClassName.lastIndexOf('/') + 1);
-		shortClassName = shortClassName.substring(0, shortClassName.indexOf('.'));
+		patchInfo.genericType = generic;
 		patchInfo.shortClassName = shortClassName;
 		Matcher matcher = declareMethodPattern.matcher(contents);
 		while (matcher.find()) {
@@ -107,14 +108,21 @@ class PrePatcher {
 			String paramString = methodInfoMatcher.group(2);
 
 			for (String parameter : commaSplitter.split(paramString)) {
-				String parameterType = spaceSplitter.split(parameter).iterator().next();
-				methodInfo.parameterTypes.add(parameterType);
+				Iterator<String> iterator = spaceSplitter.split(parameter).iterator();
+				String parameterType = null;
+				while (parameterType == null) {
+					parameterType = iterator.next();
+					if (parameterType.equals("final")) {
+						parameterType = null;
+					}
+				}
+				methodInfo.parameterTypes.add(new Type(parameterType, imports));
 			}
 
 			LinkedList<String> accessAndNames = Lists.newLinkedList(spaceSplitter.split(accessAndNameString));
 
 			methodInfo.name = accessAndNames.removeLast();
-			String type = methodInfo.returnType = accessAndNames.removeLast();
+			String rawType = accessAndNames.removeLast();
 
 			while (!accessAndNames.isEmpty()) {
 				String thing = accessAndNames.removeLast();
@@ -122,6 +130,8 @@ class PrePatcher {
 					methodInfo.static_ = true;
 				} else if (thing.equals("synchronized")) {
 					methodInfo.synchronized_ = true;
+				} else if (thing.equals("final")) {
+					methodInfo.final_ = true;
 				} else {
 					if (methodInfo.access != null) {
 						log.warning("overwriting access from " + methodInfo.access + " -> " + thing + " in " + matcher.group(1));
@@ -130,55 +140,55 @@ class PrePatcher {
 				}
 			}
 
-			//methodInfo.parameterTypes.add();
-
 			String ret = "null";
-			if ("static".equals(type)) {
-				type = matcher.group(3);
+			if ("static".equals(rawType)) {
+				rawType = matcher.group(3);
 			}
-			if ("boolean".equals(type)) {
+			methodInfo.returnType = new Type(rawType, imports);
+			if ("boolean".equals(rawType)) {
 				ret = "false";
-			} else if ("void".equals(type)) {
+			} else if ("void".equals(rawType)) {
 				ret = "";
-			} else if ("long".equals(type)) {
+			} else if ("long".equals(rawType)) {
 				ret = "0L";
-			} else if ("int".equals(type)) {
+			} else if ("int".equals(rawType)) {
 				ret = "0";
-			} else if ("float".equals(type)) {
+			} else if ("float".equals(rawType)) {
 				ret = "0f";
-			} else if ("double".equals(type)) {
+			} else if ("double".equals(rawType)) {
 				ret = "0.0";
 			}
 			methodInfo.javaCode = matcher.group(1) + "return " + ret + ";}";
 			log.warning(methodInfo.toString());
 		}
-		Matcher FieldMatcher = declareFieldPattern.matcher(contents);
-		while (FieldMatcher.find()) {
-			String var = FieldMatcher.group(1);
-			FieldInfo FieldInfo = new FieldInfo();
-			patchInfo.Fields.add(FieldInfo);
+		Matcher fieldMatcher = declareFieldPattern.matcher(contents);
+		while (fieldMatcher.find()) {
+			String var = fieldMatcher.group(1);
+			FieldInfo fieldInfo = new FieldInfo();
+			patchInfo.fields.add(fieldInfo);
 			LinkedList<String> typeAndName = Lists.newLinkedList(spaceSplitter.split(var));
 
-			FieldInfo.name = typeAndName.removeLast();
-			FieldInfo.type = typeAndName.removeLast();
+			fieldInfo.name = typeAndName.removeLast();
+			fieldInfo.type = new Type(typeAndName.removeLast(), imports);
 
 			while (!typeAndName.isEmpty()) {
 				String thing = typeAndName.removeLast();
 				if (thing.equals("static")) {
-					FieldInfo.static_ = true;
+					fieldInfo.static_ = true;
 				} else if (thing.equals("volatile")) {
-					FieldInfo.volatile_ = true;
+					fieldInfo.volatile_ = true;
+				} else if (thing.equals("final")) {
+					fieldInfo.final_ = true;
 				} else {
-					if (FieldInfo.access != null) {
-						log.severe("overwriting access from " + FieldInfo.access + " -> " + thing + " in " + var);
+					if (fieldInfo.access != null) {
+						log.severe("overwriting access from " + fieldInfo.access + " -> " + thing + " in " + var);
 					}
-					FieldInfo.access = thing;
+					fieldInfo.access = thing;
 				}
 			}
-			FieldInfo.javaCode = var + ';';
-			log.warning(FieldInfo.toString());
+			fieldInfo.javaCode = var + ';';
+			log.warning(fieldInfo.toString());
 		}
-		String generic = generics.get(className);
 		Matcher genericMatcher = genericMethodPattern.matcher(contents);
 		while (genericMatcher.find()) {
 			String original = genericMatcher.group(1);
@@ -190,40 +200,223 @@ class PrePatcher {
 		}
 	}
 
+	private static int accessStringToInt(String access) {
+		int a = 0;
+		if (access.isEmpty()) {
+			// package-local
+		} else if (access.equals("public")) {
+			a |= Opcodes.ACC_PUBLIC;
+		} else if (access.equals("protected")) {
+			a |= Opcodes.ACC_PROTECTED;
+		} else if (access.equals("private")) {
+			a |= Opcodes.ACC_PRIVATE;
+		} else {
+			log.severe("Unknown access string " + access);
+		}
+		return a;
+	}
+
+	private static class Type {
+		public final String clazz;
+		public final Type generic;
+
+		public Type(String raw, List<String> imports) {
+			String clazz;
+			if (raw.contains("<")) {
+				String genericRaw = raw.substring(raw.indexOf("<") + 1, raw.length() - 1);
+				clazz = raw.substring(0, raw.indexOf("<"));
+				generic = new Type(genericRaw, imports);
+			} else {
+				clazz = raw;
+				generic = null;
+			}
+			this.clazz = fullyQualifiedName(clazz, imports);
+		}
+
+		private static String[] searchPackages = {
+				"java.lang",
+				"java.util",
+				"java.io",
+		};
+
+		private static String fullyQualifiedName(String original, Collection<String> imports) {
+			if (imports == null || original.contains(".")) {
+				return original;
+			}
+			for (String className : imports) {
+				String shortClassName = className;
+				shortClassName = shortClassName.substring(shortClassName.lastIndexOf('.') + 1);
+				if (shortClassName.equals(original)) {
+					return className;
+				}
+			}
+			for (String package_ : searchPackages) {
+				String packagedName = package_ + "." + original;
+				try {
+					Class.forName(packagedName, false, PrePatcher.class.getClassLoader());
+					return packagedName;
+				} catch (ClassNotFoundException ignored) {
+				}
+			}
+			if (primitiveTypeToDescriptor(original) == null) {
+				log.severe("Failed to find fully qualified name for '" + original + "'.");
+			}
+			return original;
+		}
+
+		private static String primitiveTypeToDescriptor(String primitive) {
+			switch (primitive) {
+				case "byte":
+					return "B";
+				case "char":
+					return "C";
+				case "double":
+					return "D";
+				case "float":
+					return "F";
+				case "int":
+					return "I";
+				case "long":
+					return "J";
+				case "short":
+					return "S";
+				case "void":
+					return "V";
+				case "boolean":
+					return "Z";
+			}
+			return null;
+		}
+
+		public String toString() {
+			return clazz + (generic == null ? "" : '<' + generic.toString() + '>');
+		}
+
+		private String genericSignatureIfNeeded(boolean useGenerics) {
+			if (generic == null || !useGenerics) {
+				return "";
+			}
+			return '<' + generic.signature() + '>';
+		}
+
+		private String javaString(boolean useGenerics) {
+			if (clazz.contains("<") || clazz.contains(">")) {
+				log.severe("Invalid Type " + this + ", contains broken generics info.");
+			} else if (clazz.contains("[") || clazz.contains("]")) {
+				log.severe("Invalid Type " + this + ", contains broken array info.");
+			} else if (clazz.contains(".")) {
+				return "L" + clazz + genericSignatureIfNeeded(useGenerics) + ";";
+			}
+			String primitiveType = primitiveTypeToDescriptor(clazz);
+			if (primitiveType != null) {
+				return primitiveType;
+			}
+			log.severe("Unrecognised Type: " + this.toString());
+			return "Ljava.lang.Object;";
+		}
+
+		public String descriptor() {
+			return javaString(false);
+		}
+
+		public String signature() {
+			return javaString(true);
+		}
+	}
+
 	private static class MethodInfo {
 		public String name;
-		public List<String> parameterTypes = new ArrayList<String>();
-		public String returnType;
+		public List<Type> parameterTypes = new ArrayList<Type>();
+		public Type returnType;
 		public String access;
 		public boolean static_;
 		public boolean synchronized_;
+		public boolean final_;
 		public String javaCode;
 
 		private static final Joiner parameterJoiner = Joiner.on(", ");
 
 		public String toString() {
-			return "method: " + access + ' ' + (static_ ? "static " : "") + (synchronized_ ? "synchronized " : "") + returnType + ' ' + name + " (" + parameterJoiner.join(parameterTypes) + ')';
+			return "method: " + access + ' ' + (static_ ? "static " : "") + (final_ ? "final " : "") + (synchronized_ ? "synchronized " : "") + returnType + ' ' + name + " (" + parameterJoiner.join(parameterTypes) + ')';
+		}
+
+		public int accessAsInt() {
+			int accessInt = 0;
+			if (static_) {
+				accessInt |= Opcodes.ACC_STATIC;
+			}
+			if (synchronized_) {
+				accessInt |= Opcodes.ACC_VOLATILE;
+			}
+			if (final_) {
+				accessInt |= Opcodes.ACC_FINAL;
+			}
+			accessInt |= accessStringToInt(access);
+			return accessInt;
+		}
+
+		public String descriptor() {
+			StringBuilder sb = new StringBuilder();
+			sb
+					.append('(');
+			for (Type type : parameterTypes) {
+				sb.append(type.descriptor());
+			}
+			sb
+					.append(')')
+					.append(returnType.descriptor());
+			return sb.toString();
+		}
+
+		public String signature() {
+			StringBuilder sb = new StringBuilder();
+			sb
+					.append('(');
+			for (Type type : parameterTypes) {
+				sb.append(type.signature());
+			}
+			sb
+					.append(')')
+					.append(returnType.signature());
+			return sb.toString();
 		}
 	}
 
 	private static class FieldInfo {
 		public String name;
-		public String type;
+		public Type type;
 		public String access;
 		public boolean static_;
 		public boolean volatile_;
+		public boolean final_;
 		public String javaCode;
 
 		public String toString() {
 			return "field: " + access + ' ' + (static_ ? "static " : "") + (volatile_ ? "volatile " : "") + type + ' ' + name;
 		}
+
+		public int accessAsInt() {
+			int accessInt = 0;
+			if (static_) {
+				accessInt |= Opcodes.ACC_STATIC;
+			}
+			if (volatile_) {
+				accessInt |= Opcodes.ACC_VOLATILE;
+			}
+			if (final_) {
+				accessInt |= Opcodes.ACC_FINAL;
+			}
+			accessInt |= accessStringToInt(access);
+			return accessInt;
+		}
 	}
 
 	private static class PatchInfo {
 		List<MethodInfo> methods = new ArrayList<MethodInfo>();
-		List<FieldInfo> Fields = new ArrayList<FieldInfo>();
+		List<FieldInfo> fields = new ArrayList<FieldInfo>();
 		boolean makeAllPublic = false;
 		String shortClassName;
+		String genericType;
 	}
 
 	private static PatchInfo patchForClass(String className) {
@@ -245,16 +438,15 @@ class PrePatcher {
 				sourceBuilder.append(methodInfo.javaCode).append('\n');
 			}
 		}
-		for (FieldInfo FieldInfo : patchInfo.Fields) {
+		for (FieldInfo FieldInfo : patchInfo.fields) {
 			if (sourceBuilder.indexOf(FieldInfo.javaCode) == -1) {
 				sourceBuilder.append(FieldInfo.javaCode).append('\n');
 			}
 		}
 		sourceBuilder.append("\n}");
 		inputSource = sourceBuilder.toString();
-		String generic = generics.get(inputClassName);
-		if (generic != null) {
-			inputSource = inputSource.replaceAll("class " + shortClassName + "(<[^>]>)?", "class " + shortClassName + '<' + generic + '>');
+		if (patchInfo.genericType != null) {
+			inputSource = inputSource.replaceAll("class " + shortClassName + "(<[^>]>)?", "class " + shortClassName + '<' + patchInfo.genericType + '>');
 		}
 		/*Matcher genericMatcher = genericMethodPattern.matcher(contents);
 		while (genericMatcher.find()) {
@@ -309,6 +501,7 @@ class PrePatcher {
 
 	/**
 	 * Changes access flags to be protected, unless already public.
+	 *
 	 * @return
 	 */
 	private static int makeAtLeastProtected(int access) {
@@ -343,6 +536,12 @@ class PrePatcher {
 			methodNode.access = methodNode.access & ~Opcodes.ACC_FINAL;
 			methodNode.access = makeAtLeastProtected(methodNode.access);
 		}
+		for (FieldInfo fieldInfo : patchInfo.fields) {
+			classNode.fields.add(new FieldNode(makeAtLeastProtected(fieldInfo.accessAsInt()), fieldInfo.name, fieldInfo.type.descriptor(), fieldInfo.type.signature(), null));
+		}
+		for (MethodInfo methodInfo : patchInfo.methods) {
+			classNode.methods.add(new MethodNode(makeAtLeastProtected(methodInfo.accessAsInt()), methodInfo.name, methodInfo.descriptor(), methodInfo.signature(), null));
+		}
 		ClassWriter classWriter = new ClassWriter(classReader, 0);
 		classNode.accept(classWriter);
 		return classWriter.toByteArray();
@@ -360,14 +559,5 @@ class PrePatcher {
 			}
 		}
 		return null;
-	}
-
-	private static void writeFile(File file, String contents) throws IOException {
-		FileWriter fileWriter = new FileWriter(file);
-		try {
-			fileWriter.write(contents);
-		} finally {
-			fileWriter.close();
-		}
 	}
 }
