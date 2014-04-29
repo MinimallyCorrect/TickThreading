@@ -8,6 +8,7 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
+import org.objectweb.asm.tree.MethodNode;
 
 import java.io.*;
 import java.util.*;
@@ -294,6 +295,36 @@ class PrePatcher {
 		return inputSource.replace("    ", "\t");
 	}
 
+	private static boolean hasFlag(int access, int flag) {
+		return (access & flag) != 0;
+	}
+
+	private static int replaceFlag(int in, int from, int to) {
+		if ((in & from) != 0) {
+			in &= ~from;
+			in |= to;
+		}
+		return in;
+	}
+
+	/**
+	 * Changes access flags to be protected, unless already public.
+	 * @return
+	 */
+	private static int makeAtLeastProtected(int access) {
+		if (hasFlag(access, Opcodes.ACC_PUBLIC) || hasFlag(access, Opcodes.ACC_PROTECTED)) {
+			// already protected or public
+			return access;
+		}
+		if (hasFlag(access, Opcodes.ACC_PRIVATE)) {
+			// private -> protected
+			return replaceFlag(access, Opcodes.ACC_PRIVATE, Opcodes.ACC_PROTECTED);
+		}
+		// not public, protected or private so must be package-local
+		// change to public - protected doesn't include package-local.
+		return access | Opcodes.ACC_PUBLIC;
+	}
+
 	public static byte[] patchCode(byte[] inputCode, String inputClassName) {
 		PatchInfo patchInfo = patchForClass(inputClassName);
 		if (patchInfo == null) {
@@ -306,6 +337,11 @@ class PrePatcher {
 		classNode.access = classNode.access & ~Opcodes.ACC_FINAL;
 		for (FieldNode fieldNode : (Iterable<FieldNode>) classNode.fields) {
 			fieldNode.access = fieldNode.access & ~Opcodes.ACC_FINAL;
+			fieldNode.access = makeAtLeastProtected(fieldNode.access);
+		}
+		for (MethodNode methodNode : (Iterable<MethodNode>) classNode.methods) {
+			methodNode.access = methodNode.access & ~Opcodes.ACC_FINAL;
+			methodNode.access = makeAtLeastProtected(methodNode.access);
 		}
 		ClassWriter classWriter = new ClassWriter(classReader, 0);
 		classNode.accept(classWriter);
