@@ -174,7 +174,7 @@ class PrePatcher {
 					FieldInfo.access = thing;
 				}
 			}
-			FieldInfo.javaCode = var;
+			FieldInfo.javaCode = var + ';';
 			log.warning(FieldInfo.toString());
 		}
 		String generic = generics.get(className);
@@ -237,7 +237,8 @@ class PrePatcher {
 		log.warning("Prepatching source for " + inputClassName);
 		inputSource = inputSource.trim().replace("\t", "    ");
 		String shortClassName = patchInfo.shortClassName;
-		StringBuilder sourceBuilder = new StringBuilder(inputSource.substring(0, inputSource.lastIndexOf('}'))).append("\n//PREPATCH\n");
+		StringBuilder sourceBuilder = new StringBuilder(inputSource.substring(0, inputSource.lastIndexOf('}')))
+				.append("\n// TT Patch Declarations\n");
 		for (MethodInfo methodInfo : patchInfo.methods) {
 			if (sourceBuilder.indexOf(methodInfo.javaCode) == -1) {
 				sourceBuilder.append(methodInfo.javaCode).append('\n');
