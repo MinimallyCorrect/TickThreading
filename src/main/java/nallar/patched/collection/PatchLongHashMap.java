@@ -13,11 +13,11 @@ import java.util.*;
 
 @SuppressWarnings("unchecked")
 @FakeExtend
-public abstract class PatchLongHashMap<V> extends LongHashMap<V> {
+public abstract class PatchLongHashMap extends LongHashMap {
 	private static final long EMPTY_KEY = Long.MIN_VALUE;
 	private static final int BUCKET_SIZE = 8192;
 	private final long[][] keys = new long[BUCKET_SIZE][];
-	private final Object[][] values = new Object[BUCKET_SIZE][];
+	private final java.lang.Object[][] values = new java.lang.Object[BUCKET_SIZE][];
 	private int size;
 
 	@Override
@@ -38,7 +38,7 @@ public abstract class PatchLongHashMap<V> extends LongHashMap<V> {
 
 	@Override
 	@Generic
-	public V getValueByKey(long key) {
+	public Object getValueByKey(long key) {
 		int index = (int) (keyIndex(key) & (BUCKET_SIZE - 1));
 		long[] inner = keys[index];
 		if (inner == null) {
@@ -50,9 +50,9 @@ public abstract class PatchLongHashMap<V> extends LongHashMap<V> {
 			if (innerKey == EMPTY_KEY) {
 				return null;
 			} else if (innerKey == key) {
-				Object[] value = values[index];
+				java.lang.Object[] value = values[index];
 				if (value != null) {
-					return (V) value[i];
+					return (Object) value[i];
 				}
 			}
 		}
@@ -61,22 +61,22 @@ public abstract class PatchLongHashMap<V> extends LongHashMap<V> {
 	}
 
 	@Override
-	public void add(long key, Object value) {
+	public void add(long key, java.lang.Object value) {
 		put(key, value);
 	}
 
 	@Override
 	@Declare
-	public synchronized V put(long key, Object value) {
+	public synchronized Object put(long key, java.lang.Object value) {
 		int index = (int) (keyIndex(key) & (BUCKET_SIZE - 1));
 		long[] innerKeys = keys[index];
-		Object[] innerValues = values[index];
+		java.lang.Object[] innerValues = values[index];
 
 		if (innerKeys == null) {
 			// need to make a new chain
 			keys[index] = innerKeys = new long[8];
 			Arrays.fill(innerKeys, EMPTY_KEY);
-			values[index] = innerValues = new Object[8];
+			values[index] = innerValues = new java.lang.Object[8];
 			innerKeys[0] = key;
 			innerValues[0] = value;
 			size++;
@@ -89,10 +89,10 @@ public abstract class PatchLongHashMap<V> extends LongHashMap<V> {
 					size++;
 				}
 				if (currentKey == EMPTY_KEY || currentKey == key) {
-					Object old = innerValues[i];
+					java.lang.Object old = innerValues[i];
 					innerKeys[i] = key;
 					innerValues[i] = value;
-					return (V) old;
+					return (Object) old;
 				}
 			}
 
@@ -108,7 +108,7 @@ public abstract class PatchLongHashMap<V> extends LongHashMap<V> {
 	}
 
 	@Override
-	public synchronized Object remove(long key) {
+	public synchronized java.lang.Object remove(long key) {
 		int index = (int) (keyIndex(key) & (BUCKET_SIZE - 1));
 		long[] inner = keys[index];
 		if (inner == null) {
@@ -122,7 +122,7 @@ public abstract class PatchLongHashMap<V> extends LongHashMap<V> {
 			}
 
 			if (inner[i] == key) {
-				Object value = values[index][i];
+				java.lang.Object value = values[index][i];
 
 				for (i++; i < inner.length; i++) {
 					if (inner[i] == EMPTY_KEY) {

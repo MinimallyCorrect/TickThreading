@@ -1,6 +1,7 @@
 package nallar.patched.forge;
 
 import cpw.mods.fml.common.FMLLog;
+import nallar.patched.annotation.Public;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.Configuration;
 
@@ -8,6 +9,7 @@ import java.io.*;
 import java.util.*;
 import java.util.logging.*;
 
+@Public
 public abstract class PatchConfiguration extends Configuration {
 	private boolean saveQueued;
 

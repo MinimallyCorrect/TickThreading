@@ -22,7 +22,6 @@ class PrePatcher {
 	private static final Logger log = Logger.getLogger("PatchLogger");
 	private static final Pattern privatePattern = Pattern.compile("^(\\s+?)private", Pattern.MULTILINE);
 	private static final Pattern extendsPattern = Pattern.compile("^public.*?\\s+?extends\\s+?([\\S^<]+?)(?:<(\\S+)>)?[\\s]+?(?:implements [^}]+?)?\\{", Pattern.MULTILINE);
-	private static final Pattern genericMethodPattern = Pattern.compile("@Generic\\s+?(public\\s+?(\\S*?)?\\s+?(\\S*?)\\s*?\\S+?\\s*?\\()[^\\{]*\\)\\s*?\\{", Pattern.DOTALL | Pattern.MULTILINE);
 	private static final Pattern declareMethodPattern = Pattern.compile("@Declare\\s+?(public\\s+?(?:(?:synchronized|static) )*(\\S*?)?\\s+?(\\S*?)\\s*?\\S+?\\s*?\\([^\\{]*\\)\\s*?\\{)", Pattern.DOTALL | Pattern.MULTILINE);
 	private static final Pattern declareFieldPattern = Pattern.compile("@Declare\\s+?(public [^;\r\n]+?)_?( = [^;\r\n]+?)?;", Pattern.DOTALL | Pattern.MULTILINE);
 	private static final Pattern packageFieldPattern = Pattern.compile("\n    ? ?([^ ]+  ? ?[^ ]+);");
@@ -72,7 +71,6 @@ class PrePatcher {
 		List<String> imports = new ArrayList<String>();
 		while (importMatcher.find()) {
 			imports.add(importMatcher.group(1));
-			//log.severe(importMatcher.group(1));
 		}
 		for (String import_ : imports) {
 			if (import_.endsWith('.' + shortClassName)) {
@@ -83,13 +81,11 @@ class PrePatcher {
 			log.warning("Unable to find class " + shortClassName + " for " + file);
 			return;
 		}
-		String generic = extendsMatcher.group(2);
 		PatchInfo patchInfo = patchClasses.get(className);
 		if (patchInfo == null) {
 			patchInfo = new PatchInfo();
 			patchClasses.put(className, patchInfo);
 		}
-		patchInfo.genericType = generic;
 		patchInfo.shortClassName = shortClassName;
 		Matcher matcher = declareMethodPattern.matcher(contents);
 		while (matcher.find()) {
@@ -159,7 +155,6 @@ class PrePatcher {
 				ret = "0.0";
 			}
 			methodInfo.javaCode = matcher.group(1) + "return " + ret + ";}";
-			log.warning(methodInfo.toString());
 		}
 		Matcher fieldMatcher = declareFieldPattern.matcher(contents);
 		while (fieldMatcher.find()) {
@@ -187,16 +182,9 @@ class PrePatcher {
 				}
 			}
 			fieldInfo.javaCode = var + ';';
-			log.warning(fieldInfo.toString());
-		}
-		Matcher genericMatcher = genericMethodPattern.matcher(contents);
-		while (genericMatcher.find()) {
-			String original = genericMatcher.group(1);
-			String withoutGenerics = original.replace(' ' + generic + ' ', " Object ");
-			log.warning(original + " -> " + withoutGenerics);
 		}
 		if (contents.contains("\n@Public")) {
-			patchInfo.makeAllPublic = true;
+			patchInfo.makePublic = true;
 		}
 	}
 
@@ -305,14 +293,14 @@ class PrePatcher {
 			} else if (clazz.contains("[") || clazz.contains("]")) {
 				log.severe("Invalid Type " + this + ", contains broken array info.");
 			} else if (clazz.contains(".")) {
-				return "L" + clazz + genericSignatureIfNeeded(useGenerics) + ";";
+				return "L" + clazz.replace(".", "/") + genericSignatureIfNeeded(useGenerics) + ";";
 			}
 			String primitiveType = primitiveTypeToDescriptor(clazz);
 			if (primitiveType != null) {
 				return primitiveType;
 			}
 			log.severe("Unrecognised Type: " + this.toString());
-			return "Ljava.lang.Object;";
+			return "Ljava/lang/Object;";
 		}
 
 		public String descriptor() {
@@ -414,9 +402,8 @@ class PrePatcher {
 	private static class PatchInfo {
 		List<MethodInfo> methods = new ArrayList<MethodInfo>();
 		List<FieldInfo> fields = new ArrayList<FieldInfo>();
-		boolean makeAllPublic = false;
+		boolean makePublic = false;
 		String shortClassName;
-		String genericType;
 	}
 
 	private static PatchInfo patchForClass(String className) {
@@ -428,7 +415,6 @@ class PrePatcher {
 		if (patchInfo == null) {
 			return inputSource;
 		}
-		log.warning("Prepatching source for " + inputClassName);
 		inputSource = inputSource.trim().replace("\t", "    ");
 		String shortClassName = patchInfo.shortClassName;
 		StringBuilder sourceBuilder = new StringBuilder(inputSource.substring(0, inputSource.lastIndexOf('}')))
@@ -445,9 +431,6 @@ class PrePatcher {
 		}
 		sourceBuilder.append("\n}");
 		inputSource = sourceBuilder.toString();
-		if (patchInfo.genericType != null) {
-			inputSource = inputSource.replaceAll("class " + shortClassName + "(<[^>]>)?", "class " + shortClassName + '<' + patchInfo.genericType + '>');
-		}
 		/*Matcher genericMatcher = genericMethodPattern.matcher(contents);
 		while (genericMatcher.find()) {
 			String original = genericMatcher.group(1);
@@ -468,10 +451,9 @@ class PrePatcher {
 		inputSource = inputSource.replace("private class", "public class");
 		inputSource = inputSource.replace("protected class", "public class");
 		inputSource = privatePattern.matcher(inputSource).replaceAll("$1protected");
-		if (patchInfo.makeAllPublic) {
+		if (patchInfo.makePublic) {
 			inputSource = inputSource.replace("protected ", "public ");
 		}
-		inputSource = inputSource.replace("protected void save(", "public void save(");
 		Matcher packageMatcher = packageFieldPattern.matcher(inputSource);
 		StringBuffer sb = new StringBuffer();
 		while (packageMatcher.find()) {
@@ -499,6 +481,14 @@ class PrePatcher {
 		return in;
 	}
 
+	private static int makeAccess(int access, boolean makePublic) {
+		access = makeAtLeastProtected(access);
+		if (makePublic) {
+			access = replaceFlag(access, Opcodes.ACC_PROTECTED, Opcodes.ACC_PUBLIC);
+		}
+		return access;
+	}
+
 	/**
 	 * Changes access flags to be protected, unless already public.
 	 *
@@ -523,24 +513,24 @@ class PrePatcher {
 		if (patchInfo == null) {
 			return inputCode;
 		}
-		log.warning("Prepatching code for " + inputClassName);
 		ClassReader classReader = new ClassReader(inputCode);
 		ClassNode classNode = new ClassNode();
 		classReader.accept(classNode, 0);
 		classNode.access = classNode.access & ~Opcodes.ACC_FINAL;
+		classNode.access = makeAccess(classNode.access, true);
 		for (FieldNode fieldNode : (Iterable<FieldNode>) classNode.fields) {
 			fieldNode.access = fieldNode.access & ~Opcodes.ACC_FINAL;
-			fieldNode.access = makeAtLeastProtected(fieldNode.access);
+			fieldNode.access = makeAccess(fieldNode.access, patchInfo.makePublic);
 		}
 		for (MethodNode methodNode : (Iterable<MethodNode>) classNode.methods) {
 			methodNode.access = methodNode.access & ~Opcodes.ACC_FINAL;
-			methodNode.access = makeAtLeastProtected(methodNode.access);
+			methodNode.access = makeAccess(methodNode.access, patchInfo.makePublic);
 		}
 		for (FieldInfo fieldInfo : patchInfo.fields) {
-			classNode.fields.add(new FieldNode(makeAtLeastProtected(fieldInfo.accessAsInt()), fieldInfo.name, fieldInfo.type.descriptor(), fieldInfo.type.signature(), null));
+			classNode.fields.add(new FieldNode(makeAccess(fieldInfo.accessAsInt(), patchInfo.makePublic), fieldInfo.name, fieldInfo.type.descriptor(), fieldInfo.type.signature(), null));
 		}
 		for (MethodInfo methodInfo : patchInfo.methods) {
-			classNode.methods.add(new MethodNode(makeAtLeastProtected(methodInfo.accessAsInt()), methodInfo.name, methodInfo.descriptor(), methodInfo.signature(), null));
+			classNode.methods.add(new MethodNode(makeAccess(methodInfo.accessAsInt() & ~Opcodes.ACC_FINAL, patchInfo.makePublic), methodInfo.name, methodInfo.descriptor(), methodInfo.signature(), null));
 		}
 		ClassWriter classWriter = new ClassWriter(classReader, 0);
 		classNode.accept(classWriter);

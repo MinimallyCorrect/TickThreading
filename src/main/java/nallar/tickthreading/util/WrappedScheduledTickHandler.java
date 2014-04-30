@@ -4,7 +4,6 @@ import cpw.mods.fml.common.IScheduledTickHandler;
 import cpw.mods.fml.common.ITickHandler;
 import cpw.mods.fml.common.SingleIntervalHandler;
 import cpw.mods.fml.common.TickType;
-import cpw.mods.fml.common.modloader.BaseModTicker;
 import nallar.tickthreading.Log;
 
 import java.util.*;
@@ -30,6 +29,7 @@ public class WrappedScheduledTickHandler implements IScheduledTickHandler {
 
 	@Override
 	public EnumSet<TickType> ticks() {
+		// Making some big assumptions here - so far hasn't been wrong though!
 		return ticks == null ? scheduledTickHandler.ticks() : ticks;
 	}
 
@@ -44,12 +44,9 @@ public class WrappedScheduledTickHandler implements IScheduledTickHandler {
 		if (tickHandler instanceof SingleIntervalHandler) {
 			tickHandler = ReflectUtil.get(scheduledTickHandler, "wrapped");
 		}
-		boolean baseModTicker = tickHandler instanceof BaseModTicker;
-		if (ticks == null || ticks.isEmpty() || baseModTicker) {
+		if (ticks == null || ticks.isEmpty()) {
 			ticks = null;
-			if (!baseModTicker) {
-				Log.warning("Null ticks for tick handler " + Log.toString(tickHandler) + ':' + tickHandler.getLabel());
-			}
+			Log.warning("Null ticks for tick handler " + Log.toString(tickHandler) + ':' + tickHandler.getLabel());
 		}
 		this.ticks = ticks;
 		this.scheduledTickHandler = scheduledTickHandler;

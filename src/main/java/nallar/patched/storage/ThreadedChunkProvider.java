@@ -65,9 +65,9 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	private static final Runnable doNothingRunnable = new DoNothingRunnable();
 	private static final int populationRange = 1;
 	private final NonBlockingHashMapLong<AtomicInteger> chunkLoadLocks = new NonBlockingHashMapLong<AtomicInteger>();
-	private final LongHashMap<Chunk> chunks = new LongHashMap<Chunk>();
-	private final LongHashMap<Chunk> loadingChunks = new LongHashMap<Chunk>();
-	private final LongHashMap<Chunk> unloadingChunks = new LongHashMap<Chunk>();
+	private final LongHashMap chunks = new LongHashMap();
+	private final LongHashMap loadingChunks = new LongHashMap();
+	private final LongHashMap unloadingChunks = new LongHashMap();
 	private final ConcurrentQueueSet<Long> unloadStage0 = new ConcurrentQueueSet<Long>();
 	private final ConcurrentLinkedQueue<QueuedUnload> unloadStage1 = new ConcurrentLinkedQueue<QueuedUnload>();
 	private final IChunkLoader loader;
@@ -146,7 +146,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 				int z = (int) (key >> 32);
 				chunkCoordIntPair.chunkXPos = x;
 				chunkCoordIntPair.chunkZPos = z;
-				Chunk chunk = chunks.getValueByKey(key);
+				Chunk chunk = (Chunk) chunks.getValueByKey(key);
 				if (chunk == null) {
 					continue;
 				}
@@ -231,7 +231,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		Chunk chunk;
 		synchronized (unloadingChunks) {
 			// Don't remove here, as the chunk should be in the unloadingChunks map so that getChunkIfExists will still return it if used by a mod during chunk saving.
-			chunk = unloadingChunks.getValueByKey(key);
+			chunk = (Chunk) unloadingChunks.getValueByKey(key);
 		}
 		if (chunk == null) {
 			return false;
@@ -315,7 +315,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			return false;
 		}
 		long hash = key(x, z);
-		Chunk chunk = chunks.getValueByKey(hash);
+		Chunk chunk = (Chunk) chunks.getValueByKey(hash);
 		if (chunk == null) {
 			return false;
 		}
@@ -327,7 +327,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	@Declare
 	public void unloadChunkForce(long hash) {
 		if (unloadStage0.add(hash)) {
-			Chunk chunk = chunks.getValueByKey(hash);
+			Chunk chunk = (Chunk) chunks.getValueByKey(hash);
 			if (chunk != null) {
 				chunk.queuedUnload = true;
 			}
@@ -477,11 +477,11 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			return chunk;
 		}
 		long key = key(x, z);
-		chunk = chunks.getValueByKey(key);
+		chunk = (Chunk) chunks.getValueByKey(key);
 		if (chunk == null && worldGenInProgress.get() == Boolean.TRUE) {
-			chunk = loadingChunks.getValueByKey(key);
+			chunk = (Chunk) loadingChunks.getValueByKey(key);
 			if (chunk == null && inUnload.get() == Boolean.TRUE) {
-				chunk = unloadingChunks.getValueByKey(key);
+				chunk = (Chunk) unloadingChunks.getValueByKey(key);
 			}
 		}
 		if (chunk == null) {
@@ -530,11 +530,11 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 
 			// Lock on the lock for this chunk - prevent multiple instances of the same chunk
 			synchronized (lock) {
-				chunk = chunks.getValueByKey(key);
+				chunk = (Chunk) chunks.getValueByKey(key);
 				if (chunk != null) {
 					return chunk;
 				}
-				chunk = loadingChunks.getValueByKey(key);
+				chunk = (Chunk) loadingChunks.getValueByKey(key);
 				if (regenerate) {
 					if (!allowGenerate) {
 						throw new IllegalArgumentException();
@@ -579,13 +579,13 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			generateLock.lock();
 			try {
 				synchronized (lock) {
-					chunk = chunks.getValueByKey(key);
+					chunk = (Chunk) chunks.getValueByKey(key);
 					if (chunk != null) {
 						return chunk;
 					}
 					worldGenInProgress.set(Boolean.TRUE);
 					try {
-						chunk = loadingChunks.getValueByKey(key);
+						chunk = (Chunk) loadingChunks.getValueByKey(key);
 						if (chunk == null) {
 							Log.severe("Failed to load chunk " + chunk + " at " + x + ',' + z + " as it is missing from the loading chunks map.");
 							return defaultEmptyChunk;
@@ -696,7 +696,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	@Override
 	@Declare
 	public Chunk getChunkFastUnsafe(int x, int z) {
-		return chunks.getValueByKey(key(x, z));
+		return (Chunk) chunks.getValueByKey(key(x, z));
 	}
 
 	private AtomicInteger getLock(long key) {

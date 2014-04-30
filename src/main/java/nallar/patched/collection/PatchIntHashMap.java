@@ -13,11 +13,11 @@ import java.util.*;
 
 @SuppressWarnings("unchecked")
 @FakeExtend
-public abstract class PatchIntHashMap<V> extends IntHashMap<V> {
+public abstract class PatchIntHashMap extends IntHashMap {
 	private static final int EMPTY_KEY = Integer.MIN_VALUE;
 	private static final int BUCKET_SIZE = 4096;
 	int[][] keys;
-	private Object[][] values;
+	private java.lang.Object[][] values;
 	int size;
 	int modCount;
 
@@ -32,7 +32,7 @@ public abstract class PatchIntHashMap<V> extends IntHashMap<V> {
 
 	@Override
 	@Generic
-	public V lookup(int key) {
+	public Object lookup(int key) {
 		int index = keyIndex(key) & (BUCKET_SIZE - 1);
 		int[] inner = keys[index];
 		if (inner == null) {
@@ -44,9 +44,9 @@ public abstract class PatchIntHashMap<V> extends IntHashMap<V> {
 			if (innerKey == EMPTY_KEY) {
 				return null;
 			} else if (innerKey == key) {
-				Object[] value = values[index];
+				java.lang.Object[] value = values[index];
 				if (value != null) {
-					return (V) value[i];
+					return (Object) value[i];
 				}
 			}
 		}
@@ -55,22 +55,22 @@ public abstract class PatchIntHashMap<V> extends IntHashMap<V> {
 	}
 
 	@Override
-	public void addKey(int key, Object value) {
+	public void addKey(int key, java.lang.Object value) {
 		put(key, value);
 	}
 
 	@Override
 	@Declare
-	public synchronized V put(int key, Object value) {
+	public synchronized Object put(int key, java.lang.Object value) {
 		int index = (int) (keyIndex(key) & (BUCKET_SIZE - 1));
 		int[] innerKeys = keys[index];
-		Object[] innerValues = values[index];
+		java.lang.Object[] innerValues = values[index];
 
 		if (innerKeys == null) {
 			// need to make a new chain
 			keys[index] = innerKeys = new int[8];
 			Arrays.fill(innerKeys, EMPTY_KEY);
-			values[index] = innerValues = new Object[8];
+			values[index] = innerValues = new java.lang.Object[8];
 			innerKeys[0] = key;
 			innerValues[0] = value;
 			size++;
@@ -83,10 +83,10 @@ public abstract class PatchIntHashMap<V> extends IntHashMap<V> {
 					size++;
 				}
 				if (currentKey == EMPTY_KEY || currentKey == key) {
-					Object old = innerValues[i];
+					java.lang.Object old = innerValues[i];
 					innerKeys[i] = key;
 					innerValues[i] = value;
-					return (V) old;
+					return (Object) old;
 				}
 			}
 
@@ -102,7 +102,7 @@ public abstract class PatchIntHashMap<V> extends IntHashMap<V> {
 	}
 
 	@Override
-	public Object removeObject(int key) {
+	public java.lang.Object removeObject(int key) {
 		int index = (keyIndex(key) & (BUCKET_SIZE - 1));
 		int[] inner = keys[index];
 		if (inner == null) {
@@ -116,7 +116,7 @@ public abstract class PatchIntHashMap<V> extends IntHashMap<V> {
 			}
 
 			if (inner[i] == key) {
-				Object value = values[index][i];
+				java.lang.Object value = values[index][i];
 
 				for (i++; i < inner.length; i++) {
 					if (inner[i] == EMPTY_KEY) {
@@ -152,7 +152,7 @@ public abstract class PatchIntHashMap<V> extends IntHashMap<V> {
 
 	private void initialize() {
 		keys = new int[BUCKET_SIZE][];
-		values = new Object[BUCKET_SIZE][];
+		values = new java.lang.Object[BUCKET_SIZE][];
 	}
 
 	private static int keyIndex(int key) {
@@ -195,7 +195,7 @@ public abstract class PatchIntHashMap<V> extends IntHashMap<V> {
 		private int expectedModCount;
 		private int lastReturned = EMPTY_KEY;
 		int prevKey = EMPTY_KEY;
-		Object prevValue;
+		java.lang.Object prevValue;
 
 		ValueIterator() {
 			expectedModCount = PatchIntHashMap.this.modCount;
@@ -223,7 +223,7 @@ public abstract class PatchIntHashMap<V> extends IntHashMap<V> {
 		}
 
 		@Override
-		public Object next() {
+		public java.lang.Object next() {
 			if (PatchIntHashMap.this.modCount != expectedModCount) {
 				throw new ConcurrentModificationException();
 			}
@@ -243,7 +243,7 @@ public abstract class PatchIntHashMap<V> extends IntHashMap<V> {
 				if (keys[index] != null) {
 					if (innerIndex < keys[index].length) {
 						int key = keys[index][innerIndex];
-						Object value = values[index][innerIndex];
+						java.lang.Object value = values[index][innerIndex];
 						if (key == EMPTY_KEY) {
 							break;
 						}
