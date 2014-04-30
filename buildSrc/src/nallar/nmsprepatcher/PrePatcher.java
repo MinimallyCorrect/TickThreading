@@ -100,7 +100,7 @@ class PrePatcher {
 			MethodInfo methodInfo = new MethodInfo();
 			patchInfo.methods.add(methodInfo);
 
-			String accessAndNameString = methodInfoMatcher.group(1);
+			String accessAndNameString = methodInfoMatcher.group(1).replace(", ", ","); // Workaround for multiple argument generics
 			String paramString = methodInfoMatcher.group(2);
 
 			for (String parameter : commaSplitter.split(paramString)) {
