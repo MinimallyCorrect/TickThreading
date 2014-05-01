@@ -62,7 +62,7 @@ public class RegionFileCache {
 		for (RegionFile regionFile : regionFileMap.values()) {
 			try {
 				regionFile.close();
-			} catch (IOException e) {
+			} catch (Exception e) {
 				FMLLog.log(Level.WARNING, e, "Failed to close regionFile");
 			}
 		}
