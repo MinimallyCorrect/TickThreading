@@ -11,11 +11,13 @@ import cpw.mods.fml.common.DuplicateModsFoundException;
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
+import nallar.patched.annotation.ExposeInner;
 import nallar.tickthreading.patcher.Declare;
 
 import java.io.*;
 import java.util.*;
 
+@ExposeInner("ModIdComparator")
 public abstract class PatchLoader extends Loader {
 	public static boolean isModLoaded(String modname) {
 		return instance().isModLoadedFast(modname);

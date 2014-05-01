@@ -10,6 +10,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.Loader;
+import nallar.patched.annotation.ExposeInner;
 import nallar.patched.annotation.Public;
 import nallar.tickthreading.patcher.Declare;
 import net.minecraft.entity.Entity;
@@ -31,6 +32,7 @@ import java.util.logging.*;
 
 @SuppressWarnings("UnusedDeclaration")
 @Public
+@ExposeInner("Ticket")
 public abstract class PatchForgeChunkManager extends ForgeChunkManager {
 	private static final Map<World, ArrayListMultimap<String, Ticket>> worldLoadedTickets = new HashMap<World, ArrayListMultimap<String, Ticket>>();
 	private static final Map<World, Map<String, ListMultimap<String, Ticket>>> worldPlayerLoadedTickets = new HashMap<World, Map<String, ListMultimap<String, Ticket>>>();
@@ -87,7 +89,7 @@ public abstract class PatchForgeChunkManager extends ForgeChunkManager {
 		ticket.world.getChunkProvider().loadChunk(chunk.chunkXPos, chunk.chunkZPos);
 	}
 
-	static void saveWorld(World world) {
+	public static void saveWorld(World world) {
 		// only persist persistent worlds
 		if (!(world instanceof WorldServer)) {
 			return;
@@ -142,7 +144,7 @@ public abstract class PatchForgeChunkManager extends ForgeChunkManager {
 		}
 	}
 
-	static void loadWorld(World world) {
+	public static void loadWorld(World world) {
 		ArrayListMultimap<String, Ticket> newTickets = ArrayListMultimap.create();
 		tickets.put(world, newTickets);
 
@@ -196,10 +198,11 @@ public abstract class PatchForgeChunkManager extends ForgeChunkManager {
 					}
 					if (ticket.hasKey("Player")) {
 						tick.player = ticket.getString("Player");
-						if (!playerLoadedTickets.containsKey(tick.modId)) {
-							playerLoadedTickets.put(modId, ArrayListMultimap.<String, Ticket>create());
+						ArrayListMultimap<String, Ticket> playerLoadedTicket = playerLoadedTickets.get(tick.modId);
+						if (playerLoadedTicket == null) {
+							playerLoadedTickets.put(modId, playerLoadedTicket = ArrayListMultimap.<String, Ticket>create());
 						}
-						playerLoadedTickets.get(tick.modId).put(tick.player, tick);
+						playerLoadedTicket.put(tick.player, tick);
 					} else {
 						loadedTickets.put(modId, tick);
 					}
@@ -278,7 +281,7 @@ public abstract class PatchForgeChunkManager extends ForgeChunkManager {
 		}
 	}
 
-	static void unloadWorld(World world) {
+	public static void unloadWorld(World world) {
 		// World save fires before this event so the chunk loading info will be done
 		if (!(world instanceof WorldServer)) {
 			return;

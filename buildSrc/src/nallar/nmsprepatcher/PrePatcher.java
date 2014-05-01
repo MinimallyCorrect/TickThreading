@@ -32,6 +32,7 @@ class PrePatcher {
 	private static final Pattern packageFieldPattern = Pattern.compile("\n    ? ?([^ ]+  ? ?[^ ]+);");
 	private static final Pattern innerClassPattern = Pattern.compile("[^\n]public (?:static )?class ([^ \n]+)[ \n]", Pattern.MULTILINE);
 	private static final Pattern importPattern = Pattern.compile("\nimport ([^;]+?);", Pattern.MULTILINE | Pattern.DOTALL);
+	private static final Pattern exposeInnerPattern = Pattern.compile("\n@ExposeInner\\(\"([^\"]+)\"\\)", Pattern.MULTILINE | Pattern.DOTALL);
 	private static final Splitter spaceSplitter = Splitter.on(' ').omitEmptyStrings();
 	private static final Splitter commaSplitter = Splitter.on(',').omitEmptyStrings().trimResults();
 	private static final Map<String, PatchInfo> patchClasses = new HashMap<String, PatchInfo>();
@@ -86,12 +87,12 @@ class PrePatcher {
 			log.warning("Unable to find class " + shortClassName + " for " + file);
 			return;
 		}
-		PatchInfo patchInfo = patchClasses.get(className);
-		if (patchInfo == null) {
-			patchInfo = new PatchInfo();
-			patchClasses.put(className, patchInfo);
+		Matcher exposeInnerMatcher = exposeInnerPattern.matcher(contents);
+		while (exposeInnerMatcher.find()) {
+			log.severe("Inner class name: " + className + "$" + exposeInnerMatcher.group(1));
+			getOrMakePatchInfo(className + "$" + exposeInnerMatcher.group(1), shortClassName + "$" + exposeInnerMatcher.group(1)).makePublic = true;
 		}
-		patchInfo.shortClassName = shortClassName;
+		PatchInfo patchInfo = getOrMakePatchInfo(className, shortClassName);
 		Matcher matcher = declareMethodPattern.matcher(contents);
 		while (matcher.find()) {
 			Matcher methodInfoMatcher = methodInfoPattern.matcher(matcher.group(1));
@@ -193,6 +194,16 @@ class PrePatcher {
 		if (contents.contains("\n@Public")) {
 			patchInfo.makePublic = true;
 		}
+	}
+
+	private static PatchInfo getOrMakePatchInfo(String className, String shortClassName) {
+		PatchInfo patchInfo = patchClasses.get(className);
+		if (patchInfo == null) {
+			patchInfo = new PatchInfo();
+			patchClasses.put(className, patchInfo);
+		}
+		patchInfo.shortClassName = shortClassName;
+		return patchInfo;
 	}
 
 	private static int accessStringToInt(String access) {
@@ -568,6 +579,10 @@ class PrePatcher {
 
 	public static byte[] patchCode(byte[] inputCode, String inputClassName) {
 		PatchInfo patchInfo = patchForClass(inputClassName);
+		if (inputClassName.contains("Ticket")) {
+			log.severe("ticket found: " + inputClassName);
+			log.severe(String.valueOf(patchInfo));
+		}
 		if (patchInfo == null) {
 			return inputCode;
 		}
