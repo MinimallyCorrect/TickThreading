@@ -10,6 +10,7 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
+import org.objectweb.asm.tree.InnerClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
 import java.io.File;
@@ -87,12 +88,13 @@ class PrePatcher {
 			log.warning("Unable to find class " + shortClassName + " for " + file);
 			return;
 		}
+		PatchInfo patchInfo = getOrMakePatchInfo(className, shortClassName);
 		Matcher exposeInnerMatcher = exposeInnerPattern.matcher(contents);
 		while (exposeInnerMatcher.find()) {
 			log.severe("Inner class name: " + className + "$" + exposeInnerMatcher.group(1));
 			getOrMakePatchInfo(className + "$" + exposeInnerMatcher.group(1), shortClassName + "$" + exposeInnerMatcher.group(1)).makePublic = true;
+			patchInfo.exposeInners = true;
 		}
-		PatchInfo patchInfo = getOrMakePatchInfo(className, shortClassName);
 		Matcher matcher = declareMethodPattern.matcher(contents);
 		while (matcher.find()) {
 			Matcher methodInfoMatcher = methodInfoPattern.matcher(matcher.group(1));
@@ -473,6 +475,7 @@ class PrePatcher {
 		List<FieldInfo> fields = new ArrayList<FieldInfo>();
 		boolean makePublic = false;
 		String shortClassName;
+		public boolean exposeInners = false;
 	}
 
 	private static PatchInfo patchForClass(String className) {
@@ -579,10 +582,6 @@ class PrePatcher {
 
 	public static byte[] patchCode(byte[] inputCode, String inputClassName) {
 		PatchInfo patchInfo = patchForClass(inputClassName);
-		if (inputClassName.contains("Ticket")) {
-			log.severe("ticket found: " + inputClassName);
-			log.severe(String.valueOf(patchInfo));
-		}
 		if (patchInfo == null) {
 			return inputCode;
 		}
@@ -591,6 +590,11 @@ class PrePatcher {
 		classReader.accept(classNode, 0);
 		classNode.access = classNode.access & ~Opcodes.ACC_FINAL;
 		classNode.access = makeAccess(classNode.access, true);
+		if (patchInfo.exposeInners) {
+			for (InnerClassNode innerClassNode : (Iterable<InnerClassNode>) classNode.innerClasses) {
+				innerClassNode.access = makeAccess(innerClassNode.access, true);
+			}
+		}
 		for (FieldNode fieldNode : (Iterable<FieldNode>) classNode.fields) {
 			fieldNode.access = fieldNode.access & ~Opcodes.ACC_FINAL;
 			fieldNode.access = makeAccess(fieldNode.access, patchInfo.makePublic);
