@@ -1,5 +1,7 @@
 package nallar.tickthreading.util.contextaccess;
 
+// Deprecated method call - acceptable as this implementation is only used after it is tested by ContextAccessProvider
+@SuppressWarnings("deprecation")
 public class ContextAccessReflection implements ContextAccess {
 	@Override
 	public Class getContext(int depth) {

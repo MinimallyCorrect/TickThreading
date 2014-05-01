@@ -16,7 +16,7 @@ import net.minecraft.server.MinecraftServer;
 
 import java.lang.management.*;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DeadLockDetector {
 	private static final StackTraceElement[] EMPTY_STACK_TRACE = new StackTraceElement[0];
@@ -85,7 +85,7 @@ public class DeadLockDetector {
 					}
 				}
 				if (runCount >= 3) {
-					thread.stop(new ThreadStuckError("Deadlock detected, appears to be caused by " + stuckManagerName));
+					UnsafeUtil.stopThread(thread, new ThreadStuckError("Deadlock detected, appears to be caused by " + stuckManagerName));
 					killed++;
 				} else {
 					notRunning++;

@@ -6,8 +6,10 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 import sun.misc.Unsafe;
 
-import java.lang.ref.*;
-import java.lang.reflect.*;
+import java.lang.ref.Reference;
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.*;
 
 public class UnsafeUtil {
@@ -304,6 +306,17 @@ public class UnsafeUtil {
 
 	private static <T extends Throwable> T throwIgnoreCheckedErasure(Throwable toThrow) throws T {
 		throw (T) toThrow;
+	}
+
+	@SuppressWarnings("deprecation")
+	public static void stopThread(Thread t, Throwable thr) {
+		try {
+			Method m = Thread.class.getDeclaredMethod("stop0", Object.class);
+			m.invoke(t, thr);
+		} catch (Throwable throwable) {
+			Log.severe("Failed to stop thread t with throwable, reverting to normal stop.", throwable);
+			t.stop();
+		}
 	}
 
 	/**
