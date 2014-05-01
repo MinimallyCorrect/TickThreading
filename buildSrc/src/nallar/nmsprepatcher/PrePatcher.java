@@ -1,5 +1,6 @@
 package nallar.nmsprepatcher;
 
+import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
@@ -132,6 +133,8 @@ class PrePatcher {
 					methodInfo.synchronized_ = true;
 				} else if (thing.equals("final")) {
 					methodInfo.final_ = true;
+				} else if (thing.startsWith("<")) {
+					methodInfo.genericType = thing;
 				} else {
 					if (methodInfo.access != null) {
 						log.severe("overwriting method access from " + methodInfo.access + " -> " + thing + " in " + matcher.group(1));
@@ -249,7 +252,17 @@ class PrePatcher {
 		};
 
 		private static String fullyQualifiedName(String original, Collection<String> imports) {
-			if (imports == null || original.contains(".")) {
+			int dots = CharMatcher.is('.').countIn(original);
+			if (imports == null || dots > 1) {
+				return original;
+			}
+			if (dots == 1) {
+				String start = original.substring(0, original.indexOf('.'));
+				String end = original.substring(original.indexOf('.') + 1);
+				String qualifiedStart = fullyQualifiedName(start, imports);
+				if (!qualifiedStart.equals(start)) {
+					return qualifiedStart + '$' + end;
+				}
 				return original;
 			}
 			for (String className : imports) {
@@ -353,6 +366,7 @@ class PrePatcher {
 		public String javaCode;
 
 		private static final Joiner parameterJoiner = Joiner.on(", ");
+		public String genericType;
 
 		public String toString() {
 			return "method: " + access + ' ' + (static_ ? "static " : "") + (final_ ? "final " : "") + (synchronized_ ? "synchronized " : "") + returnType + ' ' + name + " (" + parameterJoiner.join(parameterTypes) + ')';
@@ -388,6 +402,20 @@ class PrePatcher {
 
 		public String signature() {
 			StringBuilder sb = new StringBuilder();
+			String genericType = this.genericType;
+			if (genericType != null) {
+				sb.append('<');
+				genericType = genericType.substring(1, genericType.length() - 1);
+				for (String genericTypePart : commaSplitter.split(genericType)) {
+					if (genericTypePart.contains(" extends ")) {
+						log.severe("Extends unsupported, TODO implement - in " + this.genericType); // TODO
+					}
+					sb
+							.append(genericTypePart)
+							.append(":Ljava/lang/Object;");
+				}
+				sb.append('>');
+			}
 			sb
 					.append('(');
 			for (Type type : parameterTypes) {
