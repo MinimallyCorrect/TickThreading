@@ -198,7 +198,7 @@ public abstract class PatchForgeChunkManager extends ForgeChunkManager {
 					}
 					if (ticket.hasKey("Player")) {
 						tick.player = ticket.getString("Player");
-						ArrayListMultimap<String, Ticket> playerLoadedTicket = playerLoadedTickets.get(tick.modId);
+						ListMultimap<String, Ticket> playerLoadedTicket = playerLoadedTickets.get(tick.modId);
 						if (playerLoadedTicket == null) {
 							playerLoadedTickets.put(modId, playerLoadedTicket = ArrayListMultimap.<String, Ticket>create());
 						}
