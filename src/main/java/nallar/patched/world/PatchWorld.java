@@ -1055,7 +1055,7 @@ public abstract class PatchWorld extends World {
 					double y = target.minY + (target.maxY - target.minY) * (double) var12;
 					double z = target.minZ + (target.maxZ - target.minZ) * (double) var13;
 
-					if (clip(center.setComponents(x, y, z), start) == null) {
+					if (clip(center.setThisComponents(x, y, z), start) == null) {
 						++hit;
 					}
 

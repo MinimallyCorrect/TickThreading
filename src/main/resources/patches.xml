@@ -236,6 +236,10 @@
 			<!-- This prevents entities in multiple threads using the same Vec3 for collisions. -->
 			<replace class="nallar.patched.PatchVec3Pool"/>
 		</class>
+		<class id="net.minecraft.util.Vec3">
+			<!-- This prevents entities in multiple threads using the same Vec3 for collisions. -->
+			<addAll class="nallar.patched.PatchVec3"/>
+		</class>
 		<class id="net.minecraft.util.AABBPool">
 			<!-- This prevents entities in multiple threads using the same Vec3 for collisions. -->
 			<replace class="nallar.patched.PatchAABBPool"/>

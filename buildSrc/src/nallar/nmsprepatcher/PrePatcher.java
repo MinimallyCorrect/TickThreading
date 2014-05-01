@@ -601,7 +601,7 @@ class PrePatcher {
 		}
 		for (MethodNode methodNode : (Iterable<MethodNode>) classNode.methods) {
 			methodNode.access = methodNode.access & ~Opcodes.ACC_FINAL;
-			methodNode.access = makeAccess(methodNode.access, patchInfo.makePublic);
+			methodNode.access = makeAccess(methodNode.access, methodNode.name.equals("<init>") || patchInfo.makePublic);
 		}
 		for (FieldInfo fieldInfo : patchInfo.fields) {
 			classNode.fields.add(new FieldNode(makeAccess(fieldInfo.accessAsInt() & ~Opcodes.ACC_FINAL, patchInfo.makePublic), fieldInfo.name, fieldInfo.type.descriptor(), fieldInfo.type.signature(), null));
