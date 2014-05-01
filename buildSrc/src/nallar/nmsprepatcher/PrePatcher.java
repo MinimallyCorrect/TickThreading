@@ -2,6 +2,7 @@ package nallar.nmsprepatcher;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -10,10 +11,13 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.*;
-import java.util.logging.*;
-import java.util.regex.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 // The prepatcher adds method declarations in superclasses,
 // so javac can compile the patch classes if they need to use a method/field they
@@ -130,7 +134,7 @@ class PrePatcher {
 					methodInfo.final_ = true;
 				} else {
 					if (methodInfo.access != null) {
-						log.warning("overwriting access from " + methodInfo.access + " -> " + thing + " in " + matcher.group(1));
+						log.severe("overwriting method access from " + methodInfo.access + " -> " + thing + " in " + matcher.group(1));
 					}
 					methodInfo.access = thing;
 				}
@@ -158,7 +162,7 @@ class PrePatcher {
 		}
 		Matcher fieldMatcher = declareFieldPattern.matcher(contents);
 		while (fieldMatcher.find()) {
-			String var = fieldMatcher.group(1);
+			String var = fieldMatcher.group(1).replace(", ", ","); // Workaround for multiple argument generics
 			FieldInfo fieldInfo = new FieldInfo();
 			patchInfo.fields.add(fieldInfo);
 			LinkedList<String> typeAndName = Lists.newLinkedList(spaceSplitter.split(var));
@@ -176,7 +180,7 @@ class PrePatcher {
 					fieldInfo.final_ = true;
 				} else {
 					if (fieldInfo.access != null) {
-						log.severe("overwriting access from " + fieldInfo.access + " -> " + thing + " in " + var);
+						log.severe("overwriting field access from " + fieldInfo.access + " -> " + thing + " in " + var);
 					}
 					fieldInfo.access = thing;
 				}
@@ -206,17 +210,34 @@ class PrePatcher {
 
 	private static class Type {
 		public final String clazz;
-		public final Type generic;
+		public final int arrayDimensions;
+		public boolean noClass = false;
+		public final List<Type> generics = new ArrayList<Type>();
 
 		public Type(String raw, List<String> imports) {
 			String clazz;
+			int arrayLevels = 0;
+			while (raw.length() - (arrayLevels * 2) - 2 > 0) {
+				int startPos = raw.length() - 2 - arrayLevels * 2;
+				if (!raw.substring(startPos, startPos + 2).equals("[]")) {
+					break;
+				}
+				arrayLevels++;
+			}
+			raw = raw.substring(0, raw.length() - arrayLevels * 2); // THE MORE YOU KNOW: String.substring(begin) special cases begin == 0.
+			arrayDimensions = arrayLevels;
 			if (raw.contains("<")) {
 				String genericRaw = raw.substring(raw.indexOf("<") + 1, raw.length() - 1);
 				clazz = raw.substring(0, raw.indexOf("<"));
-				generic = new Type(genericRaw, imports);
+				if (clazz.isEmpty()) {
+					clazz = "java.lang.Object"; // For example, <T> methodName(Class<T> parameter) -> <T> as return type -> erases to object
+					noClass = true;
+				}
+				for (String genericRawSplit : commaSplitter.split(genericRaw)) {
+					generics.add(new Type(genericRawSplit, imports));
+				}
 			} else {
 				clazz = raw;
-				generic = null;
 			}
 			this.clazz = fullyQualifiedName(clazz, imports);
 		}
@@ -253,38 +274,47 @@ class PrePatcher {
 		}
 
 		private static String primitiveTypeToDescriptor(String primitive) {
-			switch (primitive) {
-				case "byte":
-					return "B";
-				case "char":
-					return "C";
-				case "double":
-					return "D";
-				case "float":
-					return "F";
-				case "int":
-					return "I";
-				case "long":
-					return "J";
-				case "short":
-					return "S";
-				case "void":
-					return "V";
-				case "boolean":
-					return "Z";
+			if (primitive.equals("byte")) {
+				return "B";
+			} else if (primitive.equals("char")) {
+				return "C";
+			} else if (primitive.equals("double")) {
+				return "D";
+			} else if (primitive.equals("float")) {
+				return "F";
+			} else if (primitive.equals("int")) {
+				return "I";
+			} else if (primitive.equals("long")) {
+				return "J";
+			} else if (primitive.equals("short")) {
+				return "S";
+			} else if (primitive.equals("void")) {
+				return "V";
+			} else if (primitive.equals("boolean")) {
+				return "Z";
 			}
 			return null;
 		}
 
+		public String arrayDimensionsString() {
+			return Strings.repeat("[", arrayDimensions);
+		}
+
 		public String toString() {
-			return clazz + (generic == null ? "" : '<' + generic.toString() + '>');
+			return arrayDimensionsString() + clazz + (generics.isEmpty() ? "" : '<' + generics.toString() + '>');
 		}
 
 		private String genericSignatureIfNeeded(boolean useGenerics) {
-			if (generic == null || !useGenerics) {
+			if (generics.isEmpty() || !useGenerics) {
 				return "";
 			}
-			return '<' + generic.signature() + '>';
+			StringBuilder sb = new StringBuilder();
+			sb.append('<');
+			for (Type generic : generics) {
+				sb.append(generic.signature());
+			}
+			sb.append('>');
+			return sb.toString();
 		}
 
 		private String javaString(boolean useGenerics) {
@@ -293,14 +323,14 @@ class PrePatcher {
 			} else if (clazz.contains("[") || clazz.contains("]")) {
 				log.severe("Invalid Type " + this + ", contains broken array info.");
 			} else if (clazz.contains(".")) {
-				return "L" + clazz.replace(".", "/") + genericSignatureIfNeeded(useGenerics) + ";";
+				return arrayDimensionsString() + "L" + clazz.replace(".", "/") + genericSignatureIfNeeded(useGenerics) + ";";
 			}
 			String primitiveType = primitiveTypeToDescriptor(clazz);
 			if (primitiveType != null) {
-				return primitiveType;
+				return arrayDimensionsString() + primitiveType;
 			}
-			log.severe("Unrecognised Type: " + this.toString());
-			return "Ljava/lang/Object;";
+			log.warning("Either generic type or unrecognized type: " + this.toString());
+			return arrayDimensionsString() + "T" + clazz + ";";
 		}
 
 		public String descriptor() {

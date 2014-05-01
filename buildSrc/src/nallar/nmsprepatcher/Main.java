@@ -5,10 +5,14 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 import com.google.common.io.ByteStreams;
 
-import java.io.*;
-import java.util.*;
-import java.util.Map.*;
-import java.util.jar.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.jar.JarEntry;
+import java.util.jar.JarInputStream;
+import java.util.jar.JarOutputStream;
 
 public class Main {
 	/**
