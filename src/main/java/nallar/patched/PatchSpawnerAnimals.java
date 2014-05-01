@@ -93,7 +93,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 		}
 		boolean dayTime = worldServer.isDaytime();
 		float mobMultiplier = entityMultiplier * (dayTime ? 1 : 2);
-		Map<EnumCreatureType, Integer> requiredSpawns = new EnumMap<EnumCreatureType, Integer>(EnumCreatureType.class);
+		Map<EnumCreatureType, Integer> requiredSpawns = (Map<EnumCreatureType, Integer>) new EnumMap(EnumCreatureType.class);
 		for (EnumCreatureType creatureType : EnumCreatureType.values()) {
 			int count = (int) ((creatureType.getPeacefulCreature() ? entityMultiplier : mobMultiplier) * creatureType.getMaxNumberOfCreature());
 			if (!(creatureType.getPeacefulCreature() && !peaceful || creatureType.getAnimal() && !animal || !creatureType.getPeacefulCreature() && !hostile) && count > worldServer.countEntities(creatureType.getCreatureClass())) {

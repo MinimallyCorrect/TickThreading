@@ -378,7 +378,7 @@ class PrePatcher {
 				accessInt |= Opcodes.ACC_STATIC;
 			}
 			if (synchronized_) {
-				accessInt |= Opcodes.ACC_VOLATILE;
+				accessInt |= Opcodes.ACC_SYNCHRONIZED;
 			}
 			if (final_) {
 				accessInt |= Opcodes.ACC_FINAL;
