@@ -585,7 +585,7 @@ class PrePatcher {
 			methodNode.access = makeAccess(methodNode.access, patchInfo.makePublic);
 		}
 		for (FieldInfo fieldInfo : patchInfo.fields) {
-			classNode.fields.add(new FieldNode(makeAccess(fieldInfo.accessAsInt(), patchInfo.makePublic), fieldInfo.name, fieldInfo.type.descriptor(), fieldInfo.type.signature(), null));
+			classNode.fields.add(new FieldNode(makeAccess(fieldInfo.accessAsInt() & ~Opcodes.ACC_FINAL, patchInfo.makePublic), fieldInfo.name, fieldInfo.type.descriptor(), fieldInfo.type.signature(), null));
 		}
 		for (MethodInfo methodInfo : patchInfo.methods) {
 			classNode.methods.add(new MethodNode(makeAccess(methodInfo.accessAsInt() & ~Opcodes.ACC_FINAL, patchInfo.makePublic), methodInfo.name, methodInfo.descriptor(), methodInfo.signature(), null));
