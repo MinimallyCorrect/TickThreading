@@ -35,7 +35,10 @@ minecraft {
 }
 
 compileJava {
-    options.compilerArgs << '-XDignore.symbol.file' // Kills the warnings about using the sun.* classes
+    // Kills the warnings about using the sun.* classes
+    options.compilerArgs << '-XDignore.symbol.file'
+    // Show warnings for deprecation and bad generics use
+    options.compilerArgs << "-Xlint:deprecation"
     options.fork = true
     options.forkOptions.executable = 'javac'
 }
