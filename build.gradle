@@ -60,6 +60,13 @@ processResources {
     from(sourceSets.main.resources.srcDirs) { exclude 'mcmod.info' }
 }
 
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'TickThreading', 'Implementation-Version': version
+        attributes 'Main-Class': "nallar.tickthreading.patcher.PatchLauncher"
+    }
+}
+
 def prepatchInputs = {
     // Prepatching must run if either patch code is updated,
     // or the prepatching code is updated.

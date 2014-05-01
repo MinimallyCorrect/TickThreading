@@ -22,12 +22,15 @@ public class PatchLauncher {
 	private static void run(String[] args) throws Exception {
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		String loc = null;
-		for (int i = 0; i < args.length; i++) {
-			if (args[i].toLowerCase().startsWith(serverJarArgument)) {
-				loc = args[i].substring(serverJarArgument.length());
+		ArrayList<String> argsList = new ArrayList<String>(Arrays.asList(args));
+		for(Iterator<String> i$ = argsList.iterator(); i$.hasNext();) {
+			String arg = i$.next();
+			if (arg.toLowerCase().startsWith(serverJarArgument)) {
+				loc = arg.substring(serverJarArgument.length());
+				i$.remove();
+				break;
 			}
 		}
-		Arrays.copyOfRange(args, 0, args.length - 1);
 		addLibraries((URLClassLoader) classLoader, loc);
 		//JavassistClassLoader javassistClassLoader = new JavassistClassLoader(classLoader);
 		//Thread.currentThread().setContextClassLoader(javassistClassLoader);
@@ -35,26 +38,22 @@ public class PatchLauncher {
 		Class<?> launchwrapper;
 		try {
 			launchwrapper = Class.forName("net.minecraft.launchwrapper.Launch", true, classLoader);
-			System.err.printf(String.valueOf(launchwrapper.getClassLoader()));
+			Log.info(String.valueOf(launchwrapper.getClassLoader()));
 			Class.forName("org.objectweb.asm.Type", true, classLoader);
-			try {
-				Method main = launchwrapper.getMethod("main", String[].class);
-				String[] allArgs = new String[args.length + 2];
-				allArgs[0] = "--tweakClass";
-				allArgs[1] = "cpw.mods.fml.common.launcher.FMLServerTweaker";
-				System.arraycopy(args, 0, allArgs, 2, args.length);
-				main.invoke(null, (Object) allArgs);
-			} catch (Exception e) {
-				System.err.printf("A problem occurred running the Server launcher.");
-				e.printStackTrace(System.err);
-				System.exit(1);
-			}
-		} catch (Exception e) {
-			System.err.printf("We appear to be missing one or more essential library files.\n" +
-					"You will need to add them to your server before FML and Forge will run successfully.");
-			e.printStackTrace(System.err);
+			Method main = launchwrapper.getMethod("main", String[].class);
+			String[] allArgs = new String[args.length + 2];
+			allArgs[0] = "--tweakClass";
+			allArgs[1] = "cpw.mods.fml.common.launcher.FMLServerTweaker";
+			System.arraycopy(args, 0, allArgs, 2, args.length);
+			main.invoke(null, (Object) allArgs);
+		} catch (ClassNotFoundException e) {
+			Log.severe(e.toString());
+			System.exit(1);
+		} catch (Throwable t) {
+			Log.severe("A problem occurred running the Server launcher.", t);
 			System.exit(1);
 		}
+
 	}
 
 	private static void addLibraries(URLClassLoader classLoader, String loc) {
@@ -76,13 +75,17 @@ public class PatchLauncher {
 			} catch (IOException e) {
 				Log.severe("", e);
 			}
-			Log.info("Adding specified server jar: " + loc + " @ " + locFile + " to libraries.");
-			addPathToClassLoader(locFile, classLoader);
-		} else {
-			Log.severe("You have not specified a server jar, attempting to guess the forge jar location.");
-			Log.severe("Please add --serverJar=<minecraft/forge/mcpc jar name here> at the end of your java arguments.");
-			Log.severe("Example: java -Xmx=2G -XX:MaxPermSize=256m -XX:+AgressiveOpts -jar TT.jar --serverJar=mcpcIsFast.jar");
+			if (locFile.exists()) {
+				Log.info("Adding specified server jar: " + loc + " @ " + locFile + " to libraries.");
+				addPathToClassLoader(locFile, classLoader);
+			} else {
+				Log.severe("Could not find specified server jar: " + loc + " @ " + locFile);
+			}
+			return;
 		}
+		Log.severe("You have not specified a server jar, attempting to guess the forge jar location.");
+		Log.severe("Please add --serverJar=<minecraft/forge/mcpc jar name here> at the end of your java arguments.");
+		Log.severe("Example: java -Xmx=2G -XX:MaxPermSize=256m -XX:+AgressiveOpts -jar TT.jar --serverJar=mcpcIsFast.jar");
 		for (File file : files) {
 			String lowerCase = file.getName().toLowerCase();
 			if (lowerCase.contains("forge") && (lowerCase.endsWith(".jar") || lowerCase.endsWith(".zip"))) {
@@ -95,14 +98,14 @@ public class PatchLauncher {
 			}
 		}
 		if (!found) {
-			Log.info("Failed to find forge jar. Unless you have installed TT inside the server/forge jar, this won't work. Make sure 'forge' is in the name of the server jar.");
+			Log.severe("Failed to guess which jar is the forge jar.");
 		}
 	}
 
 	private static void addLibraries(URLClassLoader classLoader, File file) {
-		if (file.isDirectory()) {
-			//noinspection ConstantConditions
-			for (File inner : file.listFiles()) {
+		File[] files = file.listFiles();
+		if (files != null) {
+			for (File inner : files) {
 				addLibraries(classLoader, inner);
 			}
 		}
@@ -125,8 +128,7 @@ public class PatchLauncher {
 	public static void addPathToClassLoader(File path, URLClassLoader classLoader) {
 		try {
 			URL u = path.toURI().toURL();
-			URLClassLoader urlClassLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
-			addUrlMethod.invoke(urlClassLoader, u);
+			addUrlMethod.invoke(classLoader, u);
 		} catch (Throwable t) {
 			throw new RuntimeException(t);
 		}
