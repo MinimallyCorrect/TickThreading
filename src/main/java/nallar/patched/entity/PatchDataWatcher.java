@@ -3,6 +3,7 @@ package nallar.patched.entity;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import nallar.patched.annotation.FakeExtend;
+import nallar.unsafe.UnsafeUtil;
 import net.minecraft.entity.DataWatcher;
 import net.minecraft.entity.WatchableObject;
 import net.minecraft.item.ItemStack;
@@ -160,13 +161,17 @@ public abstract class PatchDataWatcher extends DataWatcher {
 	}
 
 	@Override
-	public void writeWatchableObjects(DataOutput dataOutput) throws IOException {
-		for (WatchableObject watchableobject : watchedObjects) {
-			if (watchableobject != null) {
-				a(dataOutput, watchableobject);
+	public void writeWatchableObjects(DataOutput dataOutput) {
+		try {
+			for (WatchableObject watchableobject : watchedObjects) {
+				if (watchableobject != null) {
+					a(dataOutput, watchableobject);
+				}
 			}
+			dataOutput.writeByte(127);
+		} catch (Throwable t) {
+			throw UnsafeUtil.throwIgnoreChecked(t);
 		}
-		dataOutput.writeByte(127);
 	}
 
 	@Override
