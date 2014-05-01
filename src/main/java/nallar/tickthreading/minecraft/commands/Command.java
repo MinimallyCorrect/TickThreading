@@ -4,13 +4,16 @@ import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
 import nallar.tickthreading.Log;
 import net.minecraft.command.CommandBase;
+import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatMessageComponent;
 import ru.tehkode.permissions.IPermissions;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public abstract class Command extends CommandBase {
 	protected boolean requireOp() {
@@ -78,5 +81,12 @@ public abstract class Command extends CommandBase {
 				return;
 			}
 		}
+	}
+
+	@Override
+	public int compareTo(Object o) {
+		return super.compareTo((ICommand) o);
+		// Necessary because generic types are stripped in minecraft, and deobfuscation doesn't add them back.
+		// This confuses javac for some reason - compareTo(object) actually is implemented in the superclass.
 	}
 }
