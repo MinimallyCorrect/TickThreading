@@ -4,10 +4,16 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 import com.google.common.io.ByteStreams;
+import com.google.common.io.Files;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.jar.JarEntry;
@@ -78,13 +84,59 @@ public class Main {
 		}
 		istream.close();
 
+		File generatedSrcDirectory = new File("./buildSrc/generated/");
+
+		if (source) {
+			if (generatedSrcDirectory.exists()) {
+				deleteDirectory(generatedSrcDirectory.toPath());
+			}
+			generatedSrcDirectory.mkdir();
+		}
+
 		// WRITING
 		JarOutputStream ostream = new JarOutputStream(new FileOutputStream(jar));
 		for (Entry<String, byte[]> e : stuff.entrySet()) {
 			ostream.putNextEntry(new JarEntry(e.getKey()));
 			ostream.write(e.getValue());
 			ostream.closeEntry();
+
+			if (source && e.getValue().length > 0) {
+				File f = new File(generatedSrcDirectory, e.getKey());
+				f.getParentFile().mkdirs();
+				Files.write(e.getValue(), f);
+			}
 		}
 		ostream.close();
+	}
+
+	public static void deleteDirectory(Path path) throws IOException {
+		java.nio.file.Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+			@Override
+			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+					throws IOException {
+				java.nio.file.Files.delete(file);
+				return FileVisitResult.CONTINUE;
+			}
+
+			@Override
+			public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+				// try to delete the file anyway, even if its attributes
+				// could not be read, since delete-only access is
+				// theoretically possible
+				java.nio.file.Files.delete(file);
+				return FileVisitResult.CONTINUE;
+			}
+
+			@Override
+			public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+				if (exc == null) {
+					java.nio.file.Files.delete(dir);
+					return FileVisitResult.CONTINUE;
+				} else {
+					// directory iteration failed; propagate exception
+					throw exc;
+				}
+			}
+		});
 	}
 }

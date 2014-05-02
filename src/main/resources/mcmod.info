@@ -1,14 +1,16 @@
+[
 {
-  "modinfoversion": 2,
-  "modlist": [{
-    "modid": "@MOD_ID@",
-    "name": "@MOD_NAME@",
-    "description": "Mod which runs entity and tileEntity ticks in threads.",
-    "version": "@MOD_VERSION@",
-    "mcversion": "@MC_VERSION@",
-    "url": "http://nallar.me/minecraft/",
-    "updateUrl": "http://nallar.me/buildservice/job/TickThreading/lastSuccessfulBuild/artifact/target/",
-    "authors": [ "nallar" ],
-    "credits": "Authored by nallar"
-  }]
+	"modid": "TickThreading",
+	"name": "TickThreading",
+	"description": "Mod which runs entity and tileEntity ticks in threads.",
+	"version": "${version}",
+	"mcversion": "${mcversion}",
+	"url": "http://nallar.me/minecraft/",
+	"updateUrl": "http://nallar.me/buildservice/job/TickThreading/lastSuccessfulBuild/artifact/target/",
+	"authorList": [ "nallar" ],
+	"credits": "Authored by nallar",
+	"screenshots": [],
+	"parent":"",
+	"dependencies": []
 }
+]

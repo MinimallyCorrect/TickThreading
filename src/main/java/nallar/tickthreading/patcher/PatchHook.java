@@ -1,7 +1,5 @@
 package nallar.tickthreading.patcher;
 
-import nallar.tickthreading.Log;
-
 import java.util.*;
 
 public class PatchHook {
@@ -9,7 +7,7 @@ public class PatchHook {
 	HashMap<String, byte[]> patchedBytes = new HashMap<String, byte[]>();
 
 	public static byte[] hook(String name, String transformedName, byte[] basicClass) {
-		Log.info("");
+		//Log.info("");
 		return basicClass;
 	}
 }

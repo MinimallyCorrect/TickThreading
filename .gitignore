@@ -50,6 +50,7 @@ MANIFEST.MF
 *.iws
 .idea
 build
+buildSrc/generated
 eclipse
 out/
 dist

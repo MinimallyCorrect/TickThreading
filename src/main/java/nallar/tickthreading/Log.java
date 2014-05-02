@@ -75,6 +75,7 @@ public class Log {
 			}
 		} catch (NoClassDefFoundError ignored) {
 			// Not running under forge
+			System.err.println("Initialised logger while not running under forge!");
 			LOGGER.setUseParentHandlers(false);
 			LOGGER.addHandler(new Handler() {
 				private final LogFormatter logFormatter = new LogFormatter();

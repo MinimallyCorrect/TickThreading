@@ -38,6 +38,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.launchwrapper.LaunchClassLoader;
 import net.minecraft.network.NetServerHandler;
 import net.minecraft.network.packet.PacketCount;
 import net.minecraft.server.MinecraftServer;
@@ -57,7 +58,7 @@ import java.lang.reflect.*;
 import java.util.*;
 
 @SuppressWarnings("WeakerAccess")
-@Mod(modid = "TickThreading", name = "TickThreading", version = "@MOD_VERSION@", acceptedMinecraftVersions = "[@MC_VERSION@]")
+@Mod(modid = "TickThreading", name = "TickThreading")
 @NetworkMod(clientSideRequired = false, serverSideRequired = false)
 public class TickThreading {
 	@Mod.Instance
@@ -111,7 +112,12 @@ public class TickThreading {
 	@Mod.EventHandler
 	public void init(FMLInitializationEvent event) {
 		if (!MinecraftServer.getServer().getServerModName().contains("tickthreading")) {
-			Log.severe("TT should not be installed in the mods directory. TT is now a server wrapper, put it in the main server directory and launch the TT jar.");
+			try {
+				LaunchClassLoader.testForTTChanges();
+				Log.severe("Patching failed - TT installed correctly as a wrapper, but patches not made.");
+			} catch (NoSuchMethodError e) {
+				Log.severe("TT should not be installed in the mods directory. TT is now a server wrapper, put it in the main server directory and launch the TT jar.");
+			}
 			System.exit(1);
 		}
 		MinecraftForge.EVENT_BUS.register(this);

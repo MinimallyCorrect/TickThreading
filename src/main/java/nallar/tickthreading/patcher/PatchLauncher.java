@@ -1,6 +1,5 @@
 package nallar.tickthreading.patcher;
 
-import nallar.tickthreading.Log;
 import nallar.unsafe.UnsafeUtil;
 
 import java.io.*;
@@ -38,7 +37,7 @@ public class PatchLauncher {
 		Class<?> launchwrapper;
 		try {
 			launchwrapper = Class.forName("net.minecraft.launchwrapper.Launch", true, classLoader);
-			Log.info(String.valueOf(launchwrapper.getClassLoader()));
+			System.out.println(String.valueOf(launchwrapper.getClassLoader()));
 			Class.forName("org.objectweb.asm.Type", true, classLoader);
 			Method main = launchwrapper.getMethod("main", String[].class);
 			String[] allArgs = new String[args.length + 2];
@@ -47,10 +46,11 @@ public class PatchLauncher {
 			System.arraycopy(args, 0, allArgs, 2, args.length);
 			main.invoke(null, (Object) allArgs);
 		} catch (ClassNotFoundException e) {
-			Log.severe(e.toString());
+			System.err.println(e.toString());
 			System.exit(1);
 		} catch (Throwable t) {
-			Log.severe("A problem occurred running the Server launcher.", t);
+			System.err.println("A problem occurred running the Server launcher.");
+			t.printStackTrace(System.err);
 			System.exit(1);
 		}
 
@@ -73,32 +73,32 @@ public class PatchLauncher {
 			try {
 				locFile = locFile.getCanonicalFile();
 			} catch (IOException e) {
-				Log.severe("", e);
+				e.printStackTrace(System.err);
 			}
 			if (locFile.exists()) {
-				Log.info("Adding specified server jar: " + loc + " @ " + locFile + " to libraries.");
+				System.out.println("Adding specified server jar: " + loc + " @ " + locFile + " to libraries.");
 				addPathToClassLoader(locFile, classLoader);
 			} else {
-				Log.severe("Could not find specified server jar: " + loc + " @ " + locFile);
+				System.err.println("Could not find specified server jar: " + loc + " @ " + locFile);
 			}
 			return;
 		}
-		Log.severe("You have not specified a server jar, attempting to guess the forge jar location.");
-		Log.severe("Please add --serverJar=<minecraft/forge/mcpc jar name here> at the end of your java arguments.");
-		Log.severe("Example: java -Xmx=2G -XX:MaxPermSize=256m -XX:+AgressiveOpts -jar TT.jar --serverJar=mcpcIsFast.jar");
+		System.err.println("You have not specified a server jar, attempting to guess the forge jar location.");
+		System.err.println("Please add --serverJar=<minecraft/forge/mcpc jar name here> at the end of your java arguments.");
+		System.err.println("Example: java -Xmx=2G -XX:MaxPermSize=256m -XX:+AgressiveOpts -jar TT.jar --serverJar=mcpcIsFast.jar");
 		for (File file : files) {
 			String lowerCase = file.getName().toLowerCase();
 			if (lowerCase.contains("forge") && (lowerCase.endsWith(".jar") || lowerCase.endsWith(".zip"))) {
-				Log.info("Found forge jar " + file);
+				System.out.println("Found forge jar " + file);
 				if (found) {
-					Log.info("Found multiple forge jars, please ensure that only one jar with forge in the name is in the main minecraft folder");
+					System.out.println("Found multiple forge jars, please ensure that only one jar with forge in the name is in the main minecraft folder");
 				}
 				addPathToClassLoader(file, classLoader);
 				found = true;
 			}
 		}
 		if (!found) {
-			Log.severe("Failed to guess which jar is the forge jar.");
+			System.err.println("Failed to guess which jar is the forge jar.");
 		}
 	}
 

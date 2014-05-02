@@ -2,7 +2,6 @@ package net.minecraft.launchwrapper;
 
 import cpw.mods.fml.relauncher.FMLRelaunchLog;
 import nallar.tickthreading.patcher.PatchHook;
-import nallar.unsafe.UnsafeUtil;
 
 import java.io.*;
 import java.net.*;
@@ -85,6 +84,7 @@ public class LaunchClassLoader extends URLClassLoader {
 				renameTransformer = (IClassNameTransformer) transformer;
 			}
 			if (transformerClassName.equals("cpw.mods.fml.common.asm.transformers.DeobfuscationTransformer")) {
+				FMLRelaunchLog.info("Intercepted adding of srg transformer " + prePatchTransformer);
 				prePatchTransformer = transformer;
 			}
 		} catch (Exception e) {
@@ -271,7 +271,13 @@ public class LaunchClassLoader extends URLClassLoader {
 		} catch (Throwable t) {
 			String message = t.getMessage();
 			if (message != null && message.contains("for invalid side")) {
-				throw UnsafeUtil.throwIgnoreChecked(t);
+				if (t instanceof RuntimeException) {
+					throw (RuntimeException) t;
+				} else if (t instanceof Error) {
+					throw (Error) t;
+				} else {
+					throw new RuntimeException(t);
+				}
 			} else if (basicClass != null || DEBUG_FINER) {
 				FMLRelaunchLog.log((DEBUG_FINER && basicClass != null) ? Level.WARNING : Level.FINE, t, "Failed to transform " + name);
 			}
@@ -280,6 +286,15 @@ public class LaunchClassLoader extends URLClassLoader {
 	}
 
 	private byte[] runTransformers(final String name, final String transformedName, byte[] basicClass) {
+		if (prePatchTransformer == null) {
+			if (transformedName.startsWith("net.minecraft.")) {
+				FMLRelaunchLog.log(Level.INFO, new Throwable(), "Transforming " + name + " too early.");
+			}
+			for (final IClassTransformer transformer : transformers) {
+				basicClass = runTransformer(name, transformedName, basicClass, transformer);
+			}
+			return basicClass;
+		}
 		basicClass = transformUpToSrg(name, transformedName, basicClass);
 		basicClass = PatchHook.hook(name, transformedName, basicClass);
 		basicClass = transformAfterSrg(name, transformedName, basicClass);
@@ -293,7 +308,7 @@ public class LaunchClassLoader extends URLClassLoader {
 				return basicClass;
 			}
 		}
-		throw new RuntimeException("No SRG transformer!");
+		throw new RuntimeException("No SRG transformer!" + transformers.toString() + " -> " + prePatchTransformer);
 	}
 
 	HashMap<String, byte[]> cachedSrgBytes = new HashMap<String, byte[]>();
@@ -441,5 +456,9 @@ public class LaunchClassLoader extends URLClassLoader {
 
 	public void clearNegativeEntries(Set<String> entriesToClear) {
 		negativeResourceCache.removeAll(entriesToClear);
+	}
+
+	public static void testForTTChanges() {
+		// Do nothing, just make this method exist.
 	}
 }
