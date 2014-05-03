@@ -1,7 +1,5 @@
 package nallar.tickthreading.patcher;
 
-import nallar.unsafe.UnsafeUtil;
-
 import java.io.*;
 import java.lang.reflect.*;
 import java.net.*;
@@ -117,7 +115,7 @@ public class PatchLauncher {
 		try {
 			method = URLClassLoader.class.getDeclaredMethod("addURL", new Class[]{URL.class});
 		} catch (NoSuchMethodException e) {
-			throw UnsafeUtil.throwIgnoreChecked(e);
+			throw new RuntimeException(e);
 		}
 		method.setAccessible(true);
 		return method;
