@@ -1,7 +1,9 @@
 package net.minecraft.launchwrapper;
 
 import cpw.mods.fml.relauncher.FMLRelaunchLog;
+import nallar.insecurity.InsecurityManager;
 import nallar.tickthreading.patcher.PatchHook;
+import nallar.tickthreading.patcher.PatcherClassLoader;
 import nallar.unsafe.UnsafeUtil;
 
 import java.io.*;
@@ -82,8 +84,26 @@ public class LaunchClassLoader extends URLClassLoader {
 		}
 	}
 
+	private boolean initedTTPatcher = false;
+
 	public void registerTransformer(String transformerClassName) {
 		try {
+			if (!initedTTPatcher) {
+				initedTTPatcher = true;
+				try {
+					FMLRelaunchLog.finest("Dummy log message to make sure that FMLRelaunchLog has been set up.");
+				} catch (Throwable t) {
+					System.err.println("Failure in FMLRelaunchLog");
+					t.printStackTrace(System.err);
+				}
+				try {
+					InsecurityManager.init();
+				} catch (Throwable t) {
+					System.err.println("Failed to set up Security Manager. This is probably not a huge problem - but it could indicate classloading issues.");
+				}
+				ClassLoader patcherClassLoader = new PatcherClassLoader(this);
+				Class.forName("nallar.tickthreading.patcher.PatchHook", true, patcherClassLoader);
+			}
 			IClassTransformer transformer = (IClassTransformer) loadClass(transformerClassName).newInstance();
 			if (transformer instanceof IClassNameTransformer && renameTransformer == null) {
 				renameTransformer = (IClassNameTransformer) transformer;
@@ -359,10 +379,17 @@ public class LaunchClassLoader extends URLClassLoader {
 		return basicClass;
 	}
 
+	private HashMap<String, byte[]> cachedSrgClasses = new HashMap<String, byte[]>();
+
 	private byte[] transformUpToSrg(final String name, final String transformedName, byte[] basicClass) {
+		byte[] cached = cachedSrgClasses.get(transformedName);
+		if (cached != null) {
+			return cached;
+		}
 		for (final IClassTransformer transformer : transformers) {
 			basicClass = runTransformer(name, transformedName, basicClass, transformer);
 			if (transformer == deobfuscationTransformer) {
+				cachedSrgClasses.put(transformedName, basicClass);
 				return basicClass;
 			}
 		}
@@ -396,6 +423,10 @@ public class LaunchClassLoader extends URLClassLoader {
 	public byte[] getSrgBytes(String name) {
 		final String transformedName = transformName(name);
 		name = untransformName(name);
+		byte[] cached = cachedSrgClasses.get(transformedName);
+		if (cached != null) {
+			return cached;
+		}
 		try {
 			byte[] bytes = getClassBytes(name);
 			return transformUpToSrg(name, transformedName, bytes);

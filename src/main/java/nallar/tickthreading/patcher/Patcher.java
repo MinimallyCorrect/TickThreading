@@ -8,7 +8,7 @@ import javassist.CtClass;
 import javassist.CtConstructor;
 import javassist.CtMethod;
 import javassist.NotFoundException;
-import nallar.tickthreading.Log;
+import nallar.tickthreading.PatchLog;
 import nallar.tickthreading.mappings.ClassDescription;
 import nallar.tickthreading.mappings.FieldDescription;
 import nallar.tickthreading.mappings.MCPMappings;
@@ -57,7 +57,7 @@ public class Patcher {
 			patchClassInstance = patchesClass.getDeclaredConstructors()[0].newInstance(classPool);
 			preSrgPatchClassInstance = patchesClass.getDeclaredConstructors()[0].newInstance(preSrgClassPool);
 		} catch (Exception e) {
-			Log.severe("Failed to instantiate patch class", e);
+			PatchLog.severe("Failed to instantiate patch class", e);
 		}
 		try {
 			readPatchesFromXmlDocument(DomUtil.readDocumentFromInputStream(config));
@@ -173,14 +173,14 @@ public class Patcher {
 				try {
 					return patches.get(name).runPatches().toBytecode();
 				} catch (Throwable t) {
-					Log.severe("Failed to patch " + name + " in patch group " + name + '.', t);
+					PatchLog.severe("Failed to patch " + name + " in patch group " + name + '.', t);
 					return originalBytes;
 				}
 			}
 			runPatchesIfNeeded();
 			byte[] bytes = patchedBytes.get(name);
 			if (bytes == null) {
-				Log.severe("Got no patched bytes for " + name);
+				PatchLog.severe("Got no patched bytes for " + name);
 				return originalBytes;
 			}
 			return bytes;
@@ -202,18 +202,18 @@ public class Patcher {
 				try {
 					patchedClasses.add(classPatchDescriptor.runPatches());
 				} catch (Throwable t) {
-					Log.severe("Failed to patch " + classPatchDescriptor.name + " in patch group " + name + '.', t);
+					PatchLog.severe("Failed to patch " + classPatchDescriptor.name + " in patch group " + name + '.', t);
 				}
 			}
 			for (CtClass ctClass : patchedClasses) {
 				if (!ctClass.isModified()) {
-					Log.severe("Failed to get patched bytes for " + ctClass.getName() + " as it was never modified in patch group " + name + '.');
+					PatchLog.severe("Failed to get patched bytes for " + ctClass.getName() + " as it was never modified in patch group " + name + '.');
 					continue;
 				}
 				try {
 					patchedBytes.put(ctClass.getName(), ctClass.toBytecode());
 				} catch (Throwable t) {
-					Log.severe("Failed to get patched bytes for " + ctClass.getName() + " in patch group " + name + '.', t);
+					PatchLog.severe("Failed to get patched bytes for " + ctClass.getName() + " in patch group " + name + '.', t);
 				}
 			}
 		}
@@ -249,7 +249,7 @@ public class Patcher {
 							field = field.substring(0, field.indexOf('.'));
 							if (!field.isEmpty() && (field.charAt(0) == '$') && prefix.isEmpty()) {
 								if (methodDescriptionList.size() > 1) {
-									Log.severe("Can not obfuscate parameter field " + field + " automatically as multiple methods are called.");
+									PatchLog.severe("Can not obfuscate parameter field " + field + " automatically as multiple methods are called.");
 									break;
 								}
 								MethodDescription methodDescription = mappings.rmap(mappings.map(methodDescriptionList.get(0)));
@@ -258,7 +258,7 @@ public class Patcher {
 								int parameterIndex = Integer.valueOf(field.substring(1)) - 1;
 								if (parameterIndex >= parameterList.size()) {
 									if (!parameterList.isEmpty()) {
-										Log.severe("Can not obfuscate parameter field " + field + ", index: " + parameterIndex + " but parameter list is: " + CollectionsUtil.join(parameterList));
+										PatchLog.severe("Can not obfuscate parameter field " + field + ", index: " + parameterIndex + " but parameter list is: " + CollectionsUtil.join(parameterList));
 									}
 									break;
 								}
@@ -351,9 +351,9 @@ public class Patcher {
 			Map<String, String> attributes = patchDescriptor.getAttributes();
 			Map<String, String> attributesClean = new HashMap<String, String>(attributes);
 			attributesClean.remove("code");
-			Log.fine("Patching " + ctClass.getName() + " with " + this.name + '(' + CollectionsUtil.joinMap(attributesClean) + ')' + (methods.isEmpty() ? "" : " {" + methods + '}'));
+			PatchLog.fine("Patching " + ctClass.getName() + " with " + this.name + '(' + CollectionsUtil.joinMap(attributesClean) + ')' + (methods.isEmpty() ? "" : " {" + methods + '}'));
 			if (requiredAttributes != null && !attributes.keySet().containsAll(requiredAttributes)) {
-				Log.severe("Missing required attributes " + requiredAttributes.toString() + " when patching " + ctClass.getName());
+				PatchLog.severe("Missing required attributes " + requiredAttributes.toString() + " when patching " + ctClass.getName());
 				return null;
 			}
 			if ("^all^".equals(methods)) {
@@ -377,7 +377,7 @@ public class Patcher {
 			} else if ("^static^".equals(methods)) {
 				CtConstructor ctBehavior = ctClass.getClassInitializer();
 				if (ctBehavior == null) {
-					Log.severe("No static initializer found patching " + ctClass.getName() + " with " + toString());
+					PatchLog.severe("No static initializer found patching " + ctClass.getName() + " with " + toString());
 				} else {
 					run(ctBehavior, attributes, patchClassInstance);
 				}
@@ -389,7 +389,7 @@ public class Patcher {
 						ctMethod = methodDescription.inClass(ctClass);
 					} catch (Throwable t) {
 						if (!attributes.containsKey("allowMissing")) {
-							Log.warning("", t);
+							PatchLog.warning("", t);
 						}
 						continue;
 					}
@@ -411,9 +411,9 @@ public class Patcher {
 					t = t.getCause();
 				}
 				if (t instanceof CannotCompileException && attributes.containsKey("code")) {
-					Log.severe("Code: " + attributes.get("code"));
+					PatchLog.severe("Code: " + attributes.get("code"));
 				}
-				Log.severe("Error patching " + ctClass.getName() + " with " + toString(), t);
+				PatchLog.severe("Error patching " + ctClass.getName() + " with " + toString(), t);
 				return null;
 			}
 		}
@@ -430,9 +430,9 @@ public class Patcher {
 					t = t.getCause();
 				}
 				if (t instanceof CannotCompileException && attributes.containsKey("code")) {
-					Log.severe("Code: " + attributes.get("code"));
+					PatchLog.severe("Code: " + attributes.get("code"));
 				}
-				Log.severe("Error patching " + ctBehavior.getName() + " in " + ctBehavior.getDeclaringClass().getName() + " with " + toString(), t);
+				PatchLog.severe("Error patching " + ctBehavior.getName() + " in " + ctBehavior.getDeclaringClass().getName() + " with " + toString(), t);
 				return null;
 			}
 		}

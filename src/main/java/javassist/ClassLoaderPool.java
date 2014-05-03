@@ -2,7 +2,7 @@ package javassist;
 
 import com.google.common.base.Throwables;
 import javassist.bytecode.Descriptor;
-import nallar.tickthreading.Log;
+import nallar.tickthreading.PatchLog;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 
 import java.io.*;
@@ -62,7 +62,7 @@ public class ClassLoaderPool extends ClassPool {
 		}
 		byte[] bytes = preSrg ? LaunchClassLoader.instance.getPreSrgBytes(className) : LaunchClassLoader.instance.getSrgBytes(className);
 		if (bytes == null) {
-			Log.warning("Failed to find class " + className + ", preSrg: " + preSrg);
+			PatchLog.warning("Failed to find class " + className + ", preSrg: " + preSrg);
 			return super.createCtClass(className, useCache);
 		}
 		try {

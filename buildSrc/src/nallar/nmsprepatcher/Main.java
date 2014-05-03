@@ -6,19 +6,12 @@ import com.google.common.collect.Maps;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.HashMap;
-import java.util.Map.Entry;
-import java.util.jar.JarEntry;
-import java.util.jar.JarInputStream;
-import java.util.jar.JarOutputStream;
+import java.io.*;
+import java.nio.file.*;
+import java.nio.file.attribute.*;
+import java.util.*;
+import java.util.Map.*;
+import java.util.jar.*;
 
 public class Main {
 	/**
@@ -59,6 +52,15 @@ public class Main {
 	 * @param source if TRUE source, if FALSE binary
 	 */
 	public static void editJar(File jar, boolean source) throws Exception {
+		try {
+			editJar_(jar, source);
+		} catch (Throwable t) {
+			t.printStackTrace();
+			Throwables.propagate(t);
+		}
+	}
+
+	public static void editJar_(File jar, boolean source) throws Exception {
 		HashMap<String, byte[]> stuff = Maps.newHashMap();
 
 		// READING
@@ -85,6 +87,7 @@ public class Main {
 		istream.close();
 
 		File generatedSrcDirectory = new File("./generated/");
+		generatedSrcDirectory = generatedSrcDirectory.getCanonicalFile();
 
 		if (source) {
 			if (generatedSrcDirectory.exists()) {
