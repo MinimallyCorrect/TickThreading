@@ -19,24 +19,51 @@ public class PatchLog {
 	private static final File logFolder = new File("TTPatcherLogs");
 
 	static {
-		LOGGER.setUseParentHandlers(false);
-		LOGGER.addHandler(new Handler() {
-			private final LogFormatter logFormatter = new LogFormatter();
-			private final PrintStream out = new PrintStream(new FileOutputStream(FileDescriptor.out));
-
-			@Override
-			public void publish(LogRecord record) {
-				out.print(logFormatter.format(record));
+		try {
+			final Logger parent = Logger.getLogger("TickThreading");
+			if (parent == null) {
+				throw new NoClassDefFoundError();
 			}
+			LOGGER.setParent(parent);
+			LOGGER.setUseParentHandlers(true);
+			LOGGER.addHandler(new Handler() {
+				private final LogFormatter logFormatter = new LogFormatter();
 
-			@Override
-			public void flush() {
-			}
+				@Override
+				public void publish(LogRecord record) {
+					if (parent.getHandlers().length == 0) {
+						System.out.print(logFormatter.format(record));
+					}
+				}
 
-			@Override
-			public void close() throws SecurityException {
-			}
-		});
+				@Override
+				public void flush() {
+				}
+
+				@Override
+				public void close() throws SecurityException {
+				}
+			});
+		} catch (NoClassDefFoundError ignored) {
+			System.err.println("Failed to get parent logger.");
+			LOGGER.setUseParentHandlers(false);
+			LOGGER.addHandler(new Handler() {
+				private final LogFormatter logFormatter = new LogFormatter();
+
+				@Override
+				public void publish(LogRecord record) {
+					System.out.print(logFormatter.format(record));
+				}
+
+				@Override
+				public void flush() {
+				}
+
+				@Override
+				public void close() throws SecurityException {
+				}
+			});
+		}
 		LOGGER.setLevel(Level.ALL);
 		setFileName("patcher", Level.ALL, LOGGER);
 	}

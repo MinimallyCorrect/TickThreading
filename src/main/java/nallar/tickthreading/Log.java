@@ -156,7 +156,7 @@ public class Log {
 
 				@Override
 				public void publish(LogRecord record) {
-					if (record.getLevel().intValue() >= minimumLevel.intValue()) {
+					if (record.getLevel().intValue() >= minimumLevel.intValue() && record.getLoggerName().equals("TickThreading")) {
 						try {
 							outputWriter.write(logFormatter.format(record));
 						} catch (IOException ignored) {

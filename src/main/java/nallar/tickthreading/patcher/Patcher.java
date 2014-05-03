@@ -280,7 +280,10 @@ public class Patcher {
 				CtClass ctClass = classPool.get(name);
 				for (PatchDescriptor patchDescriptor : patches) {
 					PatchMethodDescriptor patchMethodDescriptor = patchMethods.get(patchDescriptor.getPatch());
-					patchMethodDescriptor.run(patchDescriptor, ctClass, preSrg ? preSrgPatchClassInstance : patchClassInstance);
+					Object result = patchMethodDescriptor.run(patchDescriptor, ctClass, preSrg ? preSrgPatchClassInstance : patchClassInstance);
+					if (result instanceof CtClass) {
+						ctClass = (CtClass) result;
+					}
 				}
 				return ctClass;
 			}

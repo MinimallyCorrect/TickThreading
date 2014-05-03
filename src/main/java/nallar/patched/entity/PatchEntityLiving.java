@@ -17,6 +17,7 @@ public class PatchEntityLiving extends EntityLiving {
 		super(par1World);
 	}
 
+	@Override
 	public void onLivingUpdate() {
 		final World worldObj = this.worldObj;
 		final Profiler theProfiler = worldObj.theProfiler;

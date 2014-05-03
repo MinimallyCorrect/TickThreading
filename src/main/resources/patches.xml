@@ -1142,7 +1142,7 @@
 			 }">update
 			</replaceMethod>
 			<synchronize>update</synchronize>
-			<synchronize field="$1.b.g">calculateChunkChanges</synchronize>
+			<synchronize field="$1.^field:WorldServer/theChunkProviderServer^.^field:ChunkProviderServer/loadedChunks^">calculateChunkChanges</synchronize>
 		</class>
 		<class id="codechicken.chunkloader.ChunkLoaderManager$ChunkLoaderOrganiser">
 			<replaceMethodCall newMethod="getTEWithLoad" method="^class:World^.^method:World/getBlockTileEntity^">

@@ -1,6 +1,5 @@
 package nallar.insecurity;
 
-import cpw.mods.fml.common.FMLLog;
 import nallar.tickthreading.Log;
 import net.minecraft.server.MinecraftServer;
 
@@ -31,17 +30,22 @@ public class InsecurityManager extends java.lang.SecurityManager {
 	public void checkPermission(Permission perm, Object context) {
 	}
 
+	private static final String[] loggerNames = {
+		"ForgeModLoader",
+		"TickThreading",
+		"TTPatcher",
+	};
+
 	@Override
 	public void checkExit(int status) {
 		super.checkExit(status);
 		if (Log.debug && MinecraftServer.getServer().isServerRunning()) {
 			Log.debug("Server shutting down - requested at ", new ThisIsNotAnError());
 		}
-		for (Handler handler : FMLLog.getLogger().getHandlers()) {
-			handler.flush();
-		}
-		for (Handler handler : Log.LOGGER.getHandlers()) {
-			handler.flush();
+		for (String name : loggerNames) {
+			for (Handler handler : Logger.getLogger(name).getHandlers()) {
+				handler.flush();
+			}
 		}
 	}
 }

@@ -1,11 +1,10 @@
 package javassist;
 
-import com.google.common.base.Throwables;
-import javassist.bytecode.Descriptor;
 import nallar.tickthreading.PatchLog;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 
 import java.io.*;
+import java.net.*;
 
 /**
  * This is in the javassist package (which isn't sealed) to access package-local javassist internals needed to load
@@ -52,23 +51,89 @@ public class ClassLoaderPool extends ClassPool {
 		return clazz;
 	}
 
-	@Override
-	protected CtClass createCtClass(String className, boolean useCache) {
-		if (className.charAt(0) == '[') {
-			className = Descriptor.toClassName(className);
-		}
+	byte[] getClassBytesRuntime(String className) {
 		if (LaunchClassLoader.instance.excluded(className)) {
-			return super.createCtClass(className, useCache);
+			return null;
 		}
 		byte[] bytes = preSrg ? LaunchClassLoader.instance.getPreSrgBytes(className) : LaunchClassLoader.instance.getSrgBytes(className);
 		if (bytes == null) {
-			PatchLog.warning("Failed to find class " + className + ", preSrg: " + preSrg);
-			return super.createCtClass(className, useCache);
+			PatchLog.fine("Failed to find class " + className + ", preSrg: " + preSrg);
 		}
-		try {
-			return new CtClassType(new ByteArrayInputStream(bytes), this);
-		} catch (IOException e) {
-			throw Throwables.propagate(e);
+		return bytes;
+	}
+
+	@Override
+	public URL find(String className) {
+		byte[] bytes = getClassBytesRuntime(className);
+		if (bytes != null) {
+			try {
+				return new URL(null, "runtimeclass:" + className.replace(".", "/"), new Handler(bytes));
+			} catch (MalformedURLException e) {
+				PatchLog.severe("Failed to make fake URL for " + className, e);
+			}
+		}
+		return source.find(className);
+	}
+
+	@Override
+	InputStream openClassfile(String className) throws NotFoundException {
+		byte[] bytes = getClassBytesRuntime(className);
+		if (bytes != null) {
+			return new ByteArrayInputStream(bytes);
+		}
+		return source.openClassfile(className);
+	}
+
+	@Override
+	void writeClassfile(String className, OutputStream out) throws NotFoundException, IOException, CannotCompileException {
+		byte[] bytes = getClassBytesRuntime(className);
+		if (bytes != null) {
+			out.write(bytes);
+		} else {
+			source.writeClassfile(className, out);
+		}
+	}
+
+	public static class Handler extends URLStreamHandler {
+		final byte[] data;
+
+		public Handler(byte[] data) {
+			this.data = data;
+		}
+
+		@Override
+		protected URLConnection openConnection(URL u) throws IOException {
+			return new MockHttpURLConnection(u, data);
+		}
+
+		public static class MockHttpURLConnection extends HttpURLConnection {
+			private final byte[] data;
+
+			protected MockHttpURLConnection(URL url, byte[] data) {
+				super(url);
+				this.data = data;
+			}
+
+			@Override
+			public InputStream getInputStream() throws IOException {
+				return new ByteArrayInputStream(data);
+			}
+
+			@Override
+			public void connect() throws IOException {
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			public void disconnect() {
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			public boolean usingProxy() {
+				return false;
+			}
+
 		}
 	}
 }

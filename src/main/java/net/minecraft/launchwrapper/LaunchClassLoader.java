@@ -144,6 +144,7 @@ public class LaunchClassLoader extends URLClassLoader {
 	}
 
 	private static final ThreadLocal<LinkedList<String>> loadingClasses = new ThreadLocal<LinkedList<String>>() {
+		@Override
 		public LinkedList<String> initialValue() {
 			return new LinkedList<String>();
 		}

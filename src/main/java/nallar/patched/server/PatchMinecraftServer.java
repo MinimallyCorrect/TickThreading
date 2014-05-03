@@ -565,9 +565,11 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				}
 				c++;
 				if (c >= 10) {
-					DeadLockDetector.sendChatSafely("The world " + Log.name(world) + " has become unstable, and the server will now stop.");
-					Log.severe(Log.name(world) + " has become unstable, stopping.");
-					this.initiateShutdown();
+					if (serverRunning) {
+						DeadLockDetector.sendChatSafely("The world " + Log.name(world) + " has become unstable, and the server will now stop.");
+						Log.severe(Log.name(world) + " has become unstable, stopping.");
+						this.initiateShutdown();
+					}
 				}
 				exceptionCount.put(id, c);
 			}
