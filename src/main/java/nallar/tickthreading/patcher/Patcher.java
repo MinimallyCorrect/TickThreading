@@ -136,11 +136,19 @@ public class Patcher {
 				return;
 			}
 			ranPatches = true;
+			Set<CtClass> patchedClasses = new HashSet<CtClass>();
 			for (ClassPatchDescriptor classPatchDescriptor : classPatchDescriptors) {
 				try {
-					patchedBytes.put(classPatchDescriptor.name, classPatchDescriptor.runPatches().toBytecode());
+					patchedClasses.add(classPatchDescriptor.runPatches());
 				} catch (Throwable t) {
-					Log.severe("Failed to patch " + name + " in patch group " + name + '.', t);
+					Log.severe("Failed to patch " + classPatchDescriptor.name + " in patch group " + name + '.', t);
+				}
+			}
+			for (CtClass ctClass : patchedClasses) {
+				try {
+					patchedBytes.put(ctClass.getName(), ctClass.toBytecode());
+				} catch (Throwable t) {
+					Log.severe("Failed to get patched bytes for " + ctClass.getName() + " in patch group " + name + '.', t);
 				}
 			}
 		}

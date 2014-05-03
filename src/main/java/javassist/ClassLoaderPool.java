@@ -1,6 +1,7 @@
 package javassist;
 
 import com.google.common.base.Throwables;
+import javassist.bytecode.Descriptor;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 
 import java.io.*;
@@ -50,6 +51,9 @@ public class ClassLoaderPool extends ClassPool {
 
 	@Override
 	protected CtClass createCtClass(String className, boolean useCache) {
+		if (className.charAt(0) == '[') {
+			className = Descriptor.toClassName(className);
+		}
 		if (LaunchClassLoader.instance.excluded(className)) {
 			return super.createCtClass(className, useCache);
 		}

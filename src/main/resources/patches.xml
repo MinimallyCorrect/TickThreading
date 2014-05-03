@@ -463,7 +463,7 @@
 		<class id="net.minecraft.item.ItemBlock" env="mcpc">
 			<threadLocalBoolean field="callingPlaceEvent" threadLocalField="$0.inPlaceEvent"/>
 		</class>
-		<class id="net.minecraft.server.gui.GuiLogOutputHandler">
+		<class id="net.minecraft.server.gui.TextAreaLogHandler">
 			<synchronize>publish</synchronize>
 		</class>
 	</minecraftCommon>
