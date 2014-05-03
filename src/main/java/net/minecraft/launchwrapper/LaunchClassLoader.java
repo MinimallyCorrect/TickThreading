@@ -12,7 +12,7 @@ import java.util.jar.Attributes.*;
 import java.util.logging.*;
 
 public class LaunchClassLoader extends URLClassLoader {
-	private IClassTransformer prePatchTransformer;
+	private IClassTransformer deobfuscationTransformer;
 	public static final int BUFFER_SIZE = 1 << 12;
 	private List<URL> sources;
 	private ClassLoader parent = getClass().getClassLoader();
@@ -84,8 +84,8 @@ public class LaunchClassLoader extends URLClassLoader {
 				renameTransformer = (IClassNameTransformer) transformer;
 			}
 			if (transformerClassName.equals("cpw.mods.fml.common.asm.transformers.DeobfuscationTransformer")) {
-				FMLRelaunchLog.info("Intercepted adding of srg transformer " + prePatchTransformer);
-				prePatchTransformer = transformer;
+				FMLRelaunchLog.info("Intercepted adding of srg transformer " + deobfuscationTransformer);
+				deobfuscationTransformer = transformer;
 			}
 		} catch (Exception e) {
 			LogWrapper.log(Level.SEVERE, "Critical problem occurred registering the ASM transformer class %s", transformerClassName);
@@ -286,9 +286,10 @@ public class LaunchClassLoader extends URLClassLoader {
 	}
 
 	private byte[] runTransformers(final String name, final String transformedName, byte[] basicClass) {
-		if (prePatchTransformer == null) {
+		basicClass = PatchHook.preSrgTransformationHook(name, transformedName, basicClass);
+		if (deobfuscationTransformer == null) {
 			if (transformedName.startsWith("net.minecraft.")) {
-				FMLRelaunchLog.log(Level.INFO, new Throwable(), "Transforming " + name + " too early.");
+				FMLRelaunchLog.log(Level.WARNING, new Throwable(), "Transforming " + name + " before SRG transformer has been added.");
 			}
 			for (final IClassTransformer transformer : transformers) {
 				basicClass = runTransformer(name, transformedName, basicClass, transformer);
@@ -296,7 +297,7 @@ public class LaunchClassLoader extends URLClassLoader {
 			return basicClass;
 		}
 		basicClass = transformUpToSrg(name, transformedName, basicClass);
-		basicClass = PatchHook.hook(name, transformedName, basicClass);
+		basicClass = PatchHook.postSrgTransformationHook(name, transformedName, basicClass);
 		basicClass = transformAfterSrg(name, transformedName, basicClass);
 		return basicClass;
 	}
@@ -304,42 +305,39 @@ public class LaunchClassLoader extends URLClassLoader {
 	private byte[] transformUpToSrg(final String name, final String transformedName, byte[] basicClass) {
 		for (final IClassTransformer transformer : transformers) {
 			basicClass = runTransformer(name, transformedName, basicClass, transformer);
-			if (transformer == prePatchTransformer) {
+			if (transformer == deobfuscationTransformer) {
 				return basicClass;
 			}
 		}
-		throw new RuntimeException("No SRG transformer!" + transformers.toString() + " -> " + prePatchTransformer);
+		throw new RuntimeException("No SRG transformer!" + transformers.toString() + " -> " + deobfuscationTransformer);
 	}
 
-	HashMap<String, byte[]> cachedSrgBytes = new HashMap<String, byte[]>();
-
 	private byte[] transformAfterSrg(final String name, final String transformedName, byte[] basicClass) {
-		byte[] cached = cachedSrgBytes.get(transformedName);
-		if (cached != null) {
-			return cached;
-		}
 		boolean pastSrg = false;
 		for (final IClassTransformer transformer : transformers) {
 			if (pastSrg) {
 				basicClass = runTransformer(name, transformedName, basicClass, transformer);
-			}
-			if (transformer == prePatchTransformer) {
+			} else if (transformer == deobfuscationTransformer) {
 				pastSrg = true;
 			}
 		}
 		if (!pastSrg) {
 			throw new RuntimeException("No SRG transformer!");
 		}
-		cachedSrgBytes.put(transformedName, basicClass);
 		return basicClass;
+	}
+
+	public byte[] getPreSrgBytes(String name) {
+		name = untransformName(name);
+		try {
+			return getClassBytes(name);
+		} catch (Throwable t) {
+			throw new RuntimeException(t);
+		}
 	}
 
 	public byte[] getSrgBytes(String name) {
 		final String transformedName = transformName(name);
-		byte[] cached = cachedSrgBytes.get(transformedName);
-		if (cached != null) {
-			return cached;
-		}
 		name = untransformName(name);
 		try {
 			byte[] bytes = getClassBytes(name);

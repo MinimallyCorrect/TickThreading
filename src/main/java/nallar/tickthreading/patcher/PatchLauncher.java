@@ -19,10 +19,10 @@ public class PatchLauncher {
 	private static final String serverJarArgument = "--serverjar=";
 
 	private static void run(String[] args) throws Exception {
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		ClassLoader classLoader = PatchLauncher.class.getClassLoader();
 		String loc = null;
 		ArrayList<String> argsList = new ArrayList<String>(Arrays.asList(args));
-		for(Iterator<String> i$ = argsList.iterator(); i$.hasNext();) {
+		for (Iterator<String> i$ = argsList.iterator(); i$.hasNext(); ) {
 			String arg = i$.next();
 			if (arg.toLowerCase().startsWith(serverJarArgument)) {
 				loc = arg.substring(serverJarArgument.length());
@@ -31,8 +31,8 @@ public class PatchLauncher {
 			}
 		}
 		addLibraries((URLClassLoader) classLoader, loc);
-		//JavassistClassLoader javassistClassLoader = new JavassistClassLoader(classLoader);
-		//Thread.currentThread().setContextClassLoader(javassistClassLoader);
+		ClassLoader patcherClassLoader = new PatcherClassLoader(classLoader);
+		Class.forName("nallar.tickthreading.patcher.PatchHook", true, patcherClassLoader);
 
 		Class<?> launchwrapper;
 		try {

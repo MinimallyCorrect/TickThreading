@@ -17,11 +17,18 @@ buildscript {
 
 apply plugin: 'forge'
 
+configurations {
+    bundledLibs
+    compile {
+        extendsFrom bundledLibs
+    }
+}
+
 dependencies {
-    compile 'org.javassist:javassist:3.18.1-GA'
-    compile 'com.github.stephenc.high-scale-lib:high-scale-lib:1.1.4'
-    compile 'org.codehaus.jackson:jackson-core-lgpl:1.9.13'
-    compile 'org.codehaus.jackson:jackson-mapper-lgpl:1.9.13'
+    bundledLibs 'org.javassist:javassist:3.18.1-GA'
+    bundledLibs 'com.github.stephenc.high-scale-lib:high-scale-lib:1.1.4'
+    bundledLibs 'org.codehaus.jackson:jackson-core-lgpl:1.9.13'
+    bundledLibs 'org.codehaus.jackson:jackson-mapper-lgpl:1.9.13'
 }
 
 sourceCompatibility = JavaVersion.VERSION_1_6
@@ -61,6 +68,10 @@ processResources {
 }
 
 jar {
+    from(configurations.bundledLibs.collect { it.isDirectory() ? it : zipTree(it) }) {
+        exclude "META-INF/*"
+    }
+
     manifest {
         attributes 'Implementation-Title': 'TickThreading', 'Implementation-Version': version
         attributes 'Main-Class': "nallar.tickthreading.patcher.PatchLauncher"

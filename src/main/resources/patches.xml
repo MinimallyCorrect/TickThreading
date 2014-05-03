@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <mods>
+	<coreMods preSrg="true" onDemand="true">
+
+	</coreMods>
 	<tickthreading>
 		<class id="nallar.tickthreading.minecraft.tickregion.TileEntityTickRegion">
 			<lockToSynchronized>doTick</lockToSynchronized>

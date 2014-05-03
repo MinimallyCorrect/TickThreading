@@ -84,7 +84,7 @@ public class Main {
 		}
 		istream.close();
 
-		File generatedSrcDirectory = new File("./buildSrc/generated/");
+		File generatedSrcDirectory = new File("./generated/");
 
 		if (source) {
 			if (generatedSrcDirectory.exists()) {

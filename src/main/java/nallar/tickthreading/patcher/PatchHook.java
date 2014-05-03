@@ -1,13 +1,17 @@
 package nallar.tickthreading.patcher;
 
-import java.util.*;
-
 public class PatchHook {
-	private boolean isPatched = false;
-	HashMap<String, byte[]> patchedBytes = new HashMap<String, byte[]>();
+	private static Patcher patcher;
 
-	public static byte[] hook(String name, String transformedName, byte[] basicClass) {
-		//Log.info("");
-		return basicClass;
+	static {
+		patcher = new Patcher(PatchLauncher.class.getResourceAsStream("/patches.xml"), Patches.class);
+	}
+
+	public static byte[] preSrgTransformationHook(String name, String transformedName, byte[] originalBytes) {
+		return patcher.preSrgTransformation(name, transformedName, originalBytes);
+	}
+
+	public static byte[] postSrgTransformationHook(String name, String transformedName, byte[] originalBytes) {
+		return patcher.postSrgTransformation(name, transformedName, originalBytes);
 	}
 }

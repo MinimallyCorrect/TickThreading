@@ -9,7 +9,14 @@ import java.io.*;
  * This is in the javassist package (which isn't sealed) to access package-local javassist internals needed to load
  * from the classloader at runtime for patching purposes.
  */
-public class ClassloaderPool extends ClassPool {
+public class ClassLoaderPool extends ClassPool {
+	private final boolean preSrg;
+
+	public ClassLoaderPool(boolean preSrg) {
+		this.preSrg = preSrg;
+		this.appendSystemPath();
+	}
+
 	@Override
 	protected void cacheCtClass(String className, CtClass c, boolean dynamic) {
 		super.cacheCtClass(className, c, dynamic);
@@ -46,12 +53,13 @@ public class ClassloaderPool extends ClassPool {
 		if (LaunchClassLoader.instance.excluded(className)) {
 			return super.createCtClass(className, useCache);
 		}
-		byte[] srgBytes = LaunchClassLoader.instance.getSrgBytes(className);
-		if (srgBytes == null) {
+		byte[] bytes = preSrg ? LaunchClassLoader.instance.getPreSrgBytes(className) : LaunchClassLoader.instance.getSrgBytes(className);
+		if (bytes == null) {
+			System.err.println("Failed to find class " + className + ", preSrg: " + preSrg);
 			return super.createCtClass(className, useCache);
 		}
 		try {
-			return new CtClassType(new ByteArrayInputStream(srgBytes), this);
+			return new CtClassType(new ByteArrayInputStream(bytes), this);
 		} catch (IOException e) {
 			throw Throwables.propagate(e);
 		}

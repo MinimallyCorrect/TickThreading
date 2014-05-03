@@ -63,6 +63,7 @@ public enum DomUtil {
 			//This exception is thrown, and no shorthand way of getting a DocumentBuilder without it.
 			//Should not be thrown, as we do not do anything to the DocumentBuilderFactory.
 			Log.severe("Java was bad, this shouldn't happen. DocBuilder instantiation via default docBuilderFactory failed", e);
+		} finally {
 			configInputStream.close();
 		}
 		return null;
