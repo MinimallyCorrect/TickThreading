@@ -56,26 +56,18 @@ public class Log {
 
 	static {
 		try {
-			Logger parent = FMLLog.getLogger();
+			Logger parent = Logger.getLogger("ForgeModLoader");
 			if (parent == null) {
 				throw new NoClassDefFoundError();
 			}
 			LOGGER.setParent(parent);
 			LOGGER.setUseParentHandlers(true);
-			setFileName("tickthreading", Level.INFO, LOGGER);
-			Logger minecraftLogger = Logger.getLogger("Minecraft");
-			for (Handler handler : minecraftLogger.getHandlers()) {
-				if (handler instanceof TextAreaLogHandler) {
-					if (!Arrays.asList(parent.getHandlers()).contains(handlerWrapper)) {
-						wrappedHandler = handler;
-						parent.addHandler(handlerWrapper);
-						break;
-					}
-				}
-			}
 		} catch (NoClassDefFoundError ignored) {
-			// Not running under forge
+			// Make this very very obvious.
+			System.err.println("--------------------------------------------------------");
 			System.err.println("Initialised logger while not running under forge!");
+			ignored.printStackTrace(System.err);
+			System.err.println("--------------------------------------------------------");
 			LOGGER.setUseParentHandlers(false);
 			LOGGER.addHandler(new Handler() {
 				private final LogFormatter logFormatter = new LogFormatter();
@@ -95,6 +87,21 @@ public class Log {
 			});
 		}
 		LOGGER.setLevel(Level.ALL);
+		setFileName("tickthreading", Level.INFO, LOGGER);
+	}
+
+	public static void fixGuiLogging() {
+		Logger parent = LOGGER.getParent();
+		Logger minecraftLogger = Logger.getLogger("Minecraft");
+		for (Handler handler : minecraftLogger.getHandlers()) {
+			if (handler instanceof TextAreaLogHandler) {
+				if (!Arrays.asList(parent.getHandlers()).contains(handlerWrapper)) {
+					wrappedHandler = handler;
+					parent.addHandler(handlerWrapper);
+					break;
+				}
+			}
+		}
 	}
 
 	public static synchronized void disableDiskWriting(String finalMessage) {
@@ -133,11 +140,6 @@ public class Log {
 					currentFile.renameTo(new File(logFolder, name + '.' + (i + 1) + ".log"));
 				}
 			}
-		}
-		// TODO: Remove after two recommended builds
-		File oldNamingFile = new File(logFolder, name + ".log");
-		if (oldNamingFile.exists()) {
-			oldNamingFile.renameTo(new File(logFolder, name + ".2.log"));
 		}
 		final File saveFile = new File(logFolder, name + ".1.log");
 		try {

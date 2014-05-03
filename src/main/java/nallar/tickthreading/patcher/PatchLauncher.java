@@ -1,5 +1,6 @@
 package nallar.tickthreading.patcher;
 
+import nallar.insecurity.InsecurityManager;
 import nallar.unsafe.UnsafeUtil;
 
 import java.io.*;
@@ -31,6 +32,11 @@ public class PatchLauncher {
 			}
 		}
 		addLibraries((URLClassLoader) classLoader, loc);
+		try {
+			InsecurityManager.init();
+		} catch (Throwable t) {
+			System.err.println("Failed to set up Security Manager. This is probably not a huge problem - but it could indicate classloading issues.");
+		}
 		ClassLoader patcherClassLoader = new PatcherClassLoader(classLoader);
 		Class.forName("nallar.tickthreading.patcher.PatchHook", true, patcherClassLoader);
 

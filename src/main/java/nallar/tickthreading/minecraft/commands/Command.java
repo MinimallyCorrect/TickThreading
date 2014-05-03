@@ -11,9 +11,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatMessageComponent;
 import ru.tehkode.permissions.IPermissions;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public abstract class Command extends CommandBase {
 	protected boolean requireOp() {

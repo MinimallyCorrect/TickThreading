@@ -9,10 +9,15 @@ import javassist.CtConstructor;
 import javassist.CtMethod;
 import javassist.NotFoundException;
 import nallar.tickthreading.Log;
+import nallar.tickthreading.mappings.ClassDescription;
+import nallar.tickthreading.mappings.FieldDescription;
+import nallar.tickthreading.mappings.MCPMappings;
+import nallar.tickthreading.mappings.Mappings;
 import nallar.tickthreading.mappings.MethodDescription;
 import nallar.tickthreading.util.CollectionsUtil;
 import nallar.tickthreading.util.DomUtil;
 import nallar.unsafe.UnsafeUtil;
+import net.minecraft.launchwrapper.LaunchClassLoader;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -24,6 +29,8 @@ import java.util.*;
 public class Patcher {
 	private final ClassPool classPool;
 	private final ClassPool preSrgClassPool;
+	private final Mappings mappings;
+	private final Mappings preSrgMappings;
 	private Object patchClassInstance;
 	private Object preSrgPatchClassInstance;
 	private Map<String, PatchMethodDescriptor> patchMethods = new HashMap<String, PatchMethodDescriptor>();
@@ -41,6 +48,12 @@ public class Patcher {
 		classPool = new ClassLoaderPool(false);
 		preSrgClassPool = new ClassLoaderPool(true);
 		try {
+			mappings = new MCPMappings(true);
+			preSrgMappings = new MCPMappings(false);
+		} catch (IOException e) {
+			throw new RuntimeException("Failed to load mappings", e);
+		}
+		try {
 			patchClassInstance = patchesClass.getDeclaredConstructors()[0].newInstance(classPool);
 			preSrgPatchClassInstance = patchesClass.getDeclaredConstructors()[0].newInstance(preSrgClassPool);
 		} catch (Exception e) {
@@ -53,6 +66,24 @@ public class Patcher {
 		}
 	}
 
+	private String env = null;
+
+	private String getEnv() {
+		String env = this.env;
+		if (env != null) {
+			return env;
+		}
+		try {
+			if (LaunchClassLoader.instance.getClassBytes("za.co.mcportcentral.MCPCConfig") == null) {
+				throw new IOException();
+			}
+			env = "mcpc";
+		} catch (IOException e) {
+			env = "forge";
+		}
+		return this.env = env;
+	}
+
 	private void readPatchesFromXmlDocument(Document document) {
 		List<Element> patchGroupElements = DomUtil.elementList(document.getDocumentElement().getChildNodes());
 		for (Element patchGroupElement : patchGroupElements) {
@@ -60,10 +91,18 @@ public class Patcher {
 		}
 	}
 
-	public byte[] preSrgTransformation(String name, String transformedName, byte[] originalBytes) {
+	public synchronized byte[] preSrgTransformation(String name, String transformedName, byte[] originalBytes) {
 		PatchGroup patchGroup = getPatchGroup(name);
 		if (patchGroup != null && patchGroup.preSrg) {
-			return patchGroup.getClassBytes(name);
+			return patchGroup.getClassBytes(name, originalBytes);
+		}
+		return originalBytes;
+	}
+
+	public synchronized byte[] postSrgTransformation(String name, String transformedName, byte[] originalBytes) {
+		PatchGroup patchGroup = getPatchGroup(transformedName);
+		if (patchGroup != null && !patchGroup.preSrg) {
+			return patchGroup.getClassBytes(transformedName, originalBytes);
 		}
 		return originalBytes;
 	}
@@ -72,19 +111,12 @@ public class Patcher {
 		return classToPatchGroup.get(name);
 	}
 
-	public byte[] postSrgTransformation(String name, String transformedName, byte[] originalBytes) {
-		PatchGroup patchGroup = getPatchGroup(transformedName);
-		if (patchGroup != null && !patchGroup.preSrg) {
-			return patchGroup.getClassBytes(transformedName);
-		}
-		return originalBytes;
-	}
-
 	private class PatchGroup {
 		public final String name;
 		public final boolean preSrg;
 		public final boolean onDemand;
 		public final ClassPool classPool;
+		public final Mappings mappings;
 		private final Map<String, ClassPatchDescriptor> patches;
 		private final Map<String, byte[]> patchedBytes = new HashMap<String, byte[]>();
 		private final List<ClassPatchDescriptor> classPatchDescriptors = new ArrayList<ClassPatchDescriptor>();
@@ -96,14 +128,22 @@ public class Patcher {
 			preSrg = attributes.containsKey("preSrg");
 			if (preSrg) {
 				classPool = preSrgClassPool;
+				mappings = preSrgMappings;
 			} else {
 				classPool = Patcher.this.classPool;
+				mappings = Patcher.this.mappings;
 			}
+			obfuscateAttributesAndTextContent(element);
 			onDemand = attributes.containsKey("onDemand");
 			patches = onDemand ? new HashMap<String, ClassPatchDescriptor>() : null;
 
 			for (Element classElement : DomUtil.elementList(element.getChildNodes())) {
-				ClassPatchDescriptor classPatchDescriptor = new ClassPatchDescriptor(classElement);
+				ClassPatchDescriptor classPatchDescriptor;
+				try {
+					classPatchDescriptor = new ClassPatchDescriptor(classElement);
+				} catch (Throwable t) {
+					throw new RuntimeException("Failed to create class patch for " + classElement.getAttribute("id"), t);
+				}
 				classPatchDescriptors.add(classPatchDescriptor);
 				classToPatchGroup.put(classPatchDescriptor.name, this);
 				if (onDemand) {
@@ -114,19 +154,34 @@ public class Patcher {
 			}
 		}
 
-		public byte[] getClassBytes(String name) {
+		private void obfuscateAttributesAndTextContent(Element root) {
+			for (Element element : DomUtil.elementList(root.getChildNodes())) {
+				if (!DomUtil.elementList(element.getChildNodes()).isEmpty()) {
+					obfuscateAttributesAndTextContent(element);
+				} else if (element.getTextContent() != null && !element.getTextContent().isEmpty()) {
+					element.setTextContent(mappings.obfuscate(element.getTextContent()));
+				}
+				Map<String, String> attributes = DomUtil.getAttributes(element);
+				for (Map.Entry<String, String> attributeEntry : attributes.entrySet()) {
+					element.setAttribute(attributeEntry.getKey(), mappings.obfuscate(attributeEntry.getValue()));
+				}
+			}
+		}
+
+		public byte[] getClassBytes(String name, byte[] originalBytes) {
 			if (onDemand) {
 				try {
 					return patches.get(name).runPatches().toBytecode();
 				} catch (Throwable t) {
 					Log.severe("Failed to patch " + name + " in patch group " + name + '.', t);
+					return originalBytes;
 				}
-			} else {
-				runPatchesIfNeeded();
 			}
-			byte[] bytes = patchedBytes.remove(name);
+			runPatchesIfNeeded();
+			byte[] bytes = patchedBytes.get(name);
 			if (bytes == null) {
-				throw new RuntimeException("Class " + name + " not in this patch group.");
+				Log.severe("Got no patched bytes for " + name);
+				return originalBytes;
 			}
 			return bytes;
 		}
@@ -138,6 +193,12 @@ public class Patcher {
 			ranPatches = true;
 			Set<CtClass> patchedClasses = new HashSet<CtClass>();
 			for (ClassPatchDescriptor classPatchDescriptor : classPatchDescriptors) {
+				String env = classPatchDescriptor.attributes.get("env");
+				if (env != null && !env.isEmpty()) {
+					if (!env.equals(getEnv())) {
+						continue;
+					}
+				}
 				try {
 					patchedClasses.add(classPatchDescriptor.runPatches());
 				} catch (Throwable t) {
@@ -145,6 +206,10 @@ public class Patcher {
 				}
 			}
 			for (CtClass ctClass : patchedClasses) {
+				if (!ctClass.isModified()) {
+					Log.severe("Failed to get patched bytes for " + ctClass.getName() + " as it was never modified in patch group " + name + '.');
+					continue;
+				}
 				try {
 					patchedBytes.put(ctClass.getName(), ctClass.toBytecode());
 				} catch (Throwable t) {
@@ -160,9 +225,54 @@ public class Patcher {
 
 			private ClassPatchDescriptor(Element element) {
 				attributes = DomUtil.getAttributes(element);
-				name = attributes.get("id");
+				ClassDescription deobfuscatedClass = new ClassDescription(attributes.get("id"));
+				ClassDescription obfuscatedClass = mappings.map(deobfuscatedClass);
+				name = obfuscatedClass == null ? deobfuscatedClass.name : obfuscatedClass.name;
 				for (Element patchElement : DomUtil.elementList(element.getChildNodes())) {
-					patches.add(new PatchDescriptor(patchElement));
+					PatchDescriptor patchDescriptor = new PatchDescriptor(patchElement);
+					patches.add(patchDescriptor);
+					List<MethodDescription> methodDescriptionList = MethodDescription.fromListString(deobfuscatedClass.name, patchDescriptor.getMethods());
+					if (!patchDescriptor.getMethods().isEmpty()) {
+						patchDescriptor.set("deobf", methodDescriptionList.get(0).getShortName());
+						//noinspection unchecked
+						patchDescriptor.setMethods(MethodDescription.toListString((List<MethodDescription>) mappings.map(methodDescriptionList)));
+					}
+					String field = patchDescriptor.get("field"), prefix = "";
+					if (field != null && !field.isEmpty()) {
+						if (field.startsWith("this.")) {
+							field = field.substring("this.".length());
+							prefix = "this.";
+						}
+						String after = "", type = name;
+						if (field.indexOf('.') != -1) {
+							after = field.substring(field.indexOf('.'));
+							field = field.substring(0, field.indexOf('.'));
+							if (!field.isEmpty() && (field.charAt(0) == '$') && prefix.isEmpty()) {
+								if (methodDescriptionList.size() > 1) {
+									Log.severe("Can not obfuscate parameter field " + field + " automatically as multiple methods are called.");
+									break;
+								}
+								MethodDescription methodDescription = mappings.rmap(mappings.map(methodDescriptionList.get(0)));
+								methodDescription = methodDescription == null ? methodDescriptionList.get(0) : methodDescription;
+								List<String> parameterList = methodDescription.getParameterList();
+								int parameterIndex = Integer.valueOf(field.substring(1)) - 1;
+								if (parameterIndex >= parameterList.size()) {
+									if (!parameterList.isEmpty()) {
+										Log.severe("Can not obfuscate parameter field " + field + ", index: " + parameterIndex + " but parameter list is: " + CollectionsUtil.join(parameterList));
+									}
+									break;
+								}
+								type = parameterList.get(parameterIndex);
+								prefix = field + '.';
+								field = after.substring(1);
+								after = "";
+							}
+						}
+						FieldDescription obfuscatedField = mappings.map(new FieldDescription(type, field));
+						if (obfuscatedField != null) {
+							patchDescriptor.set("field", prefix + obfuscatedField.name + after);
+						}
+					}
 				}
 			}
 
@@ -179,7 +289,7 @@ public class Patcher {
 
 	private static class PatchDescriptor {
 		private final Map<String, String> attributes;
-		private final String methods;
+		private String methods;
 		private final String patch;
 
 		public PatchDescriptor(Element element) {
@@ -206,6 +316,10 @@ public class Patcher {
 
 		public String getPatch() {
 			return patch;
+		}
+
+		public void setMethods(String methods) {
+			this.methods = methods;
 		}
 	}
 

@@ -6,10 +6,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 import sun.misc.Unsafe;
 
-import java.lang.ref.Reference;
-import java.lang.reflect.Array;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
+import java.lang.ref.*;
+import java.lang.reflect.*;
 import java.util.*;
 
 public class UnsafeUtil {

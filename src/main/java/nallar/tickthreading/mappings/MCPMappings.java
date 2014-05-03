@@ -27,9 +27,9 @@ public class MCPMappings extends Mappings {
 	@SuppressWarnings("IOResourceOpenedButNotSafelyClosed")
 	public MCPMappings(boolean seargeMappings) throws IOException {
 		this.seargeMappings = seargeMappings;
-		loadCsv(Mappings.class.getResourceAsStream("/mappings/methods.csv"), methodSeargeMappings);
-		loadCsv(Mappings.class.getResourceAsStream("/mappings/fields.csv"), fieldSeargeMappings);
-		loadSrg(Mappings.class.getResourceAsStream("/mappings/packaged.srg"));
+		loadCsv(Mappings.class.getResourceAsStream("/methods.csv"), methodSeargeMappings);
+		loadCsv(Mappings.class.getResourceAsStream("/fields.csv"), fieldSeargeMappings);
+		loadSrg(Mappings.class.getResourceAsStream("/packaged.srg"));
 		methodSeargeMappings.clear();
 		fieldSeargeMappings.clear();
 	}

@@ -139,6 +139,7 @@ public class TickThreading {
 	@SuppressWarnings("FieldRepeatedlyAccessedInMethod")
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
+		Log.fixGuiLogging();
 		Configuration config = new Configuration(event.getSuggestedConfigurationFile());
 		config.load();
 		String GENERAL = Configuration.CATEGORY_GENERAL;

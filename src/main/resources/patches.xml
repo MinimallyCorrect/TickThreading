@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <mods>
 	<coreMods preSrg="true" onDemand="true">
-
+		<class id="cpw.mods.fml.common.Loader">
+			<addAll fromClass="nallar.patched.forge.PatchLoader"/>
+		</class>
 	</coreMods>
 	<tickthreading>
 		<class id="nallar.tickthreading.minecraft.tickregion.TileEntityTickRegion">
@@ -25,7 +27,7 @@
 			<addAll fromClass="nallar.patched.PatchSpawnerAnimals"/>
 			<profile>findChunksForSpawning</profile>
 		</class>
-		<class id=" net.minecraft.world.storage.MapInfo">
+		<class id="net.minecraft.world.storage.MapInfo">
 			<synchronize>^all^</synchronize>
 		</class>
 		<class id="net.minecraft.pathfinding.Path">
@@ -620,9 +622,6 @@
 		</class>
 		<class id="cpw.mods.fml.common.event.FMLInterModComms$IMCMessage">
 			<addAll fromClass="nallar.patched.forge.PatchIMCMessage"/>
-		</class>
-		<class id="cpw.mods.fml.common.Loader">
-			<addAll fromClass="nallar.patched.forge.PatchLoader"/>
 		</class>
 		<class id="cpw.mods.fml.common.Loader$ModIdComparator">
 			<public/>
@@ -1712,26 +1711,6 @@
 								code="$_ = java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap());"/>
 			<replaceInitializer field="eventHandlers"
 								code="$_ = java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap());"/>
-		</class>
-		<class id="forestry.core.utils.Localization">
-			<newField class="nallar.collections.PartiallySynchronizedMap"
-					  code="new nallar.collections.PartiallySynchronizedMap()" field="map" static=""/>
-			<final>mappings,defaultMappings</final>
-			<synchronize field="forestry.core.utils.Localization.class">load</synchronize>
-			<insertAfter code="{
-				load(getCurrentLanguage());
-			}"/>
-			<insertAfter code="{
-				map.clear();
-				map.putAll(defaultMappings);
-				map.putAll(mappings);
-			}">load(Ljava.lang.String;)V
-			</insertAfter>
-			<unsynchronize>get</unsynchronize>
-			<replaceMethod code="{
-				return (String) map.get($1);
-			}">get
-			</replaceMethod>
 		</class>
 	</forestry>
 	<railCraft>

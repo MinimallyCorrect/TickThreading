@@ -2,6 +2,7 @@ package net.minecraft.launchwrapper;
 
 import cpw.mods.fml.relauncher.FMLRelaunchLog;
 import nallar.tickthreading.patcher.PatchHook;
+import nallar.unsafe.UnsafeUtil;
 
 import java.io.*;
 import java.net.*;
@@ -28,7 +29,12 @@ public class LaunchClassLoader extends URLClassLoader {
 
 	private IClassNameTransformer renameTransformer;
 
-	private final ThreadLocal<byte[]> loadBuffer = new ThreadLocal<byte[]>();
+	private static final ThreadLocal<byte[]> loadBuffer = new ThreadLocal<byte[]>() {
+		@Override
+		public byte[] initialValue() {
+			return new byte[BUFFER_SIZE];
+		}
+	};
 
 	private static final String[] RESERVED_NAMES = {"CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"};
 
@@ -79,13 +85,29 @@ public class LaunchClassLoader extends URLClassLoader {
 	public void registerTransformer(String transformerClassName) {
 		try {
 			IClassTransformer transformer = (IClassTransformer) loadClass(transformerClassName).newInstance();
-			transformers.add(transformer);
 			if (transformer instanceof IClassNameTransformer && renameTransformer == null) {
 				renameTransformer = (IClassNameTransformer) transformer;
 			}
 			if (transformerClassName.equals("cpw.mods.fml.common.asm.transformers.DeobfuscationTransformer")) {
-				FMLRelaunchLog.info("Intercepted adding of srg transformer " + deobfuscationTransformer);
 				deobfuscationTransformer = transformer;
+				ArrayList<IClassTransformer> oldTransformersList = new ArrayList<IClassTransformer>(transformers);
+				transformers.clear();
+				IClassTransformer eventTransformer = null;
+				for (IClassTransformer transformer_ : oldTransformersList) {
+					if (transformer_.getClass().getName().equals("net.minecraftforge.transformers.EventTransformer")) {
+						eventTransformer = transformer_;
+					} else {
+						transformers.add(transformer_);
+					}
+				}
+				transformers.add(transformer);
+				if (eventTransformer == null) {
+					FMLRelaunchLog.severe("Failed to find event transformer.");
+				} else {
+					transformers.add(eventTransformer);
+				}
+			} else {
+				transformers.add(transformer);
 			}
 		} catch (Exception e) {
 			LogWrapper.log(Level.SEVERE, "Critical problem occurred registering the ASM transformer class %s", transformerClassName);
@@ -101,8 +123,41 @@ public class LaunchClassLoader extends URLClassLoader {
 		return false;
 	}
 
+	private static final ThreadLocal<LinkedList<String>> loadingClasses = new ThreadLocal<LinkedList<String>>() {
+		public LinkedList<String> initialValue() {
+			return new LinkedList<String>();
+		}
+	};
+
 	@Override
 	public Class<?> findClass(final String name) throws ClassNotFoundException {
+		LinkedList<String> loadingClasses = LaunchClassLoader.loadingClasses.get();
+		for (String clazz : loadingClasses) {
+			if (clazz.equals(name)) {
+				String message = "Attempted to recursively load class: " + name;
+				FMLRelaunchLog.log(Level.SEVERE, new InternalError(), message);
+				throw new Error(message);
+			}
+		}
+		loadingClasses.push(name);
+		Throwable caught = null;
+		Class<?> found = null;
+		try {
+			found = findClass_(name);
+		} catch (Throwable t) {
+			caught = t;
+		}
+		String pop = loadingClasses.pop();
+		if (caught != null) {
+			throw UnsafeUtil.throwIgnoreChecked(caught);
+		}
+		if (!pop.equals(name)) {
+			throw new RuntimeException("Mismatched push/pop. Pushed: " + name + ", got: " + pop);
+		}
+		return found;
+	}
+
+	public Class<?> findClass_(final String name) throws ClassNotFoundException {
 		if (invalidClasses.contains(name)) {
 			throw new ClassNotFoundException(name);
 		}
@@ -111,8 +166,9 @@ public class LaunchClassLoader extends URLClassLoader {
 			return parent.loadClass(name);
 		}
 
-		if (cachedClasses.containsKey(name)) {
-			return cachedClasses.get(name);
+		Class<?> cached = cachedClasses.get(name);
+		if (cached != null) {
+			return cached;
 		}
 
 		for (final String exception : transformerExceptions) {
@@ -130,8 +186,9 @@ public class LaunchClassLoader extends URLClassLoader {
 
 		try {
 			final String transformedName = transformName(name);
-			if (cachedClasses.containsKey(transformedName)) {
-				return cachedClasses.get(transformedName);
+			cached = cachedClasses.get(transformedName);
+			if (cached != null) {
+				return cached;
 			}
 
 			final String untransformedName = untransformName(name);
@@ -359,7 +416,7 @@ public class LaunchClassLoader extends URLClassLoader {
 
 	private byte[] readFully(InputStream stream) {
 		try {
-			byte[] buffer = getOrCreateBuffer();
+			byte[] buffer = loadBuffer.get();
 
 			int read;
 			int totalLength = 0;
@@ -381,15 +438,6 @@ public class LaunchClassLoader extends URLClassLoader {
 			LogWrapper.log(Level.WARNING, t, "Problem loading class");
 			return new byte[0];
 		}
-	}
-
-	private byte[] getOrCreateBuffer() {
-		byte[] buffer = loadBuffer.get();
-		if (buffer == null) {
-			loadBuffer.set(new byte[BUFFER_SIZE]);
-			buffer = loadBuffer.get();
-		}
-		return buffer;
 	}
 
 	public List<IClassTransformer> getTransformers() {

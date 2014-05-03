@@ -50,6 +50,16 @@ compileJava {
     options.forkOptions.executable = 'javac'
 }
 
+sourceSets {
+    main {
+        java {
+            resources {
+                srcDir file('./build/unpacked/mappings')
+            }
+        }
+    }
+}
+
 processResources {
     // this will ensure that this task is redone when the versions change.
     inputs.property "version", project.version
@@ -69,8 +79,10 @@ processResources {
 
 jar {
     from(configurations.bundledLibs.collect { it.isDirectory() ? it : zipTree(it) }) {
-        exclude "META-INF/*"
+        exclude "META-INF/**"
     }
+
+    from './build/unpacked/conf/packaged.srg'
 
     manifest {
         attributes 'Implementation-Title': 'TickThreading', 'Implementation-Version': version
