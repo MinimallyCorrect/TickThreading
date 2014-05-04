@@ -1,5 +1,7 @@
 package nallar.tickthreading.patcher;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 import javassist.CannotCompileException;
 import javassist.ClassLoaderPool;
 import javassist.ClassPool;
@@ -54,8 +56,8 @@ public class Patcher {
 			throw new RuntimeException("Failed to load mappings", e);
 		}
 		try {
-			patchClassInstance = patchesClass.getDeclaredConstructors()[0].newInstance(classPool);
-			preSrgPatchClassInstance = patchesClass.getDeclaredConstructors()[0].newInstance(preSrgClassPool);
+			patchClassInstance = patchesClass.getDeclaredConstructors()[0].newInstance(classPool, mappings);
+			preSrgPatchClassInstance = patchesClass.getDeclaredConstructors()[0].newInstance(preSrgClassPool, preSrgMappings);
 		} catch (Exception e) {
 			PatchLog.severe("Failed to instantiate patch class", e);
 		}
@@ -110,6 +112,8 @@ public class Patcher {
 	private PatchGroup getPatchGroup(String name) {
 		return classToPatchGroup.get(name);
 	}
+
+	private static final Splitter idSplitter = Splitter.on("  ").trimResults().omitEmptyStrings();
 
 	private class PatchGroup {
 		public final String name;
@@ -166,6 +170,18 @@ public class Patcher {
 					element.setAttribute(attributeEntry.getKey(), mappings.obfuscate(attributeEntry.getValue()));
 				}
 			}
+			for (Element classElement : DomUtil.elementList(root.getChildNodes())) {
+				String id = classElement.getAttribute("id");
+				ArrayList<String> list = Lists.newArrayList(idSplitter.split(id));
+				if (list.size() > 1) {
+					for (String className : list) {
+						Element newClassElement = (Element) classElement.cloneNode(true);
+						newClassElement.setAttribute("id", className.trim());
+						classElement.getParentNode().insertBefore(newClassElement, classElement);
+					}
+					classElement.getParentNode().removeChild(classElement);
+				}
+			}
 		}
 
 		public byte[] getClassBytes(String name, byte[] originalBytes) {
@@ -216,6 +232,7 @@ public class Patcher {
 					PatchLog.severe("Failed to get patched bytes for " + ctClass.getName() + " in patch group " + name + '.', t);
 				}
 			}
+			PatchLog.flush();
 		}
 
 		private class ClassPatchDescriptor {
@@ -248,21 +265,32 @@ public class Patcher {
 							after = field.substring(field.indexOf('.'));
 							field = field.substring(0, field.indexOf('.'));
 							if (!field.isEmpty() && (field.charAt(0) == '$') && prefix.isEmpty()) {
-								if (methodDescriptionList.size() > 1) {
-									PatchLog.severe("Can not obfuscate parameter field " + field + " automatically as multiple methods are called.");
-									break;
+								ArrayList<String> parameterList = new ArrayList<String>();
+								for (MethodDescription methodDescriptionOriginal : methodDescriptionList) {
+									MethodDescription methodDescription = mappings.rmap(mappings.map(methodDescriptionOriginal));
+									methodDescription = methodDescription == null ? methodDescriptionOriginal : methodDescription;
+									int i = 0;
+									for (String parameter : methodDescription.getParameterList()) {
+										if (parameterList.size() <= i) {
+											parameterList.add(parameter);
+										} else if (!parameterList.get(i).equals(parameter)) {
+											parameterList.set(i, null);
+										}
+										i++;
+									}
 								}
-								MethodDescription methodDescription = mappings.rmap(mappings.map(methodDescriptionList.get(0)));
-								methodDescription = methodDescription == null ? methodDescriptionList.get(0) : methodDescription;
-								List<String> parameterList = methodDescription.getParameterList();
 								int parameterIndex = Integer.valueOf(field.substring(1)) - 1;
 								if (parameterIndex >= parameterList.size()) {
 									if (!parameterList.isEmpty()) {
-										PatchLog.severe("Can not obfuscate parameter field " + field + ", index: " + parameterIndex + " but parameter list is: " + CollectionsUtil.join(parameterList));
+										PatchLog.severe("Can not obfuscate parameter field " + patchDescriptor.get("field") + ", index: " + parameterIndex + " but parameter list is: " + CollectionsUtil.join(parameterList));
 									}
 									break;
 								}
 								type = parameterList.get(parameterIndex);
+								if (type == null) {
+									PatchLog.severe("Can not obfuscate parameter field " + patchDescriptor.get("field") + " automatically as this parameter does not have a single type across the methods used in this patch.");
+									break;
+								}
 								prefix = field + '.';
 								field = after.substring(1);
 								after = "";

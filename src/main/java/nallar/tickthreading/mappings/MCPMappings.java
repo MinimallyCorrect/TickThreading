@@ -3,6 +3,7 @@ package nallar.tickthreading.mappings;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import nallar.tickthreading.Log;
+import nallar.tickthreading.PatchLog;
 
 import java.io.*;
 import java.util.*;
@@ -22,16 +23,53 @@ public class MCPMappings extends Mappings {
 	private final Map<String, MethodDescription> parameterlessMethodMappings = new HashMap<String, MethodDescription>();
 	private final Map<String, MethodDescription> parameterlessSrgMethodMappings = new HashMap<String, MethodDescription>();
 	private final Map<String, String> shortClassNameToFullName = new HashMap<String, String>();
+	private final Map<String, List<String>> extendsMap;
 	private final boolean seargeMappings;
 
 	@SuppressWarnings("IOResourceOpenedButNotSafelyClosed")
 	public MCPMappings(boolean seargeMappings) throws IOException {
 		this.seargeMappings = seargeMappings;
+		extendsMap = loadExtends(Mappings.class.getResourceAsStream("/extendsMap.obj"));
 		loadCsv(Mappings.class.getResourceAsStream("/methods.csv"), methodSeargeMappings);
 		loadCsv(Mappings.class.getResourceAsStream("/fields.csv"), fieldSeargeMappings);
 		loadSrg(Mappings.class.getResourceAsStream("/packaged.srg"));
 		methodSeargeMappings.clear();
 		fieldSeargeMappings.clear();
+	}
+
+	/*private void extendFieldMappings(Map<FieldDescription, FieldDescription> map) {
+		Map<FieldDescription, FieldDescription> copy = new HashMap<FieldDescription, FieldDescription>(map);
+		for (Map.Entry<FieldDescription, FieldDescription> e : copy.entrySet()) {
+			FieldDescription obfed = obfed.
+			while (true) {
+				String superClass = extendsMap.get(obfed.className);
+				if (superClass == null) {
+					break;
+				}
+			}
+		}
+	}*/
+
+	private Map<String, List<String>> loadExtends(InputStream resourceAsStream) throws IOException {
+		ObjectInputStream objectInputStream = new ObjectInputStream(resourceAsStream);
+		try {
+			Map<String, String> reversed = (Map<String, String>) objectInputStream.readObject();
+			Map<String, List<String>> extendsMap = new HashMap<String, List<String>>();
+			for (Map.Entry<String, String> e : reversed.entrySet()) {
+				List<String> l = extendsMap.get(e.getValue());
+				if (l == null) {
+					l = new ArrayList<String>();
+					extendsMap.put(e.getValue(), l);
+				}
+				l.add(e.getKey());
+			}
+			return extendsMap;
+		} catch (ClassNotFoundException e) {
+			PatchLog.severe("Failed to read extends mapping", e);
+		} finally {
+			objectInputStream.close();
+		}
+		return null;
 	}
 
 	@Override
@@ -107,14 +145,14 @@ public class MCPMappings extends Mappings {
 				if (className == null) {
 					className = fieldMatcher.group(1);
 					if (!className.contains(".")) {
-						Log.severe("Could not find " + fieldMatcher.group(1));
+						PatchLog.severe("Could not find " + fieldMatcher.group(1));
 						continue;
 					}
 				}
 				FieldDescription fieldDescription = new FieldDescription(className, fieldName);
 				FieldDescription mapped = map(fieldDescription);
 				if (mapped == null) {
-					Log.severe("Could not map " + fieldName);
+					PatchLog.severe("Could not map " + fieldName);
 					fieldMatcher.appendReplacement(result, fieldName);
 				} else {
 					fieldMatcher.appendReplacement(result, mapped.name);
@@ -129,7 +167,7 @@ public class MCPMappings extends Mappings {
 			while (classMatcher.find()) {
 				String className = classStringToClassName(classMatcher.group(1));
 				if (className == null) {
-					Log.severe("Could not find " + classMatcher.group(1));
+					PatchLog.severe("Could not find " + classMatcher.group(1));
 					continue;
 				}
 				classMatcher.appendReplacement(result, className);
@@ -165,6 +203,7 @@ public class MCPMappings extends Mappings {
 				FieldDescription srgField = new FieldDescription(deobfuscatedField.className, seargeName);
 				fieldMappings.put(deobfuscatedField, obfuscatedField);
 				fieldSrgMappings.put(deobfuscatedField, srgField);
+				recursiveExtendFieldMappings(deobfuscatedField, srgField);
 			} else if (srgScanner.hasNext("MD:")) {
 				srgScanner.next();
 				String obfuscatedName = srgScanner.next();
@@ -191,6 +230,19 @@ public class MCPMappings extends Mappings {
 			}
 		}
 		mappings.close();
+	}
+
+	private void recursiveExtendFieldMappings(FieldDescription deobfuscatedField, FieldDescription srgField) {
+		List<String> extendedBy = extendsMap.get(deobfuscatedField.className);
+		if (extendedBy == null) {
+			return;
+		}
+		for (String className : extendedBy) {
+			FieldDescription newDeobf = new FieldDescription(className, deobfuscatedField.name);
+			FieldDescription newSrgField = new FieldDescription(className, srgField.name);
+			fieldSrgMappings.put(newDeobf, newSrgField);
+			recursiveExtendFieldMappings(newDeobf, newSrgField);
+		}
 	}
 
 	private static void loadCsv(InputStream mappingsCsv, Map<String, String> seargeMappings) throws IOException {

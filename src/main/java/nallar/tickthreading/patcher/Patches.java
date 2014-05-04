@@ -36,6 +36,7 @@ import javassist.expr.NewArray;
 import javassist.expr.NewExpr;
 import nallar.insecurity.ThisIsNotAnError;
 import nallar.tickthreading.PatchLog;
+import nallar.tickthreading.mappings.Mappings;
 import nallar.tickthreading.mappings.MethodDescription;
 import nallar.tickthreading.util.CollectionsUtil;
 import nallar.tickthreading.util.ReflectUtil;
@@ -48,15 +49,35 @@ import java.util.*;
 @SuppressWarnings({"MethodMayBeStatic", "ObjectAllocationInLoop"})
 public class Patches {
 	private final ClassPool classPool;
+	private final Mappings mappings;
 
-	public Patches(ClassPool classPool) {
+	public Patches(ClassPool classPool, Mappings mappings) {
 		this.classPool = classPool;
+		this.mappings = mappings;
 	}
 
-	@SuppressWarnings("EmptyMethod")
-	@Patch
-	public void markDirty(CtClass ctClass) {
-		// A NOOP patch to make sure META-INF is removed
+	public void transformClassStaticMethods(CtClass ctClass, String className) {
+		for (CtMethod ctMethod : ctClass.getDeclaredMethods()) {
+			MethodDescription methodDescription = new MethodDescription(className, ctMethod.getName(), ctMethod.getSignature());
+			MethodDescription mapped = mappings.map(methodDescription);
+			if (mapped != null && !mapped.name.equals(ctMethod.getName())) {
+				if ((ctMethod.getModifiers() & Modifier.STATIC) == Modifier.STATIC) {
+					try {
+						CtMethod replacement = CtNewMethod.copy(ctMethod, ctClass, null);
+						ctMethod.setName(mapped.name);
+						replacement.setBody("{return " + mapped.name + "($$);}");
+						ctClass.addMethod(replacement);
+					} catch (CannotCompileException e) {
+						PatchLog.severe("Failed to compile", e);
+					}
+				} else {
+					PatchLog.severe("Would remap " + methodDescription + " -> " + mapped + ", but not static.");
+				}
+			}
+			if (ctMethod.getName().length() == 1) {
+				PatchLog.severe("1 letter length name " + ctMethod.getName() + " in " + ctClass.getName());
+			}
+		}
 	}
 
 	@Patch
@@ -422,6 +443,7 @@ public class Patches {
 		}
 		newClass.setName(oldName);
 		newClass.setModifiers(newClass.getModifiers() & ~Modifier.ABSTRACT);
+		transformClassStaticMethods(newClass, newClass.getName());
 		return newClass;
 	}
 
@@ -643,6 +665,7 @@ public class Patches {
 	public void addAll(CtClass ctClass, Map<String, String> attributes) throws NotFoundException, CannotCompileException, BadBytecode {
 		String fromClass = attributes.get("fromClass");
 		CtClass from = classPool.get(fromClass);
+		transformClassStaticMethods(from, ctClass.getName());
 		ClassMap classMap = new ClassMap();
 		classMap.put(fromClass, ctClass.getName());
 		for (CtField ctField : from.getDeclaredFields()) {
@@ -787,7 +810,6 @@ public class Patches {
 		final String type = attributes.get("type");
 		String setExpression_ = attributes.get("setExpression");
 		final String setExpression = setExpression_ == null ? '(' + type + ") $1" : setExpression_;
-		PatchLog.info(field + " -> " + threadLocalField);
 		ctClass.instrument(new ExprEditor() {
 			@Override
 			public void edit(FieldAccess e) throws CannotCompileException {

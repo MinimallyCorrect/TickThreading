@@ -83,6 +83,7 @@ jar {
     }
 
     from './build/unpacked/conf/packaged.srg'
+    from './generated/extendsMap.obj'
 
     manifest {
         attributes 'Implementation-Title': 'TickThreading', 'Implementation-Version': version

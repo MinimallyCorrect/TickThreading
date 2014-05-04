@@ -230,7 +230,7 @@ class PrePatcher {
 		public boolean noClass = false;
 		public final List<Type> generics = new ArrayList<Type>();
 
-		public Type(String raw, List<String> imports) {
+		Type(String raw, List<String> imports) {
 			String clazz;
 			int arrayLevels = 0;
 			while (raw.length() - (arrayLevels * 2) - 2 > 0) {
@@ -243,8 +243,8 @@ class PrePatcher {
 			raw = raw.substring(0, raw.length() - arrayLevels * 2); // THE MORE YOU KNOW: String.substring(begin) special cases begin == 0.
 			arrayDimensions = arrayLevels;
 			if (raw.contains("<")) {
-				String genericRaw = raw.substring(raw.indexOf("<") + 1, raw.length() - 1);
-				clazz = raw.substring(0, raw.indexOf("<"));
+				String genericRaw = raw.substring(raw.indexOf('<') + 1, raw.length() - 1);
+				clazz = raw.substring(0, raw.indexOf('<'));
 				if (clazz.isEmpty()) {
 					clazz = "java.lang.Object"; // For example, <T> methodName(Class<T> parameter) -> <T> as return type -> erases to object
 					noClass = true;
@@ -258,7 +258,7 @@ class PrePatcher {
 			this.clazz = fullyQualifiedName(clazz, imports);
 		}
 
-		private static String[] searchPackages = {
+		private static final String[] searchPackages = {
 				"java.lang",
 				"java.util",
 				"java.io",
@@ -349,14 +349,14 @@ class PrePatcher {
 			} else if (clazz.contains("[") || clazz.contains("]")) {
 				log.severe("Invalid Type " + this + ", contains broken array info.");
 			} else if (clazz.contains(".")) {
-				return arrayDimensionsString() + "L" + clazz.replace(".", "/") + genericSignatureIfNeeded(useGenerics) + ";";
+				return arrayDimensionsString() + 'L' + clazz.replace(".", "/") + genericSignatureIfNeeded(useGenerics) + ';';
 			}
 			String primitiveType = primitiveTypeToDescriptor(clazz);
 			if (primitiveType != null) {
 				return arrayDimensionsString() + primitiveType;
 			}
 			log.warning("Either generic type or unrecognized type: " + this.toString());
-			return arrayDimensionsString() + "T" + clazz + ";";
+			return arrayDimensionsString() + 'T' + clazz + ';';
 		}
 
 		public String descriptor() {
@@ -563,8 +563,6 @@ class PrePatcher {
 
 	/**
 	 * Changes access flags to be protected, unless already public.
-	 *
-	 * @return
 	 */
 	private static int makeAtLeastProtected(int access) {
 		if (hasFlag(access, Opcodes.ACC_PUBLIC) || hasFlag(access, Opcodes.ACC_PROTECTED)) {
@@ -580,14 +578,24 @@ class PrePatcher {
 		return access | Opcodes.ACC_PUBLIC;
 	}
 
+	private static final HashMap<String, String> classExtends = new HashMap<String, String>();
+
+	public static Map<String, String> getExtendsMap() {
+		return classExtends;
+	}
+
 	public static byte[] patchCode(byte[] inputCode, String inputClassName) {
+		ClassReader classReader = new ClassReader(inputCode);
+		ClassNode classNode = new ClassNode();
+		classReader.accept(classNode, 0);
+		String superName = classNode.superName.replace("/", ".");
+		if (superName != null && !superName.equals("java.lang.Object")) {
+			classExtends.put(classNode.name.replace("/", "."), superName);
+		}
 		PatchInfo patchInfo = patchForClass(inputClassName);
 		if (patchInfo == null) {
 			return inputCode;
 		}
-		ClassReader classReader = new ClassReader(inputCode);
-		ClassNode classNode = new ClassNode();
-		classReader.accept(classNode, 0);
 		classNode.access = classNode.access & ~Opcodes.ACC_FINAL;
 		classNode.access = makeAccess(classNode.access, true);
 		if (patchInfo.exposeInners) {

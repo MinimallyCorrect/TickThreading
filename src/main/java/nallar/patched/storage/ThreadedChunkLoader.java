@@ -194,10 +194,6 @@ public abstract class ThreadedChunkLoader extends AnvilChunkLoader implements IT
 		}
 	}
 
-	protected Object[] a(World world, int x, int z, NBTTagCompound chunkTagCompound) {
-		throw new UnsupportedOperationException();
-	}
-
 	@Override
 	public void saveChunk(World world, Chunk chunk) {
 		try {

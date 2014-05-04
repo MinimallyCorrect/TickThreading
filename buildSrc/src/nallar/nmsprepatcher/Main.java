@@ -86,14 +86,25 @@ public class Main {
 		}
 		istream.close();
 
-		File generatedSrcDirectory = new File("./generated/");
-		generatedSrcDirectory = generatedSrcDirectory.getCanonicalFile();
+		File generatedDirectory = new File("./generated/");
+		generatedDirectory = generatedDirectory.getCanonicalFile();
+		File generatedSrcDirectory = new File(generatedDirectory, "src");
 
 		if (source) {
 			if (generatedSrcDirectory.exists()) {
 				deleteDirectory(generatedSrcDirectory.toPath());
 			}
-			generatedSrcDirectory.mkdir();
+			generatedSrcDirectory.mkdirs();
+		} else {
+			if (!generatedDirectory.exists()) {
+				generatedDirectory.mkdir();
+			}
+			ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream(new File(generatedDirectory, "extendsMap.obj")));
+			try {
+				objectOutputStream.writeObject(PrePatcher.getExtendsMap());
+			} finally {
+				objectOutputStream.close();
+			}
 		}
 
 		// WRITING

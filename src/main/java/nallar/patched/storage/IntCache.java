@@ -1,14 +1,14 @@
 package nallar.patched.storage;
 
 public abstract class IntCache {
-	public static int[] a(int size) {
+	public static int[] getIntCache(int size) {
 		return new int[size];
 	}
 
-	public static void a() {
+	public static void resetIntCache() {
 	}
 
-	public static String b() {
+	public static String func_85144_b() {
 		return "IntCache disabled.";
 	}
 }

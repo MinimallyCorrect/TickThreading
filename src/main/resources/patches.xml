@@ -65,7 +65,7 @@
 		</class>
 		<class id="net.minecraft.network.NetServerHandler">
 			<addAll fromClass="nallar.patched.network.PatchNetServerHandler"/>
-			<replaceMethodCall method="warning"
+			<replaceMethodCall method="^class:ILogAgent^.^method:ILogAgent/logWarning^"
 							   code="{ nallar.tickthreading.global.Redirects.notifyAdmins($1); }"
 					>handleFlying
 			</replaceMethodCall>
@@ -113,7 +113,6 @@
 			<addAll fromClass="nallar.patched.world.PatchWorld"/>
 			<profile>updateEntities</profile>
 			<profile>setActivePlayerChunksAndCheckLight</profile>
-			<public>releaseEntitySkin</public>
 			<final field="worldAccesses"/>
 			<final field="provider"/>
 			<final field="theProfiler"/>
@@ -124,7 +123,6 @@
 			<replaceInitializer field="playerEntities" class="java.util.concurrent.CopyOnWriteArrayList"/>
 			<replaceInitializer field="weatherEffects" class="nallar.collections.SynchronizedList"/>
 			<insertBefore code="if (preHandleSpawn($1)) { return false; }">spawnEntityInWorld</insertBefore>
-			<removeMethod>forceChunk,unforceChunk</removeMethod>
 		</class>
 		<class id="net.minecraft.world.ChunkCache">
 			<replaceMethodCall code="$_ = $0.getChunkIfExists($$);"
@@ -135,7 +133,8 @@
 			<insertAfter field="tickEntryID" code="this.$field = this.nextEntryID_.getAndIncrement();"/>
 		</class>
 		<class id="net.minecraft.world.WorldServer" env="forge">
-			<removeInitializers field="pendingTickListEntries"/>
+			<removeInitializers field="pendingTickListEntriesHashSet"/>
+			<removeInitializers field="pendingTickListEntriesTreeSet"/>
 		</class>
 		<class id="net.minecraft.world.WorldServer">
 			<addAll fromClass="nallar.patched.world.PatchWorldServer"/>
@@ -242,8 +241,7 @@
 			<replace class="nallar.patched.PatchVec3Pool"/>
 		</class>
 		<class id="net.minecraft.util.Vec3">
-			<!-- This prevents entities in multiple threads using the same Vec3 for collisions. -->
-			<addAll class="nallar.patched.PatchVec3"/>
+			<addAll fromClass="nallar.patched.PatchVec3"/>
 		</class>
 		<class id="net.minecraft.util.AABBPool">
 			<!-- This prevents entities in multiple threads using the same Vec3 for collisions. -->
@@ -252,7 +250,8 @@
 		<class id="net.minecraft.util.AxisAlignedBB">
 			<!-- Improves performance -->
 			<addAll fromClass="nallar.patched.PatchAxisAlignedBB"/>
-			<replaceInitializer field="theAABBLocalPool" code="$_ = null;">^static^</replaceInitializer>
+			<removeFieldAndInitializers field="theAABBLocalPool"/>
+			<replaceMethod code="return aabbPool;">getAABBPool</replaceMethod>
 		</class>
 		<class id="net.minecraft.util.LongHashMap">
 			<replace class="nallar.patched.collection.PatchLongHashMap"/>
@@ -347,7 +346,7 @@
 			<lock field="writeLock">
 				addEntityToTracker(Lnet/minecraft/entity/Entity;)V,addEntityToTracker(Lnet/minecraft/entity/Entity;IIZ)V,removeEntityFromAllTrackingPlayers
 			</lock>
-			<lock field="readLock">updateTrackedEntities,removeAllTrackingPlayers,func_85172_a</lock>
+			<lock field="readLock">updateTrackedEntities,removePlayerFromTrackers,func_85172_a</lock>
 		</class>
 		<class id="net.minecraft.village.Village">
 			<addAll fromClass="nallar.patched.PatchVillage"/>
@@ -723,7 +722,7 @@
 		</class>
 	</buildCraftCore>
 	<buildCraftEnergy>
-		<class id="buildcraft.energy.EngineIron">
+		<class id="buildcraft.energy.TileEngineIron">
 			<replaceMethod code="{
 				$2.^method:ICrafting/sendProgressBarUpdate^($1, 0, Math.round(this.energy * 10.0F) &amp; 0xFFFF);
 				$2.^method:ICrafting/sendProgressBarUpdate^($1, 1, (Math.round(this.energy * 10.0F) &amp; 0xFFFF0000) >> 16);
@@ -741,10 +740,6 @@
 			}">sendGUINetworkData
 			</replaceMethod>
 		</class>
-		<class id="buildcraft.energy.TileEngine">
-			<synchronize>createEngineIfNeeded</synchronize>
-			<insertBefore code="if ($1 &gt; 2 || $1 &lt; 0) { $1 = 0; }">newEngine</insertBefore>
-		</class>
 	</buildCraftEnergy>
 	<buildCraftFactory>
 		<class id="buildcraft.BuildCraftFactory$QuarryChunkloadCallback">
@@ -754,11 +749,6 @@
 			<replaceMethodCall newMethod="getBlockIdWithLoad" method="^class:World^.^method:World/getBlockId^">
 				ticketsLoaded(Ljava.util.List;L^class:World^;I)Ljava.util.List;
 			</replaceMethodCall>
-		</class>
-		<class id="buildcraft.factory.TilePump">
-			<replaceInitializer field="blocksToPump" class="nallar.collections.TreeMapHashMap"/>
-			<insertBefore code="blocksToPump.clear();">initializePumpFromPosition</insertBefore>
-			<synchronize>isActive,getNextIndexToPump,initializePumpFromPosition</synchronize>
 		</class>
 	</buildCraftFactory>
 	<buildCraftTransport>
@@ -1142,7 +1132,9 @@
 			 }">update
 			</replaceMethod>
 			<synchronize>update</synchronize>
-			<synchronize field="$1.^field:WorldServer/theChunkProviderServer^.^field:ChunkProviderServer/loadedChunks^">calculateChunkChanges</synchronize>
+			<synchronize field="$1.^field:WorldServer/theChunkProviderServer^.^field:ChunkProviderServer/loadedChunks^">
+				calculateChunkChanges
+			</synchronize>
 		</class>
 		<class id="codechicken.chunkloader.ChunkLoaderManager$ChunkLoaderOrganiser">
 			<replaceMethodCall newMethod="getTEWithLoad" method="^class:World^.^method:World/getBlockTileEntity^">
@@ -1163,24 +1155,8 @@
 			}">tickDownUnloads
 			</replaceMethod>
 		</class>
-		<class id="codechicken.core.world.WorldExtension">
-			<replaceInitializer field="chunkMap" class="nallar.collections.CHashMap"/>
-		</class>
-		<class id="codechicken.core.world.WorldExtensionManager$WorldExtensionEventHandler">
-			<synchronize>onChunkLoad,onChunkUnLoad,onChunkDataLoad,onChunkDataSave</synchronize>
-		</class>
 		<class id="codechicken.core.CommonUtils">
 			<replaceMethod code="return $1.dimensionId;">getDimension(L^class:World^;)I</replaceMethod>
-			<replaceMethod code="{
-				java.io.File basesave = getWorldBaseSaveLocation($1);
-				String innerSave = $1.^field:World/provider^.getSaveFolder();
-				if (innerSave != null) {
-					return new java.io.File(basesave, innerSave);
-				}
-
-				return basesave;
-			}">getWorldSaveLocation(L^class:World^;I)Ljava.io.File;
-			</replaceMethod>
 		</class>
 	</chickenChunks>
 	<wirelessRedstone>
@@ -1465,15 +1441,6 @@
 		</class>
 	</MFFS>
 	<thaumcraft>
-		<class id="thaumcraft.api.ObjectTags">
-			<replaceInitializer field="tags" class="nallar.collections.CHashMap"/>
-		</class>
-		<class id="thaumcraft.common.aura.AuraManager">
-			<replaceNew oldClass="java.util.LinkedList" newClass="nallar.collections.ConcurrentLinkedQueueList">
-				registerAuraNode,addToAuraUpdateList
-			</replaceNew>
-			<synchronize>registerAuraNode</synchronize>
-		</class>
 		<class id="thaumcraft.common.lib.WorldTicker">
 			<newField code="nallar.tickthreading.util.contextaccess.ContextAccess.$"
 					  class="nallar.tickthreading.util.contextaccess.ContextAccess" field="context" static="true"/>
@@ -1481,74 +1448,8 @@
 				if (context.runningUnder(thaumcraft.common.lib.WorldTicker.class)) {
 					return;
 				}
-			}">addSwapper,addBlockToRestore
+			}">addSwapper
 			</insertBefore>
-		</class>
-		<class id="thaumcraft.common.aura.AuraWorldTicker">
-			<synchronize field="((^class:WorldServer^)$2[0]).auraLock">tickEnd</synchronize>
-			<replaceMethod code="{
-				synchronized(thaumcraft.common.aura.AuraManager.class) {
-					if (thaumcraft.common.aura.AuraManager.auraUpdateList.get(Integer.valueOf($1)) != null) {
-						return;
-					}
-					LinkedList temp = new ConcurrentLinkedQueueList();
-					Collection nodes = thaumcraft.common.aura.AuraManager.auraNodes.values();
-					for (Iterator i = nodes.iterator(); i.hasNext();) {
-						thaumcraft.api.aura.AuraNode node = (thaumcraft.api.aura.AuraNode) i.next();
-						if (node.dimension == $1) {
-							temp.add(Integer.valueOf(node.key));
-						}
-					}
-					thaumcraft.common.aura.AuraManager.auraUpdateList.put(Integer.valueOf($1), temp);
-				}
-			}">populateAuraUpdateList
-			</replaceMethod>
-		</class>
-		<class id="thaumcraft.common.lib.EventHandler">
-			<synchronize field="$1.world.auraLock">chunkLoad</synchronize>
-		</class>
-		<class id="thaumcraft.common.tiles.TileCrystalCapacitor">
-			<replaceFieldUsage field="count" writeCode="{ }" readCode="{ $_ = null; }">^all^</replaceFieldUsage>
-			<removeField field="count"/>
-			<insertAfter code="interval = new Random().nextInt(300);"/>
-			<replaceMethod code="{
-				^class:World^ world = this.^field:TileEntity/worldObj^;
-				if (!world.onClient() &amp;&amp; interval++ % 300 == 0) {
-					ArrayList e = thaumcraft.common.aura.AuraManager.getAurasWithin(world, ^field:TileEntity/xCoord^ + 0.5, ^field:TileEntity/yCoord^ + 0.5, ^field:TileEntity/zCoord^ + 0.5);
-					if(e.size() == 0) {
-					   return;
-					}
-
-					Iterator i$ = e.iterator();
-
-					while(i$.hasNext()) {
-					   Integer key = (Integer)i$.next();
-					   thaumcraft.api.aura.AuraNode nd = thaumcraft.common.aura.AuraManager.getNode(key.intValue());
-					   if(nd != null) {
-					      if(nd.level &gt; nd.baseLevel &amp;&amp; this.storedVis &lt; this.maxVis) {
-					         thaumcraft.common.aura.AuraManager.queueNodeChanges(nd.key, -1, 0, false, null, 0.0F, 0.0F, 0.0F);
-					         ++this.storedVis;
-					         sendTile();
-					         break;
-					      }
-
-					      if(nd.level &lt; nd.baseLevel &amp;&amp; this.storedVis &gt; 0) {
-					         thaumcraft.common.aura.AuraManager.queueNodeChanges(nd.key, 1, 0, false, null, 0.0F, 0.0F, 0.0F);
-					         --this.storedVis;
-					         sendTile();
-					         break;
-					      }
-					   }
-					}
-				}
-			}">^method:TileEntity/updateEntity^
-			</replaceMethod>
-		</class>
-		<class id="thaumcraft.common.tiles.TileMarker">
-			<replaceInitializer field="markers" class="nallar.collections.CHashMap">^static^</replaceInitializer>
-			<replaceInitializer field="markedForDeletion"
-								class="nallar.collections.ArrayListReplaceIterateTempListClear">^static^
-			</replaceInitializer>
 		</class>
 		<class id="thaumcraft.common.tiles.TileSensor">
 			<replaceMethod code="((ArrayList) noteBlockEvents.get($1)).addAll($1.getNoteBlockEvents());">
@@ -1685,8 +1586,11 @@
 		</class>
 	</appliedEnergistics>
 	<denLib>
-		<class id="denoflionsx.denLib">
-			<replaceMethod code="return $1;">Hash</replaceMethod>
+		<class id="denoflionsx.denLib.Lib.denLib.StringUtils">
+			<replaceMethod code="return $1;">Hash(Ljava.lang.String;)Ljava.lang.String;</replaceMethod>
+		</class>
+		<class id="denoflionsx.denLib.Mod.Handlers.ChunkHandler">
+			<removeMethod>onEvent</removeMethod>
 		</class>
 	</denLib>
 	<icbm>
@@ -1889,4 +1793,48 @@
 			</replaceMethodCall>
 		</class>
 	</mobHats>
+	<revamp>
+		<class id="rivvest.Revamp.EntityEventHandler">
+			<replaceInitializer field="entitiesToConvert" class="nallar.collections.SynchronizedList"/>
+		</class>
+		<class id="rivvest.Revamp.ServerTickerRevamp">
+			<replaceMethodCall method="java.util.List.clear" code="{}">runConversions</replaceMethodCall>
+			<insertBefore code="{
+				synchronized ($1) {
+					ArrayList temp = new ArrayList($1);
+					$1.clear();
+					$1 = temp;
+				}
+			}">runConversions
+			</insertBefore>
+		</class>
+	</revamp>
+	<morpheus>
+		<class id="net.quetzi.morpheus.SleepChecker">
+			<replaceMethod code="{
+				if (($1 != null) &amp;&amp; (net.quetzi.morpheus.Morpheus.alertEnabled)) {
+					for (Iterator i$ = $2.^field:World/playerEntities^.iterator(); i$.hasNext(); ) {
+						^class:EntityPlayerMP^ entityPlayer = (^class:EntityPlayerMP^)i$.next();
+						entityPlayer.^method:EntityPlayerMP/sendChatToPlayer^($1);
+					}
+				}
+				net.quetzi.morpheus.Morpheus.mLog.info($1.toString());
+			}">alertPlayers
+			</replaceMethod>
+			<replaceMethod code="{
+					for (Iterator i$ = $1.^field:World/playerEntities^.iterator(); i$.hasNext(); ) {
+						^class:EntityPlayerMP^ player = (^class:EntityPlayerMP^)i$.next();
+						net.quetzi.morpheus.world.WorldSleepState wss = (net.quetzi.morpheus.world.WorldSleepState) net.quetzi.morpheus.Morpheus.playerSleepStatus.get(Integer.valueOf(player.^field:Entity/dimension^));
+						if (player.^method:EntityPlayer/isPlayerFullyAsleep^() &amp;&amp; !wss.isPlayerSleeping(player.^field:EntityPlayerMP/username^)) {
+							wss.setPlayerAsleep(player.^field:EntityPlayerMP/username^);
+							alertPlayers(createAlert(player.^field:Entity/worldObj^, player,net.quetzi.morpheus.Morpheus.onSleepText), $1);
+						} else if (!player.^method:EntityPlayer/isPlayerFullyAsleep^() &amp;&amp; wss.isPlayerSleeping(player.^field:EntityPlayerMP/username^)) {
+							wss.setPlayerAwake(player.^field:EntityPlayerMP/username^);
+							alertPlayers(createAlert(player.^field:Entity/worldObj^, player,net.quetzi.morpheus.Morpheus.onWakeText), $1);
+						}
+					}
+			}">updatePlayerStates
+			</replaceMethod>
+		</class>
+	</morpheus>
 </mods>

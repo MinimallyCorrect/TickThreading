@@ -31,9 +31,9 @@ public class InsecurityManager extends java.lang.SecurityManager {
 	}
 
 	private static final String[] loggerNames = {
-		"ForgeModLoader",
-		"TickThreading",
-		"TTPatcher",
+			"ForgeModLoader",
+			"TickThreading",
+			"TTPatcher",
 	};
 
 	@Override

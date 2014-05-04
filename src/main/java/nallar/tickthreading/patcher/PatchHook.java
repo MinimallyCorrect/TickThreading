@@ -1,10 +1,17 @@
 package nallar.tickthreading.patcher;
 
+import nallar.tickthreading.PatchLog;
+
 public class PatchHook {
 	private static Patcher patcher;
 
 	static {
-		patcher = new Patcher(PatchLauncher.class.getResourceAsStream("/patches.xml"), Patches.class);
+		try {
+			patcher = new Patcher(PatchLauncher.class.getResourceAsStream("/patches.xml"), Patches.class);
+		} catch (Throwable t) {
+			PatchLog.severe("Failed to create Patcher", t);
+			System.exit(1);
+		}
 	}
 
 	public static byte[] preSrgTransformationHook(String name, String transformedName, byte[] originalBytes) {

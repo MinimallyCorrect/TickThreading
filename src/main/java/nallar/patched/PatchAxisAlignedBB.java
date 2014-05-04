@@ -14,8 +14,4 @@ public abstract class PatchAxisAlignedBB extends AxisAlignedBB {
 	public boolean intersectsWith(AxisAlignedBB other) {
 		return other.maxX > this.minX && other.minX < this.maxX && (other.maxY > this.minY && other.minY < this.maxY && other.maxZ > this.minZ && other.minZ < this.maxZ);
 	}
-
-	public static AABBPool a() {
-		return aabbPool;
-	}
 }
