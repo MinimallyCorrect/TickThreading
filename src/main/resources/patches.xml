@@ -843,12 +843,6 @@
 		<class id="ic2.core.IC2">
 			<synchronize>addSingleTickCallback</synchronize>
 		</class>
-		<class id="ic2.core.EnergyNet">
-			<replaceMethodCall method="warning" code="{}">emitEnergyFrom</replaceMethodCall>
-			<replaceInitializer field="energySourceToEnergyPathMap" class="java.util.HashMap"/>
-			<replaceInitializer field="entityLivingToShockEnergyMap" class="java.util.HashMap"/>
-			<synchronize>addTileEntity,removeTileEntity,emitEnergyFrom,discover</synchronize>
-		</class>
 		<class id="ic2.core.ExplosionIC2">
 			<synchronize>doExplosion</synchronize>
 		</class>
@@ -856,30 +850,6 @@
 			<replaceMethodCall method="self.^method:TileEntity/onInventoryChanged^" code="{ }">
 				^method:TileEntity/updateEntity^
 			</replaceMethodCall>
-		</class>
-		<class id="ic2.core.network.NetworkManager">
-			<replaceMethod code="{
-				ic2.core.WorldData worldData = ic2.core.WorldData.get($1);
-				Collection networkedFieldsToUpdate = worldData.networkedFieldsToUpdate;
-
-				if (worldData.networkedFieldsToUpdate.isEmpty()) return;
-
-				Collection networkedFieldsToUpdateList;
-				synchronized(networkedFieldsToUpdate) {
-				  networkedFieldsToUpdateList = new ArrayList(networkedFieldsToUpdate);
-				  networkedFieldsToUpdate.clear();
-				}
-
-				for (Iterator i$ = $1.^field:World/playerEntities^.iterator(); i$.hasNext(); ) {
-					^class:EntityPlayerMP^ entityPlayer = (^class:EntityPlayerMP^)i$.next();
-
-					sendUpdatePacket(networkedFieldsToUpdateList, entityPlayer);
-				}
-			}">sendUpdatePacket(L^class:World^;)V
-			</replaceMethod>
-		</class>
-		<class id="ic2.core.WorldData">
-			<replaceInitializer field="networkedFieldsToUpdate" class="nallar.collections.SynchronizedSet"/>
 		</class>
 	</industrialCraft>
 	<gregTech>

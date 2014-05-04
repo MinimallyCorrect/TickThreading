@@ -36,7 +36,7 @@ public class ClassLoaderPool extends ClassPool {
 	}
 
 	byte[] getClassBytesRuntime(String className) {
-		if (LaunchClassLoader.instance.excluded(className)) {
+		if (LaunchClassLoader.instance.excluded(className.replace('/', '.'))) {
 			return null;
 		}
 		byte[] bytes = preSrg ? LaunchClassLoader.instance.getPreSrgBytes(className) : LaunchClassLoader.instance.getSrgBytes(className);

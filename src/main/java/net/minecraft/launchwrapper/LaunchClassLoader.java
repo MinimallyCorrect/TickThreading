@@ -45,13 +45,14 @@ public class LaunchClassLoader extends URLClassLoader {
 
 		// classloader exclusions
 		addClassLoaderExclusion("java.");
+		addTransformerExclusion("javax.");
+		addClassLoaderExclusion("javassist.");
 		addClassLoaderExclusion("sun.");
 		addClassLoaderExclusion("org.lwjgl.");
 		addClassLoaderExclusion("org.apache.logging.");
 		addClassLoaderExclusion("net.minecraft.launchwrapper.");
 
 		// transformer exclusions
-		addTransformerExclusion("javax.");
 		addTransformerExclusion("argo.");
 		addTransformerExclusion("org.objectweb.asm.");
 		addTransformerExclusion("com.google.common.");
@@ -485,8 +486,8 @@ public class LaunchClassLoader extends URLClassLoader {
 	private static final byte[] CACHE_MISS = new byte[0];
 
 	public byte[] getClassBytes(String name) throws IOException {
-		if (name.startsWith("java")) {
-			new Throwable(name).printStackTrace();
+		if (name.startsWith("java/")) {
+			return null;
 		}
 		byte[] cached = resourceCache.get(name);
 		if (cached != null) {
@@ -507,7 +508,7 @@ public class LaunchClassLoader extends URLClassLoader {
 
 		InputStream classStream = null;
 		try {
-			final String resourcePath = name.replace('.', '/').concat(".class");
+			final String resourcePath = name.replace('.', '/') + ".class";
 			final URL classResource = findResource(resourcePath);
 
 			if (classResource == null) {
