@@ -14,6 +14,7 @@ public class PatchLauncher {
 		}
 	}
 
+	public static String[] startupArgs;
 	private static final String serverJarArgument = "--serverjar=";
 
 	private static void run(String[] args) throws Exception {
@@ -28,6 +29,7 @@ public class PatchLauncher {
 				break;
 			}
 		}
+		startupArgs = args = argsList.toArray(new String[argsList.size()]);
 		if (System.getProperty("tickthreading.launcherWaitForKeyPress") != null) {
 			System.out.println("Waiting for enter key press to continue;");
 			new Scanner(System.in).nextLine();

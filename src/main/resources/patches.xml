@@ -191,8 +191,8 @@
 			<replaceMethod code="throw new UnsupportedOperationException();">tick</replaceMethod>
 			<disable>adjustPoolSize</disable>
 			<replaceMethod
-					code="((^class:ChunkProviderServer^)$1.^method:World/getChunkProvider^()).getChunkAt($2, $3, true, false, null);">
-				waitForChunkLoad
+					code="return $3.getChunkAt($4, $5, true, false, null);">
+				syncChunkLoad
 			</replaceMethod>
 			<replaceMethod code="$3.getChunkAt($4, $5, true, false, $6);">queueChunkLoad</replaceMethod>
 		</class>
@@ -453,10 +453,6 @@
 		</class>
 		<class id="net.minecraft.world.World" env="mcpc">
 			<removeUntilOpcode index="-2" opcode="ATHROW">addEntity,removePlayerEntityDangerously</removeUntilOpcode>
-			<insertBefore code="inPlaceEvent = new nallar.tickthreading.util.BooleanThreadLocal();"/>
-			<final field="callingPlaceEvent"/>
-			<threadLocalBoolean field="callingPlaceEvent" threadLocalField="$0.inPlaceEvent"/>
-			<disable>loadChunkOnProvideBegin,loadChunkOnProvideEnd</disable>
 		</class>
 		<class id="net.minecraft.world.chunk.Chunk" env="mcpc">
 			<threadLocalBoolean field="callingPlaceEvent" threadLocalField="$0.inPlaceEvent"/>

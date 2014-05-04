@@ -830,7 +830,7 @@ public class Patches {
 	public void threadLocalBoolean(CtClass ctClass, Map<String, String> attributes) throws CannotCompileException {
 		final String field = attributes.get("field");
 		final String threadLocalField = attributes.get("threadLocalField");
-		PatchLog.info(field + " -> " + threadLocalField);
+		final IntHolder done = new IntHolder();
 		for (CtConstructor ctConstructor : ctClass.getDeclaredConstructors()) {
 			ctConstructor.instrument(new ExprEditor() {
 				@Override
@@ -838,6 +838,7 @@ public class Patches {
 					if (e.getFieldName().equals(field)) {
 						if (e.isWriter()) {
 							e.replace("{ }");
+							done.value++;
 						}
 					}
 				}
@@ -849,12 +850,17 @@ public class Patches {
 				if (e.getFieldName().equals(field)) {
 					if (e.isReader()) {
 						e.replace("{ $_ = ((Boolean) " + threadLocalField + ".get()).booleanValue(); }");
+						done.value++;
 					} else if (e.isWriter()) {
 						e.replace("{ " + threadLocalField + ".set(Boolean.valueOf($1)); }");
+						done.value++;
 					}
 				}
 			}
 		});
+		if (done.value == 0) {
+			PatchLog.warning("Didn't find any uses of " + field + " to replace with " + threadLocalField);
+		}
 	}
 
 	@Patch(

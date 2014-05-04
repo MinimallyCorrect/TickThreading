@@ -3,7 +3,6 @@ package net.minecraft.launchwrapper;
 import cpw.mods.fml.relauncher.FMLRelaunchLog;
 import nallar.insecurity.InsecurityManager;
 import nallar.tickthreading.patcher.PatchHook;
-import nallar.tickthreading.patcher.PatcherClassLoader;
 import nallar.unsafe.UnsafeUtil;
 
 import java.io.*;
@@ -94,8 +93,7 @@ public class LaunchClassLoader extends URLClassLoader {
 				} catch (Throwable t) {
 					System.err.println("Failed to set up Security Manager. This is probably not a huge problem - but it could indicate classloading issues.");
 				}
-				ClassLoader patcherClassLoader = new PatcherClassLoader(this);
-				Class.forName("nallar.tickthreading.patcher.PatchHook", true, patcherClassLoader);
+				Class.forName("nallar.tickthreading.patcher.PatchHook");
 			}
 			IClassTransformer transformer = (IClassTransformer) loadClass(transformerClassName).newInstance();
 			if (transformer instanceof IClassNameTransformer && renameTransformer == null) {
@@ -364,7 +362,7 @@ public class LaunchClassLoader extends URLClassLoader {
 	private byte[] runTransformers(final String name, final String transformedName, byte[] basicClass) {
 		basicClass = PatchHook.preSrgTransformationHook(name, transformedName, basicClass);
 		if (deobfuscationTransformer == null) {
-			if (transformedName.startsWith("net.minecraft.")) {
+			if (transformedName.startsWith("net.minecraft.") && !transformedName.contains("ClientBrandRetriever")) {
 				FMLRelaunchLog.log(Level.WARNING, new Throwable(), "Transforming " + name + " before SRG transformer has been added.");
 			}
 			for (final IClassTransformer transformer : transformers) {
@@ -378,7 +376,7 @@ public class LaunchClassLoader extends URLClassLoader {
 		return basicClass;
 	}
 
-	private HashMap<String, byte[]> cachedSrgClasses = new HashMap<String, byte[]>();
+	private final HashMap<String, byte[]> cachedSrgClasses = new HashMap<String, byte[]>();
 
 	private byte[] transformUpToSrg(final String name, final String transformedName, byte[] basicClass) {
 		byte[] cached = cachedSrgClasses.get(transformedName);
