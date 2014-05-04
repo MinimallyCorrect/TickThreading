@@ -79,23 +79,9 @@ public class PatchLauncher {
 			}
 			return;
 		}
-		System.err.println("You have not specified a server jar, attempting to guess the forge jar location.");
+		System.err.println("You have not specified a server jar");
 		System.err.println("Please add --serverJar=<minecraft/forge/mcpc jar name here> at the end of your java arguments.");
-		System.err.println("Example: java -Xmx=2G -XX:MaxPermSize=256m -XX:+AgressiveOpts -jar TT.jar --serverJar=mcpcIsFast.jar");
-		for (File file : files) {
-			String lowerCase = file.getName().toLowerCase();
-			if (lowerCase.contains("forge") && (lowerCase.endsWith(".jar") || lowerCase.endsWith(".zip"))) {
-				System.out.println("Found forge jar " + file);
-				if (found) {
-					System.out.println("Found multiple forge jars, please ensure that only one jar with forge in the name is in the main minecraft folder");
-				}
-				addPathToClassLoader(file, classLoader);
-				found = true;
-			}
-		}
-		if (!found) {
-			System.err.println("Failed to guess which jar is the forge jar.");
-		}
+		System.err.println("Example: java -Xmx=2G -XX:MaxPermSize=256m -XX:+AgressiveOpts -jar TT.jar --serverJar=mcpc953.jar");
 	}
 
 	private static void addLibraries(URLClassLoader classLoader, File file) {
