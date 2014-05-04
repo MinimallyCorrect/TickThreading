@@ -28,6 +28,10 @@ public class PatchLauncher {
 				break;
 			}
 		}
+		if (System.getProperty("tickthreading.launcherWaitForKeyPress") != null) {
+			System.out.println("Waiting for enter key press to continue;");
+			new Scanner(System.in).nextLine();
+		}
 		addLibraries((URLClassLoader) classLoader, loc);
 
 		Class<?> launchwrapper;
