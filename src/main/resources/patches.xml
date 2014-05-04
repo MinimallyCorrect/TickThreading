@@ -1586,7 +1586,7 @@
 		</class>
 	</appliedEnergistics>
 	<denLib>
-		<class id="denoflionsx.denLib.Lib.denLib.StringUtils">
+		<class id="denoflionsx.denLib.Lib.denLib$StringUtils">
 			<replaceMethod code="return $1;">Hash(Ljava.lang.String;)Ljava.lang.String;</replaceMethod>
 		</class>
 		<class id="denoflionsx.denLib.Mod.Handlers.ChunkHandler">
