@@ -186,7 +186,7 @@
 			">fireBukkitUnloadEvent
 			</replaceMethod>
 		</class>
-		<class id="org.bukkit.craftbukkit.v1_5_R3.chunkio.ChunkIOExecutor" env="mcpc">
+		<class id="org.bukkit.craftbukkit.v1_6_R3.chunkio.ChunkIOExecutor" env="mcpc">
 			<replaceInitializer field="instance" code="$_ = null;"/>
 			<replaceMethod code="throw new UnsupportedOperationException();">tick</replaceMethod>
 			<disable>adjustPoolSize</disable>
@@ -197,9 +197,9 @@
 			<replaceMethod code="$3.getChunkAt($4, $5, true, false, $6);">queueChunkLoad</replaceMethod>
 		</class>
 		<class id="net.minecraft.world.gen.ChunkProviderServer" env="mcpc">
-			<changeFieldType field="chunksToUnload" type="org.bukkit.craftbukkit.v1_5_R3.util.LongHashSet"
+			<changeFieldType field="chunksToUnload" type="org.bukkit.craftbukkit.v1_6_R3.util.LongHashSet"
 							 remove="true"/>
-			<insertAfter field="chunksToUnload" code="$field = new org.bukkit.craftbukkit.v1_5_R3.util.LongHashSet();"/>
+			<insertAfter field="chunksToUnload" code="$field = new org.bukkit.craftbukkit.v1_6_R3.util.LongHashSet();"/>
 		</class>
 		<class id="net.minecraft.world.chunk.NibbleArray" env="forge">
 			<addAll fromClass="nallar.patched.storage.PatchNibbleArrayForge"/>
@@ -435,7 +435,7 @@
 				See https://issues.jboss.org/browse/JASSIST-197
 			-->
 			<replaceMethodCall
-					code="if (((org.bukkit.craftbukkit.v1_5_R3.CraftWorld) ((org.bukkit.event.block.BlockEvent) $1).getBlock().getWorld()).getHandle().safeToGenerate()) { $0.callEvent($$); }"
+					code="if (((org.bukkit.craftbukkit.v1_6_R3.CraftWorld) ((org.bukkit.event.block.BlockEvent) $1).getBlock().getWorld()).getHandle().safeToGenerate()) { $0.callEvent($$); }"
 					method="callEvent">updateTick
 			</replaceMethodCall>
 		</class>
@@ -509,7 +509,7 @@
 			</synchronize>
 			<replaceMethod code="{ fireEvent($$); }">callEvent</replaceMethod>
 		</class>
-		<class id="org.bukkit.craftbukkit.v1_5_R3.CraftServer">
+		<class id="org.bukkit.craftbukkit.v1_6_R3.CraftServer">
 			<replaceMethodCall method="registerDimension" code="{ }">
 				createWorld(Lorg.bukkit.WorldCreator;)Lorg.bukkit.World;
 			</replaceMethodCall>
@@ -521,14 +521,14 @@
 				createWorld(Lorg.bukkit.WorldCreator;)Lorg.bukkit.World;
 			</ignoreExceptions>
 			<replaceMethod code="{
-				return net.minecraftforge.common.DimensionManager.unloadWorld(((org.bukkit.craftbukkit.v1_5_R3.CraftWorld) $1).getHandle(), $2);
+				return net.minecraftforge.common.DimensionManager.unloadWorld(((org.bukkit.craftbukkit.v1_6_R3.CraftWorld) $1).getHandle(), $2);
 			}">unloadWorld(Lorg.bukkit.World;Z)V
 			</replaceMethod>
 		</class>
-		<class id="org.bukkit.craftbukkit.v1_5_R3.entity.CraftPlayer">
+		<class id="org.bukkit.craftbukkit.v1_6_R3.entity.CraftPlayer">
 			<removeUntilOpcode index="-2" opcode="ATHROW">kickPlayer</removeUntilOpcode>
 		</class>
-		<class id="org.bukkit.craftbukkit.v1_5_R3.CraftWorld">
+		<class id="org.bukkit.craftbukkit.v1_6_R3.CraftWorld">
 			<removeUntilOpcode index="-2" opcode="ATHROW">unloadChunkRequest,unloadChunk,loadChunk</removeUntilOpcode>
 			<replaceMethod
 					code=" {
@@ -583,7 +583,7 @@
 		</class>
 	</bukkit>
 	<spigot>
-		<class id="org.bukkit.craftbukkit.v1_5_R3.util.WatchdogThread">
+		<class id="org.bukkit.craftbukkit.v1_6_R3.util.WatchdogThread">
 			<disable>run</disable>
 		</class>
 	</spigot>
