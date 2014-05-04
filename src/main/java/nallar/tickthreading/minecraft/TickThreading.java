@@ -200,6 +200,7 @@ public class TickThreading {
 				+ "\nSeriously, please don't."
 				+ "\nIf it's only broken with TickThreading, report it at https://github.com/nallar/TickThreading/issues/new"
 				+ "\n\nAlso, you really should be making regular backups. (You should be doing that even when not using TT.)");
+		Log.info("Server launch took " + ((System.currentTimeMillis() - LaunchClassLoader.launchTime) / 1000f));
 		if (Log.debug) {
 			Log.severe("TickThreading is running in debug mode.");
 		}

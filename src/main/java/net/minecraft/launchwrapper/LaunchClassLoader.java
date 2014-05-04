@@ -16,27 +16,18 @@ import java.util.logging.*;
 
 public class LaunchClassLoader extends URLClassLoader {
 	private IClassTransformer deobfuscationTransformer;
-	public static final int BUFFER_SIZE = 1 << 12;
-	private List<URL> sources;
-	private ClassLoader parent = getClass().getClassLoader();
+	private final List<URL> sources;
+	private final ClassLoader parent = getClass().getClassLoader();
 
-	private List<IClassTransformer> transformers = new ArrayList<IClassTransformer>(2);
-	private Map<String, Class<?>> cachedClasses = new HashMap<String, Class<?>>(1000);
-	private Set<String> invalidClasses = new HashSet<String>(1000);
+	private final List<IClassTransformer> transformers = new ArrayList<IClassTransformer>(2);
+	private final Map<String, Class<?>> cachedClasses = new HashMap<String, Class<?>>(1000);
+	private final Set<String> invalidClasses = new HashSet<String>(1000);
 
-	private Set<String> classLoaderExceptions = new HashSet<String>();
-	private Set<String> transformerExceptions = new HashSet<String>();
-	private Map<String, byte[]> resourceCache = new HashMap<String, byte[]>(1000);
-	private Set<String> negativeResourceCache = new HashSet<String>();
+	private final Set<String> classLoaderExceptions = new HashSet<String>();
+	private final Set<String> transformerExceptions = new HashSet<String>();
+	private final Map<String, byte[]> resourceCache = new HashMap<String, byte[]>(1000);
 
 	private IClassNameTransformer renameTransformer;
-
-	private static final ThreadLocal<byte[]> loadBuffer = new ThreadLocal<byte[]>() {
-		@Override
-		public byte[] initialValue() {
-			return new byte[BUFFER_SIZE];
-		}
-	};
 
 	private static final String[] RESERVED_NAMES = {"CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"};
 
@@ -85,6 +76,7 @@ public class LaunchClassLoader extends URLClassLoader {
 	}
 
 	private boolean initedTTPatcher = false;
+	public static final long launchTime = System.currentTimeMillis();
 
 	public void registerTransformer(String transformerClassName) {
 		try {
@@ -221,6 +213,7 @@ public class LaunchClassLoader extends URLClassLoader {
 
 			CodeSigner[] signers = null;
 
+			byte[] classBytes = null;
 			if (lastDot > -1 && !untransformedName.startsWith("net.minecraft.")) {
 				if (urlConnection instanceof JarURLConnection) {
 					final JarURLConnection jarURLConnection = (JarURLConnection) urlConnection;
@@ -231,7 +224,7 @@ public class LaunchClassLoader extends URLClassLoader {
 						final JarEntry entry = jarFile.getJarEntry(fileName);
 
 						Package pkg = getPackage(packageName);
-						getClassBytes(untransformedName);
+						classBytes = getClassBytes(untransformedName);
 						signers = entry.getCodeSigners();
 						if (pkg == null) {
 							definePackage(packageName, manifest, jarURLConnection.getJarFileURL());
@@ -253,7 +246,11 @@ public class LaunchClassLoader extends URLClassLoader {
 				}
 			}
 
-			final byte[] transformedClass = runTransformers(untransformedName, transformedName, getClassBytes(untransformedName));
+			if (classBytes == null) {
+				classBytes = getClassBytes(untransformedName);
+			}
+
+			final byte[] transformedClass = runTransformers(untransformedName, transformedName, classBytes);
 			if (DEBUG_SAVE) {
 				saveTransformedClass(transformedClass, transformedName);
 			}
@@ -446,29 +443,29 @@ public class LaunchClassLoader extends URLClassLoader {
 		return sources;
 	}
 
-	private byte[] readFully(InputStream stream) {
+	private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
+	private static final ThreadLocal<byte[]> loadBuffer = new ThreadLocal<byte[]>() {
+		@Override
+		public byte[] initialValue() {
+			return new byte[1048756];
+		}
+	};
+
+	protected static byte[] readFully(InputStream stream) {
 		try {
+			ByteArrayOutputStream bos = new ByteArrayOutputStream(stream.available());
+
+			int readBytes;
 			byte[] buffer = loadBuffer.get();
 
-			int read;
-			int totalLength = 0;
-			while ((read = stream.read(buffer, totalLength, buffer.length - totalLength)) != -1) {
-				totalLength += read;
-
-				// Extend our buffer
-				if (totalLength >= buffer.length - 1) {
-					byte[] newBuffer = new byte[buffer.length + BUFFER_SIZE];
-					System.arraycopy(buffer, 0, newBuffer, 0, buffer.length);
-					buffer = newBuffer;
-				}
+			while ((readBytes = stream.read(buffer, 0, buffer.length)) != -1) {
+				bos.write(buffer, 0, readBytes);
 			}
 
-			final byte[] result = new byte[totalLength];
-			System.arraycopy(buffer, 0, result, 0, totalLength);
-			return result;
+			return bos.toByteArray();
 		} catch (Throwable t) {
-			LogWrapper.log(Level.WARNING, t, "Problem loading class");
-			return new byte[0];
+			FMLRelaunchLog.log(Level.SEVERE, t, "Problem loading class");
+			return EMPTY_BYTE_ARRAY;
 		}
 	}
 
@@ -484,16 +481,22 @@ public class LaunchClassLoader extends URLClassLoader {
 		transformerExceptions.add(toExclude);
 	}
 
+	@SuppressWarnings("MismatchedReadAndWriteOfArray")
+	private static final byte[] CACHE_MISS = new byte[0];
+
 	public byte[] getClassBytes(String name) throws IOException {
-		if (negativeResourceCache.contains(name)) {
-			return null;
-		} else if (resourceCache.containsKey(name)) {
-			return resourceCache.get(name);
+		if (name.startsWith("java")) {
+			new Throwable(name).printStackTrace();
+		}
+		byte[] cached = resourceCache.get(name);
+		if (cached != null) {
+			return cached == CACHE_MISS ? null : cached;
 		}
 		if (name.indexOf('.') == -1) {
+			String upperCaseName = name.toUpperCase(Locale.ENGLISH);
 			for (final String reservedName : RESERVED_NAMES) {
-				if (name.toUpperCase(Locale.ENGLISH).startsWith(reservedName)) {
-					final byte[] data = getClassBytes("_" + name);
+				if (upperCaseName.startsWith(reservedName)) {
+					final byte[] data = getClassBytes('_' + name);
 					if (data != null) {
 						resourceCache.put(name, data);
 						return data;
@@ -509,7 +512,7 @@ public class LaunchClassLoader extends URLClassLoader {
 
 			if (classResource == null) {
 				if (DEBUG) LogWrapper.finest("Failed to find class resource %s", resourcePath);
-				negativeResourceCache.add(name);
+				resourceCache.put(name, CACHE_MISS);
 				return null;
 			}
 			classStream = classResource.openStream();
@@ -533,7 +536,11 @@ public class LaunchClassLoader extends URLClassLoader {
 	}
 
 	public void clearNegativeEntries(Set<String> entriesToClear) {
-		negativeResourceCache.removeAll(entriesToClear);
+		for (String entry : entriesToClear) {
+			if (resourceCache.get(entry) == CACHE_MISS) {
+				resourceCache.remove(entry);
+			}
+		}
 	}
 
 	public static void testForTTChanges() {

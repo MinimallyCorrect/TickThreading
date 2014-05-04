@@ -32,23 +32,7 @@ public class ClassLoaderPool extends ClassPool {
 
 	@Override
 	protected synchronized CtClass get0(String className, boolean useCache) throws NotFoundException {
-		CtClass clazz;
-		if (useCache) {
-			clazz = getCached(className);
-			if (clazz != null) {
-				return clazz;
-			}
-		}
-
-		clazz = createCtClass(className, useCache);
-		if (clazz != null) {
-			// clazz.getName() != classname if classname is "[L<name>;".
-			if (useCache) {
-				cacheCtClass(clazz.getName(), clazz, false);
-			}
-		}
-
-		return clazz;
+		return super.get0(className, true);
 	}
 
 	byte[] getClassBytesRuntime(String className) {
