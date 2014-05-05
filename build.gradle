@@ -39,6 +39,9 @@ archivesBaseName = "TickThreading"
 minecraft {
     version = "1.6.4-9.11.1.964"
     assetDir = "eclipse/assets"
+    replace '@MOD_NAME@', project.archivesBaseName
+    replace '@MOD_VERSION@', project.version
+    replace '@MC_VERSION@', version
 }
 
 compileJava {

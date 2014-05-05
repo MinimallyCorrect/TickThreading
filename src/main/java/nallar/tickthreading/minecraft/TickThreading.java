@@ -58,7 +58,7 @@ import java.lang.reflect.*;
 import java.util.*;
 
 @SuppressWarnings("WeakerAccess")
-@Mod(modid = "TickThreading", name = "TickThreading")
+@Mod(modid = "@MOD_NAME@", name = "@MOD_NAME@", version = "@MOD_VERSION@", acceptedMinecraftVersions = "@MC_VERSION@")
 @NetworkMod(clientSideRequired = false, serverSideRequired = false)
 public class TickThreading {
 	@Mod.Instance
