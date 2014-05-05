@@ -1519,7 +1519,7 @@
 			</synchronize>
 		</class>
 		<class id="appeng.me.tile.TileStorageBus">
-			<synchronize>getCellArray,getSharedTagCompound</synchronize>
+			<synchronize>getCellArray,getItem</synchronize>
 		</class>
 		<class id="appeng.me.MEInventoryArray">
 			<synchronize>^all^</synchronize>
