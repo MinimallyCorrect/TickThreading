@@ -2,7 +2,7 @@ Installing TickThreading
 ==========
 
 - Install Forge, if you don't already have it. MCPC+ may also be used as the server jar.
-- [Download TickThreading](http://nallar.me/buildservice/job/TickThreading/lastSuccessfulBuild/artifact/target/)
+- [Download TickThreading](http://nallar.me/buildservice/job/TickThreading-1.6.4/)
 - Put the TickThreading-x.x.x.xxx.jar in the main server folder and remove the version numbers.
 - Change the .jar file in your start script to the TickThreading.jar.
 - Add this JVM argument that points TickThreading to the unpatched server .jar file: --serverJar=
