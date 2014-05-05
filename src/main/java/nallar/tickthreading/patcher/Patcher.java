@@ -152,10 +152,8 @@ public class Patcher {
 				}
 				classPatchDescriptors.add(classPatchDescriptor);
 				classToPatchGroup.put(classPatchDescriptor.name, this);
-				if (onDemand) {
-					if (patches.put(classPatchDescriptor.name, classPatchDescriptor) != null) {
-						throw new Error("Duplicate class patch for " + classPatchDescriptor.name + ", but onDemand is set.");
-					}
+				if (onDemand && patches.put(classPatchDescriptor.name, classPatchDescriptor) != null) {
+					throw new Error("Duplicate class patch for " + classPatchDescriptor.name + ", but onDemand is set.");
 				}
 			}
 		}
@@ -208,9 +206,14 @@ public class Patcher {
 		}
 
 		public byte[] getClassBytes(String name, byte[] originalBytes) {
+			byte[] bytes = patchedBytes.get(name);
+			if (bytes != null) {
+				return bytes;
+			}
 			if (onDemand) {
 				try {
-					byte[] bytes = patches.get(name).runPatches().toBytecode();
+					bytes = patches.get(name).runPatches().toBytecode();
+					patchedBytes.put(name, bytes);
 					saveByteCode(bytes, name);
 					PatchLog.flush();
 					return bytes;
@@ -220,7 +223,7 @@ public class Patcher {
 				}
 			}
 			runPatchesIfNeeded();
-			byte[] bytes = patchedBytes.get(name);
+			bytes = patchedBytes.get(name);
 			if (bytes == null) {
 				PatchLog.severe("Got no patched bytes for " + name);
 				return originalBytes;
