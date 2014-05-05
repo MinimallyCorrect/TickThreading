@@ -1554,6 +1554,18 @@
 			appeng.me.tile.TileTerminal
 			appeng.me.tile.TileTransitionPlane
 			appeng.me.tile.TileWireless
+			crazypants.enderio.conduit.TileConduitBundle
+			extracells.tileentity.TileEntityBusFluidExport
+			extracells.tileentity.TileEntityBusFluidImport
+			extracells.tileentity.TileEntityBusFluidStorage
+			extracells.tileentity.TileEntityFluidCrafter
+			extracells.tileentity.TileEntityHardMEDrive
+			extracells.tileentity.TileEntityInterfaceFluid
+			extracells.tileentity.TileEntityLevelEmitterFluid
+			extracells.tileentity.TileEntityMEDropper
+			extracells.tileentity.TileEntityMonitorStorageFluid
+			extracells.tileentity.TileEntityTerminalFluid
+			extracells.tileentity.TileEntityTransitionPlaneFluid
 		">
 			<newMethod code="public void updateTileEntity() { }" ignoreDuplicate=""/>
 			<renameInterfaceMethod name="tickNetwork" interface="appeng.api.me.tiles.IGridMachine" allowMissing="">
