@@ -1526,22 +1526,26 @@
 			</replaceInitializer>
 		</class>
 		<class id="
-			appeng.me.tile.TileWireless
-			appeng.me.tile.TileTerminal
-			appeng.me.tile.TileStorageMonitor
-			appeng.me.tile.TileStorageBus
-			appeng.me.tile.TileP2PTunnel
-			appeng.me.tile.TileOutputCable
-			appeng.me.tile.TileLevelEmitter
-			appeng.me.tile.TileIOPort
-			appeng.me.tile.TileInterfaceBase
-			appeng.me.tile.TileInputCable
-			appeng.me.tile.TileDrive
-			appeng.me.tile.TileDarkCable
+			appeng.me.tile.TileAssembler
+			appeng.me.tile.TileAssemblerMB
 			appeng.me.tile.TileChest
 			appeng.me.tile.TileCraftingMonitor
-			appeng.me.tile.TileAssemblerMB
-			appeng.me.tile.TileAssembler
+			appeng.me.tile.TileDarkCable
+			appeng.me.tile.TileDrive
+			appeng.me.tile.TileEnergyCell
+			appeng.me.tile.TileInputCable
+			appeng.me.tile.TileInterfaceBase
+			appeng.me.tile.TileIOPort
+			appeng.me.tile.TileLevelEmitter
+			appeng.me.tile.TileOutputCable
+			appeng.me.tile.TileP2PTunnel
+			appeng.me.tile.TileSpatialIOPort
+			appeng.me.tile.TileSpatialPylon
+			appeng.me.tile.TileStorageBus
+			appeng.me.tile.TileStorageMonitor
+			appeng.me.tile.TileTerminal
+			appeng.me.tile.TileTransitionPlane
+			appeng.me.tile.TileWireless
 		">
 			<newMethod code="public void updateTileEntity() { }" ignoreDuplicate=""/>
 			<renameInterfaceMethod name="tickNetwork" interface="appeng.api.me.tiles.IGridMachine" allowMissing="">
