@@ -18,6 +18,7 @@ public class ClassLoaderPool extends ClassPool {
 		this.appendSystemPath();
 		this.importPackage("java.util");
 		this.importPackage("java.lang");
+		this.importPackage("nallar.collections");
 	}
 
 	@Override
