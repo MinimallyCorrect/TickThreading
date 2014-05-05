@@ -161,6 +161,14 @@ public class Patcher {
 		}
 
 		private void obfuscateAttributesAndTextContent(Element root) {
+			for (Element classElement : DomUtil.elementList(root.getChildNodes())) {
+				String env = classElement.getAttribute("env");
+				if (env != null && !env.isEmpty()) {
+					if (!env.equals(getEnv())) {
+						root.removeChild(classElement);
+					}
+				}
+			}
 			for (Element element : DomUtil.elementList(root.getChildNodes())) {
 				if (!DomUtil.elementList(element.getChildNodes()).isEmpty()) {
 					obfuscateAttributesAndTextContent(element);
@@ -227,12 +235,6 @@ public class Patcher {
 			ranPatches = true;
 			Set<CtClass> patchedClasses = new HashSet<CtClass>();
 			for (ClassPatchDescriptor classPatchDescriptor : classPatchDescriptors) {
-				String env = classPatchDescriptor.attributes.get("env");
-				if (env != null && !env.isEmpty()) {
-					if (!env.equals(getEnv())) {
-						continue;
-					}
-				}
 				try {
 					patchedClasses.add(classPatchDescriptor.runPatches());
 				} catch (Throwable t) {
