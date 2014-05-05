@@ -4,7 +4,71 @@
 		<class id="cpw.mods.fml.common.Loader">
 			<addAll fromClass="nallar.patched.forge.PatchLoader"/>
 		</class>
+		<class id="cpw.mods.fml.common.LoadController">
+			<replaceMethodCall method="log" index="1" code="{ }">buildModList</replaceMethodCall>
+		</class>
 	</coreMods>
+	<theWarOnLogSpam onDemand="true">
+		<class id="net.bdew.lib.recipes.gencfg.GenericConfigLoader$class">
+			<replaceMethodCall method="info" code="{ }">processConfigStatement</replaceMethodCall>
+		</class>
+		<class id="codechicken.nei.NEIClientConfig">
+			<replaceMethodCall method="println" code="{ }">bootNEI</replaceMethodCall>
+		</class>
+		<class id="calclavia.components.CalclaviaLoader">
+			<replaceMethodCall method="info" code="{ }">requireItem,requireBlock</replaceMethodCall>
+		</class>
+		<class id="
+		denoflionsx.denLib.Mod.Handlers.NewDictHandler.DenLibDictionaryHandler
+		denoflionsx.denLib.Mod.Handlers.NewFluidHandler.DenLibFluidHandler
+		">
+			<replaceMethodCall method="log" code="{ }">doEvent,onEvent</replaceMethodCall>
+		</class>
+		<class id="
+		mods.natura.plugins.PluginController
+		tconstruct.plugins.PluginController
+		">
+			<replaceMethodCall method="pConsole" code="{ }">^all^</replaceMethodCall>
+		</class>
+		<class id="Reika.RotaryCraft.Auxiliary.RecipeManagers">
+			<replaceMethodCall method="log" code="{ }">addOreRecipes</replaceMethodCall>
+		</class>
+		<class id="
+		Reika.DragonAPI.Base.DragonAPIMod
+		Reika.DragonAPI.Base.ModHandlerBase">
+			<replaceMethodCall method="pConsole" code="{ }"/>
+		</class>
+		<class id="Reika.DragonAPI.Libraries.Java.ReikaObfuscationHelper">
+			<replaceMethodCall method="pConsole" code="{ }">addField,addMethod</replaceMethodCall>
+		</class>
+		<class id="Reika.DragonAPI.Base.PlayerTracker">
+			<replaceMethodCall method="pConsole" index="0" code="{ }">save,read</replaceMethodCall>
+		</class>
+		<class id="Reika.DragonAPI.ModList">
+			<replaceMethodCall method="pConsole" index="0" code="{ }" silent="true"/>
+			<replaceMethodCall method="pConsole" index="1" code="{ }" silent="true"/>
+			<replaceMethodCall method="pConsole" index="2" code="{ }" silent="true"/>
+		</class>
+		<class id="Reika.DragonAPI.Libraries.Java.ReikaJavaLibrary">
+			<newField static="" field="logger" class="java.util.logging.Logger" code="none"/>
+			<final field="logger"/>
+			<addStaticInitializer code="{
+				logger = java.util.logging.Logger.getLogger(&quot;Dragon&quot;);
+				logger.setParent(java.util.logging.Logger.getLogger(&quot;ForgeModLoader&quot;));
+				logger.setUseParentHandlers(true);
+			}"/>
+			<replaceMethod code="{
+				if ($1 == null) {
+					logger.info(&quot;null passed to Reika pConsole&quot;);
+				} else if ($1 instanceof String || $1 instanceof Integer || $1 instanceof Boolean) {
+					logger.info(String.valueOf($1));
+				} else {
+					logger.info(String.valueOf($1) + &quot; of class &quot; + $1.getClass().getName());
+				}
+			}">pConsole(Ljava/lang/Object;)V
+			</replaceMethod>
+		</class>
+	</theWarOnLogSpam>
 	<tickthreading>
 		<class id="nallar.tickthreading.minecraft.tickregion.TileEntityTickRegion">
 			<lockToSynchronized>doTick</lockToSynchronized>
@@ -262,7 +326,8 @@
 		<class id="net.minecraft.entity.DataWatcher">
 			<replace class="nallar.patched.entity.PatchDataWatcher"/>
 		</class>
-		<class id="net.minecraft.entity.passive.EntitySquid">
+		<class id="net.minecraft.entity.passive.EntitySquid" env="forge">
+			<!-- This patch is already included in MCPC+ as it's in Spigot -->
 			<removeMethod>isInWater</removeMethod>
 		</class>
 		<class id="net.minecraft.entity.player.EntityPlayerMP">
@@ -449,24 +514,12 @@
 		<class id="net.minecraft.entity.ai.EntityAITasks">
 			<synchronize>addTask,func_85156_a,onUpdateTasks,func_75775_b</synchronize>
 		</class>
-		<class id="net.minecraft.block.Block" env="mcpc">
-			<threadLocalBoolean field="callingPlaceEvent" threadLocalField="$0.inPlaceEvent"/>
-		</class>
 		<class id="net.minecraft.world.World" env="mcpc">
 			<removeUntilOpcode index="-2" opcode="ATHROW">addEntity,removePlayerEntityDangerously</removeUntilOpcode>
 		</class>
-		<class id="net.minecraft.world.chunk.Chunk" env="mcpc">
-			<threadLocalBoolean field="callingPlaceEvent" threadLocalField="$0.inPlaceEvent"/>
-		</class>
-		<class id="net.minecraft.item.ItemBlock" env="mcpc">
-			<threadLocalBoolean field="callingPlaceEvent" threadLocalField="$0.inPlaceEvent"/>
-		</class>
 		<class id="net.minecraft.server.gui.TextAreaLogHandler">
 			<synchronize>publish</synchronize>
-		</class>
-	</minecraftCommon>
-	<forge>
-		<class id="net.minecraftforge.liquids.LiquidTank">
+		</class><class id="net.minecraftforge.liquids.LiquidTank">
 			<synchronize/>
 		</class>
 		<class id="net.minecraftforge.common.DimensionManager">
@@ -498,7 +551,7 @@
 			</replaceMethod>
 			<removeUntilOpcode opcode="return" index="1">initDimension</removeUntilOpcode>
 		</class>
-	</forge>
+	</minecraftCommon>
 	<bukkit>
 		<class id="org.bukkit.plugin.SimplePluginManager">
 			<synchronize>
@@ -718,26 +771,6 @@
 			<synchronize>build</synchronize>
 		</class>
 	</buildCraftCore>
-	<buildCraftEnergy>
-		<class id="buildcraft.energy.TileEngineIron">
-			<replaceMethod code="{
-				$2.^method:ICrafting/sendProgressBarUpdate^($1, 0, Math.round(this.energy * 10.0F) &amp; 0xFFFF);
-				$2.^method:ICrafting/sendProgressBarUpdate^($1, 1, (Math.round(this.energy * 10.0F) &amp; 0xFFFF0000) >> 16);
-				$2.^method:ICrafting/sendProgressBarUpdate^($1, 2, Math.round(this.currentOutput * 10.0F));
-				$2.^method:ICrafting/sendProgressBarUpdate^($1, 3, this.heat &amp; 0xFFFF);
-				$2.^method:ICrafting/sendProgressBarUpdate^($1, 4, (this.heat &amp; 0xFFFF0000) >> 16);
-				net.minecraftforge.liquids.LiquidStack l = this.fuelTank.getLiquid();
-				$2.^method:ICrafting/sendProgressBarUpdate^($1, 5, l != null ? l.amount : 0);
-				$2.^method:ICrafting/sendProgressBarUpdate^($1, 6, l != null ? l.itemID : 0);
-				$2.^method:ICrafting/sendProgressBarUpdate^($1, 9, l != null ? l.itemMeta : 0);
-				l = this.coolantTank.getLiquid();
-				$2.^method:ICrafting/sendProgressBarUpdate^($1, 7, l != null ? l.amount : 0);
-				$2.^method:ICrafting/sendProgressBarUpdate^($1, 8, l != null ? l.itemID : 0);
-				$2.^method:ICrafting/sendProgressBarUpdate^($1, 10, l != null ? l.itemMeta : 0);
-			}">sendGUINetworkData
-			</replaceMethod>
-		</class>
-	</buildCraftEnergy>
 	<buildCraftFactory>
 		<class id="buildcraft.BuildCraftFactory$QuarryChunkloadCallback">
 			<replaceMethodCall newMethod="getTEWithLoad" method="^class:World^.^method:World/getBlockTileEntity^">
@@ -748,34 +781,6 @@
 			</replaceMethodCall>
 		</class>
 	</buildCraftFactory>
-	<buildCraftTransport>
-		<class id="buildcraft.transport.TileGenericPipe">
-			<newField field="staticLock" class="java.lang.Object" static=""/>
-			<synchronize field="staticLock">initialize</synchronize>
-			<synchronize field="facadeBlocks">blockCreated,getBlockId,getTile,computeConnections</synchronize>
-			<synchronize>entityEntering,^method:TileEntity/updateEntity^</synchronize>
-		</class>
-		<class id="buildcraft.transport.PipeTransportItems">
-			<synchronize field="container">groupEntities</synchronize>
-			<replaceInitializer field="travelingEntities" class="java.util.concurrent.ConcurrentHashMap"/>
-			<replaceInitializer field="toRemove" class="nallar.collections.SynchronizedSet"/>
-			<replaceMethod code="{
-				synchronized(toRemove) {
-					java.util.Iterator i = toRemove.iterator();
-					while (i.hasNext()) {
-						travelingEntities.remove(i.next());
-					}
-					toRemove.clear();
-				}
-			}">performRemoval
-			</replaceMethod>
-		</class>
-		<class id="buildcraft.transport.PipeTransportPower">
-			<!-- TODO: Non-static lock, if possible -->
-			<newField field="staticLock" class="java.lang.Object" static=""/>
-			<synchronize field="staticLock">updateEntity</synchronize>
-		</class>
-	</buildCraftTransport>
 	<thermalExpansionPlugins>
 		<class id="thermalexpansion.plugins.cc.TurtleWrench">
 			<ignoreExceptions type="java.lang.NullPointerException" code="return false;">attack</ignoreExceptions>
@@ -1804,4 +1809,26 @@
 			</replaceMethod>
 		</class>
 	</morpheus>
+	<canUpdateFixes onDemand="true">
+		<class id="
+		com.advGenetics.TileEntity.TileEntityMicroscope
+		com.xcompwiz.mystcraft.tileentity.TileEntityBookBinder
+		com.xcompwiz.mystcraft.tileentity.TileEntityBookReceptacle
+		com.xcompwiz.mystcraft.tileentity.TileEntityBookstand
+		com.xcompwiz.mystcraft.tileentity.TileEntityLinkModifier
+		com.xcompwiz.mystcraft.tileentity.TileEntityStarFissure
+		emasher.sockets.pipes.TileDirectionChanger
+		emasher.sockets.pipes.TileFrame
+		extracells.tileentity.TileEntityCertusTank
+		extracells.tileentity.TileEntityHardMEDrive
+		extracells.tileentity.TileEntityLevelEmitterFluid
+		extracells.tileentity.TileEntityMEDropper
+		extracells.tileentity.TileEntityMonitorStorageFluid
+		extracells.tileentity.TileEntityVoidFluid
+		">
+			<newMethod code="public boolean ^method:TileEntity/canUpdate^() {
+				return false;
+			}"/>
+		</class>
+	</canUpdateFixes>
 </mods>

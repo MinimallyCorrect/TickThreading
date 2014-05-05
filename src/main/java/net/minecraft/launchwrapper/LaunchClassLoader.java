@@ -79,23 +79,31 @@ public class LaunchClassLoader extends URLClassLoader {
 	private boolean initedTTPatcher = false;
 	public static final long launchTime = System.currentTimeMillis();
 
+	private void ttPatchInit() {
+		if (!initedTTPatcher) {
+			initedTTPatcher = true;
+			try {
+				FMLRelaunchLog.finest("Dummy log message to make sure that FMLRelaunchLog has been set up.");
+			} catch (Throwable t) {
+				System.err.println("Failure in FMLRelaunchLog");
+				t.printStackTrace(System.err);
+			}
+			try {
+				InsecurityManager.init();
+			} catch (Throwable t) {
+				System.err.println("Failed to set up Security Manager. This is probably not a huge problem - but it could indicate classloading issues.");
+			}
+			try {
+				Class.forName("nallar.tickthreading.patcher.PatchHook");
+			} catch (ClassNotFoundException e) {
+				FMLRelaunchLog.log(Level.SEVERE, e, "Failed to init TT PatchHook");
+				System.exit(1);
+			}
+		}
+	}
+
 	public void registerTransformer(String transformerClassName) {
 		try {
-			if (!initedTTPatcher) {
-				initedTTPatcher = true;
-				try {
-					FMLRelaunchLog.finest("Dummy log message to make sure that FMLRelaunchLog has been set up.");
-				} catch (Throwable t) {
-					System.err.println("Failure in FMLRelaunchLog");
-					t.printStackTrace(System.err);
-				}
-				try {
-					InsecurityManager.init();
-				} catch (Throwable t) {
-					System.err.println("Failed to set up Security Manager. This is probably not a huge problem - but it could indicate classloading issues.");
-				}
-				Class.forName("nallar.tickthreading.patcher.PatchHook");
-			}
 			IClassTransformer transformer = (IClassTransformer) loadClass(transformerClassName).getConstructor().newInstance();
 			if (transformer instanceof IClassNameTransformer && renameTransformer == null) {
 				renameTransformer = (IClassNameTransformer) transformer;
@@ -154,6 +162,9 @@ public class LaunchClassLoader extends URLClassLoader {
 			if (name.startsWith(exception)) {
 				try {
 					final Class<?> clazz = super.findClass(name);
+					if (clazz == null) {
+						throw new ClassNotFoundException("null from super.findClass");
+					}
 					cachedClasses.put(name, clazz);
 					return clazz;
 				} catch (ClassNotFoundException e) {
@@ -165,9 +176,12 @@ public class LaunchClassLoader extends URLClassLoader {
 
 		try {
 			final String transformedName = transformName(name);
-			cached = cachedClasses.get(transformedName);
-			if (cached != null) {
-				return cached;
+			if (!transformedName.equals(name)) {
+				FMLRelaunchLog.severe("Asked for " + name + ", giving " + transformedName);
+				cached = cachedClasses.get(transformedName);
+				if (cached != null) {
+					return cached;
+				}
 			}
 
 			final String untransformedName = untransformName(name);
@@ -320,6 +334,7 @@ public class LaunchClassLoader extends URLClassLoader {
 	}
 
 	private byte[] runTransformers(final String name, final String transformedName, byte[] basicClass) {
+		ttPatchInit();
 		basicClass = PatchHook.preSrgTransformationHook(name, transformedName, basicClass);
 		if (deobfuscationTransformer == null) {
 			if (transformedName.startsWith("net.minecraft.") && !transformedName.contains("ClientBrandRetriever")) {

@@ -1,7 +1,6 @@
 package nallar.tickthreading;
 
 import cpw.mods.fml.common.FMLLog;
-import nallar.reporting.Reporter;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.gui.TextAreaLogHandler;
 import net.minecraft.tileentity.TileEntity;
@@ -201,38 +200,31 @@ public class Log {
 	}
 
 	public static void severe(String msg) {
-		LOGGER.severe(msg);
+		severe(msg, null);
 	}
 
 	public static void warning(String msg) {
-		LOGGER.warning(msg);
+		warning(msg, null);
 	}
 
 	public static void info(String msg) {
-		LOGGER.info(msg);
+		info(msg, null);
 	}
 
 	public static void config(String msg) {
-		LOGGER.config(msg);
+		config(msg, null);
 	}
 
 	public static void fine(String msg) {
-		LOGGER.fine(msg);
+		fine(msg, null);
 	}
 
 	public static void finer(String msg) {
-		LOGGER.finer(msg);
+		finer(msg, null);
 	}
 
 	public static void finest(String msg) {
-		LOGGER.finest(msg);
-	}
-
-	public static void severe(String msg, Throwable t, boolean report) {
-		if (report) {
-			Reporter.report(t);
-		}
-		severe(msg, t);
+		finest(msg, null);
 	}
 
 	public static void debug(String msg, Throwable t) {

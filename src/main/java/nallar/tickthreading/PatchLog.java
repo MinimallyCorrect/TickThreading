@@ -1,7 +1,5 @@
 package nallar.tickthreading;
 
-import nallar.reporting.Reporter;
-
 import java.io.*;
 import java.util.*;
 import java.util.logging.*;
@@ -17,6 +15,8 @@ public class PatchLog {
 	@SuppressWarnings("UseOfArchaicSystemPropertyAccessors") // Need a default value.
 	private static final int numberOfLogFiles = Integer.getInteger("tickthreading.numberOfLogFiles", 5);
 	private static final File logFolder = new File("TTPatcherLogs");
+	private static final boolean FINE_TO_FILE = true;
+	private static final Logger fineLogger = Logger.getLogger("TTPatcher" + Character.toString((char) 255));
 
 	static {
 		try {
@@ -64,8 +64,16 @@ public class PatchLog {
 				}
 			});
 		}
-		LOGGER.setLevel(Level.ALL);
 		setFileName("patcher", Level.ALL, LOGGER);
+		if (FINE_TO_FILE) {
+			LOGGER.setLevel(Level.INFO);
+			fineLogger.setParent(LOGGER);
+			fineLogger.addHandler(handler);
+			fineLogger.setUseParentHandlers(false);
+			fineLogger.setLevel(Level.ALL);
+		} else {
+			LOGGER.setLevel(Level.ALL);
+		}
 	}
 
 	public static void setFileName(String name, final Level minimumLevel, Logger... loggers) {
@@ -97,7 +105,7 @@ public class PatchLog {
 				public void publish(LogRecord record) {
 					if (record.getLevel().intValue() >= minimumLevel.intValue()) {
 						try {
-							outputWriter.write(logFormatter.format(record));
+							outputWriter.write(logFormatter.format(record).replace(Character.toString((char) 255), ""));
 						} catch (IOException ignored) {
 							// Can't log here, might cause infinite recursion
 						}
@@ -140,38 +148,31 @@ public class PatchLog {
 	}
 
 	public static void severe(String msg) {
-		LOGGER.severe(msg);
+		severe(msg, null);
 	}
 
 	public static void warning(String msg) {
-		LOGGER.warning(msg);
+		warning(msg, null);
 	}
 
 	public static void info(String msg) {
-		LOGGER.info(msg);
+		info(msg, null);
 	}
 
 	public static void config(String msg) {
-		LOGGER.config(msg);
+		config(msg, null);
 	}
 
 	public static void fine(String msg) {
-		LOGGER.fine(msg);
+		fine(msg, null);
 	}
 
 	public static void finer(String msg) {
-		LOGGER.finer(msg);
+		finer(msg, null);
 	}
 
 	public static void finest(String msg) {
-		LOGGER.finest(msg);
-	}
-
-	public static void severe(String msg, Throwable t, boolean report) {
-		if (report) {
-			Reporter.report(t);
-		}
-		severe(msg, t);
+		finest(msg, null);
 	}
 
 	public static void debug(String msg, Throwable t) {
@@ -201,15 +202,15 @@ public class PatchLog {
 	}
 
 	public static void fine(String msg, Throwable t) {
-		LOGGER.log(Level.FINE, msg, t);
+		(FINE_TO_FILE ? fineLogger : LOGGER).log(Level.FINE, msg, t);
 	}
 
 	public static void finer(String msg, Throwable t) {
-		LOGGER.log(Level.FINER, msg, t);
+		(FINE_TO_FILE ? fineLogger : LOGGER).log(Level.FINER, msg, t);
 	}
 
 	public static void finest(String msg, Throwable t) {
-		LOGGER.log(Level.FINEST, msg, t);
+		(FINE_TO_FILE ? fineLogger : LOGGER).log(Level.FINEST, msg, t);
 	}
 
 	public static String classString(Object o) {

@@ -13,7 +13,8 @@ public class PatchHook {
 			try {
 				Field field = clazz.getDeclaredField("startupArgs");
 				field.set(null, PatchLauncher.startupArgs);
-			} catch (NoSuchFieldError ignored) { }
+			} catch (NoSuchFieldError ignored) {
+			}
 		} catch (Throwable t) {
 			PatchLog.severe("Failed to set up MCPC+ startup args. This is only a problem if you are using MCPC+", t);
 		}

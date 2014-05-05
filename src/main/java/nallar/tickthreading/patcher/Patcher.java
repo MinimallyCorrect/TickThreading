@@ -2,6 +2,7 @@ package nallar.tickthreading.patcher;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
+import com.google.common.io.Files;
 import javassist.CannotCompileException;
 import javassist.ClassLoaderPool;
 import javassist.ClassPool;
@@ -33,6 +34,7 @@ public class Patcher {
 	private final ClassPool preSrgClassPool;
 	private final Mappings mappings;
 	private final Mappings preSrgMappings;
+	private static final boolean DEBUG_PATCHED_OUTPUT = true;
 	private Object patchClassInstance;
 	private Object preSrgPatchClassInstance;
 	private Map<String, PatchMethodDescriptor> patchMethods = new HashMap<String, PatchMethodDescriptor>();
@@ -184,10 +186,26 @@ public class Patcher {
 			}
 		}
 
+		private void saveByteCode(byte[] bytes, String name) {
+			if (DEBUG_PATCHED_OUTPUT) {
+				name = name.replace('.', '/') + ".class";
+				File file = new File("./TTpatched/" + name);
+				file.getParentFile().mkdirs();
+				try {
+					Files.write(bytes, file);
+				} catch (IOException e) {
+					PatchLog.severe("Failed to save patched bytes for " + name, e);
+				}
+			}
+		}
+
 		public byte[] getClassBytes(String name, byte[] originalBytes) {
 			if (onDemand) {
 				try {
-					return patches.get(name).runPatches().toBytecode();
+					byte[] bytes = patches.get(name).runPatches().toBytecode();
+					saveByteCode(bytes, name);
+					PatchLog.flush();
+					return bytes;
 				} catch (Throwable t) {
 					PatchLog.severe("Failed to patch " + name + " in patch group " + name + '.', t);
 					return originalBytes;
@@ -323,7 +341,7 @@ public class Patcher {
 		private String methods;
 		private final String patch;
 
-		public PatchDescriptor(Element element) {
+		PatchDescriptor(Element element) {
 			attributes = DomUtil.getAttributes(element);
 			methods = element.getTextContent().trim();
 			patch = element.getTagName();
@@ -354,7 +372,7 @@ public class Patcher {
 		}
 	}
 
-	public class PatchMethodDescriptor {
+	public static class PatchMethodDescriptor {
 		public final String name;
 		public final List<String> requiredAttributes;
 		public final Method patchMethod;
