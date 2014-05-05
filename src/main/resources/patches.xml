@@ -46,11 +46,11 @@
 		<class id="denoflionsx.denLib.Mod.Handlers.NewFluidHandler.DenLibFluidHandler">
 			<replaceMethodCall method="log" code="{ }">onEvent</replaceMethodCall>
 		</class>
-		<class id="
-		mods.natura.plugins.PluginController
-		tconstruct.plugins.PluginController
-		">
+		<class id="tconstruct.plugins.PluginController">
 			<replaceMethodCall method="pConsole" code="{ }">^all^</replaceMethodCall>
+		</class>
+		<class id="mods.natura.plugins.PluginController">
+			<replaceMethodCall method="info" code="{ }">^all^</replaceMethodCall>
 		</class>
 		<class id="Reika.GeoStrata.Guardian.GuardianStoneManager">
 			<replaceMethodCall method="log" index="0" code="{ }">save,read</replaceMethodCall>
