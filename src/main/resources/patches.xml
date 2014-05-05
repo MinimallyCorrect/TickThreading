@@ -9,6 +9,9 @@
 		</class>
 	</coreMods>
 	<theWarOnLogSpam onDemand="true">
+		<class id="com.dmillerw.remoteIO.core.handler.PacketHandler">
+			<replaceMethodCall method="info" code="{ }">handleConfigData</replaceMethodCall>
+		</class>
 		<class id="magicbees.world.feature.FeatureHive">
 			<replaceFieldUsage field="logSpawns" writeCode="logSpawns = false;">^static^</replaceFieldUsage>
 		</class>
@@ -17,6 +20,12 @@
 		</class>
 		<class id="codechicken.nei.NEIClientConfig">
 			<replaceMethodCall method="println" code="{ }">bootNEI</replaceMethodCall>
+		</class>
+		<class id="codechicken.nei.NEIServerConfig">
+			<replaceMethodCall method="println" code="{ }">loadPlayer,unloadPlayer</replaceMethodCall>
+		</class>
+		<class id="codechicken.nei.NEISPH">
+			<replaceMethodCall method="println" code="{ }">sendHasServerSideTo</replaceMethodCall>
 		</class>
 		<class id="calclavia.components.CalclaviaLoader">
 			<replaceMethodCall method="info" code="{ }">requireItem,requireBlock</replaceMethodCall>
@@ -1182,6 +1191,9 @@
 		</class>
 	</extraBiomesXL>
 	<portalGun>
+		<class id="portalgun.common.core.PacketHandlerServer">
+			<replaceMethodCall method="console" index="0" code="{ }">onPacketData</replaceMethodCall>
+		</class>
 		<class id="portalgun.common.core.TickHandlerServer">
 			<synchronize field="$1.^field:World/loadedEntityList^">worldTick</synchronize>
 			<replaceInitializer field="grabMap" class="nallar.collections.CHashMap"/>
