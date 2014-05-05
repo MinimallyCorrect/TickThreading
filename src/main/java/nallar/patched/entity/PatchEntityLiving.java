@@ -12,7 +12,7 @@ import net.minecraft.world.World;
 
 import java.util.*;
 
-public class PatchEntityLiving extends EntityLiving {
+public abstract class PatchEntityLiving extends EntityLiving {
 	public PatchEntityLiving(World par1World) {
 		super(par1World);
 	}

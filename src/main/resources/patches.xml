@@ -274,9 +274,6 @@
 		<class id="net.minecraft.entity.player.EntityPlayerMP" env="forge">
 			<addAll fromClass="nallar.patched.entity.PatchEntityPlayerMPForge"/>
 		</class>
-		<class id="net.minecraft.entity.Entity">
-			<addAll fromClass="nallar.patched.entity.PatchEntity"/>
-		</class>
 		<class id="net.minecraft.nbt.CompressedStreamTools">
 			<addAll fromClass="nallar.patched.nbt.PatchCompressedStreamTools"/>
 		</class>
@@ -306,6 +303,9 @@
 			<replaceInitializer field="tagMap" class="nallar.collections.PartiallySynchronizedMap"/>
 		</class>
 		<class id="net.minecraft.entity.Entity">
+			<addAll fromClass="nallar.patched.entity.PatchEntity"/>
+		</class>
+		<class id="net.minecraft.entity.Entity">
 			<final field="rand"/>
 			<newField static="" field="nextEntityID_" class="java.util.concurrent.atomic.AtomicInteger"/>
 			<insertAfter field="entityId" code="this.$field = this.nextEntityID_.getAndIncrement();"/>
@@ -314,6 +314,7 @@
 		</class>
 		<class id="net.minecraft.entity.EntityLiving">
 			<addAll fromClass="nallar.patched.entity.PatchEntityLiving"/>
+			<insertSuper>onLivingUpdate</insertSuper>
 		</class>
 		<class id="net.minecraft.entity.EntityLivingBase">
 			<addAll fromClass="nallar.patched.entity.PatchEntityLivingBase"/>
