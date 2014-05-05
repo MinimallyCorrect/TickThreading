@@ -1,14 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <mods>
-	<coreMods preSrg="true" onDemand="true">
+	<coreMods praeSrg="true" onDemand="true">
 		<class id="cpw.mods.fml.common.Loader">
 			<addAll fromClass="nallar.patched.forge.PatchLoader"/>
+			<replaceMethodCall method="info" index="0" code="{ }">loadMods</replaceMethodCall>
+		</class>
+		<class id="cpw.mods.fml.common.ModAPIManager">
+			<replaceMethodCall method="info" index="0" code="{ }">registerDataTableAndParseAPI</replaceMethodCall>
 		</class>
 		<class id="cpw.mods.fml.common.LoadController">
 			<replaceMethodCall method="log" index="1" code="{ }">buildModList</replaceMethodCall>
 		</class>
 	</coreMods>
 	<theWarOnLogSpam onDemand="true">
+		<class id="codechicken.microblock.MicroMaterialRegistry$">
+			<replaceMethodCall method="println" index="1" code="{ }">registerMaterial</replaceMethodCall>
+		</class>
+		<class id="aroma1997.core.Aroma1997Core">
+			<replaceMethodCall method="logServer" code="{ }">preInit,init,postInit,serverStartup,serverStartedUp</replaceMethodCall>
+		</class>
 		<class id="com.dmillerw.remoteIO.core.handler.PacketHandler">
 			<replaceMethodCall method="info" code="{ }">sendConfigData</replaceMethodCall>
 		</class>
