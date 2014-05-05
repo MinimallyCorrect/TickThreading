@@ -545,6 +545,7 @@
 		<class id="net.minecraft.server.gui.TextAreaLogHandler">
 			<synchronize>publish</synchronize>
 		</class>
+		<!--suppress DeprecatedClassUsageInspection -->
 		<class id="net.minecraftforge.liquids.LiquidTank">
 			<synchronize/>
 		</class>
