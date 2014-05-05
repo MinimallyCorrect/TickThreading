@@ -606,18 +606,18 @@
 		<class id="factorization.common.TileEntityBarrel">
 			<replaceMethod code="{
 				^class:ItemStack^ i = this.item;
-				^class:ItemStack^ top = this.topStack;
-				^class:ItemStack^ b = this.bottomStack;
 				if (i == null) {
 					return 0;
 				}
+				^class:ItemStack^ top = this.topStack;
+				^class:ItemStack^ b = this.bottomStack;
 				if ((top == null) || (!itemMatch(top))) {
 					top = i.^method:ItemStack/copy^();
 					top.^field:ItemStack/stackSize^ = 0;
 					this.topStack = top;
 				}
 				if ((b == null) || (!itemMatch(b))) {
-					b = this.item.^method:ItemStack/copy^();
+					b = i.^method:ItemStack/copy^();
 					b.^field:ItemStack/stackSize^ = 0;
 					this.bottomStack = b;
 				}
