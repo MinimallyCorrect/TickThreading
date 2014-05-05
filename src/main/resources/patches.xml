@@ -1512,11 +1512,11 @@
 			<replaceInitializer field="CraftingQueue" class="nallar.collections.ConcurrentLinkedQueueList"/>
 			<synchronize field="CManager.getPrereqs()">getJobList,getJobStatus,cancelJob</synchronize>
 			<synchronize>
-				configureController,getCellArray,updateTileEntity,advanceCraftingCursor,resetWaitingQueue,signalInput(L^class:ItemStack^;)V,signalInput(Lappeng.api.me.util.IMEInventory;L^class:ItemStack^;)L^class:ItemStack^;
+				configureController,getCellArray,updateTileEntity,advanceCraftingCursor,resetWaitingQueue
 			</synchronize>
 		</class>
 		<class id="appeng.me.tile.TileStorageBus">
-			<synchronize>getCellArray,getSharedTagCompound,signalInput</synchronize>
+			<synchronize>getCellArray,getSharedTagCompound</synchronize>
 		</class>
 		<class id="appeng.me.MEInventoryArray">
 			<synchronize>^all^</synchronize>
