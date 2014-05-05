@@ -9,6 +9,9 @@
 		</class>
 	</coreMods>
 	<theWarOnLogSpam onDemand="true">
+		<class id="magicbees.world.feature.FeatureHive">
+			<replaceFieldUsage field="logSpawns" writeCode="logSpawns = false;">^static^</replaceFieldUsage>
+		</class>
 		<class id="net.bdew.lib.recipes.gencfg.GenericConfigLoader$class">
 			<replaceMethodCall method="info" code="{ }">processConfigStatement</replaceMethodCall>
 		</class>
@@ -18,11 +21,11 @@
 		<class id="calclavia.components.CalclaviaLoader">
 			<replaceMethodCall method="info" code="{ }">requireItem,requireBlock</replaceMethodCall>
 		</class>
-		<class id="
-		denoflionsx.denLib.Mod.Handlers.NewDictHandler.DenLibDictionaryHandler
-		denoflionsx.denLib.Mod.Handlers.NewFluidHandler.DenLibFluidHandler
-		">
-			<replaceMethodCall method="log" code="{ }">doEvent,onEvent</replaceMethodCall>
+		<class id="denoflionsx.denLib.Mod.Handlers.NewDictHandler.DenLibDictionaryHandler">
+			<replaceMethodCall method="log" code="{ }">doEvent</replaceMethodCall>
+		</class>
+		<class id="denoflionsx.denLib.Mod.Handlers.NewFluidHandler.DenLibFluidHandler">
+			<replaceMethodCall method="log" code="{ }">onEvent</replaceMethodCall>
 		</class>
 		<class id="
 		mods.natura.plugins.PluginController
