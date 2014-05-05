@@ -39,11 +39,7 @@ public class ClassLoaderPool extends ClassPool {
 		if (LaunchClassLoader.instance.excluded(className.replace('/', '.'))) {
 			return null;
 		}
-		byte[] bytes = preSrg ? LaunchClassLoader.instance.getPreSrgBytes(className) : LaunchClassLoader.instance.getSrgBytes(className);
-		if (bytes == null) {
-			PatchLog.fine("Failed to find class " + className + ", preSrg: " + preSrg);
-		}
-		return bytes;
+		return preSrg ? LaunchClassLoader.instance.getPreSrgBytes(className) : LaunchClassLoader.instance.getSrgBytes(className);
 	}
 
 	@Override
