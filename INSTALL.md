@@ -3,18 +3,21 @@ Installing TickThreading
 
 - Install Forge, if you don't already have it. MCPC+ may also be used as the server jar.
 - [Download TickThreading](http://nallar.me/buildservice/job/TickThreading/lastSuccessfulBuild/artifact/target/)
-- Put it in your minecraft mods directory
-- Start the minecraft server, it should close automatically.
-- Run PATCHME.cmd/sh in your minecraft directory
+- Put the TickThreading-x.x.x.xxx.jar in the main server folder.
+- Change the .jar file in your start script to the TickThreading.jar.
+- Add this JVM argument that points TickThreading to the unpatched server .jar file: --serverJar=
+- Example JVM arguments: java -Xms1G -Xmx1G -XX:PermSize=128m -jar TickThreading-1.6.4.105.jar --serverJar=minecraftforge.jar nogui
 - Have fun, if anything breaks make an issue report or contact me on EsperNet/Freenode IRC. nick: nallar
 
 Updating TickThreading
 ==========
 
-- Remove the old TT jar from your mods folder
-- Add the new jar
-- Start and stop the server OR change the path to the TT jar in the "PATCHME" file
-- Run PATCHME.cmd/sh
+- Stop the server.
+- Remove the old TT jar from your server folder.
+- Add the new jar.
+- Change start script to new TickThreading version number.
+- Start server.
+
 
 Java Tuning
 ==========
