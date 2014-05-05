@@ -713,21 +713,21 @@
 		</class>
 	</forgeModLoader>
 	<factorization>
-		<class id="factorization.common.TileEntityBarrel">
+		<class id="factorization.weird.TileEntityBarrel">
 			<replaceMethod code="{
 				^class:ItemStack^ i = this.item;
-				^class:ItemStack^ top = this.topStack;
-				^class:ItemStack^ b = this.bottomStack;
 				if (i == null) {
 					return 0;
 				}
+				^class:ItemStack^ top = this.topStack;
+				^class:ItemStack^ b = this.bottomStack;
 				if ((top == null) || (!itemMatch(top))) {
 					top = i.^method:ItemStack/copy^();
 					top.^field:ItemStack/stackSize^ = 0;
 					this.topStack = top;
 				}
 				if ((b == null) || (!itemMatch(b))) {
-					b = this.item.^method:ItemStack/copy^();
+					b = i.^method:ItemStack/copy^();
 					b.^field:ItemStack/stackSize^ = 0;
 					this.bottomStack = b;
 				}
@@ -736,13 +736,13 @@
 			</replaceMethod>
 			<synchronize>updateStacks,changeItemCount,setItemCount,a(IL^class:ItemStack^;)V</synchronize>
 		</class>
-		<class id="factorization.common.TileEntityMirror">
+		<class id="factorization.charge.TileEntityMirror">
 			<replaceMethod code="{
 				this.next_check = (300 + rand.nextInt(60));
 			}">setNextCheck
 			</replaceMethod>
 		</class>
-		<class id="factorization.common.TileEntityRouter">
+		<class id="factorization.wrath.TileEntityRouter">
 			<newField field="emptyUpdateCount" class="int" code="0" static=""/>
 			<replaceMethod code="{
 				if (this.^field:TileEntity/worldObj^.^method:World/isBlockGettingPowered^(this.^field:TileEntity/xCoord^, this.^field:TileEntity/yCoord^, this.^field:TileEntity/zCoord^)) {
@@ -759,10 +759,10 @@
 			}">shouldUpdate
 			</replaceMethod>
 		</class>
-		<class id="factorization.common.TileEntitySolarTurbine">
+		<class id="factorization.charge.TileEntitySolarTurbine">
 			<synchronize>addReflector</synchronize>
 		</class>
-		<class id="factorization.common.TileEntityWrathLamp">
+		<class id="factorization.wrath.TileEntityWrathLamp">
 			<replaceInitializer field="airToUpdate" class="nallar.collections.SynchronizedPriorityQueue">^static^
 			</replaceInitializer>
 			<threadLocal field="toVisit" type="java.util.HashSet"
