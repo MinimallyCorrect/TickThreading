@@ -3,7 +3,6 @@ package net.minecraft.launchwrapper;
 import cpw.mods.fml.relauncher.FMLRelaunchLog;
 import nallar.insecurity.InsecurityManager;
 import nallar.tickthreading.patcher.PatchHook;
-import nallar.unsafe.UnsafeUtil;
 
 import java.io.*;
 import java.net.*;
@@ -44,7 +43,6 @@ public class LaunchClassLoader extends URLClassLoader {
 
 		// classloader exclusions
 		addClassLoaderExclusion("java.");
-		addTransformerExclusion("javax.");
 		addClassLoaderExclusion("javassist.");
 		addClassLoaderExclusion("sun.");
 		addClassLoaderExclusion("org.lwjgl.");
@@ -53,6 +51,7 @@ public class LaunchClassLoader extends URLClassLoader {
 
 		// transformer exclusions
 		addTransformerExclusion("argo.");
+		addTransformerExclusion("javax.");
 		addTransformerExclusion("org.objectweb.asm.");
 		addTransformerExclusion("com.google.common.");
 		addTransformerExclusion("org.bouncycastle.");
@@ -70,7 +69,9 @@ public class LaunchClassLoader extends URLClassLoader {
 				tempFolder = null;
 			} else {
 				LogWrapper.info("DEBUG_SAVE Enabled, saving all classes to \"%s\"", tempFolder.getAbsolutePath().replace('\\', '/'));
-				tempFolder.mkdirs();
+				if (!tempFolder.mkdirs()) {
+					LogWrapper.info("Failed to make tempFolder: " + tempFolder);
+				}
 			}
 		}
 	}
@@ -95,7 +96,7 @@ public class LaunchClassLoader extends URLClassLoader {
 				}
 				Class.forName("nallar.tickthreading.patcher.PatchHook");
 			}
-			IClassTransformer transformer = (IClassTransformer) loadClass(transformerClassName).newInstance();
+			IClassTransformer transformer = (IClassTransformer) loadClass(transformerClassName).getConstructor().newInstance();
 			if (transformer instanceof IClassNameTransformer && renameTransformer == null) {
 				renameTransformer = (IClassNameTransformer) transformer;
 			}
@@ -134,42 +135,8 @@ public class LaunchClassLoader extends URLClassLoader {
 		return false;
 	}
 
-	private static final ThreadLocal<LinkedList<String>> loadingClasses = new ThreadLocal<LinkedList<String>>() {
-		@Override
-		public LinkedList<String> initialValue() {
-			return new LinkedList<String>();
-		}
-	};
-
 	@Override
 	public Class<?> findClass(final String name) throws ClassNotFoundException {
-		LinkedList<String> loadingClasses = LaunchClassLoader.loadingClasses.get();
-		for (String clazz : loadingClasses) {
-			if (clazz.equals(name)) {
-				String message = "Attempted to recursively load class: " + name;
-				FMLRelaunchLog.log(Level.SEVERE, new InternalError(), message);
-				throw new Error(message);
-			}
-		}
-		loadingClasses.push(name);
-		Throwable caught = null;
-		Class<?> found = null;
-		try {
-			found = findClass_(name);
-		} catch (Throwable t) {
-			caught = t;
-		}
-		String pop = loadingClasses.pop();
-		if (caught != null) {
-			throw UnsafeUtil.throwIgnoreChecked(caught);
-		}
-		if (!pop.equals(name)) {
-			throw new RuntimeException("Mismatched push/pop. Pushed: " + name + ", got: " + pop);
-		}
-		return found;
-	}
-
-	public Class<?> findClass_(final String name) throws ClassNotFoundException {
 		if (invalidClasses.contains(name)) {
 			throw new ClassNotFoundException(name);
 		}
@@ -207,7 +174,7 @@ public class LaunchClassLoader extends URLClassLoader {
 
 			final int lastDot = untransformedName.lastIndexOf('.');
 			final String packageName = lastDot == -1 ? "" : untransformedName.substring(0, lastDot);
-			final String fileName = untransformedName.replace('.', '/').concat(".class");
+			final String fileName = untransformedName.replace('.', '/') + ".class";
 			URLConnection urlConnection = findCodeSourceConnectionFor(fileName);
 
 			CodeSigner[] signers = null;
@@ -267,7 +234,7 @@ public class LaunchClassLoader extends URLClassLoader {
 		}
 	}
 
-	private void saveTransformedClass(final byte[] data, final String transformedName) {
+	private static void saveTransformedClass(final byte[] data, final String transformedName) {
 		if (tempFolder == null) {
 			return;
 		}
@@ -275,12 +242,12 @@ public class LaunchClassLoader extends URLClassLoader {
 		final File outFile = new File(tempFolder, transformedName.replace('.', File.separatorChar) + ".class");
 		final File outDir = outFile.getParentFile();
 
-		if (!outDir.exists()) {
-			outDir.mkdirs();
+		if (!outDir.exists() && !outDir.mkdirs()) {
+			LogWrapper.warning("Failed to make outDir: " + outDir);
 		}
 
-		if (outFile.exists()) {
-			outFile.delete();
+		if (outFile.exists() && !outFile.delete()) {
+			LogWrapper.warning("Failed to delete outFile: " + outFile);
 		}
 
 		try {
@@ -310,20 +277,12 @@ public class LaunchClassLoader extends URLClassLoader {
 		return name;
 	}
 
-	private boolean isSealed(final String path, final Manifest manifest) {
+	private static boolean isSealed(final String path, final Manifest manifest) {
 		Attributes attributes = manifest.getAttributes(path);
-		String sealed = null;
-		if (attributes != null) {
-			sealed = attributes.getValue(Name.SEALED);
-		}
-
-		if (sealed == null) {
+		if (attributes == null) {
 			attributes = manifest.getMainAttributes();
-			if (attributes != null) {
-				sealed = attributes.getValue(Name.SEALED);
-			}
 		}
-		return "true".equalsIgnoreCase(sealed);
+		return attributes != null && "true".equalsIgnoreCase(attributes.getValue(Name.SEALED));
 	}
 
 	private URLConnection findCodeSourceConnectionFor(final String name) {
@@ -339,7 +298,8 @@ public class LaunchClassLoader extends URLClassLoader {
 		return null;
 	}
 
-	private byte[] runTransformer(final String name, final String transformedName, byte[] basicClass, final IClassTransformer transformer) {
+	@SuppressWarnings("ConstantConditions")
+	private static byte[] runTransformer(final String name, final String transformedName, byte[] basicClass, final IClassTransformer transformer) {
 		try {
 			return transformer.transform(name, transformedName, basicClass);
 		} catch (Throwable t) {
