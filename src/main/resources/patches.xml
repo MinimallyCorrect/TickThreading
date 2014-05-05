@@ -1489,7 +1489,12 @@
 				if (enabled) {
 					Iterator i = tiles.iterator();
 					while (i.hasNext()) {
-						((appeng.api.me.tiles.IGridMachine) i.next()).tickNetwork();
+						appeng.api.me.tiles.IGridMachine igm = (appeng.api.me.tiles.IGridMachine) i.next();
+						try {
+							igm.tickNetwork();
+						} catch (AbstractMethodError e) {
+							System.out.println(&quot;AE IGridMachine missing tickNetwork: &quot; + igm.getClass().getName());
+						}
 					}
 				}
 				if (tickSkip++ % 2 == 0) {
