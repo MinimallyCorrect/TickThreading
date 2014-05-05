@@ -10,7 +10,7 @@
 	</coreMods>
 	<theWarOnLogSpam onDemand="true">
 		<class id="magicbees.world.feature.FeatureHive">
-			<replaceInitializer field="logSpawns" code="false"/>
+			<replaceFieldUsage field="logSpawns" writeCode="logSpawns = false;">^static^</replaceFieldUsage>
 		</class>
 		<class id="net.bdew.lib.recipes.gencfg.GenericConfigLoader$class">
 			<replaceMethodCall method="info" code="{ }">processConfigStatement</replaceMethodCall>
