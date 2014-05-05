@@ -10,7 +10,7 @@
 	</coreMods>
 	<theWarOnLogSpam onDemand="true">
 		<class id="com.dmillerw.remoteIO.core.handler.PacketHandler">
-			<replaceMethodCall method="info" code="{ }">handleConfigData</replaceMethodCall>
+			<replaceMethodCall method="info" code="{ }">sendConfigData</replaceMethodCall>
 		</class>
 		<class id="magicbees.world.feature.FeatureHive">
 			<replaceFieldUsage field="logSpawns" writeCode="logSpawns = false;">^static^</replaceFieldUsage>
