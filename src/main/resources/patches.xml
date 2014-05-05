@@ -1524,7 +1524,6 @@
 			appeng.me.tile.TileTerminal
 			appeng.me.tile.TileStorageMonitor
 			appeng.me.tile.TileStorageBus
-			appeng.me.tile.TileProgramableInterface
 			appeng.me.tile.TileP2PTunnel
 			appeng.me.tile.TileOutputCable
 			appeng.me.tile.TileLevelEmitter
