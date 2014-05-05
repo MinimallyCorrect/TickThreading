@@ -34,6 +34,11 @@ public class PatchLauncher {
 			System.out.println("Waiting for enter key press to continue;");
 			new Scanner(System.in).nextLine();
 		}
+		if (System.getProperty("tickthreading.debug") == null) {
+			System.out.println("THIS IS AN UNSTABLE BUILD OF TICKTHREADING.");
+			System.out.println("It may cause world corruption, exceptions everywhere or even blow up your server.");
+			Thread.sleep(5000);
+		}
 		addLibraries((URLClassLoader) classLoader, loc);
 
 		Class<?> launchwrapper;
