@@ -522,7 +522,8 @@
 		</class>
 		<class id="net.minecraft.server.gui.TextAreaLogHandler">
 			<synchronize>publish</synchronize>
-		</class><class id="net.minecraftforge.liquids.LiquidTank">
+		</class>
+		<class id="net.minecraftforge.liquids.LiquidTank">
 			<synchronize/>
 		</class>
 		<class id="net.minecraftforge.common.DimensionManager">
