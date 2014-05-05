@@ -1147,16 +1147,6 @@
 			<replaceMethodCall index="0" code="{}" method="println">updateReceiver</replaceMethodCall>
 		</class>
 	</wirelessRedstone>
-	<myTown>
-		<class id="ee.lutsu.alpha.mc.mytown.event.ProtectionEvents">
-			<synchronize>tickStart</synchronize>
-		</class>
-		<class id="ee.lutsu.alpha.mc.mytown.MyTownDatasource">
-			<synchronize field="$1.intern()">
-				getOrMakeResident(Ljava.lang.String;)Lee.lutsu.alpha.mc.mytown.entities.Resident;
-			</synchronize>
-		</class>
-	</myTown>
 	<extraBiomesXL>
 		<class id="extrabiomes.blocks.BlockAutumnLeaves$BlockType">
 			<insertBefore code="if (loadedCustomBlocks) { return; }">loadCustomBlocks</insertBefore>
@@ -1748,12 +1738,6 @@
 			</replaceMethodCall>
 		</class>
 	</tagApi>
-	<dimensionalDoors>
-		<class id="StevenDimDoors.mod_pocketDim.CommonTickHandler">
-			<replaceFieldUsage field="hasGrownRifts" writeCode="if ($0 != null) { $proceed($$); }">onTickInGame
-			</replaceFieldUsage>
-		</class>
-	</dimensionalDoors>
 	<mobHats>
 		<class id="hats.common.core.TickHandlerServer">
 			<newField field="skip" class="int" code="0"/>
