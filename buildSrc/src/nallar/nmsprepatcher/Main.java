@@ -89,6 +89,7 @@ public class Main {
 		File generatedDirectory = new File("./generated/");
 		generatedDirectory = generatedDirectory.getCanonicalFile();
 		File generatedSrcDirectory = new File(generatedDirectory, "src");
+		File ttSourceDirectory = new File("./src/main/java/");
 
 		if (source) {
 			if (generatedSrcDirectory.exists()) {
@@ -115,6 +116,9 @@ public class Main {
 			ostream.closeEntry();
 
 			if (source && e.getValue().length > 0) {
+				if (new File(ttSourceDirectory, e.getKey()).exists()) {
+					continue;
+				}
 				File f = new File(generatedSrcDirectory, e.getKey());
 				f.getParentFile().mkdirs();
 				Files.write(e.getValue(), f);
