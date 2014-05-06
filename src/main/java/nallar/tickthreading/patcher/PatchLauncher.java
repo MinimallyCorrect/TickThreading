@@ -64,35 +64,27 @@ public class PatchLauncher {
 	}
 
 	private static void addLibraries(URLClassLoader classLoader, String loc) {
+		if (loc == null) {
+			System.err.println("You have not specified a server jar");
+			System.err.println("Please add --serverJar=<minecraft/forge/mcpc jar name here> at the end of your java arguments.");
+			System.err.println("Example: java -Xmx=2G -XX:MaxPermSize=256m -XX:+AgressiveOpts -jar TT.jar --serverJar=mcpc953.jar");
+			System.exit(1);
+		}
+		File locFile = new File(loc);
+		try {
+			locFile = locFile.getCanonicalFile();
+		} catch (IOException e) {
+			e.printStackTrace(System.err);
+		}
+		if (locFile.exists()) {
+			System.out.println("Adding specified server jar: " + loc + " @ " + locFile + " to libraries.");
+			addPathToClassLoader(locFile, classLoader);
+		} else {
+			System.err.println("Could not find specified server jar: " + loc + " @ " + locFile);
+			System.exit(1);
+		}
 		File libraries = new File("libraries");
 		addLibraries(classLoader, libraries);
-		File current = new File(".");
-		File[] files = current.listFiles();
-		Arrays.sort(files, new Comparator<File>() {
-			@Override
-			public int compare(File o1, File o2) {
-				return o2.getName().compareTo(o1.getName());
-			}
-		});
-		boolean found = loc != null;
-		if (found) {
-			File locFile = new File(loc);
-			try {
-				locFile = locFile.getCanonicalFile();
-			} catch (IOException e) {
-				e.printStackTrace(System.err);
-			}
-			if (locFile.exists()) {
-				System.out.println("Adding specified server jar: " + loc + " @ " + locFile + " to libraries.");
-				addPathToClassLoader(locFile, classLoader);
-			} else {
-				System.err.println("Could not find specified server jar: " + loc + " @ " + locFile);
-			}
-			return;
-		}
-		System.err.println("You have not specified a server jar");
-		System.err.println("Please add --serverJar=<minecraft/forge/mcpc jar name here> at the end of your java arguments.");
-		System.err.println("Example: java -Xmx=2G -XX:MaxPermSize=256m -XX:+AgressiveOpts -jar TT.jar --serverJar=mcpc953.jar");
 	}
 
 	private static void addLibraries(URLClassLoader classLoader, File file) {
