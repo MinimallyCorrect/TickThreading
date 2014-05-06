@@ -7,7 +7,7 @@ import java.util.logging.*;
 public class LogFormatter extends Formatter {
 	public static final String LINE_SEPARATOR = System.getProperty("line.separator");
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd HH:mm:ss");
-	protected static final boolean colorEnabled = System.getProperty("tickthreading.color") != null;
+	protected static final boolean colorEnabled = System.getProperty("colorLogs") != null;
 
 	public static void setFormat(boolean u, SimpleDateFormat dateFormat) {
 		if (dateFormat != null) {

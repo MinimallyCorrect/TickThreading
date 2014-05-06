@@ -3,6 +3,7 @@ package nallar.tickthreading.patcher;
 import java.io.*;
 import java.lang.reflect.*;
 import java.net.*;
+import java.nio.file.*;
 import java.util.*;
 
 public class PatchLauncher {
@@ -11,6 +12,25 @@ public class PatchLauncher {
 			run(args);
 		} catch (Throwable t) {
 			t.printStackTrace(System.err);
+		}
+	}
+
+	private static void loadPropertiesFromFile(File file) throws IOException {
+		if (!file.exists()) {
+			Files.write(file.toPath(), ("colorLogs=true\r\n" +
+					"serverJar=").getBytes());
+		}
+		String data = new String(Files.readAllBytes(file.toPath()));
+		data = data.replace("\r\n", "\n");
+		for (String line : data.split("\n")) {
+			String[] parts = line.split("=");
+			if (parts.length == 2) {
+				String value = parts[1];
+				String key = parts[0];
+				if (!key.isEmpty() && !value.isEmpty()) {
+					System.setProperty(key, value);
+				}
+			}
 		}
 	}
 
@@ -30,6 +50,10 @@ public class PatchLauncher {
 			}
 		}
 		startupArgs = args = argsList.toArray(new String[argsList.size()]);
+		loadPropertiesFromFile(new File("ttlaunch.properties"));
+		if (loc == null) {
+			loc = System.getProperty("serverJar");
+		}
 		if (System.getProperty("tickthreading.launcherWaitForKeyPress") != null) {
 			System.out.println("Waiting for enter key press to continue;");
 			new Scanner(System.in).nextLine();
