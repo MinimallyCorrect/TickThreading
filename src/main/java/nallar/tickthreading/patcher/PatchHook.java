@@ -8,6 +8,7 @@ public class PatchHook {
 	private static Patcher patcher;
 
 	static {
+		PatchLog.fine("PatchHook running under classloader " + PatchHook.class.getClassLoader().getClass().getName());
 		try {
 			Class<?> clazz = Class.forName("cpw.mods.fml.relauncher.ServerLaunchWrapper");
 			try {
@@ -27,10 +28,20 @@ public class PatchHook {
 	}
 
 	public static byte[] preSrgTransformationHook(String name, String transformedName, byte[] originalBytes) {
-		return patcher.preSrgTransformation(name, transformedName, originalBytes);
+		try {
+			return patcher.preSrgTransformation(name, transformedName, originalBytes);
+		} catch (Throwable t) {
+			PatchLog.severe("Failed to patch " + transformedName, t);
+		}
+		return originalBytes;
 	}
 
 	public static byte[] postSrgTransformationHook(String name, String transformedName, byte[] originalBytes) {
-		return patcher.postSrgTransformation(name, transformedName, originalBytes);
+		try {
+			return patcher.postSrgTransformation(name, transformedName, originalBytes);
+		} catch (Throwable t) {
+			PatchLog.severe("Failed to patch " + transformedName, t);
+		}
+		return originalBytes;
 	}
 }

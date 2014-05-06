@@ -150,11 +150,16 @@ public class Patcher {
 				} catch (Throwable t) {
 					throw new RuntimeException("Failed to create class patch for " + classElement.getAttribute("id"), t);
 				}
-				classPatchDescriptors.add(classPatchDescriptor);
-				classToPatchGroup.put(classPatchDescriptor.name, this);
-				if (onDemand && patches.put(classPatchDescriptor.name, classPatchDescriptor) != null) {
-					throw new Error("Duplicate class patch for " + classPatchDescriptor.name + ", but onDemand is set.");
-				}
+				PatchGroup other = classToPatchGroup.get(classPatchDescriptor.name);
+				(other == null ? this : other).addClassPatchDescriptor(classPatchDescriptor);
+			}
+		}
+
+		private void addClassPatchDescriptor(ClassPatchDescriptor classPatchDescriptor) {
+			classToPatchGroup.put(classPatchDescriptor.name, this);
+			classPatchDescriptors.add(classPatchDescriptor);
+			if (onDemand && patches.put(classPatchDescriptor.name, classPatchDescriptor) != null) {
+				throw new Error("Duplicate class patch for " + classPatchDescriptor.name + ", but onDemand is set.");
 			}
 		}
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <mods>
-	<coreMods praeSrg="true" onDemand="true">
+	<coreMods onDemand="true">
 		<class id="cpw.mods.fml.common.Loader">
 			<addAll fromClass="nallar.patched.forge.PatchLoader"/>
 			<replaceMethodCall method="info" index="0" code="{ }">loadMods</replaceMethodCall>
