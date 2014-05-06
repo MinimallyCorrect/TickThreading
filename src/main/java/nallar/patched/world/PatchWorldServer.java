@@ -105,7 +105,12 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	@Override
 	@Declare
 	public Object[] getChunks() {
-		List<Chunk> loadedChunks = theChunkProviderServer.getLoadedChunks();
+		ChunkProviderServer chunkProviderServer = theChunkProviderServer;
+		if (chunkProviderServer == null) {
+			Log.warning("Bukkit getChunks call for unloaded world", new Throwable());
+			return new Object[0];
+		}
+		List<Chunk> loadedChunks = chunkProviderServer.getLoadedChunks();
 		synchronized (loadedChunks) {
 			return loadedChunks.toArray();
 		}
@@ -114,6 +119,11 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 	@Override
 	@Declare
 	public List getEntities() {
+		List loadedEntityList = this.loadedEntityList;
+		if (loadedEntityList == null) {
+			Log.warning("Bukkit getChunks call for unloaded world", new Throwable());
+			return Collections.emptyList();
+		}
 		synchronized (loadedEntityList) {
 			return Arrays.asList(loadedEntityList.toArray());
 		}

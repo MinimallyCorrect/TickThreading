@@ -141,7 +141,7 @@ public class Metrics {
 			performance.addPlotter(new EntitiesPlotter());
 			performance.addPlotter(new TileEntitiesPlotter());
 			if (start()) {
-				Log.info("Started TT metrics reporting. This can be disabled in PluginMetrics.cfg");
+				Log.fine("Started TT metrics reporting. This can be disabled in PluginMetrics.cfg");
 			}
 		}
 	}
