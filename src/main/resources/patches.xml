@@ -742,7 +742,7 @@
 				return top.^field:ItemStack/stackSize^ + this.middleCount + b.^field:ItemStack/stackSize^;
 			}">getItemCount
 			</replaceMethod>
-			<synchronize>updateStacks,changeItemCount,setItemCount,a(IL^class:ItemStack^;)V</synchronize>
+			<synchronize>updateStacks,changeItemCount,setItemCount,^method:ItemStack/setInventorySlotContents^</synchronize>
 		</class>
 		<class id="factorization.charge.TileEntityMirror">
 			<replaceMethod code="{
@@ -767,7 +767,7 @@
 			}">shouldUpdate
 			</replaceMethod>
 		</class>
-		<class id="factorization.charge.TileEntitySolarTurbine">
+		<class id="factorization.charge.TileEntitySolarBoiler">
 			<synchronize>addReflector</synchronize>
 		</class>
 		<class id="factorization.wrath.TileEntityWrathLamp">
