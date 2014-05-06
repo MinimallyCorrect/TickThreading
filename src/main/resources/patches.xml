@@ -1638,6 +1638,13 @@
 			</replaceMethod>
 		</class>
 	</morpheus>
+	<hee>
+		<!-- TODO - Fix HEE possibly reloading this data WAY too regularly? -->
+		<class id="chylex.hee.system.savedata.Savefile">
+			<newField field="staticLock" class="java.lang.Object" static=""/>
+			<synchronize field="staticLock">save,load</synchronize>
+		</class>
+	</hee>
 	<canUpdateFixes onDemand="true">
 		<class id="
 		com.advGenetics.TileEntity.TileEntityMicroscope
