@@ -1,10 +1,10 @@
 package net.minecraft.launchwrapper;
 
 import cpw.mods.fml.relauncher.FMLRelaunchLog;
-import nallar.insecurity.InsecurityManager;
 import nallar.tickthreading.patcher.PatchHook;
 
 import java.io.*;
+import java.lang.reflect.*;
 import java.net.*;
 import java.security.*;
 import java.util.*;
@@ -89,11 +89,6 @@ public class LaunchClassLoader extends URLClassLoader {
 				t.printStackTrace(System.err);
 			}
 			try {
-				InsecurityManager.init();
-			} catch (Throwable t) {
-				System.err.println("Failed to set up Security Manager. This is probably not a huge problem - but it could indicate classloading issues.");
-			}
-			try {
 				Class.forName("nallar.tickthreading.patcher.PatchHook");
 			} catch (ClassNotFoundException e) {
 				FMLRelaunchLog.log(Level.SEVERE, e, "Failed to init TT PatchHook");
@@ -143,6 +138,19 @@ public class LaunchClassLoader extends URLClassLoader {
 		return false;
 	}
 
+	private static final Method findLoaded = getFindLoaded();
+
+	private static Method getFindLoaded() {
+		try {
+			Method m = ClassLoader.class.getDeclaredMethod("findLoadedClass", new Class[] { String.class });
+			m.setAccessible(true);
+			return m;
+		} catch (NoSuchMethodException e) {
+			LogWrapper.log(Level.SEVERE, e, "");
+			return null;
+		}
+	}
+
 	@Override
 	public Class<?> findClass(final String name) throws ClassNotFoundException {
 		if (invalidClasses.contains(name)) {
@@ -151,6 +159,28 @@ public class LaunchClassLoader extends URLClassLoader {
 
 		if (excluded(name)) {
 			return parent.loadClass(name);
+		}
+
+		Class alreadyLoaded = null;
+		try {
+			alreadyLoaded = (Class) findLoaded.invoke(parent, name);
+		} catch (Throwable t) {
+			LogWrapper.log(Level.SEVERE, t, "");
+		}
+
+		if (alreadyLoaded != null) {
+			if (name.startsWith("nallar.")) {
+				if (!name.startsWith("nallar.log.")) {
+					LogWrapper.log(Level.SEVERE, new Error(), "Already classloaded earlier: " + name);
+					LogWrapper.log(Level.SEVERE, new Error(), "THIS WILL CAUSE SEVERE ISSUES");
+					try {
+						Thread.sleep(2000);
+					} catch (InterruptedException ignored) {
+					}
+					throw new InternalError("Classloading failure");
+				}
+				return alreadyLoaded;
+			}
 		}
 
 		Class<?> cached = cachedClasses.get(name);

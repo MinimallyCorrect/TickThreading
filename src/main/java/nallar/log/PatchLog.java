@@ -1,4 +1,4 @@
-package nallar.tickthreading;
+package nallar.log;
 
 import cpw.mods.fml.relauncher.FMLRelaunchLog;
 
@@ -11,9 +11,7 @@ import java.util.logging.*;
 public class PatchLog {
 	public static final Logger LOGGER = Logger.getLogger("TTPatcher");
 	public static final boolean debug = System.getProperty("tickthreading.debug") != null;
-	public static final Level DEBUG = new Level("DEBUG", Level.SEVERE.intValue(), null) {
-		// Inner class as Level's constructor is protected, so that user log levels will be of their own class.
-	};
+	public static final Level DEBUG = DebugLevel.DEBUG;
 	private static Handler handler;
 	private static final int numberOfLogFiles = Integer.valueOf(System.getProperty("tickthreading.numberOfLogFiles", "5"));
 	private static final File logFolder = new File("TTPatcherLogs");
@@ -38,6 +36,13 @@ public class PatchLog {
 	}
 
 	static {
+		if (!System.getProperty("PatchLogInited", "false").equals("false")) {
+			System.err.println("Initialising extra PatchLog class under classloader " + PatchLog.class.getClassLoader());
+			System.err.println("Original was under " + System.getProperty("PatchLogInited"));
+			new Throwable().printStackTrace();
+			System.exit(1);
+		}
+		System.setProperty("PatchLogInited", PatchLog.class.getClassLoader().toString());
 		coloriseLogger();
 		try {
 			final Logger parent = Logger.getLogger("TickThreading");
@@ -45,25 +50,11 @@ public class PatchLog {
 				throw new NoClassDefFoundError();
 			}
 			LOGGER.setParent(parent);
+			if (parent.getParent() == null) {
+				parent.setParent(Logger.getLogger("ForgeModLoader"));
+			}
+			parent.setUseParentHandlers(true);
 			LOGGER.setUseParentHandlers(true);
-			LOGGER.addHandler(new Handler() {
-				private final LogFormatter logFormatter = new LogFormatter();
-
-				@Override
-				public void publish(LogRecord record) {
-					if (parent.getHandlers().length == 0) {
-						System.out.print(logFormatter.format(record));
-					}
-				}
-
-				@Override
-				public void flush() {
-				}
-
-				@Override
-				public void close() throws SecurityException {
-				}
-			});
 		} catch (NoClassDefFoundError ignored) {
 			System.err.println("Failed to get parent logger.");
 			LOGGER.setUseParentHandlers(false);
@@ -110,42 +101,37 @@ public class PatchLog {
 		}
 		final File saveFile = new File(logFolder, name + ".1.log");
 		try {
-			RandomAccessFile randomAccessFile = new RandomAccessFile(saveFile, "rw");
-			try {
-				randomAccessFile.setLength(0);
-			} finally {
-				randomAccessFile.close();
-			}
 			//noinspection IOResourceOpenedButNotSafelyClosed
 			handler = new Handler() {
 				private final LogFormatter logFormatter = new LogFormatter();
 				private final BufferedWriter outputWriter = new BufferedWriter(new FileWriter(saveFile));
 
 				@Override
-				public void publish(LogRecord record) {
+				public synchronized void publish(LogRecord record) {
 					if (record.getLevel().intValue() >= minimumLevel.intValue()) {
 						try {
 							outputWriter.write(logFormatter.format(record).replace(Character.toString((char) 255), ""));
-						} catch (IOException ignored) {
-							// Can't log here, might cause infinite recursion
+						} catch (IOException e) {
+							e.printStackTrace(System.err);
 						}
 					}
 				}
 
 				@Override
-				public void flush() {
+				public synchronized void flush() {
 					try {
 						outputWriter.flush();
-					} catch (IOException ignored) {
+					} catch (IOException e) {
+						e.printStackTrace(System.err);
 					}
 				}
 
 				@Override
-				public void close() throws SecurityException {
+				public synchronized void close() throws SecurityException {
 					try {
 						outputWriter.close();
-					} catch (IOException ignored) {
-						// ignored - shouldn't log if logging fails
+					} catch (IOException e) {
+						e.printStackTrace(System.err);
 					}
 				}
 			};

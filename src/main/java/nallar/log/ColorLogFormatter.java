@@ -1,4 +1,4 @@
-package nallar.tickthreading;
+package nallar.log;
 
 public class ColorLogFormatter extends LogFormatter {
 	protected boolean shouldColor() {

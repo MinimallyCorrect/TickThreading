@@ -104,7 +104,7 @@
 	</tickthreading>
 	<minecraftCommon>
 		<class id="net.minecraft.logging.LogAgent">
-			<insertAfter code="{ nallar.tickthreading.PatchLog.coloriseLogger(); }">setupLogger</insertAfter>
+			<insertAfter code="{ nallar.log.PatchLog.coloriseLogger(); }">setupLogger</insertAfter>
 		</class>
 		<class id="net.minecraft.tileentity.TileEntityChest">
 			<addAll fromClass="nallar.patched.PatchTileEntityNoLock"/>
@@ -590,7 +590,7 @@
 			<replaceMethod code="{ fireEvent($$); }">callEvent</replaceMethod>
 		</class>
 		<class id="org.bukkit.craftbukkit.v1_6_R3.util.ShortConsoleLogFormatter">
-			<addAll fromClass="nallar.tickthreading.LogFormatter"/>
+			<addAll fromClass="nallar.log.LogFormatter"/>
 		</class>
 		<class id="org.bukkit.craftbukkit.v1_6_R3.CraftServer">
 			<replaceMethodCall method="registerDimension" code="{ }">
@@ -612,7 +612,7 @@
 			<removeUntilOpcode index="-2" opcode="ATHROW">kickPlayer</removeUntilOpcode>
 		</class>
 		<class id="org.bukkit.craftbukkit.v1_6_R3.CraftWorld">
-			<removeUntilOpcode index="-2" opcode="ATHROW">unloadChunkRequest,unloadChunk,loadChunk</removeUntilOpcode>
+			<removeUntilOpcode index="-2" opcode="ATHROW">unloadChunkRequest(IIZ)Z,unloadChunk(IIZ)Z,loadChunk(IIZ)Z</removeUntilOpcode>
 			<replaceMethod
 					code=" {
 							Object[] chunks = world.getChunks();
@@ -700,7 +700,7 @@
 			<addAll fromClass="nallar.patched.forge.PatchTickRegistry"/>
 		</class>
 		<class id="cpw.mods.fml.relauncher.FMLLogFormatter">
-			<replace class="nallar.tickthreading.LogFormatter"/>
+			<replace class="nallar.log.LogFormatter"/>
 		</class>
 		<class id="cpw.mods.fml.common.event.FMLInterModComms$IMCMessage">
 			<addAll fromClass="nallar.patched.forge.PatchIMCMessage"/>

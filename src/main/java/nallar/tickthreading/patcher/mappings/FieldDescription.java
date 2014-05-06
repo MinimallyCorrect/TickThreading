@@ -1,4 +1,4 @@
-package nallar.tickthreading.mappings;
+package nallar.tickthreading.patcher.mappings;
 
 public class FieldDescription {
 	public final String className;

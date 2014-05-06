@@ -1,6 +1,6 @@
 package cpw.mods.fml.relauncher;
 
-import nallar.tickthreading.LogFormatter;
+import nallar.log.LogFormatter;
 
 @SuppressWarnings("EmptyClass")
 public class FMLLogFormatter extends LogFormatter {

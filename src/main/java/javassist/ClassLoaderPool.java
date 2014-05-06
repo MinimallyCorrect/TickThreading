@@ -1,6 +1,6 @@
 package javassist;
 
-import nallar.tickthreading.PatchLog;
+import nallar.log.PatchLog;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 
 import java.io.*;

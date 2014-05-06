@@ -1,6 +1,7 @@
 package nallar.tickthreading;
 
-import nallar.tickthreading.util.DebugLevel;
+import nallar.log.DebugLevel;
+import nallar.log.LogFormatter;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.gui.TextAreaLogHandler;
 import net.minecraft.tileentity.TileEntity;
@@ -114,42 +115,37 @@ public class Log {
 		}
 		final File saveFile = new File(logFolder, name + ".1.log");
 		try {
-			RandomAccessFile randomAccessFile = new RandomAccessFile(saveFile, "rw");
-			try {
-				randomAccessFile.setLength(0);
-			} finally {
-				randomAccessFile.close();
-			}
 			//noinspection IOResourceOpenedButNotSafelyClosed
 			handler = new Handler() {
 				private final LogFormatter logFormatter = new LogFormatter();
 				private final BufferedWriter outputWriter = new BufferedWriter(new FileWriter(saveFile));
 
 				@Override
-				public void publish(LogRecord record) {
-					if (record.getLevel().intValue() >= minimumLevel.intValue() && record.getLoggerName().equals("TickThreading")) {
+				public synchronized void publish(LogRecord record) {
+					if (record.getLevel().intValue() >= minimumLevel.intValue()) {
 						try {
 							outputWriter.write(logFormatter.format(record));
-						} catch (IOException ignored) {
-							// Can't log here, might cause infinite recursion
+						} catch (IOException e) {
+							e.printStackTrace(System.err);
 						}
 					}
 				}
 
 				@Override
-				public void flush() {
+				public synchronized void flush() {
 					try {
 						outputWriter.flush();
-					} catch (IOException ignored) {
+					} catch (IOException e) {
+						e.printStackTrace(System.err);
 					}
 				}
 
 				@Override
-				public void close() throws SecurityException {
+				public synchronized void close() throws SecurityException {
 					try {
 						outputWriter.close();
-					} catch (IOException ignored) {
-						// ignored - shouldn't log if logging fails
+					} catch (IOException e) {
+						e.printStackTrace(System.err);
 					}
 				}
 			};

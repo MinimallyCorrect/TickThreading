@@ -1,4 +1,4 @@
-package nallar.tickthreading.util;
+package nallar.log;
 
 import java.util.logging.*;
 

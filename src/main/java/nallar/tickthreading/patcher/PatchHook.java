@@ -1,6 +1,7 @@
 package nallar.tickthreading.patcher;
 
-import nallar.tickthreading.PatchLog;
+import nallar.insecurity.InsecurityManager;
+import nallar.log.PatchLog;
 
 import java.lang.reflect.*;
 
@@ -9,6 +10,11 @@ public class PatchHook {
 
 	static {
 		PatchLog.fine("PatchHook running under classloader " + PatchHook.class.getClassLoader().getClass().getName());
+		try {
+			InsecurityManager.init();
+		} catch (Throwable t) {
+			System.err.println("Failed to set up Security Manager. This is probably not a huge problem - but it could indicate classloading issues.");
+		}
 		try {
 			Class<?> clazz = Class.forName("cpw.mods.fml.relauncher.ServerLaunchWrapper");
 			try {

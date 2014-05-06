@@ -1,9 +1,8 @@
-package nallar.tickthreading.mappings;
+package nallar.tickthreading.patcher.mappings;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import nallar.tickthreading.Log;
-import nallar.tickthreading.PatchLog;
+import nallar.log.PatchLog;
 
 import java.io.*;
 import java.util.*;
@@ -125,7 +124,7 @@ public class MCPMappings extends Mappings {
 				if (className == null) {
 					className = methodMatcher.group(1);
 					if (!className.contains(".")) {
-						Log.severe("Could not find " + methodMatcher.group(1));
+						PatchLog.severe("Could not find " + methodMatcher.group(1));
 						continue;
 					}
 				}

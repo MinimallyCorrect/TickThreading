@@ -1,6 +1,4 @@
-package nallar.tickthreading;
-
-import nallar.tickthreading.util.DebugLevel;
+package nallar.log;
 
 import java.io.*;
 import java.text.*;

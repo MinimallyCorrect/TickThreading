@@ -1,8 +1,8 @@
-package nallar.tickthreading.mappings;
+package nallar.tickthreading.patcher.mappings;
 
 import javassist.CtClass;
 import javassist.CtMethod;
-import nallar.tickthreading.Log;
+import nallar.log.PatchLog;
 import nallar.tickthreading.util.CollectionsUtil;
 
 import java.lang.reflect.*;
@@ -94,7 +94,7 @@ public class MethodDescription {
 			}
 		}
 		if (isExact()) {
-			Log.warning("Failed to find exact match for " + this.getMCPName() + ", trying to find similar methods.");
+			PatchLog.warning("Failed to find exact match for " + this.getMCPName() + ", trying to find similar methods.");
 		}
 		if (possible != null) {
 			return possible;
@@ -144,7 +144,7 @@ public class MethodDescription {
 				methodString = methodString.replace('.', '/');
 				return new MethodDescription(clazz, methodName, methodString.substring(methodString.indexOf('(')));
 			} catch (Exception e) {
-				Log.severe("Failed to parse " + methodString, e);
+				PatchLog.severe("Failed to parse " + methodString, e);
 			}
 		}
 		return new MethodDescription(clazz, methodString, "", "");
