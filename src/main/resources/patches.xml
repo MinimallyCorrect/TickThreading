@@ -666,7 +666,7 @@
 		</class>
 	</bukkit>
 	<spigot>
-		<class id="org.bukkit.craftbukkit.v1_6_R3.util.WatchdogThread">
+		<class id="org.spigotmc.WatchdogThread">
 			<disable>run</disable>
 		</class>
 	</spigot>
