@@ -1,6 +1,9 @@
 package nallar.tickthreading;
 
+import cpw.mods.fml.relauncher.FMLRelaunchLog;
+
 import java.io.*;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.logging.*;
 
@@ -12,13 +15,30 @@ public class PatchLog {
 		// Inner class as Level's constructor is protected, so that user log levels will be of their own class.
 	};
 	private static Handler handler;
-	@SuppressWarnings("UseOfArchaicSystemPropertyAccessors") // Need a default value.
-	private static final int numberOfLogFiles = Integer.getInteger("tickthreading.numberOfLogFiles", 5);
+	private static final int numberOfLogFiles = Integer.valueOf(System.getProperty("tickthreading.numberOfLogFiles", "5"));
 	private static final File logFolder = new File("TTPatcherLogs");
 	private static final boolean FINE_TO_FILE = true;
 	private static final Logger fineLogger = Logger.getLogger("TTPatcher" + Character.toString((char) 255));
 
+	public static void coloriseLogger() {
+		try {
+			Field consoleLogThreadField = FMLRelaunchLog.class.getDeclaredField("consoleLogThread");
+			consoleLogThreadField.setAccessible(true);
+			Thread consoleLogThreadThread = (Thread) consoleLogThreadField.get(null);
+			Field target = Thread.class.getDeclaredField("target");
+			target.setAccessible(true);
+			Object consoleLogThread = target.get(consoleLogThreadThread);
+			Field handlerField = consoleLogThread.getClass().getDeclaredField("wrappedHandler");
+			Handler wrappedHandler = (Handler) handlerField.get(consoleLogThreadThread);
+			wrappedHandler.setFormatter(new ColorLogFormatter());
+		} catch (Exception e) {
+			System.err.println("Failed to replace FML logger with colorised logger");
+			e.printStackTrace(System.err);
+		}
+	}
+
 	static {
+		coloriseLogger();
 		try {
 			final Logger parent = Logger.getLogger("TickThreading");
 			if (parent == null) {

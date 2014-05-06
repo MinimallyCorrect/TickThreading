@@ -1,6 +1,6 @@
 package nallar.tickthreading;
 
-import cpw.mods.fml.common.FMLLog;
+import nallar.tickthreading.util.DebugLevel;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.gui.TextAreaLogHandler;
 import net.minecraft.tileentity.TileEntity;
@@ -18,12 +18,9 @@ import java.util.regex.*;
 public class Log {
 	public static final Logger LOGGER = Logger.getLogger("TickThreading");
 	public static final boolean debug = System.getProperty("tickthreading.debug") != null;
-	public static final Level DEBUG = new Level("DEBUG", Level.SEVERE.intValue(), null) {
-		// Inner class as Level's constructor is protected, so that user log levels will be of their own class.
-	};
+	public static final Level DEBUG = DebugLevel.DEBUG;
 	private static Handler handler;
-	@SuppressWarnings("UseOfArchaicSystemPropertyAccessors") // Need a default value.
-	private static final int numberOfLogFiles = Integer.getInteger("tickthreading.numberOfLogFiles", 5);
+	private static final int numberOfLogFiles = Integer.valueOf(System.getProperty("tickthreading.numberOfLogFiles", "5"));
 	private static final File logFolder = new File("TickThreadingLogs");
 	private static Handler wrappedHandler;
 	private static final Handler handlerWrapper = new Handler() {
@@ -101,31 +98,6 @@ public class Log {
 				}
 			}
 		}
-	}
-
-	public static synchronized void disableDiskWriting(String finalMessage) {
-		Handler handler = Log.handler;
-		if (handler == null) {
-			return;
-		}
-		Log.handler = null;
-		LogRecord finalRecord = new LogRecord(Level.SEVERE, finalMessage);
-		try {
-			Logger fmlLog = FMLLog.getLogger();
-			for (Handler handler1 : fmlLog.getHandlers()) {
-				if (handler1 instanceof FileHandler) {
-					fmlLog.removeHandler(handler1);
-					handler1.publish(finalRecord);
-					handler1.flush();
-				}
-			}
-		} catch (NoClassDefFoundError ignored) {
-
-		}
-		handler.publish(finalRecord);
-		handler.flush();
-		LOGGER.removeHandler(handler);
-		Log.severe(finalMessage);
 	}
 
 	public static void setFileName(String name, final Level minimumLevel, Logger... loggers) {

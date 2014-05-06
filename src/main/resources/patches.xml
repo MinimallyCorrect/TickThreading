@@ -103,6 +103,9 @@
 		</class>
 	</tickthreading>
 	<minecraftCommon>
+		<class id="net.minecraft.logging.LogAgent">
+			<insertAfter code="{ nallar.tickthreading.PatchLog.coloriseLogger(); }">setupLogger</insertAfter>
+		</class>
 		<class id="net.minecraft.tileentity.TileEntityChest">
 			<addAll fromClass="nallar.patched.PatchTileEntityNoLock"/>
 		</class>
@@ -585,6 +588,9 @@
 				subscribeToPermission,unsubscribeFromPermission,subscribeToDefaultPerms,unsubscribeFromDefaultPerms,getPermissionSubscriptions,getDefaultPermSubscriptions
 			</synchronize>
 			<replaceMethod code="{ fireEvent($$); }">callEvent</replaceMethod>
+		</class>
+		<class id="org.bukkit.craftbukkit.v1_6_R3.util.ShortConsoleLogFormatter">
+			<addAll fromClass="nallar.tickthreading.LogFormatter"/>
 		</class>
 		<class id="org.bukkit.craftbukkit.v1_6_R3.CraftServer">
 			<replaceMethodCall method="registerDimension" code="{ }">

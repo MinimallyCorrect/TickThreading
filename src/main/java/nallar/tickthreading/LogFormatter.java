@@ -1,13 +1,15 @@
 package nallar.tickthreading;
 
+import nallar.tickthreading.util.DebugLevel;
+
 import java.io.*;
 import java.text.*;
 import java.util.logging.*;
 
 public class LogFormatter extends Formatter {
-	static final String LINE_SEPARATOR = System.getProperty("line.separator");
-	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	private int writtenSize = 0;
+	public static final String LINE_SEPARATOR = System.getProperty("line.separator");
+	private static SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd HH:mm:ss");
+	protected static final boolean colorEnabled = System.getProperty("tickthreading.color") != null;
 
 	public static void setFormat(boolean u, SimpleDateFormat dateFormat) {
 		if (dateFormat != null) {
@@ -15,15 +17,53 @@ public class LogFormatter extends Formatter {
 		}
 	}
 
+	protected boolean shouldColor() {
+		return false;
+	}
+
+	private static String getColorForLevel(Level level) {
+		return  "\033[" + getColorNumberForLevel(level) + 'm';
+	}
+
+	private static String getColorNumberForLevel(Level level) {
+		if (level == Level.SEVERE) {
+			return "31";
+		} else if (level == Level.WARNING) {
+			return "33";
+		} else if (level == DebugLevel.DEBUG) {
+			return "35";
+		} else if (level == Level.INFO) {
+			return "32";
+		}
+		return "39";
+	}
+
+	protected static String getEndColor() {
+		return "\033[39m";
+	}
+
 	@Override
 	public String format(LogRecord record) {
 		StringBuilder formattedMessage = new StringBuilder();
-		formattedMessage.append(dateFormat.format(record.getMillis()));
+		long millis = record.getMillis();
+		String date;
+		SimpleDateFormat dateFormat = LogFormatter.dateFormat;
+		synchronized (dateFormat) {
+			date = dateFormat.format(millis);
+		}
+		formattedMessage.append(date);
 		Level level = record.getLevel();
+		formattedMessage.append(" [");
+		final boolean shouldColor = shouldColor();
+		if (shouldColor) {
+			formattedMessage.append(getColorForLevel(level));
+		}
+		formattedMessage.append(record.getLevel().getName().toUpperCase());
+		if (shouldColor) {
+			formattedMessage.append(getEndColor());
+		}
+		formattedMessage.append("] ");
 
-		String name = level.getName().toUpperCase();
-
-		formattedMessage.append(" [").append(name == null ? "" : name).append("] ");
 
 		String loggerName = record.getLoggerName();
 		formattedMessage
@@ -51,13 +91,6 @@ public class LogFormatter extends Formatter {
 
 				formattedMessage.append(output);
 			}
-		}
-
-		// Avoid cases where console spam could run for days and days eating all your disk space, for example the
-		// infamous IC2 energy net warning spam.
-		if ((writtenSize += formattedMessage.length()) > (1024 * 1024 * 50)) { // 50MB
-			writtenSize = Integer.MIN_VALUE;
-			Log.disableDiskWriting("No more log messages will be recorded to disk, exceeded 50MB log size.");
 		}
 
 		return formattedMessage.toString();
