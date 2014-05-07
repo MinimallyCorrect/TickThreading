@@ -14,7 +14,7 @@
 	</coreMods>
 	<theWarOnLogSpam onDemand="true">
 		<class id="mcp.mobius.waila.Waila">
-			<replaceMethodCall method="printf" code="{ }">loadComplete</replaceMethodCall>
+			<replaceMethodCall method="printf" code="{ $_ = null; }">loadComplete</replaceMethodCall>
 		</class>
 		<class id="codechicken.microblock.MicroMaterialRegistry$">
 			<replaceMethodCall method="println" index="1" code="{ }">registerMaterial</replaceMethodCall>
