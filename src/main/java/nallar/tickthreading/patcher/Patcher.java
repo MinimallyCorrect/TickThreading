@@ -252,7 +252,15 @@ public class Patcher {
 			Set<CtClass> patchedClasses = new HashSet<CtClass>();
 			for (ClassPatchDescriptor classPatchDescriptor : classPatchDescriptors) {
 				try {
-					patchedClasses.add(classPatchDescriptor.runPatches());
+					try {
+						patchedClasses.add(classPatchDescriptor.runPatches());
+					} catch (NotFoundException e) {
+						if (e.getMessage().contains(classPatchDescriptor.name)) {
+							PatchLog.warning("Skipping patch for " + classPatchDescriptor.name + ", not found.");
+						} else {
+							throw e;
+						}
+					}
 				} catch (Throwable t) {
 					PatchLog.severe("Failed to patch " + classPatchDescriptor.name + " in patch group " + name + '.', t);
 				}
