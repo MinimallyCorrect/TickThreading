@@ -232,6 +232,7 @@
 		net.minecraft.item.ItemStack
 		net.minecraft.world.World
 		net.minecraft.block.Block
+		net.minecraft.block.BlockSapling
 		" env="mcpc">
 			<threadLocalBoolean field="captureTreeGeneration" threadLocalField="$0.inCaptureTreeGeneration"/>
 			<threadLocalBoolean field="captureBlockStates" threadLocalField="$0.inCaptureBlockStates"/>
