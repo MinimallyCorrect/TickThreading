@@ -169,7 +169,7 @@ public class LaunchClassLoader extends URLClassLoader {
 		}
 
 		if (alreadyLoaded != null) {
-			if (name.startsWith("nallar.")) {
+			if (name.startsWith("nallar.") && !name.startsWith("nallar.tickthreading.util")) {
 				if (!name.startsWith("nallar.log.")) {
 					LogWrapper.log(Level.SEVERE, new Error(), "Already classloaded earlier: " + name);
 					LogWrapper.log(Level.SEVERE, new Error(), "THIS WILL CAUSE SEVERE ISSUES");
