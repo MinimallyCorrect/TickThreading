@@ -50,4 +50,8 @@ public class PatchHook {
 		}
 		return originalBytes;
 	}
+
+	public static boolean requiresSrgHook(String transformedName) {
+		return patcher.shouldPostSrgTransform(transformedName);
+	}
 }

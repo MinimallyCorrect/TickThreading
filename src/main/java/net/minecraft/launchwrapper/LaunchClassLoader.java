@@ -1,6 +1,7 @@
 package net.minecraft.launchwrapper;
 
 import cpw.mods.fml.relauncher.FMLRelaunchLog;
+import nallar.log.PatchLog;
 import nallar.tickthreading.patcher.PatchHook;
 
 import java.io.*;
@@ -372,7 +373,10 @@ public class LaunchClassLoader extends URLClassLoader {
 		basicClass = PatchHook.preSrgTransformationHook(name, transformedName, basicClass);
 		if (deobfuscationTransformer == null) {
 			if (transformedName.startsWith("net.minecraft.") && !transformedName.contains("ClientBrandRetriever")) {
-				FMLRelaunchLog.log(Level.WARNING, new Throwable(), "Transforming " + name + " before SRG transformer has been added.");
+				PatchLog.severe("Transforming " + name + " before SRG transformer has been added.", new Throwable());
+			}
+			if (PatchHook.requiresSrgHook(transformedName)) {
+				PatchLog.severe("Class " + name + " must be transformed postSrg, but the SRG transformer has not been added to the classloader.", new Throwable());
 			}
 			for (final IClassTransformer transformer : transformers) {
 				basicClass = runTransformer(name, transformedName, basicClass, transformer);

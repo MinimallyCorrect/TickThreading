@@ -111,6 +111,11 @@ public class Patcher {
 		return originalBytes;
 	}
 
+	public boolean shouldPostSrgTransform(String transformedName) {
+		PatchGroup patchGroup = getPatchGroup(transformedName);
+		return patchGroup != null && !patchGroup.preSrg;
+	}
+
 	private PatchGroup getPatchGroup(String name) {
 		return classToPatchGroup.get(name);
 	}
@@ -151,6 +156,9 @@ public class Patcher {
 					throw new RuntimeException("Failed to create class patch for " + classElement.getAttribute("id"), t);
 				}
 				PatchGroup other = classToPatchGroup.get(classPatchDescriptor.name);
+				if (other != null && other.preSrg != this.preSrg) {
+					PatchLog.severe("Adding class " + classPatchDescriptor.name + " in patch group " + name + " to patch group with different preSrg setting " + other.name);
+				}
 				(other == null ? this : other).addClassPatchDescriptor(classPatchDescriptor);
 			}
 		}
