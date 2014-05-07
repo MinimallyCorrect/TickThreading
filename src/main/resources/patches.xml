@@ -1448,7 +1448,7 @@
 		<class id="crazypants.enderio.conduit.ConduitNetworkTickHandler">
 			<replaceInitializer field="listeners" class="nallar.collections.SynchronizedList"/>
 			<synchronize field="listeners">tickStart,tickEnd</synchronize>
-			<insertBefore code="{ if ($1 == null) { throw null; } }">addListener</insertBefore>
+			<insertBefore code="{ if ($1 == null) { throw new NullPointerException(); } }">addListener</insertBefore>
 		</class>
 	</enderIo>
 	<denLib>
