@@ -34,7 +34,7 @@ public class Patcher {
 	private final ClassPool preSrgClassPool;
 	private final Mappings mappings;
 	private final Mappings preSrgMappings;
-	private static final boolean DEBUG_PATCHED_OUTPUT = true;
+	private static final boolean DEBUG_PATCHED_OUTPUT = System.getProperty("patcher.debug", "false").equals("true");
 	private Object patchClassInstance;
 	private Object preSrgPatchClassInstance;
 	private Map<String, PatchMethodDescriptor> patchMethods = new HashMap<String, PatchMethodDescriptor>();
@@ -250,14 +250,17 @@ public class Patcher {
 				}
 			}
 			for (CtClass ctClass : patchedClasses) {
+				String className = ctClass.getName();
 				if (!ctClass.isModified()) {
-					PatchLog.severe("Failed to get patched bytes for " + ctClass.getName() + " as it was never modified in patch group " + name + '.');
+					PatchLog.severe("Failed to get patched bytes for " + className + " as it was never modified in patch group " + name + '.');
 					continue;
 				}
 				try {
-					patchedBytes.put(ctClass.getName(), ctClass.toBytecode());
+					byte[] byteCode =  ctClass.toBytecode();
+					patchedBytes.put(className, byteCode);
+					saveByteCode(byteCode, className);
 				} catch (Throwable t) {
-					PatchLog.severe("Failed to get patched bytes for " + ctClass.getName() + " in patch group " + name + '.', t);
+					PatchLog.severe("Failed to get patched bytes for " + className + " in patch group " + name + '.', t);
 				}
 			}
 			PatchLog.flush();
