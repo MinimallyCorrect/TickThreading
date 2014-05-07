@@ -313,7 +313,7 @@ public abstract class PatchWorld extends World {
 
 	@Override
 	public TileEntity getBlockTileEntity(int x, int y, int z) {
-		if (y >= 256) {
+		if (y < 0 || y >= 256) {
 			return null;
 		} else {
 			Chunk chunk = this.getChunkFromChunkCoords(x >> 4, z >> 4);
@@ -324,7 +324,7 @@ public abstract class PatchWorld extends World {
 	@Override
 	@Declare
 	public TileEntity getTEWithoutLoad(int x, int y, int z) {
-		if (y >= 256) {
+		if (y < 0 || y >= 256) {
 			return null;
 		} else {
 			Chunk chunk = ((ChunkProviderServer) this.chunkProvider).getChunkIfExists(x >> 4, z >> 4);
@@ -335,7 +335,7 @@ public abstract class PatchWorld extends World {
 	@Override
 	@Declare
 	public TileEntity getTEWithLoad(int x, int y, int z) {
-		if (y >= 256 || y < 0) {
+		if (y < 0 || y >= 256) {
 			return null;
 		} else {
 			return chunkProvider.loadChunk(x >> 4, z >> 4).getChunkBlockTileEntity(x & 15, y, z & 15);
