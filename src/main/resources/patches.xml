@@ -222,8 +222,8 @@
 			<final field="captureBlockStates"/>
 			<final field="capturedBlockStates"/>
 			<final field="capturedItems"/>
-			<newField field="inTreeGeneration" class="nallar.tickthreading.util.BooleanThreadLocalDefaultFalse"/>
-			<newField field="inBlockStates" class="nallar.tickthreading.util.BooleanThreadLocalDefaultFalse"/>
+			<newField field="inCaptureTreeGeneration" class="nallar.tickthreading.util.BooleanThreadLocalDefaultFalse"/>
+			<newField field="inCaptureBlockStates" class="nallar.tickthreading.util.BooleanThreadLocalDefaultFalse"/>
 			<newField field="inBlockStates" class="nallar.tickthreading.util.ArrayListThreadLocal"/>
 			<newField field="inItems" class="nallar.tickthreading.util.ArrayListThreadLocal"/>
 		</class>
@@ -233,8 +233,8 @@
 		net.minecraft.world.World
 		net.minecraft.block.Block
 		" env="mcpc">
-			<threadLocalBoolean field="captureTreeGeneration" threadLocalField="$0.inTreeGeneration"/>
-			<threadLocalBoolean field="captureBlockStates" threadLocalField="$0.inBlockStates"/>
+			<threadLocalBoolean field="captureTreeGeneration" threadLocalField="$0.inCaptureTreeGeneration"/>
+			<threadLocalBoolean field="captureBlockStates" threadLocalField="$0.inCaptureBlockStates"/>
 			<threadLocal field="capturedBlockStates" type="java.util.ArrayList" threadLocalField="$0.inBlockStates"/>
 			<threadLocal field="capturedItems" type="java.util.ArrayList" threadLocalField="$0.inItems"/>
 		</class>
