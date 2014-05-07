@@ -15,8 +15,6 @@ public class PatchLog {
 	private static Handler handler;
 	private static final int numberOfLogFiles = Integer.valueOf(System.getProperty("tickthreading.numberOfLogFiles", "5"));
 	private static final File logFolder = new File("TTPatcherLogs");
-	private static final boolean FINE_TO_FILE = true;
-	private static final Logger fineLogger = Logger.getLogger("TTPatcher" + Character.toString((char) 255));
 
 	public static void coloriseLogger() {
 		try {
@@ -45,15 +43,11 @@ public class PatchLog {
 		System.setProperty("PatchLogInited", PatchLog.class.getClassLoader().toString());
 		coloriseLogger();
 		try {
-			final Logger parent = Logger.getLogger("TickThreading");
+			final Logger parent = Logger.getLogger("ForgeModLoader");
 			if (parent == null) {
 				throw new NoClassDefFoundError();
 			}
 			LOGGER.setParent(parent);
-			if (parent.getParent() == null) {
-				parent.setParent(Logger.getLogger("ForgeModLoader"));
-			}
-			parent.setUseParentHandlers(true);
 			LOGGER.setUseParentHandlers(true);
 		} catch (NoClassDefFoundError ignored) {
 			System.err.println("Failed to get parent logger.");
@@ -75,19 +69,11 @@ public class PatchLog {
 				}
 			});
 		}
-		setFileName("patcher", Level.ALL, LOGGER);
-		if (FINE_TO_FILE) {
-			LOGGER.setLevel(Level.INFO);
-			fineLogger.setParent(LOGGER);
-			fineLogger.addHandler(handler);
-			fineLogger.setUseParentHandlers(false);
-			fineLogger.setLevel(Level.ALL);
-		} else {
-			LOGGER.setLevel(Level.ALL);
-		}
+		setFileName("patcher", LOGGER);
+		LOGGER.setLevel(Level.ALL);
 	}
 
-	public static void setFileName(String name, final Level minimumLevel, Logger... loggers) {
+	public static void setFileName(String name, Logger... loggers) {
 		logFolder.mkdir();
 		for (int i = numberOfLogFiles; i >= 1; i--) {
 			File currentFile = new File(logFolder, name + '.' + i + ".log");
@@ -177,15 +163,15 @@ public class PatchLog {
 	}
 
 	public static void fine(String msg, Throwable t) {
-		(FINE_TO_FILE ? fineLogger : LOGGER).log(Level.FINE, msg, t);
+		LOGGER.log(Level.FINE, msg, t);
 	}
 
 	public static void finer(String msg, Throwable t) {
-		(FINE_TO_FILE ? fineLogger : LOGGER).log(Level.FINER, msg, t);
+		LOGGER.log(Level.FINER, msg, t);
 	}
 
 	public static void finest(String msg, Throwable t) {
-		(FINE_TO_FILE ? fineLogger : LOGGER).log(Level.FINEST, msg, t);
+		LOGGER.log(Level.FINEST, msg, t);
 	}
 
 	public static String classString(Object o) {

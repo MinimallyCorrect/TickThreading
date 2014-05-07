@@ -84,7 +84,7 @@ public class Log {
 			});
 		}
 		LOGGER.setLevel(Level.ALL);
-		setFileName("tickthreading", Level.INFO, LOGGER);
+		setFileName("tickthreading", LOGGER);
 	}
 
 	public static void fixGuiLogging() {
@@ -101,7 +101,7 @@ public class Log {
 		}
 	}
 
-	public static void setFileName(String name, final Level minimumLevel, Logger... loggers) {
+	public static void setFileName(String name, Logger... loggers) {
 		logFolder.mkdir();
 		for (int i = numberOfLogFiles; i >= 1; i--) {
 			File currentFile = new File(logFolder, name + '.' + i + ".log");
