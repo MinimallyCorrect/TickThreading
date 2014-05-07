@@ -89,6 +89,10 @@ public class LogFormatter extends Formatter {
 
 				formattedMessage.append(output);
 			}
+
+			if (throwable.getCause() != null && throwable.getCause().getStackTrace().length == 0) {
+				formattedMessage.append("Stack trace unavailable for cause: ").append(String.valueOf(throwable.getCause())).append('-').append(throwable.getCause().getClass().getName()).append(". Add -XX:-OmitStackTraceInFastThrow to your java parameters to see all stack traces.").append(LINE_SEPARATOR);
+			}
 		}
 
 		return formattedMessage.toString();
