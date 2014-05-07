@@ -213,9 +213,6 @@ public class TickThreading {
 		if (javaVersion.startsWith("1.6")) {
 			Log.severe("It is recommended to use a Java 7 JRE. Current version: " + javaVersion);
 			Log.severe("Java 7 has many performance improvements over 6, and some of TT's changes actually make performance worse when using java 6.");
-		} else if (javaVersion.startsWith("1.8")) {
-			Log.warning("You are using java version " + javaVersion + '.');
-			Log.warning("This is not recommended, as 1.8 causes the deadlock detector to be unable to attempt to fix deadlocks due to the removal of Thread.stop(), and I have not yet implemented a workaround.");
 		}
 	}
 
