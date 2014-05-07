@@ -100,41 +100,10 @@ public class PatchLog {
 			}
 		}
 		final File saveFile = new File(logFolder, name + ".1.log");
+		saveFile.delete();
 		try {
-			//noinspection IOResourceOpenedButNotSafelyClosed
-			handler = new Handler() {
-				private final LogFormatter logFormatter = new LogFormatter();
-				private final BufferedWriter outputWriter = new BufferedWriter(new FileWriter(saveFile));
-
-				@Override
-				public synchronized void publish(LogRecord record) {
-					if (record.getLevel().intValue() >= minimumLevel.intValue()) {
-						try {
-							outputWriter.write(logFormatter.format(record).replace(Character.toString((char) 255), ""));
-						} catch (IOException e) {
-							e.printStackTrace(System.err);
-						}
-					}
-				}
-
-				@Override
-				public synchronized void flush() {
-					try {
-						outputWriter.flush();
-					} catch (IOException e) {
-						e.printStackTrace(System.err);
-					}
-				}
-
-				@Override
-				public synchronized void close() throws SecurityException {
-					try {
-						outputWriter.close();
-					} catch (IOException e) {
-						e.printStackTrace(System.err);
-					}
-				}
-			};
+			handler = new FileHandler(saveFile.getCanonicalPath());
+			handler.setFormatter(new LogFormatter());
 			for (Logger logger : loggers) {
 				logger.addHandler(handler);
 			}
