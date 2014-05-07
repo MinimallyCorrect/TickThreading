@@ -13,16 +13,6 @@ public class ThreadLocals {
 	public static final ThreadLocal factorizationFindLightAirParentToVisit = new HashSetThreadLocal();
 	public static final ThreadLocal mapChunkTempByteArray = new MapChunkTempByteArrayThreadLocal();
 
-	private static class ArrayListThreadLocal extends ThreadLocal {
-		ArrayListThreadLocal() {
-		}
-
-		@Override
-		protected Object initialValue() {
-			return new ArrayList();
-		}
-	}
-
 	private static class HashMapThreadLocal extends ThreadLocal {
 		HashMapThreadLocal() {
 		}

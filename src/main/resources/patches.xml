@@ -216,6 +216,28 @@
 			<replaceInitializer field="weatherEffects" class="nallar.collections.SynchronizedList"/>
 			<insertBefore code="if (preHandleSpawn($1)) { return false; }">spawnEntityInWorld</insertBefore>
 		</class>
+		<class id="net.minecraft.world.World" env="mcpc">
+			<removeUntilOpcode index="-2" opcode="ATHROW">addEntity,removePlayerEntityDangerously</removeUntilOpcode>
+			<final field="captureTreeGeneration"/>
+			<final field="captureBlockStates"/>
+			<final field="capturedBlockStates"/>
+			<final field="capturedItems"/>
+			<newField field="inTreeGeneration" class="nallar.tickthreading.util.BooleanThreadLocalDefaultFalse"/>
+			<newField field="inBlockStates" class="nallar.tickthreading.util.BooleanThreadLocalDefaultFalse"/>
+			<newField field="inBlockStates" class="nallar.tickthreading.util.ArrayListThreadLocal"/>
+			<newField field="inItems" class="nallar.tickthreading.util.ArrayListThreadLocal"/>
+		</class>
+		<class id="
+		org.bukkit.craftbukkit.v1_6_R3.CraftWorld
+		net.minecraft.item.ItemStack
+		net.minecraft.world.World
+		net.minecraft.block.Block
+		" env="mcpc">
+			<threadLocalBoolean field="captureTreeGeneration" threadLocalField="$0.inTreeGeneration"/>
+			<threadLocalBoolean field="captureBlockStates" threadLocalField="$0.inBlockStates"/>
+			<threadLocal field="capturedBlockStates" type="java.util.ArrayList" threadLocalField="$0.inBlockStates"/>
+			<threadLocal field="capturedItems" type="java.util.ArrayList" threadLocalField="$0.inItems"/>
+		</class>
 		<class id="net.minecraft.world.ChunkCache">
 			<replaceMethodCall code="$_ = $0.getChunkIfExists($$);"
 							   method="^class:World^.^method:World/getChunkFromChunkCoords^"/>
@@ -541,9 +563,6 @@
 		</class>
 		<class id="net.minecraft.entity.ai.EntityAITasks">
 			<synchronize>addTask,func_85156_a,onUpdateTasks,func_75775_b</synchronize>
-		</class>
-		<class id="net.minecraft.world.World" env="mcpc">
-			<removeUntilOpcode index="-2" opcode="ATHROW">addEntity,removePlayerEntityDangerously</removeUntilOpcode>
 		</class>
 		<class id="net.minecraft.server.gui.TextAreaLogHandler">
 			<synchronize>publish</synchronize>
