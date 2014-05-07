@@ -33,7 +33,7 @@ Compiling
 ---------
 TickThreading is built using Ant. astyle is also required for linux users.
 
-* Install JDK 7. Set your JDK_HOME environment variable to your JDK 7 install apth
+* Install JDK 7. Set your JDK_HOME environment variable to your JDK 7 install path
 * Checkout this repo and run: `gradlew.bat setupDecompWorkspace setupDevWorkspace build`
 * Make some Tea/Coffee/Yuanyang and watch youtube videos while Forge takes 15 minutes to set up
 
