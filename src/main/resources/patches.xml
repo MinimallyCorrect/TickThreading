@@ -16,6 +16,12 @@
 		<class id="codechicken.microblock.MicroMaterialRegistry$">
 			<replaceMethodCall method="println" index="1" code="{ }">registerMaterial</replaceMethodCall>
 		</class>
+		<class id="buildcraft.core.Version">
+			<disable>check</disable>
+		</class>
+		<class id="aroma1997.core.version.ThreadVersionChecking">
+			<disable>run</disable>
+		</class>
 		<class id="aroma1997.core.Aroma1997Core">
 			<replaceMethodCall method="logServer" code="{ }">preInit,init,postInit,serverStartup,serverStartedUp</replaceMethodCall>
 		</class>
