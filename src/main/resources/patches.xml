@@ -390,6 +390,13 @@
 		<class id="net.minecraft.entity.player.EntityPlayerMP" env="forge">
 			<addAll fromClass="nallar.patched.entity.PatchEntityPlayerMPForge"/>
 		</class>
+		<class id="net.minecraft.entity.player.EntityPlayerMP" env="mcpc">
+			<insertBefore code="{
+				if (this.^field:Entity/hurtResistantTime^ > 0){
+					--this.^field:Entity/hurtResistantTime^;
+				}
+			}">onUpdate</insertBefore>
+		</class>
 		<class id="net.minecraft.nbt.CompressedStreamTools">
 			<addAll fromClass="nallar.patched.nbt.PatchCompressedStreamTools"/>
 		</class>
