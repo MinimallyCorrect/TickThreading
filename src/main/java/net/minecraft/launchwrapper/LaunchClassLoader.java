@@ -37,7 +37,11 @@ public class LaunchClassLoader extends URLClassLoader {
 
 	public LaunchClassLoader(URL[] sources) {
 		super(sources, null);
-		instance = this;
+		if (instance == null) {
+			instance = this;
+		} else {
+			LogWrapper.log(Level.SEVERE, new Throwable(), "Initing extra LaunchClassLoader - why?!");
+		}
 		this.sources = new ArrayList<URL>(Arrays.asList(sources));
 		Thread.currentThread().setContextClassLoader(this);
 

@@ -39,7 +39,14 @@ public class ClassLoaderPool extends ClassPool {
 		if (LaunchClassLoader.instance.excluded(className.replace('/', '.'))) {
 			return null;
 		}
-		return preSrg ? LaunchClassLoader.instance.getPreSrgBytes(className) : LaunchClassLoader.instance.getSrgBytes(className);
+		try {
+			return preSrg ? LaunchClassLoader.instance.getPreSrgBytes(className) : LaunchClassLoader.instance.getSrgBytes(className);
+		} catch (RuntimeException e) {
+			if (e.getMessage().contains("No SRG transformer")) {
+				throw new RuntimeException("Classloader used to load LaunchClassLoader: " + LaunchClassLoader.instance.getClass().getClassLoader(), e);
+			}
+			throw e;
+		}
 	}
 
 	@Override
