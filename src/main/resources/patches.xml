@@ -1767,9 +1767,7 @@
 		<class id="Reika.DragonAPI.ModInteract.ReikaMystcraftHelper$InstabilityInterface">
 			<insertAfter code="{
 				if (ageController == null || instabilityController == null || ageData == null) {
-					String message = &quot;Null mystcraft age info: &quot; + String.valueOf(ageController) + &quot;, &quot; + String.valueOf(instabilityController) + &quot;, &quot; + String.valueOf(ageData) + &quot;, &quot;;
-					nallar.tickthreading.Log.severe(message, new Throwable());
-					throw new IllegalArgumentException(message);
+					throw new IllegalArgumentException(&quot;Null mystcraft age info: &quot; + String.valueOf(ageController) + &quot;, &quot; + String.valueOf(instabilityController) + &quot;, &quot; + String.valueOf(ageData));
 				}
 			}"/>
 		</class>
