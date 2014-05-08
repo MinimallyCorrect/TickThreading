@@ -925,6 +925,25 @@
 				return ret;
 			}">get</replaceMethod>
 		</class>
+		<class id="ic2.core.energy.EnergyNetLocal">
+			<replaceMethod code="{
+				Map changes = this.changes;
+				synchronized (changes) {
+					Double original = (Double) changes.get($1);
+					if (original == null) {
+						changes.put($1, Double.valueOf($2));
+					} else {
+						changes.put($1, Double.valueOf(original.doubleValue() + $2));
+					}
+				}
+			}">addChange</replaceMethod>
+			<synchronize field="changes">onTickEnd</synchronize>
+			<synchronize field="grids">onTickEnd</synchronize>
+			<synchronize field="registeredTiles">addTileEntity,removeTileEntity</synchronize>
+			<replaceInitializer field="changes" class="nallar.collections.PartiallySynchronizedMap"/>
+			<replaceInitializer field="registeredTiles" class="nallar.collections.PartiallySynchronizedMap"/>
+			<replaceInitializer field="grids" class="nallar.collections.SynchronizedSet"/>
+		</class>
 		<class id="ic2.core.ExplosionIC2">
 			<synchronize>doExplosion</synchronize>
 		</class>
