@@ -43,6 +43,10 @@ public abstract class PatchDimensionManager extends DimensionManager {
 			return false;
 		}
 
+		if (!TickThreading.instance.allowWorldUnloading) {
+			Log.severe("A world unload of " + w.getName() + " has been requested, even though world unloading is disabled.", new Throwable());
+		}
+
 		if (!w.getPersistentChunks().isEmpty() || !w.playerEntities.isEmpty()) {
 			return false;
 		}
