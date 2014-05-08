@@ -907,6 +907,9 @@
 		<class id="ic2.core.IC2">
 			<synchronize>addSingleTickCallback</synchronize>
 		</class>
+		<class id="ic2.core.WorldData">
+			<replaceInitializer field="mapping" class="nallar.collections.PartiallySynchronizedMap"/>
+		</class>
 		<class id="ic2.core.ExplosionIC2">
 			<synchronize>doExplosion</synchronize>
 		</class>
@@ -1330,7 +1333,7 @@
 	</thaumcraft>
 	<appliedEnergistics>
 		<class id="appeng.me.crafting.CraftRequest">
-			<replaceInitializer field="Prereqs" class="SynchronizedList"/>
+			<replaceInitializer field="Prereqs" class="nallar.collections.SynchronizedList"/>
 			<final field="Prereqs"/>
 		</class>
 		<class id="appeng.me.CellInventory">
