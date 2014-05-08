@@ -361,7 +361,7 @@ public class TickThreading {
 		return false;
 	}
 
-	private class LoginWarningHandler implements IPlayerTracker {
+	private static class LoginWarningHandler implements IPlayerTracker {
 		LoginWarningHandler() {
 		}
 
@@ -392,7 +392,7 @@ public class TickThreading {
 		private final File profilingFile;
 		private final boolean json;
 
-		public ProfilingScheduledTickHandler(final int profilingInterval, final File profilingFile, final boolean json) {
+		ProfilingScheduledTickHandler(final int profilingInterval, final File profilingFile, final boolean json) {
 			this.profilingInterval = profilingInterval;
 			this.profilingFile = profilingFile;
 			this.json = json;
