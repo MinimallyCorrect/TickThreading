@@ -1697,6 +1697,22 @@
 		extracells.tileentity.TileEntityMEDropper
 		extracells.tileentity.TileEntityMonitorStorageFluid
 		extracells.tileentity.TileEntityVoidFluid
+		extrautils.tileentity.TileEntityAntiMobTorch
+		extrautils.tileentity.TileEntityPortal
+		factorization.shared.TileEntityFzNull
+		logisticspipes.blocks.LogisticsSecurityTileEntity
+		logisticspipes.blocks.crafting.LogisticsCraftingTableTileEntity
+		lumien.randomthings.TileEntities.TileEntityFluidDisplay
+		net.machinemuse.powersuits.block.TileEntityTinkerTable
+		org.yogpstop.qp.TileBreaker
+		org.yogpstop.qp.TilePlacer
+		tconstruct.blocks.logic.CraftingStationLogic
+		tconstruct.blocks.logic.PartBuilderLogic
+		thaumcraft.common.tiles.TileGrate
+		tmechworks.blocks.logic.DynamoLogic
+		vazkii.heraldry.content.TileEntityBanner
+		vazkii.tinkerer.common.block.tile.TileAspectAnalyzer
+		vswe.stevescarts.TileEntities.TileEntityActivator
 		">
 			<newMethod code="public boolean ^method:TileEntity/canUpdate^() {
 				return false;
