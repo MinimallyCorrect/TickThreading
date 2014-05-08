@@ -7,7 +7,7 @@ public final class SimpleMutex implements Lock {
 	private boolean locked = false;
 
 	@Override
-	public final synchronized void lock() {
+	public synchronized void lock() {
 		while (locked) {
 			try {
 				wait();
@@ -18,9 +18,9 @@ public final class SimpleMutex implements Lock {
 	}
 
 	@Override
-	public final synchronized void unlock() {
+	public synchronized void unlock() {
 		locked = false;
-		notifyAll();
+		notify();
 	}
 
 	@Override
@@ -29,8 +29,12 @@ public final class SimpleMutex implements Lock {
 	}
 
 	@Override
-	public boolean tryLock() {
-		throw new UnsupportedOperationException();
+	public synchronized boolean tryLock() {
+		if (!locked) {
+			locked = true;
+			return true;
+		}
+		return false;
 	}
 
 	@Override
