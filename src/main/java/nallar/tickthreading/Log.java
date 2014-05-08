@@ -59,6 +59,19 @@ public class Log {
 			}
 			LOGGER.setParent(parent);
 			LOGGER.setUseParentHandlers(true);
+			Logger mcLogger = Logger.getLogger("Minecraft-Server");
+			if (mcLogger.getParent() != parent) {
+				mcLogger.setParent(parent);
+				mcLogger.setUseParentHandlers(true);
+				for (Handler handler : mcLogger.getHandlers()) {
+					if (handler instanceof FileHandler) {
+						continue;
+					}
+					handler.flush();
+					handler.close();
+					mcLogger.removeHandler(handler);
+				}
+			}
 		} catch (NoClassDefFoundError ignored) {
 			// Make this very very obvious.
 			System.err.println("--------------------------------------------------------");

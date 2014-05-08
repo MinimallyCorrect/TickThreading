@@ -64,6 +64,9 @@ public class LogFormatter extends Formatter {
 
 
 		String loggerName = record.getLoggerName();
+		if (loggerName.equals("Minecraft-Server")) {
+			loggerName = "Minecraft";
+		}
 		formattedMessage
 				.append('[').append(loggerName == null ? "" : loggerName).append("] ")
 				.append(record.getMessage()).append(LINE_SEPARATOR);
