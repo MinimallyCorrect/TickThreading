@@ -4,6 +4,7 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.relauncher.Side;
 import nallar.exception.ConcurrencyError;
+import nallar.insecurity.InsecurityManager;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.minecraft.DeadLockDetector;
 import nallar.tickthreading.minecraft.ThreadManager;
@@ -146,6 +147,11 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 	public void run() {
 		//noinspection ThrowableInstanceNeverThrown
 		new ConcurrencyError("Just loading some exception classes.");
+		try {
+			InsecurityManager.init();
+		} catch (Throwable t) {
+			System.err.println("Failed to set up Security Manager. This is probably not a huge problem - but it could indicate classloading issues.");
+		}
 		toSaveConfigurationSet = new HashSet<Configuration>();
 		boolean isCrash = false;
 		try {
