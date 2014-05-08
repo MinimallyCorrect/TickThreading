@@ -1633,6 +1633,13 @@
 	<revamp>
 		<class id="rivvest.Revamp.EntityEventHandler">
 			<replaceInitializer field="entitiesToConvert" class="nallar.collections.SynchronizedList"/>
+			<replaceMethod code="{
+				^class:World^ world = $1.world;
+				if (!world.^field:World/isRemote^ &amp;&amp; world.getDimension() == 0) {
+					rivvest.Revamp.Revamp.instance.setCaveVillageCollection(new rivvest.Revamp.CaveVillageCollection(world));
+     				rivvest.Revamp.Revamp.instance.setWorldObj(world);
+				}
+			}">onWorldLoad</replaceMethod>
 		</class>
 		<class id="rivvest.Revamp.ServerTickerRevamp">
 			<replaceMethodCall method="java.util.List.clear" code="{}">runConversions</replaceMethodCall>
