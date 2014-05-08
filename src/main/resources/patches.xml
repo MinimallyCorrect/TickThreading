@@ -909,6 +909,21 @@
 		</class>
 		<class id="ic2.core.WorldData">
 			<replaceInitializer field="mapping" class="nallar.collections.PartiallySynchronizedMap"/>
+			<replaceMethod code="{
+				ic2.core.WorldData ret = (ic2.core.WorldData) mapping.get($1);
+				if (ret != null) {
+					return ret;
+				}
+				synchronized (mapping) {
+					ret = (ic2.core.WorldData) mapping.get($1);
+					if (ret != null) {
+						return ret;
+					}
+					ret = new ic2.core.WorldData();
+					mapping.put($1, ret);
+				}
+				return ret;
+			}">get</replaceMethod>
 		</class>
 		<class id="ic2.core.ExplosionIC2">
 			<synchronize>doExplosion</synchronize>
