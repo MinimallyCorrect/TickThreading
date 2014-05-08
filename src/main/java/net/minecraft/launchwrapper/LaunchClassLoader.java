@@ -53,14 +53,13 @@ public class LaunchClassLoader extends URLClassLoader {
 		addClassLoaderExclusion("org.lwjgl.");
 		addClassLoaderExclusion("org.apache.logging.");
 		addClassLoaderExclusion("net.minecraft.launchwrapper.");
+		addClassLoaderExclusion("argo.");
+		addClassLoaderExclusion("org.objectweb.asm.");
 
 		// transformer exclusions
-		addTransformerExclusion("argo.");
 		addTransformerExclusion("javax.");
-		addTransformerExclusion("org.objectweb.asm.");
 		addTransformerExclusion("com.google.common.");
 		addTransformerExclusion("org.bouncycastle.");
-		addTransformerExclusion("net.minecraft.launchwrapper.injector.");
 
 		if (DEBUG_SAVE) {
 			int x = 1;
