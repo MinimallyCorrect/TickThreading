@@ -1195,7 +1195,7 @@
 	</chickenChunks>
 	<wirelessRedstone>
 		<class id="codechicken.wirelessredstone.core.RedstoneEther">
-			<replaceInitializer field="playerJammedMap" class="nallar.collections.CHashMap"/>
+			<replaceInitializer field="playerJammedMap" class="nallar.collections.CHashMap">init</replaceInitializer>
 			<final field="playerJammedMap"/>
 		</class>
 		<class id="codechicken.wirelessredstone.core.RedstoneEtherServer">
