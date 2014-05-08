@@ -62,8 +62,6 @@ public abstract class PatchWorld extends World {
 	public int dimensionId_;
 	private String cachedName;
 	@Declare
-	public boolean multiverseWorld_;
-	@Declare
 	public int originalDimension_;
 	@Declare
 	public boolean unloaded_;
@@ -107,8 +105,8 @@ public abstract class PatchWorld extends World {
 				Log.warning("Failed to register corrected dimension ID with DimensionManager", t);
 			}
 			originalDimension = provider.dimensionId;
-			multiverseWorld = true;
 			provider.dimensionId = dimensionId;
+			Log.warning("World " + getName() + "'s provider dimensionId is not the same as its real dimensionId. Provider ID: " + provider.dimensionId + ", real ID: " + dimensionId);
 		}
 		cachedName = null;
 		Log.fine("Set dimension ID for " + this.getName());
