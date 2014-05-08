@@ -25,6 +25,7 @@ public class PatchLog {
 			target.setAccessible(true);
 			Object consoleLogThread = target.get(consoleLogThreadThread);
 			Field handlerField = consoleLogThread.getClass().getDeclaredField("wrappedHandler");
+			handlerField.setAccessible(true);
 			Handler wrappedHandler = (Handler) handlerField.get(consoleLogThreadThread);
 			wrappedHandler.setFormatter(new ColorLogFormatter());
 		} catch (Exception e) {
