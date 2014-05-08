@@ -218,8 +218,11 @@
 			<final field="worldAccesses"/>
 			<final field="provider"/>
 			<final field="theProfiler"/>
+			<!--
+			Removed due to MFR grinder being annoying and creating a proxy worldserver as an overcomplicated workaround
 			<final field="playerEntities"/>
 			<final field="isRemote"/>
+			-->
 			<public field="ambientTickCountdown"/>
 			<public field="forcedChunks"/>
 			<replaceInitializer field="playerEntities" class="java.util.concurrent.CopyOnWriteArrayList"/>

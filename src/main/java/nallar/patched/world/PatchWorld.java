@@ -73,14 +73,18 @@ public abstract class PatchWorld extends World {
 	public boolean forcedChunksInited_;
 
 	public void construct() {
-		tickCount = rand.nextInt(240); // So when different worlds do every N tick actions,
+		if (rand == null) {
+			Log.fine("rand null in world construct - MFR world?");
+		} else {
+			tickCount = rand.nextInt(240); // So when different worlds do every N tick actions,
+			if (dimensionId == 0) {
+				dimensionId = provider.dimensionId;
+			}
+		}
 		// they won't all happen at the same time even if the worlds loaded at the same time
 		tileEntityRemovalSet = new SynchronizedSet<TileEntity>();
 		unloadedEntitySet = new SynchronizedSet<Entity>();
 		redstoneBurnoutMap = new NonBlockingHashMapLong<Integer>();
-		if (dimensionId == 0) {
-			dimensionId = provider.dimensionId;
-		}
 	}
 
 	public PatchWorld(final ISaveHandler par1ISaveHandler, final String par2Str, final WorldProvider par3WorldProvider, final WorldSettings par4WorldSettings, final Profiler par5Profiler, final ILogAgent par6ILogAgent) {
