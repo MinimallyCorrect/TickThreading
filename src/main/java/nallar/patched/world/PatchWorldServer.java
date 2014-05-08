@@ -601,7 +601,7 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 							try {
 								var18.updateTick(this, x + xPos, z + ebs.getYLocation(), y + zPos, rand);
 							} catch (Exception e) {
-								Log.severe("Exception ticking block " + var18 + " at x" + x + xPos + 'y' + z + ebs.getYLocation() + 'z' + y + zPos, e);
+								Log.severe("Exception ticking block " + var18 + " at x" + x + xPos + 'y' + z + ebs.getYLocation() + 'z' + y + zPos + " in " + this.getName(), e);
 							}
 						}
 					}
