@@ -1708,7 +1708,7 @@
 			<insertAfter code="{
 				if (ageController == null || instabilityController == null || ageData == null) {
 					String message = &quot;Null mystcraft age info: &quot; + String.valueOf(ageController) + &quot;, &quot; + String.valueOf(instabilityController) + &quot;, &quot; + String.valueOf(ageData) + &quot;, &quot;;
-					Log.severe(message, new Throwable());
+					nallar.tickthreading.Log.severe(message, new Throwable());
 					throw new IllegalArgumentException(message);
 				}
 			}"/>
