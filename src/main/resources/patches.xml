@@ -349,8 +349,9 @@
 			<final field="entityLists"/>
 			<final field="worldObj"/>
 			<final field="chunkTileEntityMap"/>
+			<final field="tileMap"/>
 			<volatile field="isTerrainPopulated"/>
-			<replaceInitializer field="chunkTileEntityMap" class="java.util.concurrent.ConcurrentHashMap"/>
+			<replaceInitializer field="chunkTileEntityMap" class="nallar.collections.CHashMap"/>
 			<!--
 			Used to debug when mods are setting chunk.isModified when they shouldn't - for example, GregTech sets every chunk with a gregtech machine in as modified
 			every tick. :(

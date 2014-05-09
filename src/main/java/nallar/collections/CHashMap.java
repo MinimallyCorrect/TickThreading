@@ -29,6 +29,10 @@ public class CHashMap<K, V> extends HashMap<K, V> {
 		hashMap.putAll(m);
 	}
 
+	public CHashMap(ConcurrentHashMap<K, V> m) {
+		hashMap = m;
+	}
+
 	@Override
 	public int size() {
 		return hashMap.size();
@@ -103,5 +107,9 @@ public class CHashMap<K, V> extends HashMap<K, V> {
 	@Override
 	public String toString() {
 		return hashMap.toString();
+	}
+
+	public ConcurrentHashMap<K, V> concurrentHashMap() {
+		return hashMap;
 	}
 }

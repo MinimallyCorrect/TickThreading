@@ -1,6 +1,7 @@
 package nallar.patched.storage;
 
 import cpw.mods.fml.common.FMLLog;
+import nallar.collections.CHashMap;
 import nallar.collections.SynchronizedList;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.patcher.Declare;
@@ -22,6 +23,7 @@ import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.world.ChunkEvent;
 
 import java.util.*;
+import java.util.concurrent.*;
 
 @SuppressWarnings("unchecked")
 public abstract class PatchChunk extends Chunk {
@@ -33,6 +35,7 @@ public abstract class PatchChunk extends Chunk {
 	public boolean partiallyUnloaded_;
 	@Declare
 	public boolean alreadySavedAfterUnload_;
+	public ConcurrentHashMap<ChunkPosition, TileEntity> tileMap;
 
 	public PatchChunk(World par1World, int par2, int par3) {
 		super(par1World, par2, par3);
@@ -45,6 +48,7 @@ public abstract class PatchChunk extends Chunk {
 			entityLists[i] = new SynchronizedList();
 		}
 		toInvalidate = new ArrayList<TileEntity>();
+		tileMap = ((CHashMap) chunkTileEntityMap).concurrentHashMap();
 	}
 
 	@Override
@@ -59,7 +63,7 @@ public abstract class PatchChunk extends Chunk {
 		if (lastSaveTime == worldTime) {
 			return false;
 		}
-		if (force && (isModified || hasEntities || !chunkTileEntityMap.isEmpty() || lastSaveTime + 1000 < worldTime)) {
+		if (force && (isModified || hasEntities || !tileMap.isEmpty() || lastSaveTime + 1000 < worldTime)) {
 			return true;
 		}
 		long nextSaveTime;
@@ -67,7 +71,7 @@ public abstract class PatchChunk extends Chunk {
 			nextSaveTime = 4000;
 		} else if (hasEntities) {
 			nextSaveTime = 6000;
-		} else if (!chunkTileEntityMap.isEmpty()) {
+		} else if (!tileMap.isEmpty()) {
 			nextSaveTime = 9000;
 		} else {
 			return false;
@@ -205,7 +209,7 @@ public abstract class PatchChunk extends Chunk {
 
 			Block block = Block.blocksList[getBlockID(x, y, z)];
 			if (block != null && block.hasTileEntity(getBlockMetadata(x, y, z))) {
-				TileEntity old = (TileEntity) chunkTileEntityMap.put(chunkPosition, tileEntity);
+				TileEntity old = tileMap.put(chunkPosition, tileEntity);
 				if (old != null) {
 					toInvalidate.add(old);
 				}
@@ -224,7 +228,7 @@ public abstract class PatchChunk extends Chunk {
 	public void onChunkUnloadTT() {
 		isChunkLoaded = false;
 		Set<TileEntity> removalSet = worldObj.tileEntityRemovalSet;
-		for (TileEntity var2 : (Iterable<TileEntity>) chunkTileEntityMap.values()) {
+		for (TileEntity var2 : tileMap.values()) {
 			removalSet.add(var2);
 		}
 
@@ -257,12 +261,12 @@ public abstract class PatchChunk extends Chunk {
 			tileEntity.invalidate();
 		}
 		toInvalidate.clear();
-		for (Map.Entry<ChunkPosition, TileEntity> entry : ((Map<ChunkPosition, TileEntity>) chunkTileEntityMap).entrySet()) {
+		for (Map.Entry<ChunkPosition, TileEntity> entry : tileMap.entrySet()) {
 			TileEntity tileEntity = entry.getValue();
 			if ((!tileEntity.canUpdate() && tileEntity.isInvalid()) || tileEntity.getClass() == TileEntity.class) {
 				tileEntity.invalidate();
 				ChunkPosition position = entry.getKey();
-				chunkTileEntityMap.remove(position);
+				tileMap.remove(position);
 				worldObj.loadedTileEntityList.remove(tileEntity);
 				int x = position.x, y = position.y, z = position.z;
 				int id = getBlockID(x, y, z);
@@ -280,7 +284,7 @@ public abstract class PatchChunk extends Chunk {
 	public void threadUnsafeChunkLoad() {
 		isChunkLoaded = true;
 
-		worldObj.addTileEntity(chunkTileEntityMap.values());
+		worldObj.addTileEntity(tileMap.values());
 
 		for (List entityList : entityLists) {
 			synchronized (entityList) {
@@ -345,7 +349,7 @@ public abstract class PatchChunk extends Chunk {
 
 		Block block = Block.blocksList[getBlockID(x, y, z)];
 		if (block != null && block.hasTileEntity(getBlockMetadata(x, y, z))) {
-			chunkTileEntityMap.put(var5, tileEntity);
+			tileMap.put(var5, tileEntity);
 		}
 		isModified = true;
 	}
@@ -550,10 +554,10 @@ public abstract class PatchChunk extends Chunk {
 	@Override
 	public TileEntity getChunkBlockTileEntity(int par1, int par2, int par3) {
 		ChunkPosition position = new ChunkPosition(par1, par2, par3);
-		TileEntity tileEntity = (TileEntity) this.chunkTileEntityMap.get(position);
+		TileEntity tileEntity = this.tileMap.get(position);
 
 		if (tileEntity != null && tileEntity.isInvalid()) {
-			chunkTileEntityMap.remove(position);
+			tileMap.remove(position);
 			worldObj.loadedTileEntityList.remove(tileEntity);
 			tileEntity = null;
 		}
@@ -570,7 +574,7 @@ public abstract class PatchChunk extends Chunk {
 			tileEntity = block.createTileEntity(this.worldObj, meta);
 			this.worldObj.setBlockTileEntity(this.xPosition * 16 + par1, par2, this.zPosition * 16 + par3, tileEntity);
 
-			tileEntity = (TileEntity) this.chunkTileEntityMap.get(position);
+			tileEntity = this.tileMap.get(position);
 		}
 
 		return tileEntity;
