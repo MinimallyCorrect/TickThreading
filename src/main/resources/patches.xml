@@ -1374,6 +1374,27 @@
 		<class id="appeng.me.CellInventory">
 			<synchronize>^all^</synchronize>
 		</class>
+		<class id="appeng.me.MEInventoryNetwork">
+			<newField class="nallar.tickthreading.util.LinkedListThreadLocal" field="depthsThreadLocal"/>
+			<!-- I know that's not how you spell recursion, typos kept from AE :P -->
+			<replaceMethod code="{
+				Object grid = $1.getGrid();
+				LinkedList depths = (LinkedList) depthsThreadLocal.get();
+				for (Iterator i$ = depths.iterator(); i$.hasNext(); ) {
+					if (grid == i$.next()) {
+						return false;
+					}
+				}
+				depths.push(grid);
+				return true;
+			}">checkRecurrsion</replaceMethod>
+			<replaceMethod code="{
+				Object grid = $1.getGrid();
+				if ($1.getGrid() != ((LinkedList) depthsThreadLocal.get()).pop()) {
+					throw new RuntimeException(&quot;Invalid Network Recussion Detected&quot;);
+				}
+			}">endRecurssion</replaceMethod>
+		</class>
 		<class id="appeng.util.Platform">
 			<insertBefore code="{
 				if ($1 == $2) {

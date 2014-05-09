@@ -33,16 +33,6 @@ public class ThreadLocals {
 		}
 	}
 
-	private static class LinkedListThreadLocal extends ThreadLocal {
-		LinkedListThreadLocal() {
-		}
-
-		@Override
-		protected Object initialValue() {
-			return new LinkedList();
-		}
-	}
-
 	public static class MapChunkTempByteArrayThreadLocal extends ThreadLocal<byte[]> {
 		@Override
 		public byte[] initialValue() {
