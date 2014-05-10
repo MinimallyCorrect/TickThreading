@@ -1737,10 +1737,18 @@
 	<Reika>
 		<class id="Reika.DragonAPI.ModInteract.ReikaMystcraftHelper$InstabilityInterface">
 			<insertAfter code="{
+				if (instabilityController == null) {
+					instabilityController = ((com.xcompwiz.mystcraft.world.AgeController) ageController).getInstabilityController();
+				}
 				if (ageController == null || instabilityController == null || ageData == null) {
 					throw new IllegalArgumentException(&quot;Null mystcraft age info: &quot; + String.valueOf(ageController) + &quot;, &quot; + String.valueOf(instabilityController) + &quot;, &quot; + String.valueOf(ageData));
 				}
 			}"/>
 		</class>
 	</Reika>
+	<mystcraft>
+		<class id="com.xcompwiz.mystcraft.world.AgeController">
+			<synchronize>getInstabilityController</synchronize>
+		</class>
+	</mystcraft>
 </mods>
