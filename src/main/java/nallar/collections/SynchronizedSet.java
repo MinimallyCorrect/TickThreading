@@ -45,7 +45,7 @@ public class SynchronizedSet<T> extends HashSet<T> {
 	}
 
 	@Override
-	public <T> T[] toArray(T[] ts) {
+	public synchronized <T> T[] toArray(T[] ts) {
 		return super.toArray(ts);
 	}
 
