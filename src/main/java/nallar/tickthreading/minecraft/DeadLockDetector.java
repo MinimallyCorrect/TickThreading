@@ -13,6 +13,7 @@ import nallar.unsafe.UnsafeUtil;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.packet.Packet3Chat;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ChatMessageComponent;
 
 import java.lang.management.*;
 import java.util.*;
@@ -61,7 +62,7 @@ public class DeadLockDetector {
 			@Override
 			public void run() {
 				MinecraftServer.getServerConfigurationManager(MinecraftServer.getServer())
-						.sendPacketToAllPlayers(new Packet3Chat(message));
+						.sendPacketToAllPlayers(new Packet3Chat(ChatMessageComponent.createFromText(message)));
 			}
 		}.start();
 	}
