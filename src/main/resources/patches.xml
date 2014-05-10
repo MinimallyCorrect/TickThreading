@@ -699,6 +699,9 @@
 		<class id="org.spigotmc.WatchdogThread">
 			<disable>run</disable>
 		</class>
+		<class id="org.spigotmc.CustomTimingsHandler">
+			<replaceInitializer field="ALL_HANDLERS" class="nallar.collections.SynchronizedSet"/>
+		</class>
 	</spigot>
 	<forge>
 		<class id="net.minecraftforge.common.Configuration">
