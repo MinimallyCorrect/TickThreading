@@ -845,60 +845,17 @@
 		</class>
 	</thermalExpansionPlugins>
 	<thermalExpansionTransport>
-		<class id="thermalexpansion.block.conduit.TileConduitEnergy">
+		<class id="thermalexpansion.part.conduit.GridFormer">
 			<newField field="tickLock" class="java.lang.Object" static=""/>
-			<synchronize field="tickLock">updateGridIfNull</synchronize>
+			<synchronize field="tickLock">setup</synchronize>
 		</class>
-		<class id="thermalexpansion.block.conduit.TileConduitLiquid">
-			<newField field="tickLock" class="java.lang.Object" static=""/>
-			<synchronize field="tickLock">updateGridIfNull</synchronize>
+		<class id="thermalexpansion.part.conduit.fluid.GridFluid">
+			<synchronize/>
 		</class>
-		<class id="thermalexpansion.block.conduit.GridLiquid">
-			<synchronize>
-				transferLiquid,removeNode,removeConduit,setNewGrid,changeMode,increaseTracker,addNode,addConduit
-			</synchronize>
-			<replaceMethod code="{
-				int n = this.conduitList.size() + this.outputList.size() + this.inputList.size();
-				if (n &lt; 1) {
-					n = 1;
-				}
-				int a = getLiquidAmount();
-				return isFirst($1) ? (a / n + a % n) : (a / n);
-			}">getSharedAmount
-			</replaceMethod>
-		</class>
-		<class id="thermalexpansion.block.conduit.GridEnergy">
-			<synchronize>
-				transferEnergy,removeNode,removeConduit,setNewGrid,changeMode,increaseTracker,addNode,addConduit
-			</synchronize>
+		<class id="thermalexpansion.part.conduit.energy.GridEnergy">
+			<synchronize/>
 		</class>
 	</thermalExpansionTransport>
-	<thremalExpansionFactory>
-		<class id="thermalexpansion.block.device.TileTankPortable">
-			<replaceMethod code="{
-				if (this.myTank.getLiquidAmount() &lt;= 0) {
-					return;
-				}
-
-				int[] coords = cofh.util.BlockUtils.getAdjacentCoordinatesForSide(this.^field:TileEntity/xCoord^, this.^field:TileEntity/yCoord^, this.^field:TileEntity/zCoord^, 0);
-
-				^class:TileEntity^ theTile = this.^field:TileEntity/worldObj^.^method:World/getBlockTileEntity^(coords[0], coords[1], coords[2]);
-				if (theTile instanceof net.minecraftforge.liquids.ITankContainer) {
-					if (theTile instanceof thermalexpansion.block.device.TileTankPortable &amp;&amp;
-							!((((thermalexpansion.block.device.TileTankPortable)theTile).myTank.getLiquidID() &lt;= 0) ||
-							(((thermalexpansion.block.device.TileTankPortable)theTile).myTank.getLiquidAmount() != 8000))) {
-						return;
-					}
-					int fillQty = Math.min(this.myTank.getLiquidAmount(), 250);
-					int quantity = ((net.minecraftforge.liquids.ITankContainer)theTile).fill(net.minecraftforge.common.ForgeDirection.UP, new net.minecraftforge.liquids.LiquidStack(this.myTank.getLiquidID(), fillQty, this.myTank.getLiquidMeta()), true);
-					if (quantity &gt; 0) {
-						this.myTank.drain(quantity, true);
-					}
-				}
-			}">transferLiquid
-			</replaceMethod>
-		</class>
-	</thremalExpansionFactory>
 	<industrialCraft>
 		<class id="ic2.core.IC2">
 			<synchronize>addSingleTickCallback</synchronize>
