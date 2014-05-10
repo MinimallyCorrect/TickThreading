@@ -88,21 +88,26 @@ public final class ThreadManager {
 		return endTime;
 	}
 
-	public void runList(final ConcurrentIterableArrayList<? extends Runnable> tasks) {
+	private final ConcurrentLinkedQueue<TryRunnable> tryRunnableQueue = new ConcurrentLinkedQueue<TryRunnable>();
+
+	public void runDelayableList(final ConcurrentIterableArrayList<? extends TryRunnable> tasks) {
 		tasks.reset();
-		Runnable arrayRunnable = new Runnable() {
-			@Override
-			public void run() {
-				Runnable r;
-				while ((r = tasks.next()) != null) {
-					r.run();
-				}
-			}
-		};
+		Runnable arrayRunnable = new DelayableRunnable(tasks, tryRunnableQueue);
 		for (int i = 0, len = workThreads.size(); i < len; i++) {
 			run(arrayRunnable);
 		}
 	}
+
+	/*
+	TODO - Use this once RingBuffer class is working - it is big, don't want to allocate it unless used.
+	private RingBuffer<TryRunnable> getRingBuffer() {
+		RingBuffer<TryRunnable> ringBuffer = this.ringBuffer;
+		if (ringBuffer == null) {
+			this.ringBuffer = ringBuffer = new RingBuffer<TryRunnable>();
+		}
+		return ringBuffer;
+	}
+	*/
 
 	public void run(Iterable<? extends Runnable> tasks) {
 		for (Runnable runnable : tasks) {
@@ -164,6 +169,31 @@ public final class ThreadManager {
 
 		@Override
 		public void run() {
+		}
+	}
+
+	private static class DelayableRunnable implements Runnable {
+		private final ConcurrentIterableArrayList<? extends TryRunnable> tasks;
+		private final ConcurrentLinkedQueue<TryRunnable> tryRunnableQueue;
+
+		public DelayableRunnable(ConcurrentIterableArrayList<? extends TryRunnable> tasks, ConcurrentLinkedQueue<TryRunnable> tryRunnableQueue) {
+			this.tasks = tasks;
+			this.tryRunnableQueue = tryRunnableQueue;
+		}
+
+		@Override
+		public void run() {
+			TryRunnable r;
+			while ((r = tasks.next()) != null) {
+				if (!r.run()) {
+					tryRunnableQueue.add(r);
+				}
+			}
+			while ((r = tryRunnableQueue.poll()) != null) {
+				if (!r.run()) {
+					tryRunnableQueue.add(r);
+				}
+			}
 		}
 	}
 }

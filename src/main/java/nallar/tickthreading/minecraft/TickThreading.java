@@ -91,7 +91,6 @@ public class TickThreading {
 	public int maxEntitiesPerPlayer = 1000;
 	public float mobSpawningMultiplier = 1;
 	private int tickThreads = 0;
-	int regionSize = 16;
 	private int profilingInterval = 0;
 	private int maxItemsPerChunk = 0;
 	private boolean profilingJson = false;
@@ -151,7 +150,6 @@ public class TickThreading {
 		messageDeadlockRecovered = config.get(GENERAL, "messageDeadlockRecovered", messageDeadlockRecovered, "The message to be displayed if the server recovers from an apparent deadlock. (Only sent if exitOnDeadlock is on)").getString();
 		messageDeadlockSavingExiting = config.get(GENERAL, "messageDeadlockSavingExiting", messageDeadlockSavingExiting, "The message to be displayed when the server attempts to save and stop after a deadlock. (Only sent if exitOnDeadlock is on)").getString();
 		tickThreads = config.get(GENERAL, "tickThreads", tickThreads, "number of threads to use to tick. 0 = automatic").getInt(tickThreads);
-		regionSize = config.get(GENERAL, "regionSize", regionSize, "width/length of tick regions, specified in blocks. Should be a power of 2 (eg: 16/32)").getInt(regionSize);
 		saveInterval = config.get(GENERAL, "saveInterval", saveInterval, "Time between auto-saves, in ticks.").getInt(saveInterval);
 		deadLockTime = config.get(GENERAL, "deadLockTime", deadLockTime, "The time(seconds) of being frozen which will trigger the DeadLockDetector. Set to 1 to instead detect lag spikes.").getInt(deadLockTime);
 		chunkCacheSize = Math.max(100, config.get(GENERAL, "chunkCacheSize", chunkCacheSize, "Number of unloaded chunks to keep cached. Replacement for Forge's dormant chunk cache, which tends to break. Minimum size of 100").getInt(chunkCacheSize));

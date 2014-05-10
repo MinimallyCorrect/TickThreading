@@ -24,14 +24,9 @@ import net.minecraft.world.gen.ChunkProviderServer;
 
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.locks.*;
 
 public final class TickManager {
-	private static final byte lockXPlus = 1 << 1;
-	private static final byte lockXMinus = 1 << 2;
-	private static final byte lockZPlus = 1 << 3;
-	private static final byte lockZMinus = 1 << 4;
-	public static final int regionSize = TickThreading.instance.regionSize;
+	public static final int regionSize = 32;
 	public static final int regionSizePower = 31 - Integer.numberOfLeadingZeros(regionSize);
 	public boolean profilingEnabled = false;
 	private double averageTickLength = 0;
@@ -132,6 +127,7 @@ public final class TickManager {
 				synchronized (tickRegions) {
 					if ((tickRegion instanceof EntityTickRegion ? entityCallables.remove(tickRegion.hashCode) : tileEntityCallables.remove(tickRegion.hashCode)) == tickRegion) {
 						tickRegions.remove(tickRegion);
+						tickRegion.onRemove();
 					}
 				}
 			}
@@ -228,7 +224,6 @@ public final class TickManager {
 				tileEntity.tickRegion = null;
 				tileEntity.onChunkUnload();
 			}
-			unlock(tileEntity);
 		}
 		synchronized (tileEntityLock) {
 			tileEntityList.removeAll(tileEntities);
@@ -269,7 +264,6 @@ public final class TickManager {
 		synchronized (tileEntityLock) {
 			tileEntityList.remove(tileEntity);
 		}
-		unlock(tileEntity);
 	}
 
 	public void removed(Entity entity) {
@@ -290,218 +284,6 @@ public final class TickManager {
 		}
 	}
 
-	/* Oh, Java.
-	Explicit MONITORENTER/EXIT should really be part of the language, there are just some cases like this where synchronized blocks get too messy,
-	and performance is bad if using other locks.
-	.lock/unlock calls here are replaced with MONITORENTER/EXIT.
-	 */
-	void unlock(TileEntity tE) {
-		Lock lock = tE.lockManagementLock;
-		lock.lock();
-		byte locks = tE.usedLocks;
-		boolean xM = ((locks & lockXMinus) != 0) || tE.xMinusLock != null;
-		boolean xP = ((locks & lockXPlus) != 0) || tE.xPlusLock != null;
-		boolean zM = ((locks & lockZMinus) != 0) || tE.zMinusLock != null;
-		boolean zP = ((locks & lockZPlus) != 0) || tE.zPlusLock != null;
-		tE.xPlusLock = null;
-		tE.xMinusLock = null;
-		tE.zPlusLock = null;
-		tE.zMinusLock = null;
-		tE.usedLocks = 0;
-		if (tE.thisLock == null) {
-			lock.unlock();
-			return;
-		}
-		int xPos = tE.lastTTX;
-		int yPos = tE.lastTTY;
-		int zPos = tE.lastTTZ;
-		TileEntity xMTE = xM ? world.getTEWithoutLoad(xPos - 1, yPos, zPos) : null;
-		TileEntity xPTE = xP ? world.getTEWithoutLoad(xPos + 1, yPos, zPos) : null;
-		TileEntity zMTE = zM ? world.getTEWithoutLoad(xPos, yPos, zPos - 1) : null;
-		TileEntity zPTE = zP ? world.getTEWithoutLoad(xPos, yPos, zPos + 1) : null;
-		if (xMTE == null) {
-			xM = false;
-		}
-		if (xPTE == null) {
-			xP = false;
-		}
-		if (zMTE == null) {
-			zM = false;
-		}
-		if (zPTE == null) {
-			zP = false;
-		}
-		lock.unlock();
-		if (!(xM || xP || zM || zP)) {
-			return;
-		}
-		if (xP) {
-			xPTE.lockManagementLock.lock();
-		}
-		if (zP) {
-			zPTE.lockManagementLock.lock();
-		}
-		lock.lock();
-		if (zM) {
-			zMTE.lockManagementLock.lock();
-		}
-		if (xM) {
-			xMTE.lockManagementLock.lock();
-		}
-
-		if (xM) {
-			xMTE.usedLocks &= ~lockXPlus;
-			xMTE.xPlusLock = null;
-		}
-		if (xP) {
-			xPTE.usedLocks &= ~lockXMinus;
-			xPTE.xMinusLock = null;
-		}
-		if (zM) {
-			zMTE.usedLocks &= ~lockZPlus;
-			zMTE.zPlusLock = null;
-		}
-		if (zP) {
-			zPTE.usedLocks &= ~lockZMinus;
-			zPTE.zMinusLock = null;
-		}
-		if (xM) {
-			xMTE.lockManagementLock.unlock();
-		}
-		if (zM) {
-			zMTE.lockManagementLock.unlock();
-		}
-		lock.unlock();
-		if (zP) {
-			zPTE.lockManagementLock.unlock();
-		}
-		if (xP) {
-			xPTE.lockManagementLock.unlock();
-		}
-	}
-
-	/*
-	 .lock/unlock calls here are replaced with MONITORENTER/EXIT.
-	*/
-	public final void lock(TileEntity tE) {
-		unlock(tE);
-		Lock lock = tE.lockManagementLock;
-		lock.lock();
-		int maxPosition = (regionSize / 2) - 1;
-		int xPos = tE.xCoord;
-		int yPos = tE.yCoord;
-		int zPos = tE.zCoord;
-		tE.lastTTX = xPos;
-		tE.lastTTY = yPos;
-		tE.lastTTZ = zPos;
-		int relativeXPos = (xPos % regionSize) / 2;
-		int relativeZPos = (zPos % regionSize) / 2;
-		boolean onMinusX = relativeXPos == 0;
-		boolean onMinusZ = relativeZPos == 0;
-		boolean onPlusX = relativeXPos == maxPosition;
-		boolean onPlusZ = relativeZPos == maxPosition;
-		boolean xM = onMinusX || onMinusZ || onPlusZ;
-		boolean xP = onPlusX || onMinusZ || onPlusZ;
-		boolean zM = onMinusZ || onMinusX || onPlusX;
-		boolean zP = onPlusZ || onMinusX || onPlusX;
-		TileEntity xMTE = xM ? world.getTEWithoutLoad(xPos - 1, yPos, zPos) : null;
-		TileEntity xPTE = xP ? world.getTEWithoutLoad(xPos + 1, yPos, zPos) : null;
-		TileEntity zMTE = zM ? world.getTEWithoutLoad(xPos, yPos, zPos - 1) : null;
-		TileEntity zPTE = zP ? world.getTEWithoutLoad(xPos, yPos, zPos + 1) : null;
-		if (xMTE == null) {
-			xM = false;
-		}
-		if (xPTE == null) {
-			xP = false;
-		}
-		if (zMTE == null) {
-			zM = false;
-		}
-		if (zPTE == null) {
-			zP = false;
-		}
-		lock.unlock();
-		if (!(xM || xP || zM || zP)) {
-			return;
-		}
-		Lock thisLock = tE.thisLock;
-		if (xP) {
-			xPTE.lockManagementLock.lock();
-		}
-		if (zP) {
-			zPTE.lockManagementLock.lock();
-		}
-		lock.lock();
-		if (zM) {
-			zMTE.lockManagementLock.lock();
-		}
-		if (xM) {
-			xMTE.lockManagementLock.lock();
-		}
-
-		byte usedLocks = tE.usedLocks;
-
-		if (xM) {
-			Lock otherLock = xMTE.thisLock;
-			if (otherLock != null) {
-				xMTE.usedLocks |= lockXPlus;
-				tE.xMinusLock = otherLock;
-			}
-			if (thisLock != null) {
-				usedLocks |= lockXMinus;
-				xMTE.xPlusLock = thisLock;
-			}
-		}
-		if (xP) {
-			Lock otherLock = xPTE.thisLock;
-			if (otherLock != null) {
-				xPTE.usedLocks |= lockXMinus;
-				tE.xPlusLock = otherLock;
-			}
-			if (thisLock != null) {
-				usedLocks |= lockXPlus;
-				xPTE.xMinusLock = thisLock;
-			}
-		}
-		if (zM) {
-			Lock otherLock = zMTE.thisLock;
-			if (otherLock != null) {
-				zMTE.usedLocks |= lockZPlus;
-				tE.zMinusLock = otherLock;
-			}
-			if (thisLock != null) {
-				usedLocks |= lockZMinus;
-				zMTE.zPlusLock = thisLock;
-			}
-		}
-		if (zP) {
-			Lock otherLock = zPTE.thisLock;
-			if (otherLock != null) {
-				zPTE.usedLocks |= lockZMinus;
-				tE.zPlusLock = otherLock;
-			}
-			if (thisLock != null) {
-				usedLocks |= lockZPlus;
-				zPTE.zMinusLock = thisLock;
-			}
-		}
-		tE.usedLocks = usedLocks;
-
-		if (xM) {
-			xMTE.lockManagementLock.unlock();
-		}
-		if (zM) {
-			zMTE.lockManagementLock.unlock();
-		}
-		lock.unlock();
-		if (zP) {
-			zPTE.lockManagementLock.unlock();
-		}
-		if (xP) {
-			xPTE.lockManagementLock.unlock();
-		}
-	}
-
 	public void doTick() {
 		boolean previousProfiling = world.theProfiler.profilingEnabled;
 		lastStartTime = System.nanoTime();
@@ -509,7 +291,7 @@ public final class TickManager {
 		if (previousProfiling) {
 			world.theProfiler.profilingEnabled = false;
 		}
-		threadManager.runList(tickRegions);
+		threadManager.runDelayableList(tickRegions);
 		if (previousProfiling || waitForCompletion) {
 			postTick();
 		}

@@ -113,20 +113,9 @@
 			</replaceMethod>
 		</class>
 	</theWarOnLogSpam>
-	<tickthreading>
-		<class id="nallar.tickthreading.minecraft.tickregion.TileEntityTickRegion">
-			<lockToSynchronized>doTick</lockToSynchronized>
-		</class>
-		<class id="nallar.tickthreading.minecraft.TickManager">
-			<lockToSynchronized>unlock,lock</lockToSynchronized>
-		</class>
-	</tickthreading>
 	<minecraftCommon>
 		<class id="net.minecraft.logging.LogAgent">
 			<insertAfter code="{ nallar.log.PatchLog.coloriseLogger(); }">setupLogger</insertAfter>
-		</class>
-		<class id="net.minecraft.tileentity.TileEntityChest">
-			<addAll fromClass="nallar.patched.PatchTileEntityNoLock"/>
 		</class>
 		<class id="net.minecraft.world.SpawnerAnimals" env="forge">
 			<addAll fromClass="nallar.patched.PatchSpawnerAnimalsForge"/>

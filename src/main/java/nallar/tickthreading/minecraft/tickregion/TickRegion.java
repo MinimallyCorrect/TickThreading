@@ -2,12 +2,13 @@ package nallar.tickthreading.minecraft.tickregion;
 
 import nallar.tickthreading.minecraft.TickManager;
 import nallar.tickthreading.minecraft.TickThreading;
+import nallar.tickthreading.minecraft.TryRunnable;
 import nallar.tickthreading.util.TableFormatter;
 import net.minecraft.world.World;
 
 import java.util.*;
 
-public abstract class TickRegion implements Runnable {
+public abstract class TickRegion implements TryRunnable {
 	private static final boolean variableTickRate = TickThreading.instance.variableTickRate;
 	private static final Random rand = new Random();
 	final World world;
@@ -15,7 +16,7 @@ public abstract class TickRegion implements Runnable {
 	public final int hashCode;
 	public final int regionX;
 	public final int regionZ;
-	private long averageTickTime = 1;
+	long averageTickTime = 1;
 	public boolean profilingEnabled = false;
 
 	TickRegion(World world, TickManager manager, int regionX, int regionZ) {
@@ -28,7 +29,7 @@ public abstract class TickRegion implements Runnable {
 	}
 
 	@Override
-	public synchronized void run() {
+	public synchronized boolean run() {
 		long averageTickTime = this.averageTickTime;
 		if (shouldTick(averageTickTime)) {
 			long startTime = System.nanoTime();
@@ -38,9 +39,10 @@ public abstract class TickRegion implements Runnable {
 			}
 			this.averageTickTime = ((averageTickTime * 31) + (System.nanoTime() - startTime)) / 32;
 		}
+		return true;
 	}
 
-	private static boolean shouldTick(long averageTickTime) {
+	protected static boolean shouldTick(long averageTickTime) {
 		return !variableTickRate || averageTickTime < 20000000 || rand.nextFloat() < 20000000f / averageTickTime;
 	}
 
@@ -76,6 +78,10 @@ public abstract class TickRegion implements Runnable {
 		}
 		TickRegion otherTickRegion = (TickRegion) other;
 		return otherTickRegion.hashCode == this.hashCode && this.getClass().isInstance(other);
+	}
+
+	public void onRemove() {
+
 	}
 
 	public abstract boolean isEmpty();

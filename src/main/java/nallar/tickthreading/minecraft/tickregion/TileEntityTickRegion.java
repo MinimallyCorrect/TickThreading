@@ -5,19 +5,150 @@ import nallar.tickthreading.Log;
 import nallar.tickthreading.minecraft.TickManager;
 import nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
 import nallar.tickthreading.util.TableFormatter;
+import nallar.tickthreading.util.concurrent.SimpleMutex;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
 import java.util.*;
-import java.util.concurrent.locks.*;
 
 public class TileEntityTickRegion extends TickRegion {
 	private int checkTime = 0;
 	private final LinkedHashSetTempSetNoClear<TileEntity> tileEntitySet = new LinkedHashSetTempSetNoClear<TileEntity>();
+	public final SimpleMutex lock = new SimpleMutex();
+	public SimpleMutex xPlusLock;
+	public SimpleMutex xMinusLock;
+	public SimpleMutex zPlusLock;
+	public SimpleMutex zMinusLock;
 
 	public TileEntityTickRegion(World world, TickManager manager, int regionX, int regionY) {
 		super(world, manager, regionX, regionY);
+		setupLocks();
+	}
+
+	public synchronized void setupLocks() {
+		{
+			TileEntityTickRegion xPlus = manager.getTileEntityRegion(TickManager.getHashCodeFromRegionCoords(regionX + 1, regionZ));
+			if (xPlus != null) {
+				synchronized (xPlus) {
+					xPlus.xMinusLock = this.lock;
+					xPlusLock = xPlus.lock;
+				}
+			}
+		}
+		{
+			TileEntityTickRegion xMinus = manager.getTileEntityRegion(TickManager.getHashCodeFromRegionCoords(regionX - 1, regionZ));
+			if (xMinus != null) {
+				synchronized (xMinus) {
+					xMinus.xPlusLock = this.lock;
+					xMinusLock = xMinus.lock;
+				}
+			}
+		}
+		{
+			TileEntityTickRegion zPlus = manager.getTileEntityRegion(TickManager.getHashCodeFromRegionCoords(regionX, regionZ + 1));
+			if (zPlus != null) {
+				synchronized (zPlus) {
+					zPlus.zMinusLock = this.lock;
+					zPlusLock = zPlus.lock;
+				}
+			}
+		}
+		{
+			TileEntityTickRegion zMinus = manager.getTileEntityRegion(TickManager.getHashCodeFromRegionCoords(regionX, regionZ - 1));
+			if (zMinus != null) {
+				synchronized (zMinus) {
+					zMinus.zPlusLock = this.lock;
+					zMinusLock = zMinus.lock;
+				}
+			}
+		}
+	}
+
+	public synchronized void removeLocks() {
+		{
+			TileEntityTickRegion xPlus = manager.getTileEntityRegion(TickManager.getHashCodeFromRegionCoords(regionX + 1, regionZ));
+			if (xPlus != null) {
+				synchronized (xPlus) {
+					xPlus.xMinusLock = null;
+					xPlusLock = null;
+				}
+			}
+		}
+		{
+			TileEntityTickRegion xMinus = manager.getTileEntityRegion(TickManager.getHashCodeFromRegionCoords(regionX - 1, regionZ));
+			if (xMinus != null) {
+				synchronized (xMinus) {
+					xMinus.xPlusLock = null;
+					xMinusLock = null;
+				}
+			}
+		}
+		{
+			TileEntityTickRegion zPlus = manager.getTileEntityRegion(TickManager.getHashCodeFromRegionCoords(regionX, regionZ + 1));
+			if (zPlus != null) {
+				synchronized (zPlus) {
+					zPlus.zMinusLock = null;
+					zPlusLock = null;
+				}
+			}
+		}
+		{
+			TileEntityTickRegion zMinus = manager.getTileEntityRegion(TickManager.getHashCodeFromRegionCoords(regionX, regionZ - 1));
+			if (zMinus != null) {
+				synchronized (zMinus) {
+					zMinus.zPlusLock = null;
+					zMinusLock = null;
+				}
+			}
+		}
+	}
+
+	@Override
+	public void onRemove() {
+		removeLocks();
+	}
+
+	@Override
+	public synchronized boolean run() {
+		SimpleMutex xPlusLock = this.xPlusLock;
+		if (xPlusLock == null || xPlusLock.tryLock()) {
+			try {
+				SimpleMutex xMinusLock = this.xMinusLock;
+				if (xMinusLock == null || xMinusLock.tryLock()) {
+					try {
+						SimpleMutex zPlusLock = this.zPlusLock;
+						if (zPlusLock == null || zPlusLock.tryLock()) {
+							try {
+								SimpleMutex zMinusLock = this.zMinusLock;
+								if (zMinusLock == null || zMinusLock.tryLock()) {
+									try {
+										return super.run();
+									} finally {
+										if (zMinusLock != null) {
+											zMinusLock.unlock();
+										}
+									}
+								}
+							} finally {
+								if (zPlusLock != null) {
+									zPlusLock.unlock();
+								}
+							}
+						}
+					} finally {
+						if (xMinusLock != null) {
+							xMinusLock.unlock();
+						}
+					}
+				}
+			} finally {
+				if (xPlusLock != null) {
+					xPlusLock.unlock();
+				}
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -26,61 +157,13 @@ public class TileEntityTickRegion extends TickRegion {
 		final boolean check = checkTime++ % 60 == 0;
 		final boolean profilingEnabled = manager.profilingEnabled || this.profilingEnabled;
 		EntityTickProfiler entityTickProfiler = profilingEnabled ? EntityTickProfiler.ENTITY_TICK_PROFILER : null;
-		Lock thisLock;
-		Lock xPlusLock;
-		Lock xMinusLock;
-		Lock zPlusLock;
-		Lock zMinusLock;
 		long startTime = profilingEnabled ? System.nanoTime() : 0;
-		// Locking calls are manipulated by the patcher,
-		// INVOKEVIRTUAL java.util.concurrent.locks.Lock.lock/unlock() calls are replaced with
-		// MONITORENTER/MONITOREXIT instructions.
-		// For this reason, although we do use interfaces which correctly implement lock/unlock depending on the TileEntity,
-		// it is critical that .lock() is not called on anything other than a NativeMutex instance in this code.
-		// Behaving in this manner also allows us to avoid the overhead of calling an interface method.
-		// Volatile reads are, if used only when necessary, fast. JVM will not optimize out repeat volatile reads.
-		// Just don't read fields repeatedly unnecessary. Best not to do this with non-volatile fields anyway.
 		final Iterator<TileEntity> tileEntitiesIterator = tileEntitySet.startIteration();
 		try {
 			while (tileEntitiesIterator.hasNext()) {
 				final TileEntity tileEntity = tileEntitiesIterator.next();
-				if (check) {
-					if (check(tileEntity, tileEntitiesIterator)) {
-						continue;
-					}
-				}
-				if (tileEntity.noLock()) {
-					try {
-						if (tileEntity.isInvalid()) {
-							tileEntitiesIterator.remove();
-							invalidate(tileEntity);
-						} else if (tileEntity.worldObj != null) {
-							tileEntity.updateEntity();
-						}
-					} catch (Throwable throwable) {
-						Log.severe("Exception ticking TileEntity " + Log.toString(tileEntity), throwable);
-					}
+				if (check && check(tileEntity, tileEntitiesIterator)) {
 					continue;
-				}
-				xPlusLock = tileEntity.xPlusLock;
-				zPlusLock = tileEntity.zPlusLock;
-				thisLock = tileEntity.thisLock;
-				xMinusLock = tileEntity.xMinusLock;
-				zMinusLock = tileEntity.zMinusLock;
-				if (xPlusLock != null) {
-					xPlusLock.lock();
-				}
-				if (zPlusLock != null) {
-					zPlusLock.lock();
-				}
-				if (thisLock != null) {
-					thisLock.lock();
-				}
-				if (zMinusLock != null) {
-					zMinusLock.lock();
-				}
-				if (xMinusLock != null) {
-					xMinusLock.lock();
 				}
 				try {
 					if (tileEntity.isInvalid()) {
@@ -92,22 +175,6 @@ public class TileEntityTickRegion extends TickRegion {
 				} catch (Throwable throwable) {
 					Log.severe("Exception ticking TileEntity " + Log.toString(tileEntity), throwable);
 				} finally {
-					if (xMinusLock != null) {
-						xMinusLock.unlock();
-					}
-					if (zMinusLock != null) {
-						zMinusLock.unlock();
-					}
-					if (thisLock != null) {
-						thisLock.unlock();
-					}
-					if (zPlusLock != null) {
-						zPlusLock.unlock();
-					}
-					if (xPlusLock != null) {
-						xPlusLock.unlock();
-					}
-
 					if (profilingEnabled) {
 						long oldStartTime = startTime;
 						entityTickProfiler.record(tileEntity, (startTime = System.nanoTime()) - oldStartTime);
@@ -139,14 +206,9 @@ public class TileEntityTickRegion extends TickRegion {
 						+ "\n In " + hashCode + "\t.tickRegion: " + tileEntity.tickRegion.hashCode + "\texpected: " + TickManager.getHashCode(xPos, zPos));
 			}
 			manager.add(tileEntity, false);
-			manager.lock(tileEntity);
 			return true;
 		}
-		if (tileEntity.lastTTX != xPos || tileEntity.lastTTY != tileEntity.yCoord || tileEntity.lastTTZ != zPos) {
-			manager.lock(tileEntity);
-			return true;
-		}
-		return false;
+		return tileEntity.lastTTX != xPos || tileEntity.lastTTY != tileEntity.yCoord || tileEntity.lastTTZ != zPos;
 	}
 
 	private void invalidate(TileEntity tileEntity) {

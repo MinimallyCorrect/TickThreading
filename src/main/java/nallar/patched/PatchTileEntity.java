@@ -2,16 +2,10 @@ package nallar.patched;
 
 import nallar.tickthreading.Log;
 import nallar.tickthreading.patcher.Declare;
-import nallar.tickthreading.util.concurrent.NativeMutex;
 import net.minecraft.block.Block;
-import net.minecraft.inventory.ICrafting;
-import net.minecraft.inventory.IInvBasic;
-import net.minecraft.inventory.IInventory;
 import net.minecraft.server.management.PlayerInstance;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.WorldServer;
-import net.minecraftforge.liquids.ILiquidTank;
-import net.minecraftforge.liquids.ITankContainer;
 
 public abstract class PatchTileEntity extends TileEntity {
 	@Declare
@@ -22,29 +16,6 @@ public abstract class PatchTileEntity extends TileEntity {
 	public int lastTTZ_;
 	@Declare
 	public volatile nallar.tickthreading.minecraft.tickregion.TileEntityTickRegion tickRegion_;
-	@Declare
-	public final java.util.concurrent.locks.Lock lockManagementLock_ = null;
-	@Declare
-	public final java.util.concurrent.locks.Lock thisLock_ = null;
-	@Declare
-	public volatile java.util.concurrent.locks.Lock xMinusLock_;
-	@Declare
-	public volatile java.util.concurrent.locks.Lock zMinusLock_;
-	@Declare
-	public volatile java.util.concurrent.locks.Lock xPlusLock_;
-	@Declare
-	public volatile java.util.concurrent.locks.Lock zPlusLock_;
-	@Declare
-	public byte usedLocks_;
-
-	public void construct() {
-		lockManagementLock = new NativeMutex();
-		if (this instanceof IInventory || this instanceof ILiquidTank || this instanceof ICrafting || this instanceof IInvBasic || this instanceof ITankContainer) {
-			thisLock = new NativeMutex();
-		} else {
-			thisLock = null;
-		}
-	}
 
 	@Override
 	@Declare
@@ -73,11 +44,5 @@ public abstract class PatchTileEntity extends TileEntity {
 	@Override
 	public String toString() {
 		return Log.classString(this) + '@' + System.identityHashCode(this) + " in " + Log.name(worldObj) + " at x, y, z: " + xCoord + ", " + yCoord + ", " + zCoord;
-	}
-
-	@Override
-	@Declare
-	public boolean noLock() {
-		return false;
 	}
 }
