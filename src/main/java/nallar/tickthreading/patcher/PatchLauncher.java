@@ -19,7 +19,8 @@ public class PatchLauncher {
 		if (!file.exists()) {
 			Files.write(file.toPath(), ("colorLogs=true\r\n" +
 					"serverJar=\r\n" +
-					"fullLoggerName=").getBytes());
+					"chunkPopulationRange=1\r\n" +
+					"fullLoggerName=\r\n").getBytes());
 		}
 		String data = new String(Files.readAllBytes(file.toPath()));
 		data = data.replace("\r\n", "\n");
