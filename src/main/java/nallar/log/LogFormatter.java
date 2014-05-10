@@ -7,7 +7,8 @@ import java.util.logging.*;
 public class LogFormatter extends Formatter {
 	public static final String LINE_SEPARATOR = System.getProperty("line.separator");
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd HH:mm:ss");
-	protected static final boolean colorEnabled = System.getProperty("colorLogs") != null;
+	protected static final boolean colorEnabled = System.getProperty("colorLogs", "false").equalsIgnoreCase("true");
+	private static final boolean simplifyMcLoggerName = !System.getProperty("fullLoggerName", "false").equalsIgnoreCase("true");
 
 	public static void setFormat(boolean u, SimpleDateFormat dateFormat) {
 		if (dateFormat != null) {
@@ -64,7 +65,7 @@ public class LogFormatter extends Formatter {
 
 
 		String loggerName = record.getLoggerName();
-		if (loggerName.equals("Minecraft-Server")) {
+		if (simplifyMcLoggerName && loggerName.equals("Minecraft-Server")) {
 			loggerName = "Minecraft";
 		}
 		formattedMessage
