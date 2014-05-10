@@ -1735,6 +1735,10 @@
 		</class>
 	</canUpdateFixes>
 	<Reika>
+		<class id="com.xcompwiz.mystcraft.world.AgeController">
+			<synchronize>getInstabilityController</synchronize>
+			<public>getInstabilityController</public>
+		</class>
 		<class id="Reika.DragonAPI.ModInteract.ReikaMystcraftHelper$InstabilityInterface">
 			<insertAfter code="{
 				if (instabilityController == null) {
@@ -1746,9 +1750,4 @@
 			}"/>
 		</class>
 	</Reika>
-	<mystcraft>
-		<class id="com.xcompwiz.mystcraft.world.AgeController">
-			<synchronize>getInstabilityController</synchronize>
-		</class>
-	</mystcraft>
 </mods>
