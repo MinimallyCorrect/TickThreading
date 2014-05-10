@@ -1,6 +1,7 @@
 package nallar.insecurity;
 
 import nallar.tickthreading.Log;
+import nallar.tickthreading.util.ThisIsNotAnError;
 import net.minecraft.server.MinecraftServer;
 
 import java.security.*;

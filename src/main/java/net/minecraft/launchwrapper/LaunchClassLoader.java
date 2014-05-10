@@ -176,7 +176,6 @@ public class LaunchClassLoader extends URLClassLoader {
 			if (name.startsWith("nallar.") && !name.startsWith("nallar.tickthreading.util")) {
 				if (!name.startsWith("nallar.log.")) {
 					LogWrapper.log(Level.SEVERE, new Error(), "Already classloaded earlier: " + name);
-					LogWrapper.log(Level.SEVERE, new Error(), "THIS WILL CAUSE SEVERE ISSUES");
 					try {
 						Thread.sleep(2000);
 					} catch (InterruptedException ignored) {

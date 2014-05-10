@@ -34,7 +34,7 @@ import javassist.expr.Instanceof;
 import javassist.expr.MethodCall;
 import javassist.expr.NewArray;
 import javassist.expr.NewExpr;
-import nallar.insecurity.ThisIsNotAnError;
+import nallar.tickthreading.util.ThisIsNotAnError;
 import nallar.log.PatchLog;
 import nallar.tickthreading.patcher.mappings.Mappings;
 import nallar.tickthreading.patcher.mappings.MethodDescription;

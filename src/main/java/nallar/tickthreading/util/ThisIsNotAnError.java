@@ -1,4 +1,4 @@
-package nallar.insecurity;
+package nallar.tickthreading.util;
 
 public class ThisIsNotAnError extends Error {
 	@Override
