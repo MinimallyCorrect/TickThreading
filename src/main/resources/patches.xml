@@ -1620,8 +1620,8 @@
 	</magicBees>
 	<tagApi>
 		<class id="org.kitteh.tag.TagAPI">
-			<replaceMethodCall method="equals" code="$_ = true;" index="0">getName,check,handlePacket
-			</replaceMethodCall>
+			<!-- Allow TagAPI use off the main thread -->
+			<replaceMethodCall method="equals" code="$_ = true;" index="0">check,getName</replaceMethodCall>
 		</class>
 	</tagApi>
 	<mobHats>
