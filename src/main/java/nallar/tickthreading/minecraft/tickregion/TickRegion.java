@@ -29,7 +29,7 @@ public abstract class TickRegion implements TryRunnable {
 	}
 
 	@Override
-	public synchronized boolean run() {
+	public boolean run() {
 		long averageTickTime = this.averageTickTime;
 		if (shouldTick(averageTickTime)) {
 			long startTime = System.nanoTime();

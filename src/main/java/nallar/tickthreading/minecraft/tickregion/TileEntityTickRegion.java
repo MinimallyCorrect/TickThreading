@@ -110,7 +110,7 @@ public class TileEntityTickRegion extends TickRegion {
 	}
 
 	@Override
-	public synchronized boolean run() {
+	public boolean run() {
 		SimpleMutex xPlusLock = this.xPlusLock;
 		if (xPlusLock == null || xPlusLock.tryLock()) {
 			try {
