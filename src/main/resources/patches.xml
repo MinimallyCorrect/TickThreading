@@ -1479,6 +1479,10 @@
 		</class>
 	</appliedEnergistics>
 	<enderIo>
+		<class id="crazypants.enderio.conduit.AbstractConduitNetwork">
+			<newField field="staticLock" class="java.lang.Object" static=""/>
+			<synchronize field="staticLock">init</synchronize>
+		</class>
 		<class id="crazypants.enderio.conduit.ConduitNetworkTickHandler">
 			<replaceInitializer field="listeners" class="nallar.collections.SynchronizedList"/>
 			<synchronize field="listeners">tickStart,tickEnd</synchronize>
