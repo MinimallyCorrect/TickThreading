@@ -109,6 +109,11 @@ public class CHashMap<K, V> extends HashMap<K, V> {
 		return hashMap.toString();
 	}
 
+	@Override
+	public CHashMap<K, V> clone() {
+		return new CHashMap<K, V>((Map<K, V>) hashMap);
+	}
+
 	public ConcurrentHashMap<K, V> concurrentHashMap() {
 		return hashMap;
 	}
