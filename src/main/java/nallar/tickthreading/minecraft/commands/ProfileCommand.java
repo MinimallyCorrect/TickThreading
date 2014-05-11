@@ -47,22 +47,23 @@ public class ProfileCommand extends Command {
 			if (arguments.isEmpty()) {
 				throw new Exception();
 			}
-			if ("p".equals(arguments.get(0))) {
+			String type = arguments.get(0).toLowerCase();
+			if ("p".equals(type)) {
 				PacketProfiler.startProfiling(commandSender, 10);
 				return;
 			}
-			if ("l".equals(arguments.get(0))) {
+			if ("l".equals(type)) {
 				sendChat(commandSender, "Performing lock contention profiling for 4 minutes.");
 				ContentionProfiler.profile(commandSender, 240, 11);
 				return;
 			}
-			if ("u".equals(arguments.get(0))) {
+			if ("u".equals(type)) {
 				sendChat(commandSender, "Performing CPU utilisation profiling for 1 minute.");
 				UtilisationProfiler.profile(commandSender, 60);
 				return;
 			}
-			entity_ = "e".equals(arguments.get(0));
-			if ("c".equals(arguments.get(0))) {
+			entity_ = "e".equals(type);
+			if ("c".equals(type)) {
 				entity_ = true;
 				location_ = true;
 				if (arguments.size() > 2) {
