@@ -295,7 +295,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		this.updateTimeLightAndEntities();
 
 		int ticks = this.tickCounter;
-		if (ticks % TickThreading.instance.saveInterval == 0) {
+		if (TickThreading.checkSaveInterval(ticks)) {
 			theProfiler.startSection("save");
 			this.serverConfigManager.saveAllPlayerData();
 			theProfiler.endSection();
@@ -529,7 +529,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				if (tickCount % 14 == 0) {
 					exceptionCount.put(id, 0);
 				}
-				if (tickCount % TickThreading.instance.saveInterval == 0) {
+				if (TickThreading.checkSaveInterval(tickCount)) {
 					theProfiler.startSection("save");
 					try {
 						currentlySaving.getAndIncrement();

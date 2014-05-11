@@ -84,7 +84,7 @@ public class TickThreading {
 	public boolean enableFastMobSpawning = true;
 	public boolean enableBugWarningMessage = true;
 	public boolean rateLimitChunkUpdates = true;
-	public int saveInterval = 180;
+	private int saveInterval = 180;
 	public int deadLockTime = 35;
 	public int chunkCacheSize = 2000;
 	public int chunkGCInterval = 1200;
@@ -150,7 +150,7 @@ public class TickThreading {
 		messageDeadlockRecovered = config.get(GENERAL, "messageDeadlockRecovered", messageDeadlockRecovered, "The message to be displayed if the server recovers from an apparent deadlock. (Only sent if exitOnDeadlock is on)").getString();
 		messageDeadlockSavingExiting = config.get(GENERAL, "messageDeadlockSavingExiting", messageDeadlockSavingExiting, "The message to be displayed when the server attempts to save and stop after a deadlock. (Only sent if exitOnDeadlock is on)").getString();
 		tickThreads = config.get(GENERAL, "tickThreads", tickThreads, "number of threads to use to tick. 0 = automatic").getInt(tickThreads);
-		saveInterval = config.get(GENERAL, "saveInterval", saveInterval, "Time between auto-saves, in ticks.").getInt(saveInterval);
+		saveInterval = config.get(GENERAL, "saveInterval", saveInterval, "Time between partial saves, in ticks.").getInt(saveInterval);
 		deadLockTime = config.get(GENERAL, "deadLockTime", deadLockTime, "The time(seconds) of being frozen which will trigger the DeadLockDetector. Set to 1 to instead detect lag spikes.").getInt(deadLockTime);
 		chunkCacheSize = Math.max(100, config.get(GENERAL, "chunkCacheSize", chunkCacheSize, "Number of unloaded chunks to keep cached. Replacement for Forge's dormant chunk cache, which tends to break. Minimum size of 100").getInt(chunkCacheSize));
 		chunkGCInterval = config.get(GENERAL, "chunkGCInterval", chunkGCInterval, "Interval between chunk garbage collections in ticks").getInt(chunkGCInterval);
@@ -357,6 +357,11 @@ public class TickThreading {
 			return e.isDead;
 		}
 		return false;
+	}
+
+	public static boolean checkSaveInterval(int tickCount) {
+		int saveInterval = instance.saveInterval;
+		return saveInterval > 0 && tickCount % saveInterval == 0;
 	}
 
 	private static class LoginWarningHandler implements IPlayerTracker {
