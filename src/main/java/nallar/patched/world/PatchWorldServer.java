@@ -73,7 +73,10 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 		if (ticksPerMonsterSpawns == 0) {
 			ticksPerMonsterSpawns = 1;
 		}
-		threadManager = new ThreadManager(TickThreading.instance.getThreadCount(), "Chunk Updates for " + Log.name(this));
+		if (rand != null) {
+			// Not MFR grinder
+			threadManager = new ThreadManager(TickThreading.instance.getThreadCount(), "Chunk Updates for " + Log.name(this));
+		}
 		try {
 			pendingTickListEntriesHashSet = null;
 		} catch (NoSuchFieldError ignored) {
