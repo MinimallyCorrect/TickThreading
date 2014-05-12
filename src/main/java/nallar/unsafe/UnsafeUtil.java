@@ -309,12 +309,16 @@ public class UnsafeUtil {
 	@SuppressWarnings("deprecation")
 	public static void stopThread(Thread t, Throwable thr) {
 		try {
-			Method m = Thread.class.getDeclaredMethod("stop0", Object.class);
-			m.setAccessible(true);
-			m.invoke(t, thr);
-		} catch (Throwable throwable) {
-			Log.severe("Failed to stop thread t with throwable, reverting to normal stop.", throwable);
-			t.stop();
+			t.stop(thr);
+		} catch (Throwable ignored) {
+			try {
+				Method m = Thread.class.getDeclaredMethod("stop0", Object.class);
+				m.setAccessible(true);
+				m.invoke(t, thr);
+			} catch (Throwable throwable) {
+				Log.severe("Failed to stop thread t with throwable, reverting to normal stop.", throwable);
+				t.stop();
+			}
 		}
 	}
 
