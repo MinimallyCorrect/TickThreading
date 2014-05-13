@@ -87,6 +87,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	public Set<Long> chunksToUnload;
 	public final List<Chunk> loadedChunks;
 	public final IChunkLoader currentChunkLoader;
+	public final LongHashMap loadedChunkHashMap = chunks;
 	@SuppressWarnings("UnusedDeclaration")
 	public boolean loadChunkOnProvideRequest;
 
