@@ -850,6 +850,12 @@
 			<synchronize field="tickLock">setup</synchronize>
 		</class>
 		<class id="thermalexpansion.part.conduit.fluid.GridFluid">
+			<final field="worldObj"/>
+			<insertAfter code="{
+				if (worldObj == null) {
+					throw new RuntimeException(&quot;Null worldObj in GridFluid construction from &quot; + String.valueOf($1));
+				}
+			}"/>
 			<synchronize/>
 		</class>
 		<class id="thermalexpansion.part.conduit.energy.GridEnergy">
