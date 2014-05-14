@@ -849,6 +849,13 @@
 			<newField field="tickLock" class="java.lang.Object" static=""/>
 			<synchronize field="tickLock">setup</synchronize>
 		</class>
+		<class id="thermalexpansion.part.conduit.GridTickHandler">
+			<replaceInitializer field="tickingGrids" class="nallar.collections.CLinkedHashSet"/>
+			<replaceInitializer field="tickingGridsToAdd" class="nallar.collections.CLinkedHashSet"/>
+			<replaceInitializer field="tickingGridsToRemove" class="nallar.collections.CLinkedHashSet"/>
+			<replaceInitializer field="tickConduit" class="nallar.collections.CLinkedHashSet"/>
+			<replaceInitializer field="tickConduitToAdd" class="nallar.collections.CLinkedHashSet"/>
+		</class>
 		<class id="thermalexpansion.part.conduit.fluid.GridFluid">
 			<final field="worldObj"/>
 			<insertAfter code="{
