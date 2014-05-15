@@ -611,6 +611,9 @@
 			</replaceMethod>
 			<removeUntilOpcode opcode="return" index="1">initDimension</removeUntilOpcode>
 		</class>
+		<class id="net.minecraft.pathfinding.PathNavigate">
+			<synchronize>setPath,onUpdateNavigation</synchronize>
+		</class>
 	</minecraftCommon>
 	<bukkit>
 		<class id="org.bukkit.plugin.SimplePluginManager">
