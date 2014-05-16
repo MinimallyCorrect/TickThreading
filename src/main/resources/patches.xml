@@ -127,6 +127,9 @@
 			<addAll fromClass="nallar.patched.PatchSpawnerAnimals"/>
 			<profile>findChunksForSpawning</profile>
 		</class>
+		<class id="net.minecraft.world.storage.ThreadedFileIOBase">
+			<synchronize>queueIO,waitForFinish</synchronize>
+		</class>
 		<class id="net.minecraft.world.storage.MapInfo">
 			<synchronize>^all^</synchronize>
 		</class>

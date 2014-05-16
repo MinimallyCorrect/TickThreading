@@ -26,7 +26,7 @@ public class RegionFileCache {
 
 	public RegionFile get(int x, int z) {
 		if (closed) {
-			throw new IllegalStateException("RegionFileCache already closed");
+			throw new IllegalStateException("RegionFileCache already closed - this means that for some reason ThreadedIOBase was still saving chunks in a world after unloading it.");
 		}
 
 		long hash = hash(x, z);
