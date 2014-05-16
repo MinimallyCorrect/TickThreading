@@ -1448,8 +1448,8 @@
 			<synchronize>^all^</synchronize>
 		</class>
 		<class id="appeng.common.grid.MEGridEvents">
-			<replaceInitializer field="requests" class="nallar.collections.ConcurrentQueueList">^static^
-			</replaceInitializer>
+			<replaceInitializer field="requests" class="nallar.collections.ConcurrentQueueList">^static^</replaceInitializer>
+			<replaceInitializer field="mbupdates" class="nallar.collections.ConcurrentQueueList">^static^</replaceInitializer>
 		</class>
 		<class id="
 			appeng.me.tile.TileAssembler
