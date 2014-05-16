@@ -228,6 +228,10 @@
 			<newField field="inCaptureBlockStates" class="nallar.tickthreading.util.BooleanThreadLocalDefaultFalse"/>
 			<newField field="inBlockStates" class="nallar.tickthreading.util.ArrayListThreadLocal"/>
 			<newField field="inItems" class="nallar.tickthreading.util.ArrayListThreadLocal"/>
+			<removeFieldAndInitializers field="captureTreeGeneration"/>
+			<removeFieldAndInitializers field="captureBlockStates"/>
+			<removeFieldAndInitializers field="capturedBlockStates"/>
+			<removeFieldAndInitializers field="capturedItems"/>
 		</class>
 		<class id="
 		org.bukkit.craftbukkit.v1_6_R3.CraftWorld

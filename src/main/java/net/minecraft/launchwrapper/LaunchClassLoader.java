@@ -498,6 +498,7 @@ public class LaunchClassLoader extends URLClassLoader {
 		if (name.startsWith("java/")) {
 			return null;
 		}
+		name = name.replace('/', '.');
 		byte[] cached = resourceCache.get(name);
 		if (cached != null) {
 			return cached == CACHE_MISS ? null : cached;
@@ -547,6 +548,7 @@ public class LaunchClassLoader extends URLClassLoader {
 
 	public void clearNegativeEntries(Set<String> entriesToClear) {
 		for (String entry : entriesToClear) {
+			entry = entry.replace('/', '.');
 			if (resourceCache.get(entry) == CACHE_MISS) {
 				resourceCache.remove(entry);
 			}
