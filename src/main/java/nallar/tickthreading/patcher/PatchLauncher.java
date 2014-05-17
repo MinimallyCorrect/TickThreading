@@ -56,6 +56,7 @@ public class PatchLauncher {
 		if (loc == null) {
 			loc = System.getProperty("serverJar");
 		}
+		loc = loc == null ? null : loc.trim();
 		if (System.getProperty("tickthreading.launcherWaitForKeyPress") != null) {
 			System.out.println("Waiting for enter key press to continue;");
 			new Scanner(System.in).nextLine();
