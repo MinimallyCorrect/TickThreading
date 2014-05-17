@@ -1783,4 +1783,14 @@
 			}"/>
 		</class>
 	</Reika>
+	<minions>
+		<class id="
+		atomicstryker.minions.common.jobmanager.Minion_Job_Manager
+		atomicstryker.minions.common.jobmanager.Minion_Job_DigByCoordinates
+		atomicstryker.minions.common.jobmanager.Minion_Job_StripMine
+		atomicstryker.minions.common.jobmanager.Minion_Job_TreeHarvest
+		">
+			<synchronize>getAnyAvailableWorker,getNearestAVailableWorker,onJobFinished,onJobStarted,onJobUpdateTick,onTaskFinished,setWorkerFree</synchronize>
+		</class>
+	</minions>
 </mods>
