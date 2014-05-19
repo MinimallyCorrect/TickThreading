@@ -11,6 +11,7 @@ import nallar.tickthreading.minecraft.DeadLockDetector;
 import nallar.tickthreading.minecraft.TickThreading;
 import nallar.tickthreading.patcher.Declare;
 import nallar.tickthreading.util.BooleanThreadLocalDefaultFalse;
+import nallar.tickthreading.util.CounterThreadLocalAssumeZero;
 import nallar.tickthreading.util.DoNothingRunnable;
 import nallar.tickthreading.util.ServerThreadFactory;
 import nallar.tickthreading.util.concurrent.NativeMutex;
@@ -54,6 +55,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	 * This works as NativeMutex uses JVM monitors internally.
 	 */
 	public final NativeMutex generateLock = new NativeMutex();
+	public final NativeMutex populationLock = new NativeMutex();
 	private static final ThreadPoolExecutor chunkLoadThreadPool;
 	private final IChunkProvider generator; // Mojang shouldn't use the same interface for  :(
 
@@ -63,7 +65,8 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 	}
 
 	private static final Runnable doNothingRunnable = new DoNothingRunnable();
-	private static final int populationRange = Integer.parseInt(System.getProperty("chunkPopulationRange", "2"));
+	private static final int populationRange = 1;
+	private final CounterThreadLocalAssumeZero populationCounter = new CounterThreadLocalAssumeZero();
 	private final NonBlockingHashMapLong<AtomicInteger> chunkLoadLocks = new NonBlockingHashMapLong<AtomicInteger>();
 	private final LongHashMap chunks = new LongHashMap();
 	private final LongHashMap loadingChunks = new LongHashMap();
@@ -441,7 +444,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 			return chunk;
 		}
 
-		if (loadChunksInProvideChunk) {
+		if (loadChunksInProvideChunk || populationCounter.getCount() != 0) {
 			return getChunkAtInternal(x, z, true, false);
 		}
 		/* else {
@@ -638,33 +641,39 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		chunk.onChunkLoad();
 		fireBukkitLoadEvent(chunk, wasGenerated);
 		chunkLoadLocks.remove(key);
-
-		synchronized (generateLock) {
-			tryPopulateChunks(chunk);
-		}
+		tryPopulateChunks(chunk);
 
 		return chunk;
 	}
 
 	private void populate(Chunk chunk) {
-		synchronized (chunk) {
-			int x = chunk.xPosition;
-			int z = chunk.zPosition;
-			if (chunk.isTerrainPopulated) {
-				Log.warning("Attempted to populate chunk " + x + ',' + z + " which is already populated.");
-				return;
+		synchronized (populationLock) {
+			if (populationCounter.increment() > 25) {
+				throw new Error("Recursive population depth limit exceeded: 25 chunks.");
 			}
-			if (generator != null) {
-				generator.populate(this, x, z);
-				fireBukkitPopulateEvent(chunk);
-				GameRegistry.generateWorld(x, z, world, generator, this);
-				chunk.setChunkModified(); // It may have been modified in generator.populate/GameRegistry.generateWorld.
+			try {
+				synchronized (chunk) {
+					int x = chunk.xPosition;
+					int z = chunk.zPosition;
+					if (chunk.isTerrainPopulated) {
+						Log.warning("Attempted to populate chunk " + x + ',' + z + " which is already populated.");
+						return;
+					}
+					if (generator != null) {
+						generator.populate(this, x, z);
+						fireBukkitPopulateEvent(chunk);
+						GameRegistry.generateWorld(x, z, world, generator, this);
+						chunk.setChunkModified(); // It may have been modified in generator.populate/GameRegistry.generateWorld.
+					}
+					//noinspection ConstantConditions
+					if (chunk.isTerrainPopulated) {
+						Log.warning("Chunk " + chunk + " had its isTerrainPopulated field set to true incorrectly by external code while populating");
+					}
+					chunk.isTerrainPopulated = true;
+				}
+			} finally {
+				populationCounter.decrement();
 			}
-			//noinspection ConstantConditions
-			if (chunk.isTerrainPopulated) {
-				Log.warning("Chunk " + chunk + " had its isTerrainPopulated field set to true incorrectly by external code while populating");
-			}
-			chunk.isTerrainPopulated = true;
 		}
 	}
 
