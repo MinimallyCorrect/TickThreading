@@ -41,7 +41,7 @@ public class CounterThreadLocalAssumeZero extends ThreadLocal<Integer> {
 	public int increment() {
 		int count = getCount();
 		int n = count + 1;
-		set(n);
+		super.set(n);
 		if (count == 0) {
 			do {
 				int old = $.getIntVolatile(this, index);
@@ -60,7 +60,7 @@ public class CounterThreadLocalAssumeZero extends ThreadLocal<Integer> {
 			throw new Error("Can not decrement counter below 0.");
 		}
 		int n = count - 1;
-		set(n);
+		super.set(n);
 		if (count == 1) {
 			do {
 				int old = $.getIntVolatile(this, index);
