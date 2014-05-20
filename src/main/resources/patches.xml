@@ -235,8 +235,8 @@
 		net.minecraft.block.Block
 		net.minecraft.block.BlockSapling
 		" env="mcpc">
-			<replaceFieldUsage writeCode="{ $_ = null }" readCode="{ $_ = false; }" field="captureBlockStates"/>
-			<replaceFieldUsage writeCode="{ $_ = null }" readCode="{ $_ = false; }" field="captureTreeGeneration"/>
+			<replaceFieldUsage writeCode="{ }" readCode="{ $_ = false; }" field="captureBlockStates">^all^</replaceFieldUsage>
+			<replaceFieldUsage writeCode="{ }" readCode="{ $_ = false; }" field="captureTreeGeneration">^all^</replaceFieldUsage>
 		</class>
 		<class id="net.minecraft.world.ChunkCache">
 			<replaceMethodCall code="$_ = $0.getChunkIfExists($$);"
