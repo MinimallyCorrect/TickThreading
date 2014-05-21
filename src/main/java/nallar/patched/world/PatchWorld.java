@@ -483,6 +483,21 @@ public abstract class PatchWorld extends World {
 	}
 
 	@Override
+	public int getIndirectPowerLevelTo(int x, int y, int z, int direction) {
+		Block block = Block.blocksList[this.getBlockIdWithoutLoad(x, y, z)];
+
+		if (block == null) {
+			return 0;
+		}
+
+		if (!block.shouldCheckWeakPower(this, x, y, z, direction)) {
+			return this.getBlockPowerInput(x, y, z);
+		} else {
+			return block.isProvidingWeakPower(this, x, y, z, direction);
+		}
+	}
+
+	@Override
 	@Declare
 	public boolean hasCollidingBoundingBoxes(Entity par1Entity, AxisAlignedBB par2AxisAlignedBB, IEntitySelector entitySelector) {
 		ArrayList collidingBoundingBoxes = new ArrayList();
