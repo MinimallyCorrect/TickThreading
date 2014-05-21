@@ -254,7 +254,7 @@ public class TickThreading {
 
 	@ForgeSubscribe
 	public synchronized void onWorldUnload(WorldEvent.Unload event) {
-		if (MinecraftServer.getServer().isServerRunning() && !ContextAccess.$.runningUnder(DimensionManager.class)) {
+		if ((MinecraftServer.getServer().isServerRunning() && !MinecraftServer.getServer().isServerStopped()) && ContextAccess.$.runningUnder(DimensionManager.class)) {
 			Log.severe("World unload event fired from unexpected location", new Throwable());
 		}
 		World world = event.world;
