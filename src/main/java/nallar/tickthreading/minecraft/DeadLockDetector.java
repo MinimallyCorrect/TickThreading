@@ -6,6 +6,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import cpw.mods.fml.common.FMLCommonHandler;
 import nallar.exception.ThreadStuckError;
+import nallar.insecurity.InsecurityManager;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.util.ChatFormat;
 import nallar.tickthreading.util.CollectionsUtil;
@@ -103,7 +104,7 @@ public class DeadLockDetector {
 	}
 
 	boolean checkForDeadlocks() {
-		Log.flush();
+		InsecurityManager.flushLogs();
 		long deadTime = System.nanoTime() - lastTickTime;
 		if (deadTime < (TickThreading.instance.deadLockTime * 1000000000l)) {
 			attemptedToRecoverDeadlock = false;
@@ -133,7 +134,7 @@ public class DeadLockDetector {
 		}
 		if (!spikeDetector && minecraftServer.currentlySaving.get() != 0) {
 			Log.severe("The server seems to have frozen while saving - Waiting for two minutes to give it time to complete.");
-			Log.flush();
+			InsecurityManager.flushLogs();
 			trySleep(180000);
 			if (minecraftServer.currentlySaving.get() != 0) {
 				Log.info("Server still seems to be saving, must've deadlocked.");
@@ -224,7 +225,7 @@ public class DeadLockDetector {
 			sendChatSafely(ChatFormat.RED + TickThreading.instance.messageDeadlockSavingExiting);
 		}
 		Log.severe("Failed to recover from the deadlock.");
-		Log.flush();
+		InsecurityManager.flushLogs();
 		if (!TickThreading.instance.exitOnDeadlock) {
 			Log.severe("Now attempting to save the world. The server will not stop, you must do this yourself. If you want the server to stop automatically on deadlock, enable exitOnDeadlock in TT's config.");
 			minecraftServer.saveEverything();
@@ -252,19 +253,19 @@ public class DeadLockDetector {
 		}.start();
 		trySleep(1000);
 		Log.info("Attempting to save");
-		Log.flush();
+		InsecurityManager.flushLogs();
 		new Thread() {
 			@Override
 			public void run() {
 				trySleep(300000);
 				Log.severe("Froze while attempting to stop - halting server.");
-				Log.flush();
+				InsecurityManager.flushLogs();
 				new Thread() {
 					@Override
 					public void run() {
 						trySleep(150000);
 						Log.severe("Something really broke... Runtime.exit() failed to stop the server. Crashing the JVM now.");
-						Log.flush();
+						InsecurityManager.flushLogs();
 						UnsafeUtil.crashMe();
 					}
 				}.start();
@@ -282,7 +283,7 @@ public class DeadLockDetector {
 		}
 		minecraftServer.saveEverything(); // Save again, in case they changed anything.
 		minecraftServer.initiateShutdown();
-		Log.flush();
+		InsecurityManager.flushLogs();
 		trySleep(1000);
 		Runtime.getRuntime().exit(1);
 		return false;

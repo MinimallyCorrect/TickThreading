@@ -97,10 +97,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 		if (!serverRunning) {
 			return;
 		}
-		SecurityManager securityManager = System.getSecurityManager();
-		if (securityManager != null) {
-			securityManager.checkExit(1);
-		}
+		InsecurityManager.flushLogs();
 		this.serverRunning = false;
 	}
 
@@ -242,6 +239,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				this.finalTick(crashReport);
 			}
 		} finally {
+			InsecurityManager.flushLogs();
 			try {
 				saveEverything(true);
 			} catch (Throwable t) {
@@ -258,6 +256,7 @@ public abstract class PatchMinecraftServer extends MinecraftServer {
 				try {
 					DeadLockDetector.checkForLeakedThreadManagers();
 				} finally {
+					InsecurityManager.flushLogs();
 					this.systemExitNow();
 				}
 			}

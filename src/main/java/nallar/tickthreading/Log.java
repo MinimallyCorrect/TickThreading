@@ -139,12 +139,6 @@ public class Log {
 		}
 	}
 
-	public static void flush() {
-		if (handler != null) {
-			handler.flush();
-		}
-	}
-
 	public static void debug(String msg) {
 		debug(msg, null);
 	}

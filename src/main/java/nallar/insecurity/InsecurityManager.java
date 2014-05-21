@@ -15,12 +15,11 @@ import java.util.logging.*;
  * Additionally, this ensures that even in the case of a Runtime.halt(), logging will be flushed to disk.
  */
 public class InsecurityManager extends java.lang.SecurityManager {
-	static {
-		System.setSecurityManager(new InsecurityManager());
-	}
-
 	@SuppressWarnings("EmptyMethod")
 	public static void init() {
+		if (System.getProperty("tt.securityManager", "false").equalsIgnoreCase("true")) {
+			System.setSecurityManager(new InsecurityManager());
+		}
 	}
 
 	@Override
@@ -37,9 +36,7 @@ public class InsecurityManager extends java.lang.SecurityManager {
 			"TTPatcher",
 	};
 
-	@Override
-	public void checkExit(int status) {
-		super.checkExit(status);
+	public static void flushLogs() {
 		if (Log.debug && MinecraftServer.getServer().isServerRunning()) {
 			Log.debug("Server shutting down - requested at ", new ThisIsNotAnError());
 		}
@@ -48,5 +45,11 @@ public class InsecurityManager extends java.lang.SecurityManager {
 				handler.flush();
 			}
 		}
+	}
+
+	@Override
+	public void checkExit(int status) {
+		super.checkExit(status);
+		flushLogs();
 	}
 }
