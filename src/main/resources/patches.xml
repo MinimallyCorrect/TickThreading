@@ -1784,4 +1784,23 @@
 			<synchronize allowMissing="true">getAnyAvailableWorker,getNearestAvailableWorker,onJobFinished,onJobStarted,onJobUpdateTick,onTaskFinished,setWorkerFree</synchronize>
 		</class>
 	</minions>
+	<opis>
+		<class id="mcp.mobius.opis.data.managers.StringCache">
+			<replaceMethod code="{
+				Integer inv = ((Integer)this.cache.inverse().get($1)).intValue();
+				if (inv != null) {
+				  return inv.intValue();
+				}
+				synchronized(this) {
+					this.currentIndex += 1;
+					this.cache.put(Integer.valueOf(this.currentIndex), $1);
+					mcp.mobius.opis.data.holders.newtypes.DataStringUpdate upd = new mcp.mobius.opis.data.holders.newtypes.DataStringUpdate($1, this.currentIndex);
+					this.toSend.add(upd);
+					cpw.mods.fml.common.network.PacketDispatcher.sendPacketToAllPlayers(NetDataValue.create(mcp.mobius.opis.network.enums.Message.STATUS_STRINGUPD, upd).packet);
+					return this.currentIndex;
+				}
+			}">getIndex</replaceMethod>
+			<synchronize>syncCache</synchronize>
+		</class>
+	</opis>
 </mods>
