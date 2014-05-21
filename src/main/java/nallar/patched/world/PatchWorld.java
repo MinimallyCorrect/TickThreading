@@ -484,7 +484,12 @@ public abstract class PatchWorld extends World {
 
 	@Override
 	public int getIndirectPowerLevelTo(int x, int y, int z, int direction) {
-		Block block = Block.blocksList[this.getBlockIdWithoutLoad(x, y, z)];
+		int id = this.getBlockIdWithoutLoad(x, y, z);
+		if (id == -1 || id == 0) {
+			return 0;
+		}
+
+		Block block = Block.blocksList[id];
 
 		if (block == null) {
 			return 0;
