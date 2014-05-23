@@ -70,6 +70,8 @@ public class LogFormatter extends Formatter {
 			loggerName = "Minecraft";
 		} else if (message.startsWith("[") && message.contains("]")) {
 			loggerName = null;
+		} else if (loggerName.contains(".")) {
+			loggerName = loggerName.substring(loggerName.lastIndexOf('.') + 1);
 		}
 		if (loggerName != null) {
 			formattedMessage.append('[').append(loggerName).append("] ");
