@@ -65,12 +65,17 @@ public class LogFormatter extends Formatter {
 
 
 		String loggerName = record.getLoggerName();
+		String message = record.getMessage();
 		if (simplifyMcLoggerName && loggerName.equals("Minecraft-Server")) {
 			loggerName = "Minecraft";
+		} else if (message.startsWith("[") && message.contains("]")) {
+			loggerName = null;
 		}
-		formattedMessage
-				.append('[').append(loggerName == null ? "" : loggerName).append("] ")
-				.append(record.getMessage()).append(LINE_SEPARATOR);
+		if (loggerName != null) {
+			formattedMessage.append('[').append(loggerName).append("] ");
+		}
+
+		formattedMessage.append(message).append(LINE_SEPARATOR);
 
 		// No need to throw this, we're in a log formatter!
 		@SuppressWarnings("ThrowableResultOfMethodCallIgnored")
