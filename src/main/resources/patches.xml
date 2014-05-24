@@ -1803,4 +1803,9 @@
 			<synchronize>syncCache</synchronize>
 		</class>
 	</opis>
+	<pixelMon>
+		<class id="pixelmon.spawning.PixelmonSpawner">
+			<synchronize>doSpawning</synchronize>
+		</class>
+	</pixelMon>
 </mods>
