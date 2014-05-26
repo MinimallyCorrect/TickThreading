@@ -2,6 +2,7 @@ package nallar.patched.entity;
 
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
@@ -9,12 +10,59 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.world.World;
+import net.minecraftforge.event.Event;
+import net.minecraftforge.event.ForgeEventFactory;
 
 import java.util.*;
 
 public abstract class PatchEntityLiving extends EntityLiving {
 	public PatchEntityLiving(World par1World) {
 		super(par1World);
+	}
+
+	@Override
+	protected void despawnEntity() {
+		Event.Result result;
+		if (this.persistenceRequired) {
+			this.entityAge = 0;
+		} else if ((this.entityAge & 0x1F) == 0x1F && (result = ForgeEventFactory.canEntityDespawn(this)) != Event.Result.DEFAULT) {
+			if (result == Event.Result.DENY) {
+				this.entityAge = 0;
+			} else {
+				this.setDead();
+			}
+		} else {
+			EntityPlayer entityplayer = this.worldObj.getClosestPlayerToEntity(this, -1.0D);
+
+			if (entityplayer != null) {
+				double dX = entityplayer.posX - this.posX;
+				double dY = entityplayer.posY - this.posY;
+				double dZ = entityplayer.posZ - this.posZ;
+				double dSquared = dX * dX + dY * dY + dZ * dZ;
+
+				if (dSquared > 16384.0D && this.canDespawn()) {
+					this.setDead();
+				} else if (dSquared > 1024.0D && this.entityAge > 600 && this.rand.nextInt(800) == 0 && this.canDespawn()) {
+					this.setDead();
+				} else {
+					this.entityAge = 0;
+				}
+			}
+		}
+	}
+
+	@Override
+	protected void updateAITasks() {
+		++this.entityAge;
+		this.despawnEntity();
+		this.senses.clearSensingCache();
+		this.targetTasks.onUpdateTasks();
+		this.tasks.onUpdateTasks();
+		this.navigator.onUpdateNavigation();
+		this.updateAITick();
+		this.moveHelper.onUpdateMoveHelper();
+		this.lookHelper.onUpdateLook();
+		this.jumpHelper.doJump();
 	}
 
 	@Override
