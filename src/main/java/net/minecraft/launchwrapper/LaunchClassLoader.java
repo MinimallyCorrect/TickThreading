@@ -3,6 +3,7 @@ package net.minecraft.launchwrapper;
 import cpw.mods.fml.relauncher.FMLRelaunchLog;
 import nallar.log.PatchLog;
 import nallar.tickthreading.patcher.PatchHook;
+import nallar.tickthreading.util.CollectionsUtil;
 
 import java.io.*;
 import java.lang.reflect.*;
@@ -18,7 +19,7 @@ public class LaunchClassLoader extends URLClassLoader {
 	private final List<URL> sources;
 	private final ClassLoader parent = getClass().getClassLoader();
 
-	private final List<IClassTransformer> transformers = new ArrayList<IClassTransformer>(2);
+	private final List<IClassTransformer> transformers = Collections.synchronizedList(new ArrayList<IClassTransformer>(2));
 	private final Map<String, Class<?>> cachedClasses = new HashMap<String, Class<?>>(1000);
 	private final Set<String> invalidClasses = new HashSet<String>(1000);
 
@@ -40,11 +41,11 @@ public class LaunchClassLoader extends URLClassLoader {
 		super(sources, null);
 		if (instance == null) {
 			instance = this;
+			Thread.currentThread().setContextClassLoader(this);
 		} else {
 			LogWrapper.log(Level.SEVERE, new Throwable(), "Initing extra LaunchClassLoader - why?!");
 		}
 		this.sources = new ArrayList<URL>(Arrays.asList(sources));
-		Thread.currentThread().setContextClassLoader(this);
 
 		// classloader exclusions
 		addClassLoaderExclusion("java.");
@@ -101,7 +102,7 @@ public class LaunchClassLoader extends URLClassLoader {
 		}
 	}
 
-	public void registerTransformer(String transformerClassName) {
+	public synchronized void registerTransformer(String transformerClassName) {
 		try {
 			IClassTransformer transformer = (IClassTransformer) loadClass(transformerClassName).getConstructor().newInstance();
 			if (transformer instanceof IClassNameTransformer && renameTransformer == null) {
@@ -401,7 +402,7 @@ public class LaunchClassLoader extends URLClassLoader {
 				return basicClass;
 			}
 		}
-		throw new RuntimeException("No SRG transformer!" + transformers.toString() + " -> " + deobfuscationTransformer);
+		throw new RuntimeException("No SRG transformer!" + CollectionsUtil.join(transformers) + " -> " + deobfuscationTransformer);
 	}
 
 	private byte[] transformAfterSrg(final String name, final String transformedName, byte[] basicClass) {
@@ -414,7 +415,7 @@ public class LaunchClassLoader extends URLClassLoader {
 			}
 		}
 		if (!pastSrg) {
-			throw new RuntimeException("No SRG transformer!");
+			throw new RuntimeException("No SRG transformer!" + CollectionsUtil.join(transformers) + " -> " + deobfuscationTransformer);
 		}
 		return basicClass;
 	}
