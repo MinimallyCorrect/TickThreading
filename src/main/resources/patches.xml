@@ -1831,7 +1831,7 @@
 				}
 				^class:BiomeGenBase^ biome = world.func_72807_a(x, z);
 				int max = (int)(biome.field_76749_E * world.field_73011_w.func_76557_i());
-				if (max < 2) {
+				if (max &lt; 2) {
 					return 5;
 				}
 				int tries = 0;
