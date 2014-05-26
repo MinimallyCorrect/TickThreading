@@ -227,6 +227,12 @@
 			<final field="captureBlockStates"/>
 			<final field="capturedBlockStates"/>
 			<final field="capturedItems"/>
+			<newField field="inCaptureBlockStates" class="nallar.tickthreading.util.BooleanThreadLocalDefaultFalse"/>
+			<newField field="inBlockStates" class="nallar.tickthreading.util.ArrayListThreadLocal"/>
+			<newField field="inItems" class="nallar.tickthreading.util.ArrayListThreadLocal"/>
+			<removeFieldAndInitializers field="captureBlockStates"/>
+			<removeFieldAndInitializers field="capturedBlockStates"/>
+			<removeFieldAndInitializers field="capturedItems"/>
 		</class>
 		<class id="
 		org.bukkit.craftbukkit.v1_6_R3.CraftWorld
@@ -235,7 +241,6 @@
 		net.minecraft.block.Block
 		net.minecraft.block.BlockSapling
 		" env="mcpc">
-			<replaceFieldUsage writeCode="{ }" readCode="{ $_ = false; }" field="captureBlockStates">^all^</replaceFieldUsage>
 			<replaceFieldUsage writeCode="{ }" readCode="{ $_ = false; }" field="captureTreeGeneration">^all^</replaceFieldUsage>
 		</class>
 		<class id="net.minecraft.world.ChunkCache">
