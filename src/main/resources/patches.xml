@@ -1819,4 +1819,31 @@
 			<synchronize>tickEnd</synchronize>
 		</class>
 	</pixelMon>
+	<meteorCraft>
+		<!-- WHO NEEDS NAMING CONVENTIONS ANYWAY? Thanks Reika! -->
+		<class id="Reika.MeteorCraft.OldMeteorGenerator">
+			<replaceMethod code="{
+				^class:World^ world = $1;
+				int x = $2;
+				int z = $3;
+				if (world.dimensionId == Reika.DragonAPI.ModInteract.ReikaTwilightHelper.getDimensionID()) {
+				  return 5 + rand.nextInt(30);
+				}
+				^class:BiomeGenBase^ biome = world.func_72807_a(x, z);
+				int max = (int)(biome.field_76749_E * world.field_73011_w.func_76557_i());
+				if (max < 2) {
+					return 5;
+				}
+				int tries = 0;
+				int y = 5 + rand.nextInt(max);
+				while (world.func_72937_j(x, y + 1, z)) {
+					if (tries++ > 10) {
+						return 5 + max - 1;
+					}
+					y = 5 + rand.nextInt(max);
+				}
+				return y;
+			}">getGenY</replaceMethod>
+		</class>
+	</meteorCraft>
 </mods>
