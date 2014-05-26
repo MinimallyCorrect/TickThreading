@@ -18,6 +18,7 @@ Compatibility with other mods
 Configuration
 -----
 TickThreading uses minecraft forge's suggested config location - minecraft folder/configs/TickThreading.cfg
+Some additional configuration options which need to be set before the server is started can be changed in the ttlaunch.properties file in your server folder.
 It's commented quite well, and is hopefully understandable. If any of the descriptions don't make sense please make an issue.
 
 Logging
