@@ -242,6 +242,9 @@
 		net.minecraft.block.BlockSapling
 		" env="mcpc">
 			<replaceFieldUsage writeCode="{ }" readCode="{ $_ = false; }" field="captureTreeGeneration">^all^</replaceFieldUsage>
+			<threadLocalBoolean field="captureBlockStates" threadLocalField="$0.inCaptureBlockStates"/>
+			<threadLocal field="capturedBlockStates" type="java.util.ArrayList" threadLocalField="$0.inBlockStates"/>
+			<threadLocal field="capturedItems" type="java.util.ArrayList" threadLocalField="$0.inItems"/>
 		</class>
 		<class id="net.minecraft.world.ChunkCache">
 			<replaceMethodCall code="$_ = $0.getChunkIfExists($$);"
