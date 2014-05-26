@@ -230,9 +230,6 @@
 			<newField field="inCaptureBlockStates" class="nallar.tickthreading.util.BooleanThreadLocalDefaultFalse"/>
 			<newField field="inBlockStates" class="nallar.tickthreading.util.ArrayListThreadLocal"/>
 			<newField field="inItems" class="nallar.tickthreading.util.ArrayListThreadLocal"/>
-			<removeFieldAndInitializers field="captureTreeGeneration"/>
-			<removeFieldAndInitializers field="capturedBlockStates"/>
-			<removeFieldAndInitializers field="capturedItems"/>
 		</class>
 		<class id="
 		org.bukkit.craftbukkit.v1_6_R3.CraftWorld
@@ -245,6 +242,12 @@
 			<threadLocalBoolean field="captureBlockStates" threadLocalField="$0.inCaptureBlockStates"/>
 			<threadLocal field="capturedBlockStates" type="java.util.ArrayList" threadLocalField="$0.inBlockStates"/>
 			<threadLocal field="capturedItems" type="java.util.ArrayList" threadLocalField="$0.inItems"/>
+		</class>
+		<class id="net.minecraft.world.World" env="mcpc">
+			<removeFieldAndInitializers field="captureBlockStates"/>
+			<removeFieldAndInitializers field="captureTreeGeneration"/>
+			<removeFieldAndInitializers field="capturedBlockStates"/>
+			<removeFieldAndInitializers field="capturedItems"/>
 		</class>
 		<class id="net.minecraft.world.ChunkCache">
 			<replaceMethodCall code="$_ = $0.getChunkIfExists($$);"
