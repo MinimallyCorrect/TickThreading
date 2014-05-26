@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSetMultimap;
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.registry.GameRegistry;
 import nallar.collections.ConcurrentQueueSet;
+import nallar.collections.SynchronizedList;
 import nallar.patched.annotation.FakeExtend;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.minecraft.ChunkGarbageCollector;
@@ -99,7 +100,7 @@ public abstract class ThreadedChunkProvider extends ChunkProviderServer implemen
 		currentChunkProvider = this.generator = generator;
 		this.world = world;
 		currentChunkLoader = this.loader = loader;
-		loadedChunks = Collections.synchronizedList(new ArrayList<Chunk>());
+		loadedChunks = new SynchronizedList<Chunk>();
 		world.emptyChunk = defaultEmptyChunk = new EmptyChunk(world, 0, 0);
 		world.worldGenInProgress = worldGenInProgress = new BooleanThreadLocalDefaultFalse();
 		world.inImmediateBlockUpdate = new BooleanThreadLocalDefaultFalse();
