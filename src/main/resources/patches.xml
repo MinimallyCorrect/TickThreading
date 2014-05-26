@@ -874,12 +874,12 @@
 					throw new RuntimeException(&quot;Null worldObj in GridFluid construction from &quot; + String.valueOf($1));
 				}
 			}"/>
-			<insertAfter code="{
-				if (worldObj.unloaded) {
+			<insertBefore code="{
+				if (worldObj == null || worldObj.unloaded) {
 					thermalexpansion.part.conduit.GridTickHandler.tickingGridsToRemove.add(this);
-					System.err.println(&quot;Grid in unloaded world &quot; + worldObj + String.valueOf(this));
+					System.err.println(&quot;Grid in unloaded or null world &quot; + String.valueOf(worldObj) + String.valueOf(this));
 				}
-			}">doGridUpdate</insertAfter>
+			}">doGridUpdate</insertBefore>
 			<synchronize/>
 		</class>
 		<class id="thermalexpansion.part.conduit.energy.GridEnergy">
