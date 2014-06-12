@@ -40,15 +40,6 @@ public class TPSCommand extends Command {
 		for (TickManager tickManager : TickThreading.instance.getManagers()) {
 			tickManager.writeStats(tf, statsHolder);
 		}
-		if (TickThreading.instance.concurrentNetworkTicks) {
-			tf
-					.row("Network")
-					.row("")
-					.row("")
-					.row("")
-					.row("")
-					.row(TableFormatter.formatDoubleWithPrecision((MinecraftServer.getNetworkTickTime() * 100) / MinecraftServer.getNetworkTargetTickTime(), 2) + '%');
-		}
 		tf
 				.row("Overall")
 				.row(statsHolder.entities)

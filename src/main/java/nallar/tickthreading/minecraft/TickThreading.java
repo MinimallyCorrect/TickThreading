@@ -27,7 +27,6 @@ import nallar.tickthreading.minecraft.entitylist.EntityList;
 import nallar.tickthreading.minecraft.entitylist.LoadedEntityList;
 import nallar.tickthreading.minecraft.entitylist.LoadedTileEntityList;
 import nallar.tickthreading.minecraft.profiling.EntityTickProfiler;
-import nallar.tickthreading.minecraft.profiling.Timings;
 import nallar.tickthreading.util.ReflectUtil;
 import nallar.tickthreading.util.TableFormatter;
 import nallar.tickthreading.util.VersionUtil;
@@ -76,13 +75,11 @@ public class TickThreading {
 	public boolean requireOpForTicksCommand = true;
 	public boolean requireOpForProfileCommand = true;
 	public boolean shouldLoadSpawn = false;
-	public boolean concurrentNetworkTicks = false;
 	public boolean antiCheatNotify = false;
 	public boolean cleanWorlds = true;
 	public boolean allowWorldUnloading = true;
 	public boolean requireOpForDumpCommand = true;
 	public boolean enableFastMobSpawning = true;
-	public boolean enableBugWarningMessage = true;
 	public boolean rateLimitChunkUpdates = true;
 	private int saveInterval = 180;
 	public int deadLockTime = 35;
@@ -97,7 +94,6 @@ public class TickThreading {
 	public boolean variableTickRate = true;
 	private DeadLockDetector deadLockDetector;
 	private HashSet<Integer> disabledFastMobSpawningDimensions = new HashSet<Integer>();
-	private boolean waitForEntityTickCompletion = true;
 	private int targetTPS = 20;
 	private final LeakDetector leakDetector = new LeakDetector(1800);
 	public static int recentSpawnedItems;
@@ -120,10 +116,6 @@ public class TickThreading {
 		}
 		MinecraftForge.EVENT_BUS.register(this);
 		initPeriodicProfiling();
-		if (!enableBugWarningMessage) {
-			return;
-		}
-		GameRegistry.registerPlayerTracker(new LoginWarningHandler());
 	}
 
 	private void initPeriodicProfiling() {
@@ -165,12 +157,9 @@ public class TickThreading {
 		requireOpForProfileCommand = config.get(GENERAL, "requireOpsForProfileCommand", requireOpForProfileCommand, "If a player must be opped to use /profile").getBoolean(requireOpForProfileCommand);
 		requireOpForDumpCommand = config.get(GENERAL, "requireOpsForDumpCommand", requireOpForDumpCommand, "If a player must be opped to use /dump").getBoolean(requireOpForDumpCommand);
 		shouldLoadSpawn = config.get(GENERAL, "shouldLoadSpawn", shouldLoadSpawn, "Whether chunks within 200 blocks of world spawn points should always be loaded.").getBoolean(shouldLoadSpawn);
-		waitForEntityTickCompletion = config.get(GENERAL, "waitForEntityTickCompletion", waitForEntityTickCompletion, "Whether we should wait until all Tile/Entity tick threads are finished before moving on with world tick. False = experimental, but may improve performance.").getBoolean(waitForEntityTickCompletion);
-		concurrentNetworkTicks = config.get(GENERAL, "concurrentNetworkTicks", concurrentNetworkTicks, "Whether network ticks should be ran in a separate thread from the main minecraft thread. This is likely to be very buggy, especially with mods doing custom networking such as IC2!").getBoolean(concurrentNetworkTicks);
 		antiCheatNotify = config.get(GENERAL, "antiCheatNotify", antiCheatNotify, "Whether to notify admins if TT anti-cheat detects cheating").getBoolean(antiCheatNotify);
 		cleanWorlds = config.get(GENERAL, "cleanWorlds", cleanWorlds, "Whether to clean worlds on unload - this should fix some memory leaks due to mods holding on to world objects").getBoolean(cleanWorlds);
 		allowWorldUnloading = config.get(GENERAL, "allowWorldUnloading", allowWorldUnloading, "Whether worlds should be allowed to unload.").getBoolean(allowWorldUnloading);
-		enableBugWarningMessage = config.get(GENERAL, "enableBugWarningMessage", enableBugWarningMessage, "Whether to enable warning if there are severe known compatibility issues with the current TT build you are using and your installed mods. Highly recommend leaving this enabled, if you disable it chances are you'll get users experiencing these issues annoying mod authors, which I really don't want to happen.").getBoolean(enableBugWarningMessage);
 		profilingInterval = config.get(GENERAL, "profilingInterval", profilingInterval, "Interval, in minutes, to record profiling information to disk. 0 = never. Recommended >= 2.").getInt();
 		profilingFileName = config.get(GENERAL, "profilingFileName", profilingFileName, "Location to store profiling information to, relative to the server folder. For example, why not store it in a computercraft computer's folder?").getString();
 		profilingJson = config.get(GENERAL, "profilingJson", profilingJson, "Whether to write periodic profiling in JSON format").getBoolean(profilingJson);
@@ -235,7 +224,7 @@ public class TickThreading {
 			Log.severe("World " + world.getName() + " has a duplicate provider dimension ID.\n" + Log.dumpWorlds());
 		}
 		world.loadEventFired = true;
-		TickManager manager = new TickManager((WorldServer) world, getThreadCount(), waitForEntityTickCompletion);
+		TickManager manager = new TickManager((WorldServer) world, getThreadCount());
 		try {
 			Field loadedTileEntityField = ReflectUtil.getFields(World.class, List.class)[loadedTileEntityFieldIndex];
 			new LoadedTileEntityList(world, loadedTileEntityField, manager);
@@ -318,22 +307,6 @@ public class TickThreading {
 		return tickThreads == 0 ? runtime.availableProcessors() + 1 : tickThreads;
 	}
 
-	public void waitForEntityTicks() {
-		if (!waitForEntityTickCompletion) {
-			long sT = 0;
-			boolean profiling = Timings.enabled;
-			if (profiling) {
-				sT = System.nanoTime();
-			}
-			for (TickManager manager : managers.values()) {
-				manager.tickEnd();
-			}
-			if (profiling) {
-				Timings.record("server/EntityTickWait", System.nanoTime() - sT);
-			}
-		}
-	}
-
 	public boolean removeIfOverMaxItems(final EntityItem e, final Chunk chunk) {
 		if (maxItemsPerChunk == 0) {
 			return false;
@@ -362,31 +335,6 @@ public class TickThreading {
 	public static boolean checkSaveInterval(int tickCount) {
 		int saveInterval = instance.saveInterval;
 		return saveInterval > 0 && tickCount % saveInterval == 0;
-	}
-
-	private static class LoginWarningHandler implements IPlayerTracker {
-		LoginWarningHandler() {
-		}
-
-		@Override
-		public void onPlayerLogin(final EntityPlayer player) {
-			if (player instanceof EntityPlayerMP) {
-				NetServerHandler netServerHandler = ((EntityPlayerMP) player).playerNetServerHandler;
-				// Warnings for severe issues go here.
-			}
-		}
-
-		@Override
-		public void onPlayerLogout(final EntityPlayer player) {
-		}
-
-		@Override
-		public void onPlayerChangedDimension(final EntityPlayer player) {
-		}
-
-		@Override
-		public void onPlayerRespawn(final EntityPlayer player) {
-		}
 	}
 
 	private static class ProfilingScheduledTickHandler implements IScheduledTickHandler {

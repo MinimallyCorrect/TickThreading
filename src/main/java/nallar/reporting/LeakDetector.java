@@ -21,7 +21,7 @@ public class LeakDetector {
 			if (clean) {
 				scheduledThreadPoolExecutor.schedule(new CleanerTask(o), Math.min(waitTimeSeconds / 2, 20), TimeUnit.SECONDS);
 			}
-			final long id = UnsafeUtil.addressOf(o);
+			final long id = System.identityHashCode(o);
 			final String oDescription = (oDescription_ == null ? "" : oDescription_ + " : ") + o.getClass() + '@' + System.identityHashCode(o) + ':' + id;
 			scheduledObjects.put(id, new LeakCheckEntry(o, oDescription));
 			scheduledThreadPoolExecutor.schedule(new Runnable() {

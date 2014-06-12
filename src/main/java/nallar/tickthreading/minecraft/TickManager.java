@@ -34,7 +34,6 @@ public final class TickManager {
 	private long lastStartTime = 0;
 	private static final int shuffleInterval = 3600;
 	private int shuffleCount;
-	private final boolean waitForCompletion;
 	private final WorldServer world;
 	public final ConcurrentUnsafeIterableArrayList<TileEntity> tileEntityList = new ConcurrentUnsafeIterableArrayList<TileEntity>();
 	public final ConcurrentUnsafeIterableArrayList<Entity> entityList = new ConcurrentUnsafeIterableArrayList<Entity>();
@@ -47,8 +46,7 @@ public final class TickManager {
 	private final Map<Class<?>, Integer> entityClassToCountMap = new ConcurrentHashMap<Class<?>, Integer>();
 	private final ConcurrentLinkedQueue<TickRegion> removalQueue = new ConcurrentLinkedQueue<TickRegion>();
 
-	public TickManager(WorldServer world, int threads, boolean waitForCompletion) {
-		this.waitForCompletion = waitForCompletion;
+	public TickManager(WorldServer world, int threads) {
 		threadManager = new ThreadManager(threads, "Entities in " + Log.name(world));
 		this.world = world;
 		shuffleCount = world.rand.nextInt(shuffleInterval);
@@ -292,17 +290,9 @@ public final class TickManager {
 			world.theProfiler.profilingEnabled = false;
 		}
 		threadManager.runDelayableList(tickRegions);
-		if (previousProfiling || waitForCompletion) {
-			postTick();
-		}
+		postTick();
 		if (previousProfiling) {
 			world.theProfiler.profilingEnabled = true;
-		}
-	}
-
-	public void tickEnd() {
-		if (!waitForCompletion) {
-			postTick();
 		}
 	}
 
