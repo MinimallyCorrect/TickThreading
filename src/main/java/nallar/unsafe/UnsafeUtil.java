@@ -15,51 +15,6 @@ public class UnsafeUtil {
 	private static final long baseOffset = $.arrayBaseOffset(Object[].class);
 	private static final long headerSize = baseOffset - 8;
 
-	/**
-	 * Smalltalk's `become` for java.
-	 */
-	public static void swap(Object a, Object b) {
-		// I'm sorry.
-		// Really.
-		// :(
-		long sizeA = sizeOf(a);
-		long sizeB = sizeOf(b);
-		if (sizeA != sizeB) {
-			throw new UnsupportedOperationException("Objects of different classes or sizes can not be swapped.");
-		}
-		long temporaryInstanceLocation = $.allocateMemory(sizeA);
-		long temporaryInstanceLocation2 = $.allocateMemory(sizeA);
-		$.copyMemory(a, 0, null, temporaryInstanceLocation, sizeA);
-		$.copyMemory(b, 0, null, temporaryInstanceLocation2, sizeA);
-		copyMemory(temporaryInstanceLocation, b, sizeA);
-		copyMemory(temporaryInstanceLocation2, a, sizeA);
-		$.freeMemory(temporaryInstanceLocation);
-		$.freeMemory(temporaryInstanceLocation2);
-	}
-
-	private static void copyMemory(long src, Object dest, long size) {
-		long sSize = size;
-		while (size > 0) {
-			if (size >= 8) {
-				$.putLong(dest, sSize - size, $.getLong(null, src));
-				size -= 8;
-				src += 8;
-			} else if (size >= 4) {
-				$.putInt(dest, sSize - size, $.getInt(null, src));
-				size -= 4;
-				src += 4;
-			} else if (size >= 2) {
-				$.putShort(dest, sSize - size, $.getShort(null, src));
-				size -= 2;
-				src += 2;
-			} else {
-				$.putByte(dest, sSize - size, $.getByte(null, src));
-				size--;
-				src++;
-			}
-		}
-	}
-
 	public static long sizeOf(Class<?> clazz) {
 		if (clazz.equals(byte.class) || clazz.equals(char.class)) {
 			return 1L;
@@ -175,21 +130,9 @@ public class UnsafeUtil {
 		return true;
 	}
 
-	public static Object fromAddress(long address) {
-		Pointer p = new Pointer();
-		p.setAddress(address);
-		return p.o;
-	}
-
-	public static long addressOf(Object o) {
-		Pointer p = new Pointer();
-		p.o = o;
-		return p.getAddress();
-	}
-
 	/**
 	 * Creates an instance of class c without calling any constructors - all fields will be null/default primitive values, INCLUDING FINAL FIELDS.
-	 * This kinda' breaks the java memory model.
+	 * This kinda' breaks the java memory model, to the same extent that setting a final field with reflection does.
 	 *
 	 * @param c Class to instantiate
 	 * @return the instance of c
@@ -200,10 +143,6 @@ public class UnsafeUtil {
 		} catch (Exception e) {
 			throw new Error(e);
 		}
-	}
-
-	public static String info(Object o) {
-		return "size: " + sizeOf(o) + ", address: " + addressOf(o) + ", class: " + o.getClass().getSimpleName();
 	}
 
 	public static String debugOut(Object a) {
@@ -247,29 +186,6 @@ public class UnsafeUtil {
 			secondOrLater = true;
 		}
 		return out.toString();
-	}
-
-	public static String compare(Object a, Object b) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("a=b: ").append(a.equals(b)).append('\n');
-		sb.append("a: ").append(debugOut(a)).append('\n');
-		sb.append("b: ").append(debugOut(b)).append('\n');
-		sb.append('a').append(UnsafeUtil.info(a)).append('\n');
-		sb.append('b').append(UnsafeUtil.info(b)).append('\n');
-		return sb.toString();
-	}
-
-	public static void main(String[] args) {
-		for (int i = 0; i < 16; i++) {
-			Log.info(String.valueOf($.getInt(new Long[1], (long) i)));
-		}
-		Log.info(String.valueOf($.getInt(new Long[1], 12L)));
-		//Log.info(String.valueOf(baseOffset));
-		String a = "String 1";
-		String b = "String 2";
-		Log.info(compare(a, b));
-		UnsafeUtil.swap(a, b);
-		Log.info(compare(a, b));
 	}
 
 	/**
@@ -334,11 +250,13 @@ public class UnsafeUtil {
 				} catch (InterruptedException ignored) {
 				}
 				// If the JVM refuses to die, may as well just segfault instead.
-				$.putLong(addressOf(new Object()) << 2, 0);
-				$.putLong(addressOf(new Object()) << 3, 0);
-				$.putLong(addressOf(new Object()) << 4, 0);
-				$.putLong(addressOf(new Object()) << 5, 0);
-				$.putLong(addressOf(new Object()) << 6, 0);
+				$.putLong((long) (1 << 1), 0);
+				$.putLong((long) (1 << 2), 0);
+				$.putLong((long) (1 << 3), 0);
+				$.putLong((long) (1 << 4), 0);
+				$.putLong((long) (1 << 5), 0);
+				$.putLong((long) (1 << 6), 0);
+				$.putLong((long) (1 << 7), 0);
 			}
 		}.start();
 		Runtime.getRuntime().halt(1);
