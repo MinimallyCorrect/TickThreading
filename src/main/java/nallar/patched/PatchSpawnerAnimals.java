@@ -86,7 +86,7 @@ public abstract class PatchSpawnerAnimals extends SpawnerAnimals {
 		if (loadFactor < 0.2f || loadFactor > 1f) {
 			loadFactor = 0.2f;
 		}
-		float entityMultiplier = worldServer.playerEntities.size() * TickThreading.instance.mobSpawningMultiplier * loadFactor; // TODO: Make this configurable
+		float entityMultiplier = worldServer.playerEntities.size() * TickThreading.instance.mobSpawningMultiplier * loadFactor;
 		if (entityMultiplier == 0) {
 			profiler.endSection();
 			return 0;

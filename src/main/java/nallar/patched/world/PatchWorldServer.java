@@ -1,6 +1,5 @@
 package nallar.patched.world;
 
-import com.google.common.collect.ImmutableSetMultimap;
 import nallar.collections.TreeHashSet;
 import nallar.tickthreading.Log;
 import nallar.tickthreading.minecraft.DeadLockDetector;
@@ -349,7 +348,6 @@ public abstract class PatchWorldServer extends WorldServer implements Runnable {
 			}
 		}
 
-		ImmutableSetMultimap<ChunkCoordIntPair, ForgeChunkManager.Ticket> persistentChunks = getPersistentChunks();
 		for (NextTickListEntry entry : runningTickListEntries) {
 			if (this.chunkExists(entry.xCoord >> 4, entry.zCoord >> 4)) {
 				int blockID = this.getBlockIdWithoutLoad(entry.xCoord, entry.yCoord, entry.zCoord);
