@@ -32,7 +32,7 @@ You're staring right at it! :P
 
 Compiling
 ---------
-TickThreading is built using Ant. astyle is also required for linux users.
+TickThreading is built using Gradle.
 
 * Install JDK 7. Set your JDK_HOME environment variable to your JDK 7 install path
 * Checkout this repo and run: `gradlew.bat setupDecompWorkspace setupDevWorkspace build`
