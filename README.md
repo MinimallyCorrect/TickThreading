@@ -32,14 +32,14 @@ You're staring right at it! :P
 
 Running on McMyAdmin
 -----
-1/ rename ftbserver.jar to ftb-server.jar
-2/ download the latest TickThreader.jar
-3/ rename this to ftbserver.jar
-4/ start the server (it will error)
-5/ Stop it
-6/ Edit ttlaunch.properties
-B/ set serverJar=ftb-server.jar
-7/ Start the server, should run just fine
+* rename ftbserver.jar to ftb-server.jar
+* download the latest TickThreader.jar
+* rename this to ftbserver.jar
+* start the server (it will error)
+* Stop it
+* Edit ttlaunch.properties
+* set serverJar=ftb-server.jar
+* Start the server, should run just fine
 
 Compiling
 ---------
