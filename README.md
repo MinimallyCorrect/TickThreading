@@ -36,6 +36,17 @@ Source
 ------
 You're staring right at it! :P
 
+Running on McMyAdmin
+-----
+* rename ftbserver.jar to ftb-server.jar
+* download the latest TickThreader.jar
+* rename this to ftbserver.jar
+* start the server (it will error)
+* Stop it
+* Edit ttlaunch.properties
+* set serverJar=ftb-server.jar
+* Start the server, should run just fine
+
 Compiling
 ---------
 TickThreading is built using Gradle.
