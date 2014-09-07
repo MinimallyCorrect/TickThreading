@@ -1,3 +1,9 @@
+DISCONTINUED
+==========
+This was a bad idea. It is possible, but takes far too much dev time and is entirely repetitive work fixing the same concurrency issues in different mods.
+
+You will burn out if you try to do this!
+
 TickThreading [![Build Status](http://nallar.me/buildservice/job/TickThreading-1.6.4/badge/icon)](http://nallar.me/buildservice/job/TickThreading-1.6.4/)
 ==========
 Multi-threaded minecraft server wrapper. Requires Forge, compatible with MCPC+.
