@@ -4,7 +4,7 @@ import nallar.log.Log;
 import nallar.tickthreading.util.EnvironmentInfo;
 
 class ContextAccessProvider {
-	private static final Class[] contextAccessClasses = {
+	private static final Class<?>[] contextAccessClasses = {
 			ContextAccessReflection.class,
 			ContextAccessSecurityManager.class,
 	};

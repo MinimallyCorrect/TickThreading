@@ -10,7 +10,7 @@ import java.util.*;
 public enum ReflectUtil {
 	;
 
-	public static Field getField(Class c, String name) {
+	public static Field getField(Class<?> c, String name) {
 		Field field = null;
 		do {
 			try {
@@ -24,7 +24,7 @@ public enum ReflectUtil {
 		return field;
 	}
 
-	private static Method getMethod(Class c, String name) {
+	private static Method getMethod(Class<?> c, String name) {
 		Method method = null;
 		do {
 			for (Method method_ : c.getDeclaredMethods()) {

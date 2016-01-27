@@ -222,7 +222,7 @@ public class Log {
 
 	public static String dumpWorld(World world) {
 		boolean unloaded = world.unloaded;
-		return (unloaded ? "un" : "") + "loaded world " + name(world) + '@' + System.identityHashCode(world) + ", dimension: " + world.getDimension() + ", provider dimension: " + (unloaded ? "unknown" : world.provider.dimensionId) + ", original dimension: " + world.originalDimension;
+		return (unloaded ? "un" : "") + "loaded world " + name(world) + '@' + System.identityHashCode(world) + ", dimension: " + world.getDimension() + ", provider dimension: " + (unloaded ? "unknown" : world.provider.getDimensionId()) + ", original dimension: " + world.originalDimension;
 	}
 
 	public static void checkWorlds() {
@@ -256,7 +256,7 @@ public class Log {
 		return hasDuplicates(Arrays.asList(array));
 	}
 
-	private static boolean hasDuplicates(List list) {
+	private static boolean hasDuplicates(List<?> list) {
 		if (list == null) {
 			return false;
 		}

@@ -31,6 +31,7 @@ public enum CollectionsUtil {
 		return new ArrayList<String>(Arrays.asList(input.split(delimiter)));
 	}
 
+	@SuppressWarnings("unchecked")
 	public static <T> List<T> toObjects(Iterable<String> stringIterable, Class<T> type) {
 		Constructor<?> constructor;
 		try {
@@ -50,11 +51,11 @@ public enum CollectionsUtil {
 		return (List<T>) objects;
 	}
 
-	public static String join(Iterable iterable) {
+	public static String join(Iterable<?> iterable) {
 		return join(iterable, defaultDelimiter);
 	}
 
-	public static String join(Iterable iterable, String delimiter) {
+	public static String join(Iterable<?> iterable, String delimiter) {
 		StringBuilder stringBuilder = new StringBuilder();
 		boolean join = false;
 		for (Object o : iterable) {
@@ -85,13 +86,13 @@ public enum CollectionsUtil {
 
 	@SuppressWarnings("unchecked")
 	public static <K, V> Map<K, V> map(Object... objects) {
-		HashMap map = new HashMap();
+		HashMap<K, V> map = new HashMap<>();
 		Object key = null;
 		for (final Object object : objects) {
 			if (key == null) {
 				key = object;
 			} else {
-				map.put(key, object);
+				map.put((K) key, (V) object);
 				key = null;
 			}
 		}

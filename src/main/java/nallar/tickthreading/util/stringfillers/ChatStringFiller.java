@@ -10,6 +10,7 @@ import java.util.*;
 class ChatStringFiller extends StringFiller {
 	private static final double DEFAULT_LENGTH = 3.0 / 2.0;
 	private static final double MAX_GAP = 1.25;
+	@SuppressWarnings("serial")
 	private static final HashMap<Character, Double> SIZE_MAP = new HashMap<Character, Double>() {
 		{
 			put('i', 0.5);
@@ -78,6 +79,25 @@ class ChatStringFiller extends StringFiller {
 		}
 	};
 
+	private static Character findCustom(double gapLen) {
+
+		Set<Character> gapStrs = new HashSet<Character>(FILL_CHARS);
+		double bestFitLen = -1.0;
+		Character bestFitStr = null;
+
+		for (Character gapStr : gapStrs) {
+
+			double gapStrLen = SIZE_MAP.get(gapStr);
+
+			if (gapLen - gapStrLen >= 0 && gapStrLen > bestFitLen) {
+				bestFitLen = gapStrLen;
+				bestFitStr = gapStr;
+			}
+		}
+
+		return bestFitStr;
+	}
+
 	@Override
 	public String fill(String str, double reqLength) {
 
@@ -132,25 +152,6 @@ class ChatStringFiller extends StringFiller {
 				.replace("\u278A", ChatFormat.DARK_GRAY + "`" + ChatFormat.RESET)
 				.replace("\u278B", ChatFormat.DARK_GRAY + String.valueOf(ChatFormat.BOLD) + '`' + ChatFormat.RESET)
 				.replace("\u278C", ChatFormat.DARK_GRAY + String.valueOf(ChatFormat.BOLD) + ' ' + ChatFormat.RESET);
-	}
-
-	private static Character findCustom(double gapLen) {
-
-		Set<Character> gapStrs = new HashSet<Character>(FILL_CHARS);
-		double bestFitLen = -1.0;
-		Character bestFitStr = null;
-
-		for (Character gapStr : gapStrs) {
-
-			double gapStrLen = SIZE_MAP.get(gapStr);
-
-			if (gapLen - gapStrLen >= 0 && gapStrLen > bestFitLen) {
-				bestFitLen = gapStrLen;
-				bestFitStr = gapStr;
-			}
-		}
-
-		return bestFitStr;
 	}
 
 	@Override
