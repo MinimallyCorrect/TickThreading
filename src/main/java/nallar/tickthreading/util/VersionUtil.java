@@ -18,7 +18,7 @@ public enum VersionUtil {
 	}
 
 	public static String TTVersionString() {
-		return "@MOD_NAME@ v@MOD_VERSION@ for MC@MC_VERSION@";
+		return "TickThreading v@MOD_VERSION@ for MC@MC_VERSION@";
 	}
 
 	public static String TTVersionNumber() {

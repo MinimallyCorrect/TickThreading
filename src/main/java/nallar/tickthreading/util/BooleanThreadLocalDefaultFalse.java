@@ -28,27 +28,7 @@ public class BooleanThreadLocalDefaultFalse extends ThreadLocal<Boolean> {
 	 */
 	@Override
 	public void set(Boolean value) {
-		if (value == get()) {
-			return;
-		}
-		super.set(value);
-		if (value == Boolean.TRUE) {
-			do {
-				int old = $.getIntVolatile(this, index);
-				int next = old + 1;
-				if ($.compareAndSwapInt(this, index, old, next)) {
-					return;
-				}
-			} while (true);
-		} else {
-			do {
-				int old = $.getIntVolatile(this, index);
-				int next = old - 1;
-				if ($.compareAndSwapInt(this, index, old, next)) {
-					return;
-				}
-			} while (true);
-		}
+		getAndSet(value);
 	}
 
 	/**

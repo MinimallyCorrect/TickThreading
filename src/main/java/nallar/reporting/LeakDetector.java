@@ -1,6 +1,6 @@
 package nallar.reporting;
 
-import nallar.tickthreading.Log;
+import nallar.log.Log;
 import nallar.unsafe.UnsafeUtil;
 
 import java.lang.ref.*;

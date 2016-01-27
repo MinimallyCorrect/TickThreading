@@ -1,127 +1,137 @@
 buildscript {
-    repositories {
-        mavenCentral()
-        maven {
-            name = "forge"
-            url = "http://files.minecraftforge.net/maven"
-        }
-        maven {
-            name = "sonatype"
-            url = "https://oss.sonatype.org/content/repositories/snapshots/"
-        }
-    }
-    dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:1.0-SNAPSHOT'
-    }
+	repositories {
+		jcenter()
+		maven {
+			name = "forge"
+			url = "http://files.minecraftforge.net/maven"
+		}
+		maven {
+			name = "nallar"
+			url = "http://repo.nallar.me/"
+		}
+	}
+	configurations.all { resolutionStrategy.cacheChangingModulesFor 30, 'seconds' }
+	dependencies {
+		classpath 'net.minecraftforge.gradle:ForgeGradle:2.1-SNAPSHOT'
+		classpath group: 'me.nallar', name: 'ModPatcherGradle', version: '0.1-SNAPSHOT', changing: true
+	}
+}
+apply plugin: 'me.nallar.ModPatcherGradle'
+apply plugin: 'maven'
+
+group = 'me.nallar'
+archivesBaseName = 'TickThreading'
+
+// Extended project information
+ext.projectName = 'TickThreading'
+ext.inceptionYear = '2014'
+ext.packaging = 'jar'
+ext.url = 'http://nallar.me/minecraft'
+ext.description = 'Mod Patcher'
+ext.organization = 'nallar.me'
+ext.mcVersion = '1.8.9'
+ext.forgeVersion = "11.15.0.1683"
+ext.fullForgeVersion = mcVersion + "-" + forgeVersion
+
+minecraft {
+	version = fullForgeVersion
+	mappings = "stable_20"
+
+	replace "@VERSION@", project.version
+	replace "@MC_VERSION@", version
 }
 
-apply plugin: 'forge'
+modpatcher {
+	mixinPackage = "nallar.mixin"
+	extractGeneratedSources = true
+	generateInheritanceHierarchy = true
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+version = mcVersion + '-SNAPSHOT'
+
+// Define variables
+ext.buildNumber = System.getenv("BUILD_NUMBER") ?: 0
+ext.ciSystem = System.getenv("JENKINS_URL") ? 'Jenkins' : 'unknown'
+ext.commit = System.getenv("GIT_COMMIT") ?: 'unknown'
+
+repositories {
+	jcenter()
+	maven { url 'http://repo.nallar.me/' }
+}
 
 configurations {
-    bundledLibs
-    compile {
-        extendsFrom bundledLibs
-    }
+	all { resolutionStrategy.cacheChangingModulesFor 30, 'seconds' }
+	provided
+	compile.extendsFrom provided
 }
 
 dependencies {
-    bundledLibs 'org.javassist:javassist:3.18.1-GA'
-    bundledLibs 'com.github.stephenc.high-scale-lib:high-scale-lib:1.1.4'
-    bundledLibs 'org.codehaus.jackson:jackson-core-lgpl:1.9.13'
-    bundledLibs 'org.codehaus.jackson:jackson-mapper-lgpl:1.9.13'
+	compile group: 'me.nallar', name: 'modpatcher', version: '1.8.9-SNAPSHOT', changing: true
+	provided "me.nallar:Mixin:1.0-SNAPSHOT"
 }
 
-sourceCompatibility = JavaVersion.VERSION_1_6
-version = "1.6.4.${System.env.BUILD_NUMBER}"
-group = "nallar.tickthreading" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = "TickThreading"
-
-minecraft {
-    version = "1.6.4-9.11.1.964"
-    assetDir = "eclipse/assets"
-    replace '@MOD_NAME@', project.archivesBaseName
-    replace '@MOD_VERSION@', project.version
-    replace '@MC_VERSION@', version
+if (System.env.GRADLE_USER_HOME) {
+	ext.homeDir = System.env.GRADLE_USER_HOME + '/'
+} else {
+	ext.homeDir = System.properties['user.home'] + '/.gradle/'
 }
+ext.mappingsPath = homeDir + 'caches/minecraft/net/minecraftforge/forge/' + fullForgeVersion + '/unpacked/conf/'
 
-compileJava {
-    // Kills the warnings about using the sun.* classes
-    options.compilerArgs << '-XDignore.symbol.file'
-    // Show warnings for deprecation and bad generics use
-    options.compilerArgs << "-Xlint:deprecation"
-    options.fork = true
-    options.forkOptions.executable = 'javac'
-}
-
-sourceSets {
-    main {
-        java {
-            resources {
-                srcDir file('./build/unpacked/mappings')
-            }
-        }
-    }
+jar {
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+	from((configurations.runtime - configurations.provided).filter { it.exists() }.collect {
+		it.isDirectory() ? it : zipTree(it)
+	}) {
+		exclude "META-INF/**"
+	}
+	from mappingsPath + 'packaged.srg'
+	from mappingsPath + 'methods.csv'
+	from mappingsPath + 'fields.csv'
+	from './generated/extendsMap.obj'
 }
 
 processResources {
-    // this will ensure that this task is redone when the versions change.
-    inputs.property "version", project.version
-    inputs.property "mcversion", project.minecraft.version
+	// this will ensure that this task is redone when the versions change.
+	inputs.property "version", project.version
+	inputs.property "mcversion", project.minecraft.version
 
-    // replace stuff in mcmod.info, nothing else
-    from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
+	// replace stuff in mcmod.info, nothing else
+	from(sourceSets.main.resources.srcDirs) {
+		include 'mcmod.info'
 
-        // replace version and mcversion
-        expand 'version': project.version, 'mcversion': project.minecraft.version
-    }
+		// replace version and mcversion
+		expand 'version': project.version, 'mcversion': project.minecraft.version, 'name': project.projectName
+	}
 
-    // copy everything else, thats not the mcmod.info
-    from(sourceSets.main.resources.srcDirs) { exclude 'mcmod.info' }
+	// copy everything else, thats not the mcmod.info
+	from(sourceSets.main.resources.srcDirs) { exclude 'mcmod.info' }
 }
 
-jar {
-    from(configurations.bundledLibs.collect { it.isDirectory() ? it : zipTree(it) }) {
-        exclude "META-INF/**"
-    }
-
-    from './build/unpacked/conf/packaged.srg'
-    from './generated/extendsMap.obj'
-
-    manifest {
-        attributes 'Implementation-Title': 'TickThreading', 'Implementation-Version': version
-        attributes 'Main-Class': "nallar.tickthreading.patcher.PatchLauncher"
-    }
+// Source compiler configuration
+tasks.withType(JavaCompile) {
+	sourceCompatibility = 8
+	targetCompatibility = 8
+	options.with {
+		deprecation = true
+		encoding = 'UTF-8'
+		compilerArgs <<
+			"-XDignore.symbol.file=true" <<
+			"-Xlint:all" <<
+			"-Xlint:-path" <<
+			"-Xlint:-processing"
+		fork = true
+		forkOptions.executable = 'javac'
+	}
 }
 
-def prepatchInputs = {
-    // Prepatching must run if either patch code is updated,
-    // or the prepatching code is updated.
-    inputs.dir file("src/main/java/nallar/patched")
-    inputs.dir file("buildSrc/src")
-}
-applyBinPatches prepatchInputs
-deobfuscateJar prepatchInputs
-deobfBinJar prepatchInputs
-
-project.tasks.deobfBinJar.setDirty()  // just added this. run with --refresh-dependencies
-
-import nallar.nmsprepatcher.Main;
-
-// used later to call the main stuff.
-
-afterEvaluate {
-    applyBinPatches prepatchInputs
-    deobfuscateJar prepatchInputs
-    deobfBinJar prepatchInputs
-    decompile prepatchInputs
-    addFmlSources prepatchInputs
-    doForgePatches prepatchInputs
-    Main.loadPatches(file("src/main/java/nallar/patched"))
-    project.tasks.deobfBinJar.doLast { task ->
-        Main.editJar(task.getOutDirtyJar(), false)
-    }
-    project.tasks.doForgePatches.doLast { task ->
-        Main.editJar(task.getOutJar(), true)
-    }
-}
+jar.manifest.mainAttributes(
+	"Built-By": System.properties['user.name'],
+	"Created-By": System.properties['java.vm.version'] + " (" + System.properties['java.vm.vendor'] + ")",
+	"Implementation-Title": name,
+	"Implementation-Version": version + "+" + ciSystem + "-b" + buildNumber + ".git-" + commit,
+	"Implementation-Vendor": url,
+	"FMLCorePlugin": "nallar.tickthreading.CoreMod"
+)

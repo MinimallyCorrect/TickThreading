@@ -3,7 +3,7 @@ package nallar.tickthreading.util;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.collect.Ordering;
-import nallar.tickthreading.Log;
+import nallar.log.Log;
 
 import java.lang.reflect.*;
 import java.util.*;

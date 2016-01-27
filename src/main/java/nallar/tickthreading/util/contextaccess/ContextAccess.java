@@ -1,7 +1,7 @@
 package nallar.tickthreading.util.contextaccess;
 
 public interface ContextAccess {
-	public static final ContextAccess $ = ContextAccessProvider.getContextAccess();
+	ContextAccess $ = ContextAccessProvider.getContextAccess();
 
 	/**
 	 *

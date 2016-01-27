@@ -1,11 +1,12 @@
 package nallar.tickthreading.util;
 
-import nallar.tickthreading.Log;
+import nallar.log.Log;
 import nallar.unsafe.UnsafeUtil;
 
 import java.lang.reflect.*;
 import java.util.*;
 
+@SuppressWarnings("unchecked")
 public enum ReflectUtil {
 	;
 
@@ -35,7 +36,10 @@ public enum ReflectUtil {
 				}
 			}
 		} while (method == null && (c = c.getSuperclass()) != Object.class);
-		method.setAccessible(true);
+
+		if (method != null)
+			method.setAccessible(true);
+
 		return method;
 	}
 

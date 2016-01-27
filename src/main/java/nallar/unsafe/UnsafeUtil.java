@@ -1,7 +1,7 @@
 package nallar.unsafe;
 
 import javassist.Modifier;
-import nallar.tickthreading.Log;
+import nallar.log.Log;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 import sun.misc.Unsafe;
@@ -10,6 +10,7 @@ import java.lang.ref.*;
 import java.lang.reflect.*;
 import java.util.*;
 
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class UnsafeUtil {
 	private static final Unsafe $ = UnsafeAccess.$;
 	private static final long baseOffset = $.arrayBaseOffset(Object[].class);
@@ -45,7 +46,7 @@ public class UnsafeUtil {
 	private static final int MIN_SIZE = 16;
 
 	public static long unsafeSizeOf(Object o) {
-		Set<Object> searched = Collections.newSetFromMap(new IdentityHashMap<Object, Boolean>());
+		Set<Object> searched = Collections.newSetFromMap(new IdentityHashMap<>());
 		searched.add(MinecraftServer.getServer());
 		searched.add(o);
 		long size = unsafeSizeOf(o, searched, 0);

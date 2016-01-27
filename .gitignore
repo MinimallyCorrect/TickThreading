@@ -1,6 +1,18 @@
-# Compiled source #
-###################
+# Build #
+#########
+MANIFEST.MF
+dependency-reduced-pom.xml
+generated
+
+# Compiled #
+############
 bin
+build
+dist
+lib
+out
+run
+classes/
 target
 *.com
 *.class
@@ -9,9 +21,11 @@ target
 *.o
 *.so
 
-# Git #
-#######
-.git
+# Databases #
+#############
+*.db
+*.sql
+*.sqlite
 
 # Packages #
 ############
@@ -19,44 +33,42 @@ target
 *.dmg
 *.gz
 *.iso
-*.jar
 *.rar
 *.tar
 *.zip
 
-# Logs and databases #
-######################
-*.log
-*.sql
-*.sqlite
+# Repository #
+##############
+.git
 
-# OS generated files #
-######################
+# Logging #
+###########
+/logs
+*.log
+
+# Misc #
+########
+*.bak
+
+# System #
+##########
 .DS_Store
 ehthumbs.db
-Icon?
 Thumbs.db
 
-# Project files #
-#################
+# Project #
+###########
 .classpath
+.externalToolBuilders
+.gradle
+.idea
 .project
 .settings
-.gradle
-gradle/wrapper/gradle-wrapper.properties
-MANIFEST.MF
+eclipse
+nbproject
+atlassian-ide-plugin.xml
+build.xml
+nb-configuration.xml
 *.iml
 *.ipr
 *.iws
-.idea
-build
-generated
-eclipse
-out/
-dist
-nbproject
-build.number
-
-# Forge+MCP downloads #
-##################
-download

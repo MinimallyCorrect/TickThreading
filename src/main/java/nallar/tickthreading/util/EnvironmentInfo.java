@@ -1,7 +1,7 @@
 package nallar.tickthreading.util;
 
 import com.sun.management.UnixOperatingSystemMXBean;
-import nallar.tickthreading.Log;
+import nallar.log.Log;
 
 import java.lang.management.*;
 

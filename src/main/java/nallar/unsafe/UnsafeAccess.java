@@ -1,6 +1,6 @@
 package nallar.unsafe;
 
-import nallar.tickthreading.Log;
+import nallar.log.Log;
 import sun.misc.Unsafe;
 
 import java.lang.reflect.*;

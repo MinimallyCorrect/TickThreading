@@ -1,7 +1,7 @@
 package nallar.insecurity;
 
-import nallar.tickthreading.Log;
-import nallar.tickthreading.util.ThisIsNotAnError;
+import nallar.log.Log;
+import nallar.exception.ThisIsNotAnError;
 import net.minecraft.server.MinecraftServer;
 
 import java.security.*;
@@ -19,6 +19,8 @@ public class InsecurityManager extends java.lang.SecurityManager {
 	public static void init() {
 		if (System.getProperty("tt.securityManager", "false").equalsIgnoreCase("true")) {
 			System.setSecurityManager(new InsecurityManager());
+		} else if (System.getSecurityManager() != null) {
+			throw new Error("Security manager should not be registered");
 		}
 	}
 

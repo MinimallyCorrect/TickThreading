@@ -145,10 +145,10 @@ public class TableFormatter {
 
 	public void recordTables() {
 		recordTables = true;
-		tables = new ArrayList<List<Map<String, String>>>();
+		tables = new ArrayList<>();
 	}
 
-	public List getTables() {
+	public List<List<Map<String, String>>> getTables() {
 		return tables;
 	}
 }

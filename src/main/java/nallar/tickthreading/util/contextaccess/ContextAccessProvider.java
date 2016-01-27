@@ -1,6 +1,6 @@
 package nallar.tickthreading.util.contextaccess;
 
-import nallar.tickthreading.Log;
+import nallar.log.Log;
 import nallar.tickthreading.util.EnvironmentInfo;
 
 class ContextAccessProvider {

@@ -6,6 +6,7 @@ package nallar.exception;
  * Which is correct, but in some cases we prefer undefined behaviour to definitely broken behaviour!
  */
 public class ThreadStuckError extends Error {
+	private static final long serialVersionUID = 0;
 	private static final StackTraceElement[] EMPTY_STACK_TRACE = new StackTraceElement[0];
 
 	public ThreadStuckError() {

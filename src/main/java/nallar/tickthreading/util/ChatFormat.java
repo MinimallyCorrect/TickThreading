@@ -26,7 +26,7 @@ public enum ChatFormat {
 	public static final char FORMAT_CHAR = '\u00A7';
 	private final String toString;
 
-	private ChatFormat(char charCode) {
+	ChatFormat(char charCode) {
 		this.toString = new String(new char[]{FORMAT_CHAR, charCode});
 	}
 
