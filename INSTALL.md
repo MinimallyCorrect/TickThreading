@@ -1,28 +1,24 @@
 Installing TickThreading
 ==========
 
-- Install Forge, if you don't already have it. MCPC+ may also be used as the server jar.
-- [Download TickThreading](http://nallar.me/buildservice/job/TickThreading-1.6.4/)
-- Put the TickThreading-x.x.x.xxx.jar in the main server folder and remove the version numbers.
-- Change the .jar file in your start script to the TickThreading.jar.
-- Add this JVM argument that points TickThreading to the unpatched server .jar file: --serverJar=
-- Example JVM arguments: java -Xms1G -Xmx1G -XX:PermSize=128m -jar TickThreading.jar --serverJar=minecraftforge.jar
-- Have fun, if anything breaks make an issue report or contact me on EsperNet/Freenode IRC. nick: nallar
+- [Download TickThreading](http://nallar.me/buildservice/job/TickThreading/)
+- Place it in your mods folder
+- Have fun. Make sure to report any issues encountered while using TT to me, not other mod developers!
 
 Updating TickThreading
 ==========
 
 - Stop the server.
-- Remove the old TT jar from your server folder.
-- Add the new jar.
+- Download the new TT jar and replace the old one in your mods folder
 - Start server.
-
 
 Java Tuning
 ==========
 
-- Use the latest Java 7.
-- Make sure not to set -Xmx higher than you need - higher values may reduce performance, especially >= 32GB
+TODO: Determine new suggested JVM args. We may now suggest G1GC on java 8?
+
+- Use the latest Java 8
+- Make sure not to set -Xmx higher than you need. Don't set Xmx >= 31GB, as it will disable CompressedOOPs.
 - Suggested java parameters - make sure to set -Xmx:  
     java -server -Xmx{memoryToUseInGB}G -XX:UseSSE=4 -XX:+UseConcMarkSweepGC -XX:+UseCMSCompactAtFullCollection -XX:+UseParNewGC -XX:+DisableExplicitGC -XX:+AggressiveOpts -jar server.jar nogui
 

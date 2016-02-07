@@ -1,12 +1,3 @@
-Patching
-====
-
-TT's patcher is quite simple, and based on javassist. It is configured via the patches(-deobfuscated).xml in the resources directory. The choice of XML for expressing patches is suboptimal, and other options will be available at some point.
-
-The actual implementation of the patches used in the patch xml is in the `nallar.tickthreading.patcher.Patches` class.
-
-For coremods and the minecraft server jar, the jar is modified. Mods folder mods are not modified directly, instead patched classes are stored in the patchedMods directory, and loaded at runtime. This allows TT to bypass any signature verification checks.
-
 Concurrency model
 ====
 
