@@ -1,16 +1,10 @@
-DISCONTINUED
-==========
-This was a bad idea. It is possible, but takes far too much dev time and is entirely repetitive work fixing the same concurrency issues in different mods.
-
-You will burn out if you try to do this!
-
-TickThreading [![Build Status](http://nallar.me/buildservice/job/TickThreading-1.6.4/badge/icon)](http://nallar.me/buildservice/job/TickThreading-1.6.4/)
+TickThreading [![Build Status](https://jenkins.nallar.me/job/TickThreading/branch/1.8.9/badge/icon)](https://jenkins.nallar.me/job/TickThreading/branch/1.8.9/)
 ==========
 Multi-threaded minecraft server wrapper. Requires Forge, compatible with MCPC+.
 
-Copyright &copy; 2012-2014, nallar <rallan.pcl+tt@gmail.com>
+Copyright &copy; 2012-2016, nallar <ross@nallar.me>
 
-TickThreading is licensed under the [N Open License, Version 1][License]
+TickThreading is licensed under the MIT license
 
 Download
 -----
@@ -32,17 +26,12 @@ Logging
 TickThreading stores its logs in the TickThreadingLogs directory, and will keep the previous 5 logs.
 Make sure to include all relevant logs if you run into a problem.
 
-Source
-------
-You're staring right at it! :P
-
 Compiling
 ---------
 TickThreading is built using Gradle.
 
-* Install JDK 7. Set your JDK_HOME environment variable to your JDK 7 install path
-* Checkout this repo and run: `gradlew.bat setupDecompWorkspace setupDevWorkspace build`
-* Make some Tea/Coffee/Yuanyang and watch youtube videos while Forge takes 15 minutes to set up
+* Install JDK 8. Set your JDK_HOME environment variable to your JDK 8 install path
+* Checkout this repo and run: `gradlew.bat`
 
 Coding and Pull Request Formatting
 ----------------------------------
@@ -64,9 +53,7 @@ Build service alerts of new builds are available at #n-builds.
 Donations
 ----------------------------------
 
-Bitcoin address: [1BUjvwxxGH23Fkj7vdGtbrgLEF91u8npQu](bitcoin:1BUjvwxxGH23Fkj7vdGtbrgLEF91u8npQu)
-
-Paypal address: rossallan3+pp@googlemail.com
+Paypal: [Donate](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=PTWH8MH8Y4WH8)
 
 Contributors
 ----------------------------------
@@ -79,5 +66,4 @@ Acknowledgements
 
 YourKit is kindly supporting open source projects with its full-featured Java Profiler. YourKit, LLC is the creator of innovative and intelligent tools for profiling Java and .NET applications. Take a look at YourKit's leading software products: [YourKit Java Profiler](http://www.yourkit.com/java/profiler/index.jsp) and [YourKit .NET Profiler](http://www.yourkit.com/.net/profiler/index.jsp).
 
-[License]: http://nallar.me/licenses/n-open-license-v1.txt
-[Jenkins]: http://nallar.me/buildservice
+[Jenkins]: https://jenkins.nallar.me/jobs/TickThreading

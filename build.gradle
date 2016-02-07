@@ -49,6 +49,7 @@ modpatcher {
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
+defaultTasks "setupCiWorkspace", "build"
 
 version = mcVersion + '-SNAPSHOT'
 
