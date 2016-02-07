@@ -70,7 +70,7 @@ configurations {
 }
 
 dependencies {
-	compile group: 'me.nallar', name: 'ModPatcher', version: '1.8.9-SNAPSHOT', changing: true
+	compile "me.nallar:ModPatcher:1.8.9-SNAPSHOT:api"
 	provided "me.nallar:Mixin:1.0-SNAPSHOT"
 }
 

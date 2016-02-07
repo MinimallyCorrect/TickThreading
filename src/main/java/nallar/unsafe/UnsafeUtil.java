@@ -1,11 +1,11 @@
 package nallar.unsafe;
 
-import javassist.Modifier;
 import nallar.log.Log;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 import sun.misc.Unsafe;
 
+import java.io.*;
 import java.lang.ref.*;
 import java.lang.reflect.*;
 import java.util.*;
@@ -15,6 +15,10 @@ public class UnsafeUtil {
 	private static final Unsafe $ = UnsafeAccess.$;
 	private static final long baseOffset = $.arrayBaseOffset(Object[].class);
 	private static final long headerSize = baseOffset - 8;
+	private static final int NR_BITS = Integer.valueOf(System.getProperty("sun.arch.data.model"));
+	private static final int BYTE = 8;
+	private static final int WORD = NR_BITS / BYTE;
+	private static final int MIN_SIZE = 16;
 
 	public static long sizeOf(Class<?> clazz) {
 		if (clazz.equals(byte.class) || clazz.equals(char.class)) {
@@ -39,11 +43,6 @@ public class UnsafeUtil {
 			return sz;
 		}
 	}
-
-	private static final int NR_BITS = Integer.valueOf(System.getProperty("sun.arch.data.model"));
-	private static final int BYTE = 8;
-	private static final int WORD = NR_BITS / BYTE;
-	private static final int MIN_SIZE = 16;
 
 	public static long unsafeSizeOf(Object o) {
 		Set<Object> searched = Collections.newSetFromMap(new IdentityHashMap<>());
@@ -261,5 +260,18 @@ public class UnsafeUtil {
 			}
 		}.start();
 		Runtime.getRuntime().halt(1);
+	}
+
+	public static void removeSecurityManager() {
+		Field out;
+		try {
+			out = System.class.getDeclaredField("out");
+		} catch (NoSuchFieldException e) {
+			throw throwIgnoreChecked(e);
+		}
+		PrintStream out_ = System.out;
+		$.putObjectVolatile($.staticFieldBase(out), $.staticFieldOffset(out) + 4, null);
+		$.putObjectVolatile($.staticFieldBase(out), $.staticFieldOffset(out) + 8, null);
+		System.setOut(out_);
 	}
 }

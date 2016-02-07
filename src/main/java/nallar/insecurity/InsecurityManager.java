@@ -1,7 +1,8 @@
 package nallar.insecurity;
 
-import nallar.log.Log;
 import nallar.exception.ThisIsNotAnError;
+import nallar.log.Log;
+import nallar.unsafe.UnsafeUtil;
 import net.minecraft.server.MinecraftServer;
 
 import java.security.*;
@@ -15,28 +16,24 @@ import java.util.logging.*;
  * Additionally, this ensures that even in the case of a Runtime.halt(), logging will be flushed to disk.
  */
 public class InsecurityManager extends java.lang.SecurityManager {
+	private static final String[] loggerNames = {
+		"ForgeModLoader",
+		"TickThreading",
+		"TTPatcher",
+	};
+
 	@SuppressWarnings("EmptyMethod")
 	public static void init() {
-		if (System.getProperty("tt.securityManager", "false").equalsIgnoreCase("true")) {
+		if (!System.getProperty("tt.removeSecurityManager", "true").equalsIgnoreCase("false") && System.getSecurityManager() != null) {
+			UnsafeUtil.removeSecurityManager();
+			if (System.getSecurityManager() != null)
+				Log.severe("Failed to remove SecurityManager");
+		}
+
+		if (System.getProperty("tt.installSecurityManager", "false").equalsIgnoreCase("true")) {
 			System.setSecurityManager(new InsecurityManager());
-		} else if (System.getSecurityManager() != null) {
-			throw new Error("Security manager should not be registered");
 		}
 	}
-
-	@Override
-	public void checkPermission(Permission perm) {
-	}
-
-	@Override
-	public void checkPermission(Permission perm, Object context) {
-	}
-
-	private static final String[] loggerNames = {
-			"ForgeModLoader",
-			"TickThreading",
-			"TTPatcher",
-	};
 
 	public static void flushLogs() {
 		if (Log.debug && MinecraftServer.getServer().isServerRunning()) {
@@ -47,6 +44,14 @@ public class InsecurityManager extends java.lang.SecurityManager {
 				handler.flush();
 			}
 		}
+	}
+
+	@Override
+	public void checkPermission(Permission perm) {
+	}
+
+	@Override
+	public void checkPermission(Permission perm, Object context) {
 	}
 
 	@Override
