@@ -1,6 +1,7 @@
-package nallar.tickthreading.util;
+package nallar.concurrent.threadlocal;
 
-import nallar.unsafe.UnsafeAccess;
+import nallar.util.ReflectUtil;
+import nallar.util.unsafe.UnsafeAccess;
 import sun.misc.Unsafe;
 
 /**
@@ -10,10 +11,10 @@ import sun.misc.Unsafe;
  * ThreadLocal.get(), assuming the variable is normally false in all threads.
  */
 public class BooleanThreadLocalDefaultFalse extends ThreadLocal<Boolean> {
-	@SuppressWarnings({"FieldCanBeLocal", "FieldMayBeFinal", "CanBeFinal"})
-	private int count = 0;
 	private static final Unsafe $ = UnsafeAccess.$;
 	private static final long index = $.objectFieldOffset(ReflectUtil.getField(BooleanThreadLocalDefaultFalse.class, "count"));
+	@SuppressWarnings({"FieldCanBeLocal", "FieldMayBeFinal", "CanBeFinal"})
+	private int count = 0;
 	// Unsafe magics.
 
 	@Override

@@ -1,5 +1,6 @@
 package nallar.log;
 
+import nallar.exception.ThisIsNotAnError;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
@@ -17,6 +18,11 @@ public class Log {
 	public static final Level DEBUG = DebugLevel.DEBUG;
 	private static final int numberOfLogFiles = Integer.valueOf(System.getProperty("tickthreading.numberOfLogFiles", "5"));
 	private static final File logFolder = new File("TickThreadingLogs");
+	private static final String[] loggersToFlush = {
+		"ForgeModLoader",
+		"TickThreading",
+		"TTPatcher",
+	};
 
 	static {
 		try {
@@ -66,6 +72,17 @@ public class Log {
 		}
 		LOGGER.setLevel(Level.ALL);
 		setFileName("tickthreading", LOGGER);
+	}
+
+	public static void flushLogs() {
+		if (Log.debug && MinecraftServer.getServer().isServerRunning()) {
+			Log.debug("Server shutting down - requested at ", new ThisIsNotAnError());
+		}
+		for (String name : loggersToFlush) {
+			for (Handler handler : Logger.getLogger(name).getHandlers()) {
+				handler.flush();
+			}
+		}
 	}
 
 	@SuppressWarnings("ResultOfMethodCallIgnored")

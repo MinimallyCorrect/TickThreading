@@ -1,7 +1,7 @@
 package nallar.concurrent.collection;
 
-import nallar.tickthreading.util.ReflectUtil;
-import nallar.unsafe.UnsafeAccess;
+import nallar.util.ReflectUtil;
+import nallar.util.unsafe.UnsafeAccess;
 import sun.misc.Unsafe;
 
 import java.util.*;
@@ -33,18 +33,22 @@ public class ConcurrentUnsafeIterableArrayList<T> extends ArrayList<T> {
 	}
 
 	public Iterable<T> unsafe() {
-		return new Iterable<T>() {
-			@Override
-			public java.util.Iterator<T> iterator() {
-				return unsafeIterator();
-			}
-		};
+		return this::unsafeIterator;
 	}
 
 	private static class Iterator<T> implements java.util.Iterator<T> {
 		final Object[] elementData;
 		int index;
 		private Object next;
+
+		Iterator(final Object[] elementData, int start) {
+			this.elementData = elementData;
+			if (start >= elementData.length) {
+				start = elementData.length - 1;
+			}
+			index = start;
+			getNext();
+		}
 
 		private Object getNext() {
 			Object l = next;
@@ -60,15 +64,6 @@ public class ConcurrentUnsafeIterableArrayList<T> extends ArrayList<T> {
 				next = o;
 			}
 			return l;
-		}
-
-		Iterator(final Object[] elementData, int start) {
-			this.elementData = elementData;
-			if (start >= elementData.length) {
-				start = elementData.length - 1;
-			}
-			index = start;
-			getNext();
 		}
 
 		@Override

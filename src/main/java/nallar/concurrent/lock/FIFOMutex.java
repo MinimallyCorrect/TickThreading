@@ -7,7 +7,7 @@ import java.util.concurrent.locks.*;
 
 public final class FIFOMutex implements Lock {
 	private final AtomicBoolean locked = new AtomicBoolean(false);
-	private final Queue<Thread> waiters = new ConcurrentLinkedQueue<Thread>();
+	private final Queue<Thread> waiters = new ConcurrentLinkedQueue<>();
 
 	@Override
 	public void lock() {

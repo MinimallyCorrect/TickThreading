@@ -1,4 +1,4 @@
-package nallar.tickthreading.util;
+package nallar.util;
 
 import com.sun.management.UnixOperatingSystemMXBean;
 import nallar.log.Log;

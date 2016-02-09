@@ -5,7 +5,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.locks.*;
 
 public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
-	private final Map<Thread, Integer> readingThreads = new HashMap<Thread, Integer>();
+	private final Map<Thread, Integer> readingThreads = new HashMap<>();
 	private int writeAccesses = 0;
 	private int writeRequests = 0;
 	private int readRequests = 0;
@@ -63,7 +63,7 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 		Integer accessCount_ = readingThreads.get(callingThread);
 		if (accessCount_ == null) {
 			throw new IllegalMonitorStateException("Calling Thread does not" +
-					" hold a read lock on this ReadWriteLock");
+				" hold a read lock on this ReadWriteLock");
 		}
 		if (accessCount_ == 1) {
 			readingThreads.remove(callingThread);
@@ -94,7 +94,7 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 	public final synchronized void unlockWrite() {
 		if (writingThread != Thread.currentThread()) {
 			throw new IllegalMonitorStateException("Calling Thread does not" +
-					" hold the write lock on this ReadWriteLock");
+				" hold the write lock on this ReadWriteLock");
 		}
 		writeAccesses--;
 		if (writeAccesses == 0) {

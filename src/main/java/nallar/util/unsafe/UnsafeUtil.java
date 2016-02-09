@@ -1,5 +1,6 @@
-package nallar.unsafe;
+package nallar.util.unsafe;
 
+import lombok.SneakyThrows;
 import nallar.log.Log;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
@@ -15,10 +16,16 @@ public class UnsafeUtil {
 	private static final Unsafe $ = UnsafeAccess.$;
 	private static final long baseOffset = $.arrayBaseOffset(Object[].class);
 	private static final long headerSize = baseOffset - 8;
-	private static final int NR_BITS = Integer.valueOf(System.getProperty("sun.arch.data.model"));
-	private static final int BYTE = 8;
-	private static final int WORD = NR_BITS / BYTE;
+	private static final int ADDRESS_SIZE = $.addressSize();
+	private static final int ADDRESS_SIZE_IN_MEMORY = getAddressSizeInMemory();
 	private static final int MIN_SIZE = 16;
+
+	@SneakyThrows
+	private static int getAddressSizeInMemory() {
+		Field out = System.class.getDeclaredField("out");
+		Field err = System.class.getDeclaredField("err");
+		return (int) ($.staticFieldOffset(err) - $.staticFieldOffset(out));
+	}
 
 	public static long sizeOf(Class<?> clazz) {
 		if (clazz.equals(byte.class) || clazz.equals(char.class)) {
@@ -71,7 +78,7 @@ public class UnsafeUtil {
 			}
 			return size;
 		}
-		List<Field> fields = new LinkedList<Field>();
+		List<Field> fields = new LinkedList<>();
 		while (cls != Object.class && cls != null) {
 			try {
 				for (Field f : cls.getDeclaredFields()) {
@@ -99,35 +106,7 @@ public class UnsafeUtil {
 				}
 			}
 		}
-		return (((int) maxOffset / WORD) + 1) * WORD + innerSize;
-	}
-
-	public static long sizeOf(Object o) {
-		return sizeOf(o.getClass());
-	}
-
-	/**
-	 * *Very* quickly compares two arrays.
-	 */
-	public static boolean arrayEquals(Object a, Object b) {
-		if (a == b) {
-			return true;
-		}
-		int numLongs = Array.getLength(a);
-		if (numLongs != Array.getLength(b) || !a.getClass().equals(b.getClass())) {
-			return false;
-		}
-		int baseOffset = $.arrayBaseOffset(a.getClass());
-		int scaleOffset = $.arrayIndexScale(a.getClass());
-
-		for (long currentOffset = baseOffset, i = 0; i < numLongs; ++i, currentOffset += scaleOffset) {
-			long l1 = $.getLong(a, currentOffset);
-			long l2 = $.getLong(b, currentOffset);
-			if (l1 != l2) {
-				return false;
-			}
-		}
-		return true;
+		return (((int) maxOffset / ADDRESS_SIZE) + 1) * ADDRESS_SIZE + innerSize;
 	}
 
 	/**
@@ -137,15 +116,12 @@ public class UnsafeUtil {
 	 * @param c Class to instantiate
 	 * @return the instance of c
 	 */
+	@SneakyThrows
 	public static <T> T createUninitialisedObject(Class<T> c) {
-		try {
-			return (T) $.allocateInstance(c);
-		} catch (Exception e) {
-			throw new Error(e);
-		}
+		return (T) $.allocateInstance(c);
 	}
 
-	public static String debugOut(Object a) {
+	public static String dump(Object a) {
 		Class<?> c = a.getClass();
 		StringBuilder out = new StringBuilder();
 		boolean secondOrLater = false;
@@ -159,10 +135,10 @@ public class UnsafeUtil {
 					out.append('\n');
 				}
 				out
-						.append(f.getName())
-						.append(": ")
-						.append(f.getType().getName())
-						.append("; ");
+					.append(f.getName())
+					.append(": ")
+					.append(f.getType().getName())
+					.append("; ");
 				Object value = f.get(a);
 				Class vC = value.getClass();
 				if (vC.isArray()) {
@@ -245,33 +221,30 @@ public class UnsafeUtil {
 		new Thread() {
 			@Override
 			public void run() {
+				System.err.println("UnsafeUtil.crashMe: halting");
+			}
+		}.start();
+		new Thread() {
+			@SuppressWarnings("InfiniteLoopStatement")
+			@Override
+			public void run() {
 				try {
 					Thread.sleep(10000);
 				} catch (InterruptedException ignored) {
 				}
 				// If the JVM refuses to die, may as well just segfault instead.
-				$.putLong((long) (1 << 1), 0);
-				$.putLong((long) (1 << 2), 0);
-				$.putLong((long) (1 << 3), 0);
-				$.putLong((long) (1 << 4), 0);
-				$.putLong((long) (1 << 5), 0);
-				$.putLong((long) (1 << 6), 0);
-				$.putLong((long) (1 << 7), 0);
+				for (int i = 0; ; )
+					$.putLong((long) (1 << ++i) + i, 0);
 			}
 		}.start();
 		Runtime.getRuntime().halt(1);
 	}
 
+	@SneakyThrows
 	public static void removeSecurityManager() {
-		Field out;
-		try {
-			out = System.class.getDeclaredField("out");
-		} catch (NoSuchFieldException e) {
-			throw throwIgnoreChecked(e);
-		}
+		Field err = System.class.getDeclaredField("err");
 		PrintStream out_ = System.out;
-		$.putObjectVolatile($.staticFieldBase(out), $.staticFieldOffset(out) + 4, null);
-		$.putObjectVolatile($.staticFieldBase(out), $.staticFieldOffset(out) + 8, null);
+		$.putObjectVolatile($.staticFieldBase(err), $.staticFieldOffset(err) + ADDRESS_SIZE_IN_MEMORY, null);
 		System.setOut(out_);
 	}
 }

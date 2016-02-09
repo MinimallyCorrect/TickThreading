@@ -6,22 +6,18 @@ import java.util.logging.*;
 
 public class LogFormatter extends Formatter {
 	public static final String LINE_SEPARATOR = System.getProperty("line.separator");
-	private static SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd HH:mm:ss");
 	protected static final boolean colorEnabled = System.getProperty("colorLogs", "false").equalsIgnoreCase("true");
 	private static final boolean simplifyMcLoggerName = !System.getProperty("fullLoggerName", "false").equalsIgnoreCase("true");
+	private static SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd HH:mm:ss");
 
-	public static void setFormat(boolean u, SimpleDateFormat dateFormat) {
+	public static void setFormat(SimpleDateFormat dateFormat) {
 		if (dateFormat != null) {
 			LogFormatter.dateFormat = dateFormat;
 		}
 	}
 
-	protected boolean shouldColor() {
-		return false;
-	}
-
 	private static String getColorForLevel(Level level) {
-		return  "\033[" + getColorNumberForLevel(level) + 'm';
+		return "\033[" + getColorNumberForLevel(level) + 'm';
 	}
 
 	private static String getColorNumberForLevel(Level level) {
@@ -41,6 +37,11 @@ public class LogFormatter extends Formatter {
 		return "\033[39m";
 	}
 
+	protected boolean shouldColor() {
+		return false;
+	}
+
+	@SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
 	@Override
 	public String format(LogRecord record) {
 		StringBuilder formattedMessage = new StringBuilder();

@@ -1,6 +1,6 @@
 package nallar.concurrent.lock;
 
-import nallar.unsafe.UnsafeAccess;
+import nallar.util.unsafe.UnsafeAccess;
 import sun.misc.Unsafe;
 
 import java.util.concurrent.*;

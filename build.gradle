@@ -17,7 +17,6 @@ buildscript {
 	}
 }
 apply plugin: 'me.nallar.ModPatcherGradle'
-apply plugin: 'maven'
 
 group = 'me.nallar'
 archivesBaseName = 'TickThreading'
@@ -70,7 +69,9 @@ configurations {
 }
 
 dependencies {
+	testCompile 'junit:junit:4.12'
 	compile "me.nallar:ModPatcher:1.8.9-SNAPSHOT:api"
+	compile 'org.projectlombok:lombok:1.16.6'
 	provided "me.nallar:Mixin:1.0-SNAPSHOT"
 }
 

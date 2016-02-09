@@ -1,7 +1,7 @@
 package nallar.reporting;
 
 import nallar.log.Log;
-import nallar.unsafe.UnsafeUtil;
+import nallar.util.unsafe.UnsafeUtil;
 
 import java.lang.ref.*;
 import java.util.*;
@@ -10,7 +10,7 @@ import java.util.concurrent.*;
 public class LeakDetector {
 	private final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1);
 	private final long waitTimeSeconds;
-	private final Map<Long, LeakCheckEntry> scheduledObjects = new ConcurrentHashMap<Long, LeakCheckEntry>();
+	private final Map<Long, LeakCheckEntry> scheduledObjects = new ConcurrentHashMap<>();
 
 	public LeakDetector(final long waitTimeSeconds) {
 		this.waitTimeSeconds = waitTimeSeconds;
@@ -24,20 +24,17 @@ public class LeakDetector {
 			final long id = System.identityHashCode(o);
 			final String oDescription = (oDescription_ == null ? "" : oDescription_ + " : ") + o.getClass() + '@' + System.identityHashCode(o) + ':' + id;
 			scheduledObjects.put(id, new LeakCheckEntry(o, oDescription));
-			scheduledThreadPoolExecutor.schedule(new Runnable() {
-				@Override
-				public void run() {
-					LeakCheckEntry leakCheckEntry = scheduledObjects.remove(id);
-					Object o = leakCheckEntry.o.get();
-					if (o == null) {
-						Log.fine("Object " + leakCheckEntry.description + " has been removed normally.");
+			scheduledThreadPoolExecutor.schedule((Runnable) () -> {
+				LeakCheckEntry leakCheckEntry = scheduledObjects.remove(id);
+				Object o1 = leakCheckEntry.o.get();
+				if (o1 == null) {
+					Log.fine("Object " + leakCheckEntry.description + " has been removed normally.");
+				} else {
+					String warning = "Probable memory leak detected. \"" + leakCheckEntry.description + "\" has not been garbage collected after " + waitTimeSeconds + "s.";
+					if (clean && !Log.debug) {
+						Log.fine(warning);
 					} else {
-						String warning = "Probable memory leak detected. \"" + leakCheckEntry.description + "\" has not been garbage collected after " + waitTimeSeconds + "s.";
-						if (clean && !Log.debug) {
-							Log.fine(warning);
-						} else {
-							Log.warning(warning);
-						}
+						Log.warning(warning);
 					}
 				}
 			}, waitTimeSeconds, TimeUnit.SECONDS);
@@ -64,7 +61,7 @@ public class LeakDetector {
 		public final String description;
 
 		LeakCheckEntry(final Object o, final String description) {
-			this.o = new WeakReference<Object>(o);
+			this.o = new WeakReference<>(o);
 			this.description = description;
 		}
 	}

@@ -1,4 +1,4 @@
-package nallar.unsafe;
+package nallar.util.unsafe;
 
 import nallar.log.Log;
 import sun.misc.Unsafe;

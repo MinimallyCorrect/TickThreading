@@ -1,4 +1,4 @@
-package nallar.tickthreading.util;
+package nallar.util;
 
 import net.minecraft.server.MinecraftServer;
 
