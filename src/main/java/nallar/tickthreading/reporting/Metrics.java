@@ -136,7 +136,7 @@ public class Metrics {
 			graph.addPlotter(new EntityPlotter());
 			graph.addPlotter(new ChunkPlotter());
 			if (start()) {
-				Log.fine("Started TT metrics reporting. This can be disabled in PluginMetrics.cfg");
+				Log.trace("Started TT metrics reporting. This can be disabled in PluginMetrics.cfg");
 			}
 		}
 	}

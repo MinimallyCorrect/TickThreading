@@ -15,7 +15,7 @@ public class UnsafeAccess {
 			theUnsafe.setAccessible(true);
 			temp = (Unsafe) theUnsafe.get(null);
 		} catch (Exception e) {
-			Log.severe("Failed to get unsafe", e);
+			Log.error("Failed to get unsafe", e);
 		}
 		$ = temp;
 	}

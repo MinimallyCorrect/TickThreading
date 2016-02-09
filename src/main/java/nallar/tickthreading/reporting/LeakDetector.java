@@ -28,18 +28,18 @@ public class LeakDetector {
 				LeakCheckEntry leakCheckEntry = scheduledObjects.remove(id);
 				Object o1 = leakCheckEntry.o.get();
 				if (o1 == null) {
-					Log.fine("Object " + leakCheckEntry.description + " has been removed normally.");
+					Log.trace("Object " + leakCheckEntry.description + " has been removed normally.");
 				} else {
 					String warning = "Probable memory leak detected. \"" + leakCheckEntry.description + "\" has not been garbage collected after " + waitTimeSeconds + "s.";
-					if (clean && !Log.debug) {
-						Log.fine(warning);
+					if (clean) {
+						Log.trace(warning);
 					} else {
-						Log.warning(warning);
+						Log.warn(warning);
 					}
 				}
 			}, waitTimeSeconds, TimeUnit.SECONDS);
 		} catch (Throwable t) {
-			Log.severe("Failed to schedule leak check for " + oDescription_, t);
+			Log.error("Failed to schedule leak check for " + oDescription_, t);
 		}
 	}
 

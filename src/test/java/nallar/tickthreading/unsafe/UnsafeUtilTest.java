@@ -20,12 +20,6 @@ public class UnsafeUtilTest {
 		});
 	}
 
-	//@Test - crashes test JVM with segfault
-	public void testCrashMe() throws Exception {
-		installAnnoyingSecurityManager();
-		UnsafeUtil.crashMe();
-	}
-
 	@Test
 	public void testRemoveSecurityManager() throws Exception {
 		installAnnoyingSecurityManager();

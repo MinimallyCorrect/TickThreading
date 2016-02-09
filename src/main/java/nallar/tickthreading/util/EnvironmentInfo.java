@@ -26,7 +26,7 @@ public class EnvironmentInfo {
 			long used = unixOsMxBean.getOpenFileDescriptorCount();
 			long available = unixOsMxBean.getMaxFileDescriptorCount();
 			if (used != 0 && available != 0 && (used > (available * 17) / 20 || (available - used) < 3)) {
-				Log.severe("Used >= 85% of available file handles: " + getOpenFileHandles());
+				Log.error("Used >= 85% of available file handles: " + getOpenFileHandles());
 			}
 		}
 	}

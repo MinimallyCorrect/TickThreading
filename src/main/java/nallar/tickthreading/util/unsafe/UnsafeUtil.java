@@ -157,7 +157,7 @@ public class UnsafeUtil {
 					out.append(value);
 				}
 			} catch (IllegalAccessException e) {
-				Log.severe("", e);
+				Log.error("", e);
 			}
 			secondOrLater = true;
 		}
@@ -183,19 +183,11 @@ public class UnsafeUtil {
 					field.set(o, null);
 					//Log.info("Cleaned field " + field.getType().getName() + ':' + field.getName());
 				} catch (IllegalAccessException e) {
-					Log.warning("Exception cleaning " + o.getClass() + '@' + System.identityHashCode(o), e);
+					Log.warn("Exception cleaning " + o.getClass() + '@' + System.identityHashCode(o), e);
 				}
 			}
 			c = c.getSuperclass();
 		}
-	}
-
-	public static RuntimeException throwIgnoreChecked(Throwable t) {
-		throw UnsafeUtil.<RuntimeException>throwIgnoreCheckedErasure(t);
-	}
-
-	private static <T extends Throwable> T throwIgnoreCheckedErasure(Throwable toThrow) throws T {
-		throw (T) toThrow;
 	}
 
 	@SuppressWarnings("deprecation")
@@ -208,43 +200,23 @@ public class UnsafeUtil {
 				m.setAccessible(true);
 				m.invoke(t, thr);
 			} catch (Throwable throwable) {
-				Log.severe("Failed to stop thread t with throwable, reverting to normal stop.", throwable);
+				Log.error("Failed to stop thread t with throwable, reverting to normal stop.", throwable);
 				t.stop();
 			}
 		}
 	}
 
-	/**
-	 * Should only be used if you have already attempted to stop the server properly, called Runtime.exit after that failed, and then waited a reasonable time.
-	 */
-	public static void crashMe() {
-		new Thread() {
-			@Override
-			public void run() {
-				System.err.println("UnsafeUtil.crashMe: halting");
-			}
-		}.start();
-		new Thread() {
-			@SuppressWarnings("InfiniteLoopStatement")
-			@Override
-			public void run() {
-				try {
-					Thread.sleep(10000);
-				} catch (InterruptedException ignored) {
-				}
-				// If the JVM refuses to die, may as well just segfault instead.
-				for (int i = 0; ; )
-					$.putLong((long) (1 << ++i) + i, 0);
-			}
-		}.start();
-		Runtime.getRuntime().halt(1);
-	}
-
 	@SneakyThrows
 	public static void removeSecurityManager() {
+		if (System.getSecurityManager() == null)
+			return;
+
 		Field err = System.class.getDeclaredField("err");
 		PrintStream out_ = System.out;
 		$.putObjectVolatile($.staticFieldBase(err), $.staticFieldOffset(err) + ADDRESS_SIZE_IN_MEMORY, null);
 		System.setOut(out_);
+
+		if (System.getSecurityManager() != null)
+			Log.error("Failed to remove SecurityManager");
 	}
 }

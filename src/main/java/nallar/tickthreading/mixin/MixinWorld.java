@@ -38,14 +38,14 @@ public abstract class MixinWorld extends World {
 			try {
 				DimensionManager.registerDimension(dimensionId, provider.getDimensionId());
 			} catch (Throwable t) {
-				Log.warning("Failed to register corrected dimension ID with DimensionManager", t);
+				Log.warn("Failed to register corrected dimension ID with DimensionManager", t);
 			}
 			originalDimension = provider.getDimensionId();
 			provider.setDimension(dimensionId);
-			Log.warning("World " + getName() + "'s provider dimensionId is not the same as its real dimensionId. Provider ID: " + originalDimension + ", real ID: " + dimensionId);
+			Log.warn("World " + getName() + "'s provider dimensionId is not the same as its real dimensionId. Provider ID: " + originalDimension + ", real ID: " + dimensionId);
 		}
 		cachedName = null;
-		Log.fine("Set dimension ID for " + this.getName());
+		Log.trace("Set dimension ID for " + this.getName());
 	}
 
 	@Add
