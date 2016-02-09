@@ -4,7 +4,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.*;
 
-public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
+public class UpgradeableReadWriteLock implements ReadWriteLock {
 	private final Map<Thread, Integer> readingThreads = new HashMap<>();
 	private int writeAccesses = 0;
 	private int writeRequests = 0;
@@ -13,23 +13,23 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 	private final Lock readLock = new SimpleLock() {
 		@Override
 		public void lock() {
-			TwoWayReentrantReadWriteLock.this.lockRead();
+			UpgradeableReadWriteLock.this.lockRead();
 		}
 
 		@Override
 		public void unlock() {
-			TwoWayReentrantReadWriteLock.this.unlockRead();
+			UpgradeableReadWriteLock.this.unlockRead();
 		}
 	};
 	private final Lock writeLock = new SimpleLock() {
 		@Override
 		public void lock() {
-			TwoWayReentrantReadWriteLock.this.lockWrite();
+			UpgradeableReadWriteLock.this.lockWrite();
 		}
 
 		@Override
 		public void unlock() {
-			TwoWayReentrantReadWriteLock.this.unlockWrite();
+			UpgradeableReadWriteLock.this.unlockWrite();
 		}
 	};
 
@@ -116,17 +116,17 @@ public class TwoWayReentrantReadWriteLock implements ReadWriteLock {
 
 		@Override
 		public boolean tryLock() {
-			throw new UnsupportedOperationException("You dun goofed! TwoWayReentrantReadWriteLock doesn't support this.");
+			throw new UnsupportedOperationException("TwoWayReentrantReadWriteLock doesn't support this.");
 		}
 
 		@Override
 		public boolean tryLock(long time, TimeUnit unit) throws InterruptedException {
-			throw new UnsupportedOperationException("You dun goofed! TwoWayReentrantReadWriteLock doesn't support this.");
+			throw new UnsupportedOperationException("TwoWayReentrantReadWriteLock doesn't support this.");
 		}
 
 		@Override
 		public Condition newCondition() {
-			throw new UnsupportedOperationException("You dun goofed! TwoWayReentrantReadWriteLock doesn't support this.");
+			throw new UnsupportedOperationException("TwoWayReentrantReadWriteLock doesn't support this.");
 		}
 	}
 }
