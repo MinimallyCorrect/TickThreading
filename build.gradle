@@ -7,7 +7,7 @@ buildscript {
 		}
 		maven {
 			name = "nallar"
-			url = "http://repo.nallar.me/"
+			url = "https://repo.nallar.me/"
 		}
 	}
 	configurations.all { resolutionStrategy.cacheChangingModulesFor 30, 'seconds' }
@@ -36,12 +36,13 @@ minecraft {
 	version = fullForgeVersion
 	mappings = "stable_20"
 
-	replace "@VERSION@", project.version
+	replace "@MOD_NAME@", project.name
+	replace "@MOD_VERSION@", project.version
 	replace "@MC_VERSION@", version
 }
 
 modpatcher {
-	mixinPackage = "nallar.mixin"
+	mixinPackage = "nallar.tickthreading.mixin"
 	extractGeneratedSources = true
 	generateInheritanceHierarchy = true
 }
@@ -135,5 +136,5 @@ jar.manifest.mainAttributes(
 	"Implementation-Title": name,
 	"Implementation-Version": version + "+" + ciSystem + "-b" + buildNumber + ".git-" + commit,
 	"Implementation-Vendor": url,
-	"FMLCorePlugin": "nallar.tickthreading.CoreMod"
+	"FMLCorePlugin": "nallar.tickthreading.mod.CoreMod"
 )
