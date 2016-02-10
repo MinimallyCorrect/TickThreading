@@ -10,7 +10,7 @@ buildscript {
 			url = "https://repo.nallar.me/"
 		}
 	}
-	configurations.all { resolutionStrategy.cacheChangingModulesFor 30, 'seconds' }
+	configurations.all { resolutionStrategy.cacheChangingModulesFor 6, 'hours' }
 	dependencies {
 		classpath 'net.minecraftforge.gradle:ForgeGradle:2.1-SNAPSHOT'
 		classpath group: 'me.nallar', name: 'ModPatcherGradle', version: '0.1-SNAPSHOT', changing: true
