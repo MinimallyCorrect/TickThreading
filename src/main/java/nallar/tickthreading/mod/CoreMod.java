@@ -1,6 +1,7 @@
 package nallar.tickthreading.mod;
 
 import me.nallar.modpatcher.ModPatcher;
+import nallar.tickthreading.util.PropertyUtil;
 import nallar.tickthreading.util.unsafe.UnsafeUtil;
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 
@@ -11,7 +12,7 @@ import java.util.*;
 @IFMLLoadingPlugin.SortingIndex(1002)
 public class CoreMod implements IFMLLoadingPlugin {
 	static {
-		if (!System.getProperty("tt.removeSecurityManager", "true").equalsIgnoreCase("false")) {
+		if (PropertyUtil.get("removeSecurityManager", false)) {
 			UnsafeUtil.removeSecurityManager();
 		}
 
