@@ -105,7 +105,7 @@ public class Log {
 
 	public static String dumpWorld(World world) {
 		boolean unloaded = world.unloaded;
-		return (unloaded ? "un" : "") + "loaded world " + name(world) + '@' + System.identityHashCode(world) + ", dimension: " + world.getDimension() + ", provider dimension: " + (unloaded ? "unknown" : world.provider.getDimensionId()) + ", original dimension: " + world.originalDimension;
+		return (unloaded ? "un" : "") + "loaded world " + name(world) + '@' + System.identityHashCode(world) + ", dimension: " + world.getDimension();
 	}
 
 	public static void checkWorlds() {
