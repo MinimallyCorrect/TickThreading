@@ -38,7 +38,7 @@ public class LogFormatter extends Formatter {
 	}
 
 	protected boolean shouldColor() {
-		return false;
+		return colorEnabled;
 	}
 
 	@SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
