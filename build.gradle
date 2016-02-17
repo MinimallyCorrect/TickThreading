@@ -32,6 +32,8 @@ ext.mcVersion = '1.8.9'
 ext.forgeVersion = "11.15.0.1683"
 ext.fullForgeVersion = mcVersion + "-" + forgeVersion
 
+gradle.startParameter.showStacktrace = org.gradle.logging.ShowStacktrace.ALWAYS
+
 minecraft {
 	version = fullForgeVersion
 	mappings = "stable_20"
