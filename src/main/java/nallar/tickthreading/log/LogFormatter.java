@@ -10,27 +10,27 @@ public class LogFormatter extends Formatter {
 	private static final boolean simplifyMcLoggerName = !System.getProperty("fullLoggerName", "false").equalsIgnoreCase("true");
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd HH:mm:ss");
 
-	public static void setFormat(SimpleDateFormat dateFormat) {
+	public static void setDateFormat(SimpleDateFormat dateFormat) {
 		if (dateFormat != null) {
 			LogFormatter.dateFormat = dateFormat;
 		}
 	}
 
-	private static String getColorForLevel(Level level) {
-		return "\033[" + getColorNumberForLevel(level) + 'm';
+	private static String getStartColor(Level level) {
+		return "\033[" + getColorForLevel(level) + 'm';
 	}
 
-	private static String getColorNumberForLevel(Level level) {
+	private static int getColorForLevel(Level level) {
 		if (level == Level.SEVERE) {
-			return "31";
+			return 31;
 		} else if (level == Level.WARNING) {
-			return "33";
+			return 33;
 		} else if (level == DebugLevel.DEBUG) {
-			return "35";
+			return 35;
 		} else if (level == Level.INFO) {
-			return "32";
+			return 32;
 		}
-		return "39";
+		return 39;
 	}
 
 	protected static String getEndColor() {
@@ -56,7 +56,7 @@ public class LogFormatter extends Formatter {
 		formattedMessage.append(" [");
 		final boolean shouldColor = shouldColor();
 		if (shouldColor) {
-			formattedMessage.append(getColorForLevel(level));
+			formattedMessage.append(getStartColor(level));
 		}
 		formattedMessage.append(record.getLevel().getName().toUpperCase());
 		if (shouldColor) {
