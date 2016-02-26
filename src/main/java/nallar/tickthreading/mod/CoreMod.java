@@ -1,7 +1,9 @@
 package nallar.tickthreading.mod;
 
 import me.nallar.modpatcher.ModPatcher;
+import nallar.tickthreading.log.Log;
 import nallar.tickthreading.util.PropertyUtil;
+import nallar.tickthreading.util.VersionUtil;
 import nallar.tickthreading.util.unsafe.UnsafeUtil;
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 
@@ -17,6 +19,7 @@ public class CoreMod implements IFMLLoadingPlugin {
 		}
 
 		ModPatcher.requireVersion("latest", "beta");
+		Log.info(VersionUtil.TTVersionString() + " CoreMod initialised");
 	}
 
 	@Override
