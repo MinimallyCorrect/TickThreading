@@ -85,7 +85,9 @@ if (System.env.GRADLE_USER_HOME) {
 }
 ext.mappingsPath = homeDir + 'caches/minecraft/net/minecraftforge/forge/' + fullForgeVersion + '/unpacked/conf/'
 
-jar {
+task threadedJar(type: Jar, dependsOn: classes)
+
+def jarConfig = {
 	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 	from((configurations.runtime - configurations.provided).filter { it.exists() }.collect {
 		it.isDirectory() ? it : zipTree(it)
@@ -96,6 +98,27 @@ jar {
 	from mappingsPath + 'methods.csv'
 	from mappingsPath + 'fields.csv'
 	from './generated/extendsMap.obj'
+}
+
+jar jarConfig
+threadedJar jarConfig
+
+jar {
+	classifier = 'core'
+	exclude('nallar/tickthreading/mixin/extended**')
+}
+
+threadedJar {
+	classifier = 'threaded'
+	from {
+		sourceSets.main.allSource
+		sourceSets.main.output
+	}
+}
+
+artifacts {
+	archives jar
+	archives threadedJar
 }
 
 processResources {

@@ -1,4 +1,4 @@
-package nallar.tickthreading.mixin.server;
+package nallar.tickthreading.mixin.extended.server;
 
 import me.nallar.mixin.Mixin;
 import net.minecraft.server.MinecraftServer;
