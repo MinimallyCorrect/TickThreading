@@ -34,6 +34,8 @@ ext.fullForgeVersion = mcVersion + "-" + forgeVersion
 
 gradle.startParameter.showStacktrace = org.gradle.logging.ShowStacktrace.ALWAYS
 
+version = mcVersion + '-SNAPSHOT'
+
 minecraft {
 	version = fullForgeVersion
 	mappings = "stable_20"
@@ -52,8 +54,6 @@ modpatcher {
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 defaultTasks "setupCiWorkspace", "build"
-
-version = mcVersion + '-SNAPSHOT'
 
 // Define variables
 ext.buildNumber = System.getenv("BUILD_NUMBER") ?: 0
