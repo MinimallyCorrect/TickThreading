@@ -9,11 +9,12 @@ public enum VersionUtil {
 	public static String versionString() {
 		String version = "";
 		try {
+			Class.forName("net.minecraft.server.MinecraftServer");
 			MinecraftServer minecraftServer = MinecraftServer.getServer();
 			if (minecraftServer != null) {
-				version = " on " + minecraftServer.getMinecraftVersion() + ' ' + minecraftServer.getServerModName();
+				version = " on " + minecraftServer.getServerModName();
 			}
-		} catch (NoClassDefFoundError ignored) {
+		} catch (ClassNotFoundException ignored) {
 		}
 		return TTVersionString() + version + " - " + System.getProperty("java.runtime.version");
 	}

@@ -1,13 +1,15 @@
 package nallar.tickthreading.log;
 
+import nallar.tickthreading.util.PropertyUtil;
+
 import java.io.*;
 import java.text.*;
 import java.util.logging.*;
 
 public class LogFormatter extends Formatter {
 	public static final String LINE_SEPARATOR = System.getProperty("line.separator");
-	protected static final boolean colorEnabled = System.getProperty("colorLogs", "false").equalsIgnoreCase("true");
-	private static final boolean simplifyMcLoggerName = !System.getProperty("fullLoggerName", "false").equalsIgnoreCase("true");
+	protected static final boolean colorEnabled = PropertyUtil.get("colorLogs", false);
+	private static final boolean simplifyMcLoggerName = PropertyUtil.get("fullLoggerName", false);
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd HH:mm:ss");
 
 	public static void setDateFormat(SimpleDateFormat dateFormat) {
