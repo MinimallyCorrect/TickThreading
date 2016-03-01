@@ -13,7 +13,7 @@ import java.util.*;
 
 @SuppressWarnings({"UnusedDeclaration", "UseOfSystemOutOrSystemErr"})
 public class Log {
-	public static final Logger LOGGER = LogManager.getLogger("TickProfiler");
+	public static final Logger LOGGER = LogManager.getLogger("@MOD_NAME@");
 
 	public static void error(String msg) {
 		LOGGER.error(msg);
