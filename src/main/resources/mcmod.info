@@ -5,7 +5,7 @@
 	"description": "Mod which runs entity and tileEntity ticks in threads.",
 	"version": "${version}",
 	"mcversion": "${mcversion}",
-	"url": "http://nallar.me/minecraft/",
+	"url": "https://github.com/nallar/TickThreading",
 	"updateUrl": "http://nallar.me/buildservice/job/TickThreading/lastSuccessfulBuild/artifact/target/",
 	"authorList": [ "nallar" ],
 	"credits": "Authored by nallar",
