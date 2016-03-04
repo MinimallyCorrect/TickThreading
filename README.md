@@ -1,6 +1,8 @@
 TickThreading [![Build Status](https://jenkins.nallar.me/job/TickThreading/branch/1.8.9/badge/icon)](https://jenkins.nallar.me/job/TickThreading/branch/1.8.9/)
 ==========
-Multi-threaded minecraft server wrapper. Requires Forge, compatible with MCPC+.
+Multi-threaded minecraft. Requires Forge.
+
+Update for 1.8.9 in-progress.
 
 Copyright &copy; 2012-2016, nallar <ross@nallar.me>
 
