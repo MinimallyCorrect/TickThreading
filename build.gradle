@@ -85,7 +85,7 @@ if (System.env.GRADLE_USER_HOME) {
 }
 ext.mappingsPath = homeDir + 'caches/minecraft/net/minecraftforge/forge/' + fullForgeVersion + '/unpacked/conf/'
 
-task threadedJar(type: Jar, dependsOn: classes)
+task extendedJar(type: Jar, dependsOn: classes)
 
 def jarConfig = {
 	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
@@ -101,15 +101,15 @@ def jarConfig = {
 }
 
 jar jarConfig
-threadedJar jarConfig
+extendedJar jarConfig
 
 jar {
 	classifier = 'core'
 	exclude('nallar/tickthreading/mixin/extended**')
 }
 
-threadedJar {
-	classifier = 'threaded'
+extendedJar {
+	classifier = 'extended'
 	from {
 		sourceSets.main.allSource
 		sourceSets.main.output
@@ -118,7 +118,7 @@ threadedJar {
 
 artifacts {
 	archives jar
-	archives threadedJar
+	archives extendedJar
 }
 
 processResources {

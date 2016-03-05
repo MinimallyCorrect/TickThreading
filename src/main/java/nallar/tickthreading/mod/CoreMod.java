@@ -3,7 +3,7 @@ package nallar.tickthreading.mod;
 import me.nallar.modpatcher.ModPatcher;
 import nallar.tickthreading.log.Log;
 import nallar.tickthreading.util.PropertyUtil;
-import nallar.tickthreading.util.VersionUtil;
+import nallar.tickthreading.util.Version;
 import nallar.tickthreading.util.unsafe.UnsafeUtil;
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 
@@ -13,13 +13,15 @@ import java.util.*;
 @IFMLLoadingPlugin.MCVersion("@MC_VERSION@")
 @IFMLLoadingPlugin.SortingIndex(1002)
 public class CoreMod implements IFMLLoadingPlugin {
+	public static boolean
+
 	static {
 		if (PropertyUtil.get("removeSecurityManager", false)) {
 			UnsafeUtil.removeSecurityManager();
 		}
 
 		ModPatcher.requireVersion("latest", "beta");
-		Log.info(VersionUtil.TTVersionString() + " CoreMod initialised");
+		Log.info(Version.DESCRIPTION + " CoreMod initialised");
 	}
 
 	@Override
@@ -39,7 +41,7 @@ public class CoreMod implements IFMLLoadingPlugin {
 
 	@Override
 	public void injectData(Map<String, Object> map) {
-
+		ModPatcher.loadMixins("nallar.tickthreading.mixin");
 	}
 
 	@Override
