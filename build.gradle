@@ -34,7 +34,12 @@ ext.fullForgeVersion = mcVersion + "-" + forgeVersion
 
 gradle.startParameter.showStacktrace = org.gradle.logging.ShowStacktrace.ALWAYS
 
-version = mcVersion + '-SNAPSHOT'
+// Define variables
+ext.buildNumber = System.getenv("BUILD_NUMBER") ?: 0
+ext.ciSystem = System.getenv("JENKINS_URL") ? 'Jenkins' : 'unknown'
+ext.commit = System.getenv("GIT_COMMIT") ?: 'unknown'
+
+version = mcVersion + '.' + buildNumber
 
 minecraft {
 	version = fullForgeVersion
@@ -54,11 +59,6 @@ modpatcher {
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 defaultTasks "setupCiWorkspace", "build"
-
-// Define variables
-ext.buildNumber = System.getenv("BUILD_NUMBER") ?: 0
-ext.ciSystem = System.getenv("JENKINS_URL") ? 'Jenkins' : 'unknown'
-ext.commit = System.getenv("GIT_COMMIT") ?: 'unknown'
 
 repositories {
 	jcenter()
