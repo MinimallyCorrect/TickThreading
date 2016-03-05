@@ -13,8 +13,6 @@ import java.util.*;
 @IFMLLoadingPlugin.MCVersion("@MC_VERSION@")
 @IFMLLoadingPlugin.SortingIndex(1002)
 public class CoreMod implements IFMLLoadingPlugin {
-	public static boolean
-
 	static {
 		if (PropertyUtil.get("removeSecurityManager", false)) {
 			UnsafeUtil.removeSecurityManager();
