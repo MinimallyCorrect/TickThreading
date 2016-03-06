@@ -39,7 +39,8 @@ public class CoreMod implements IFMLLoadingPlugin {
 
 	@Override
 	public void injectData(Map<String, Object> map) {
-		ModPatcher.loadMixins("nallar.tickthreading.mixin");
+		if (Version.EXTENDED) // TODO: make this work?
+			ModPatcher.loadMixins("nallar.tickthreading.mixin");
 	}
 
 	@Override
