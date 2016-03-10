@@ -6,7 +6,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 import sun.misc.Unsafe;
 
-import java.io.*;
 import java.lang.ref.*;
 import java.lang.reflect.*;
 import java.util.*;
@@ -212,9 +211,7 @@ public class UnsafeUtil {
 			return;
 
 		Field err = System.class.getDeclaredField("err");
-		PrintStream out_ = System.out;
 		$.putObjectVolatile($.staticFieldBase(err), $.staticFieldOffset(err) + ADDRESS_SIZE_IN_MEMORY, null);
-		System.setOut(out_);
 
 		if (System.getSecurityManager() != null)
 			Log.error("Failed to remove SecurityManager");
