@@ -12,7 +12,7 @@ buildscript {
 	}
 	configurations.all { resolutionStrategy.cacheChangingModulesFor 30, 'seconds' }
 	dependencies {
-		classpath 'net.minecraftforge.gradle:ForgeGradle:2.1-SNAPSHOT'
+		classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
 		classpath group: 'me.nallar', name: 'ModPatcherGradle', version: '0.1-SNAPSHOT', changing: true
 	}
 }
@@ -28,8 +28,8 @@ ext.packaging = 'jar'
 ext.url = 'http://nallar.me/minecraft'
 ext.description = 'Mod Patcher'
 ext.organization = 'nallar.me'
-ext.mcVersion = '1.8.9'
-ext.forgeVersion = "11.15.0.1683"
+ext.mcVersion = '1.10'
+ext.forgeVersion = "12.18.0.1996-1.10.0"
 ext.fullForgeVersion = mcVersion + "-" + forgeVersion
 
 gradle.startParameter.showStacktrace = org.gradle.logging.ShowStacktrace.ALWAYS
@@ -43,7 +43,7 @@ version = mcVersion + '.' + buildNumber
 
 minecraft {
 	version = fullForgeVersion
-	mappings = "stable_20"
+	mappings = "snapshot_20160518"
 
 	replace "@MOD_NAME@", project.name
 	replace "@MOD_VERSION@", project.version
@@ -73,7 +73,7 @@ configurations {
 
 dependencies {
 	testCompile 'junit:junit:4.12'
-	compile "me.nallar:ModPatcher:1.8.9-SNAPSHOT:api"
+	compile "me.nallar:ModPatcher:1.10-SNAPSHOT:api"
 	compile 'org.projectlombok:lombok:1.16.6'
 	provided "me.nallar:Mixin:1.0-SNAPSHOT"
 }

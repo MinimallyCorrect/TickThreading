@@ -1,7 +1,6 @@
 package nallar.tickthreading.util;
 
 import lombok.experimental.UtilityClass;
-import net.minecraft.server.MinecraftServer;
 
 @UtilityClass
 public class Version {
@@ -22,19 +21,5 @@ public class Version {
 		}
 
 		return true;
-	}
-
-	public static String getFullDescription() {
-		String version = "";
-		try {
-			// TODO: Don't try this if too early in CoreMod loading
-			Class.forName("net.minecraft.server.MinecraftServer");
-			MinecraftServer minecraftServer = MinecraftServer.getServer();
-			if (minecraftServer != null) {
-				version = " on " + minecraftServer.getServerModName();
-			}
-		} catch (ClassNotFoundException ignored) {
-		}
-		return DESCRIPTION + version + " - " + System.getProperty("java.runtime.version");
 	}
 }

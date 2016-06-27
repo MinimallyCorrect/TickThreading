@@ -2,13 +2,9 @@ package nallar.tickthreading.util.unsafe;
 
 import lombok.SneakyThrows;
 import nallar.tickthreading.log.Log;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.World;
 import sun.misc.Unsafe;
 
-import java.lang.ref.*;
 import java.lang.reflect.*;
-import java.util.*;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class UnsafeUtil {
@@ -50,67 +46,9 @@ public class UnsafeUtil {
 		}
 	}
 
-	public static long unsafeSizeOf(Object o) {
-		Set<Object> searched = Collections.newSetFromMap(new IdentityHashMap<>());
-		searched.add(MinecraftServer.getServer());
-		searched.add(o);
-		long size = unsafeSizeOf(o, searched, 0);
-		searched.clear();
-		return size;
-	}
-
-	private static boolean canSearch(Object o) {
-		return o != null && !(o instanceof Reference || o instanceof World);
-	}
-
-	public static long unsafeSizeOf(Object o, Set<Object> searched, int depth) {
-		Class<?> cls = o.getClass();
-		if (cls.isArray()) {
-			long size = $.arrayBaseOffset(cls) + $.arrayIndexScale(cls) * Array.getLength(o);
-			if (!cls.getComponentType().isPrimitive() && depth < 20) {
-				Object[] a = (Object[]) o;
-				for (Object in : a) {
-					if (canSearch(in) && searched.add(in)) {
-						size += unsafeSizeOf(in, searched, depth + 1);
-					}
-				}
-			}
-			return size;
-		}
-		List<Field> fields = new LinkedList<>();
-		while (cls != Object.class && cls != null) {
-			try {
-				for (Field f : cls.getDeclaredFields()) {
-					if ((f.getModifiers() & Modifier.STATIC) != Modifier.STATIC) {
-						fields.add(f);
-					}
-				}
-			} catch (NoClassDefFoundError ignored) {
-				// The class has fields of types which don't exist. We can't do anything about this easily :(
-			}
-			cls = cls.getSuperclass();
-		}
-
-		long maxOffset = MIN_SIZE;
-		long innerSize = 0;
-		for (Field f : fields) {
-			long offset = $.objectFieldOffset(f);
-			if (offset > maxOffset) {
-				maxOffset = offset;
-			}
-			if (!f.getType().isPrimitive() && depth < 20) {
-				Object in = $.getObject(o, offset);
-				if (canSearch(in) && searched.add(in)) {
-					innerSize += unsafeSizeOf(in, searched, depth + 1);
-				}
-			}
-		}
-		return (((int) maxOffset / ADDRESS_SIZE) + 1) * ADDRESS_SIZE + innerSize;
-	}
-
 	/**
 	 * Creates an instance of class c without calling any constructors - all fields will be null/default primitive values, INCLUDING FINAL FIELDS.
-	 * This kinda' breaks the java memory model, to the same extent that setting a final field with reflection does.
+	 * This breaks assumptions about final fields which may be made elsewhere.
 	 *
 	 * @param c Class to instantiate
 	 * @return the instance of c

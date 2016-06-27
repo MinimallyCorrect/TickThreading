@@ -28,12 +28,14 @@
  */
 package nallar.tickthreading.reporting;
 
+import lombok.val;
 import nallar.tickthreading.log.Log;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
+import net.minecraft.world.gen.ChunkProviderServer;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -371,16 +373,17 @@ public class Metrics {
 	private void postPlugin(final boolean isPing) throws IOException {
 		// Server software specific section
 		String pluginName = modname;
-		boolean onlineMode = MinecraftServer.getServer().isServerInOnlineMode(); // TRUE
+		val server = FMLCommonHandler.instance().getMinecraftServerInstance();
+		boolean onlineMode = server.isServerInOnlineMode(); // TRUE
 		// if
 		// online
 		// mode
 		// is
 		// enabled
 		String pluginVersion = modversion;
-		String serverVersion = MinecraftServer.getServer().getServerModName() + " (MC: "
-			+ MinecraftServer.getServer().getMinecraftVersion() + ')';
-		int playersOnline = MinecraftServer.getServer().getCurrentPlayerCount();
+		String serverVersion = server.getServerModName() + " (MC: "
+			+ server.getMinecraftVersion() + ')';
+		int playersOnline = server.getCurrentPlayerCount();
 
 		// END server software specific section -- all code below does not use
 		// any code outside of this class / Java
@@ -675,7 +678,9 @@ public class Metrics {
 		public int getValue() {
 			int i = 0;
 			for (World world : DimensionManager.getWorlds()) {
-				i += world.getChunkProvider().getLoadedChunkCount();
+				val provider = world.getChunkProvider();
+				if (provider instanceof ChunkProviderServer)
+					i += ((ChunkProviderServer) world.getChunkProvider()).getLoadedChunkCount();
 			}
 			return i;
 		}

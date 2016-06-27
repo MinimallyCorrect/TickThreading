@@ -16,8 +16,8 @@ public abstract class MixinWorld extends World {
 	}
 
 	@Add
-	public int getDimension() {
-		return provider.getDimensionId();
+	public int getDimensionId() {
+		return provider.getDimensionType().getId();
 	}
 
 	@Add
@@ -26,15 +26,16 @@ public abstract class MixinWorld extends World {
 		if (name != null) {
 			return name;
 		}
-		int dimensionId = getDimension();
+		int dimensionId = getDimensionId();
 		name = worldInfo.getWorldName();
 		if (name.equals("DIM" + dimensionId) || "world".equals(name)) {
-			name = provider.getDimensionName();
+			name = provider.getDimensionType().getName();
 		}
 		if (name.startsWith("world_") && name.length() != 6) {
 			name = name.substring(6);
 		}
-		cachedName = name = (name + '/' + dimensionId + (isRemote ? "-r" : ""));
+		name += '/' + dimensionId + (isRemote ? "-r" : "");
+		cachedName = name;
 		return name;
 	}
 }

@@ -5,6 +5,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -105,11 +106,11 @@ public class Log {
 
 	public static String dumpWorld(World world) {
 		boolean unloaded = world.unloaded;
-		return (unloaded ? "un" : "") + "loaded world " + name(world) + '@' + System.identityHashCode(world) + ", dimension: " + world.getDimension();
+		return (unloaded ? "un" : "") + "loaded world " + name(world) + '@' + System.identityHashCode(world) + ", dimension: " + world.getDimensionId();
 	}
 
 	public static void checkWorlds() {
-		MinecraftServer minecraftServer = MinecraftServer.getServer();
+		MinecraftServer minecraftServer = FMLCommonHandler.instance().getMinecraftServerInstance();
 		int a = minecraftServer.worldServers.length;
 		int b = DimensionManager.getWorlds().length;
 		if (a != b) {
@@ -128,7 +129,7 @@ public class Log {
 	public static String dumpWorlds() {
 		StringBuilder sb = new StringBuilder();
 		List<World> dimensionManagerWorlds = new ArrayList<>(Arrays.asList(DimensionManager.getWorlds()));
-		MinecraftServer minecraftServer = MinecraftServer.getServer();
+		MinecraftServer minecraftServer = FMLCommonHandler.instance().getMinecraftServerInstance();
 		List<World> minecraftServerWorlds = new ArrayList<>(Arrays.asList(minecraftServer.worldServers));
 		sb.append("Worlds in dimensionManager: \n").append(dumpWorlds(dimensionManagerWorlds));
 		sb.append("Worlds in minecraftServer: \n").append(dumpWorlds(minecraftServerWorlds));

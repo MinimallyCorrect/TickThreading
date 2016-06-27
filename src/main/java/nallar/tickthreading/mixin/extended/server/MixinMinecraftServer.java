@@ -9,7 +9,7 @@ import java.util.concurrent.*;
 @Mixin
 public abstract class MixinMinecraftServer extends MinecraftServer {
 	public MixinMinecraftServer() {
-		super(null, null);
+		super(null, null, null, null, null, null, null);
 	}
 
 	@Override
