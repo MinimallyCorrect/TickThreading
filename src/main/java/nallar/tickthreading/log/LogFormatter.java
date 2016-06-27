@@ -8,8 +8,8 @@ import java.util.logging.*;
 
 public class LogFormatter extends Formatter {
 	public static final String LINE_SEPARATOR = System.getProperty("line.separator");
-	protected static final boolean colorEnabled = PropertyUtil.get("colorLogs", false);
-	private static final boolean simplifyMcLoggerName = PropertyUtil.get("fullLoggerName", false);
+	protected static final boolean colorEnabled = PropertyUtil.get("logColor", false);
+	private static final boolean simplifyMcLoggerName = PropertyUtil.get("logSimplifyMinecraftServer", true);
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd HH:mm:ss");
 
 	public static void setDateFormat(SimpleDateFormat dateFormat) {
