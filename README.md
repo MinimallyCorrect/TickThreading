@@ -1,8 +1,8 @@
-TickThreading [![Build Status](https://jenkins.nallar.me/job/TickThreading/branch/1.8.9/badge/icon)](https://jenkins.nallar.me/job/TickThreading/branch/1.8.9/)
+TickThreading [![Build Status](https://jenkins.nallar.me/job/TickThreading/branch/1.10/badge/icon)](https://jenkins.nallar.me/job/TickThreading/branch/1.10/)
 ==========
 Multi-threaded minecraft. Requires Forge.
 
-Update for 1.8.9 in-progress.
+Update for 1.10 in-progress.
 
 Copyright &copy; 2012-2016, nallar <ross@nallar.me>
 
