@@ -38,4 +38,9 @@ public abstract class MixinWorld extends World {
 		cachedName = name;
 		return name;
 	}
+
+	@Add
+	public String toString() {
+		return "World " + System.identityHashCode(this) + " " + getName();
+	}
 }
