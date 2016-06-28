@@ -94,6 +94,14 @@ def jarConfig = {
 	}) {
 		exclude "META-INF/**"
 	}
+	manifest {
+		attributes("Built-By": System.properties['user.name'],
+			"Created-By": System.properties['java.vm.version'] + " (" + System.properties['java.vm.vendor'] + ")",
+			"Implementation-Title": name,
+			"Implementation-Version": version + "+" + ciSystem + "-b" + buildNumber + ".git-" + commit,
+			"Implementation-Vendor": url,
+			"FMLCorePlugin": "nallar.tickthreading.mod.CoreMod")
+	}
 	from mappingsPath + 'packaged.srg'
 	from mappingsPath + 'methods.csv'
 	from mappingsPath + 'fields.csv'
@@ -154,12 +162,3 @@ tasks.withType(JavaCompile) {
 		forkOptions.executable = 'javac'
 	}
 }
-
-jar.manifest.mainAttributes(
-	"Built-By": System.properties['user.name'],
-	"Created-By": System.properties['java.vm.version'] + " (" + System.properties['java.vm.vendor'] + ")",
-	"Implementation-Title": name,
-	"Implementation-Version": version + "+" + ciSystem + "-b" + buildNumber + ".git-" + commit,
-	"Implementation-Vendor": url,
-	"FMLCorePlugin": "nallar.tickthreading.mod.CoreMod"
-)
