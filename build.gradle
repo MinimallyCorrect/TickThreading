@@ -28,8 +28,8 @@ ext.packaging = 'jar'
 ext.url = 'http://nallar.me/minecraft'
 ext.description = 'Mod Patcher'
 ext.organization = 'nallar.me'
-ext.mcVersion = '1.10'
-ext.forgeVersion = "12.18.0.1996-1.10.0"
+ext.mcVersion = '1.10.2'
+ext.forgeVersion = "12.18.1.2076"
 ext.fullForgeVersion = mcVersion + "-" + forgeVersion
 
 gradle.startParameter.showStacktrace = org.gradle.api.logging.configuration.ShowStacktrace.ALWAYS
@@ -73,7 +73,7 @@ configurations {
 
 dependencies {
 	testCompile 'junit:junit:4.12'
-	compile "me.nallar:ModPatcher:1.10-SNAPSHOT:api"
+	compile "me.nallar:ModPatcher:$mcVersion-SNAPSHOT:api"
 	compile 'org.projectlombok:lombok:1.16.6'
 	provided "me.nallar:Mixin:1.0-SNAPSHOT"
 }
@@ -161,4 +161,8 @@ tasks.withType(JavaCompile) {
 		fork = true
 		forkOptions.executable = 'javac'
 	}
+}
+
+wrapper {
+	gradleVersion = "3.0"
 }
