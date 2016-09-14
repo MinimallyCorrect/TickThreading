@@ -1,4 +1,4 @@
-TickThreading [![Build Status](https://jenkins.nallar.me/job/TickThreading/branch/1.10/badge/icon)](https://jenkins.nallar.me/job/TickThreading/branch/1.10/)
+TickThreading [![Build Status](https://jenkins.nallar.me/job/TickThreading/branch/1.10.2/badge/icon)](https://jenkins.nallar.me/job/TickThreading/branch/1.10.2/)
 ==========
 Multi-threaded minecraft. Requires Forge.
 
