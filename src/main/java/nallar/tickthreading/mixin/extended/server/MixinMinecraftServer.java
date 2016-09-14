@@ -8,6 +8,7 @@ import java.util.concurrent.*;
 
 @Mixin
 public abstract class MixinMinecraftServer extends MinecraftServer {
+	@SuppressWarnings("ConstantConditions")
 	public MixinMinecraftServer() {
 		super(null, null, null, null, null, null, null);
 	}

@@ -372,7 +372,6 @@ public class Metrics {
 	 */
 	private void postPlugin(final boolean isPing) throws IOException {
 		// Server software specific section
-		String pluginName = modname;
 		val server = FMLCommonHandler.instance().getMinecraftServerInstance();
 		boolean onlineMode = server.isServerInOnlineMode(); // TRUE
 		// if
@@ -380,7 +379,6 @@ public class Metrics {
 		// mode
 		// is
 		// enabled
-		String pluginVersion = modversion;
 		String serverVersion = server.getServerModName() + " (MC: "
 			+ server.getMinecraftVersion() + ')';
 		int playersOnline = server.getCurrentPlayerCount();
@@ -394,7 +392,7 @@ public class Metrics {
 		// The plugin's description file containg all of the plugin data such as
 		// name, version, author, etc
 		data.append(encode("guid")).append('=').append(encode(guid));
-		encodeDataPair(data, "version", pluginVersion);
+		encodeDataPair(data, "version", modversion);
 		encodeDataPair(data, "server", serverVersion);
 		encodeDataPair(data, "players", Integer.toString(playersOnline));
 		encodeDataPair(data, "revision", String.valueOf(REVISION));
@@ -452,7 +450,7 @@ public class Metrics {
 
 		// Create the url
 		URL url = new URL(BASE_URL
-			+ String.format(REPORT_URL, encode(pluginName)));
+			+ String.format(REPORT_URL, encode(modname)));
 
 		// Connect to the website
 		URLConnection connection;
@@ -496,6 +494,7 @@ public class Metrics {
 	/**
 	 * Represents a custom graph on the website
 	 */
+	@SuppressWarnings("EmptyMethod")
 	public static class Graph {
 		/**
 		 * The graph's name, alphanumeric and spaces only :) If it does not

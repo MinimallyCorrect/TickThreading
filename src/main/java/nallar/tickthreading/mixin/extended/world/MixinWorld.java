@@ -9,6 +9,7 @@ public abstract class MixinWorld extends World {	/* TODO: per-world tasks
 	private final ArrayDeque<Runnable> tasks_ = null;
 	*/
 
+	@SuppressWarnings("ConstantConditions")
 	protected MixinWorld() {
 		super(null, null, null, null, false);
 		/* TODO: per-world tasks

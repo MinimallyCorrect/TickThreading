@@ -10,6 +10,7 @@ public class LogFormatter extends Formatter {
 	public static final String LINE_SEPARATOR = System.getProperty("line.separator");
 	protected static final boolean colorEnabled = PropertyUtil.get("logColor", false);
 	private static final boolean simplifyMcLoggerName = PropertyUtil.get("logSimplifyMinecraftServer", true);
+	private static final String endColor = "\033[39m";
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd HH:mm:ss");
 
 	public static void setDateFormat(SimpleDateFormat dateFormat) {
@@ -35,14 +36,6 @@ public class LogFormatter extends Formatter {
 		return 39;
 	}
 
-	protected static String getEndColor() {
-		return "\033[39m";
-	}
-
-	protected boolean shouldColor() {
-		return colorEnabled;
-	}
-
 	@SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
 	@Override
 	public String format(LogRecord record) {
@@ -56,13 +49,13 @@ public class LogFormatter extends Formatter {
 		formattedMessage.append(date);
 		Level level = record.getLevel();
 		formattedMessage.append(" [");
-		final boolean shouldColor = shouldColor();
+		final boolean shouldColor = colorEnabled;
 		if (shouldColor) {
 			formattedMessage.append(getStartColor(level));
 		}
 		formattedMessage.append(record.getLevel().getName().toUpperCase());
 		if (shouldColor) {
-			formattedMessage.append(getEndColor());
+			formattedMessage.append(endColor);
 		}
 		formattedMessage.append("] ");
 
