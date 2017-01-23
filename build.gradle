@@ -74,7 +74,7 @@ configurations {
 dependencies {
 	testCompile 'junit:junit:4.12'
 	compile "me.nallar:ModPatcher:$mcVersion-SNAPSHOT:api"
-	compile 'org.projectlombok:lombok:1.16.6'
+	compile 'org.projectlombok:lombok:1.16.12'
 	provided "me.nallar:Mixin:1.0-SNAPSHOT"
 }
 
@@ -164,5 +164,5 @@ tasks.withType(JavaCompile) {
 }
 
 wrapper {
-	gradleVersion = "3.0"
+	gradleVersion = "3.3"
 }
