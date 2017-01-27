@@ -82,7 +82,7 @@ public abstract class MixinWorldEntitySpawner extends WorldEntitySpawner {
 		if (worldServer.getWorldTime() % clumping != 0) {
 			return 0;
 		}
-		float entityMultiplier = worldServer.playerEntities.size() * 2;
+		float entityMultiplier = worldServer.playerEntities.size() * 1.5f;
 		if (entityMultiplier == 0) {
 			return 0;
 		}
@@ -91,7 +91,7 @@ public abstract class MixinWorldEntitySpawner extends WorldEntitySpawner {
 		profiler.startSection("creatureTypes");
 		boolean dayTime = worldServer.isDaytime();
 		val p = worldServer.getChunkProvider();
-		float mobMultiplier = entityMultiplier * (dayTime ? 1 : 2);
+		float mobMultiplier = entityMultiplier * (dayTime ? 2 : 3);
 		val requiredSpawns = new EnumMap<EnumCreatureType, Integer>(EnumCreatureType.class);
 		for (EnumCreatureType creatureType : EnumCreatureType.values()) {
 			int count = (int) ((creatureType.getPeacefulCreature() ? entityMultiplier : mobMultiplier) * creatureType.getMaxNumberOfCreature());
