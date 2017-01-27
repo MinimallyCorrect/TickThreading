@@ -82,7 +82,7 @@ public class LongHashMap<T> {
 					java.lang.Object old = innerValues[i];
 					innerKeys[i] = key;
 					innerValues[i] = value;
-					return (Object) old;
+					return old;
 				}
 			}
 
