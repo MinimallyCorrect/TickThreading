@@ -91,9 +91,13 @@ public abstract class MixinWorldEntitySpawner extends WorldEntitySpawner {
 		profiler.startSection("creatureTypes");
 		boolean dayTime = worldServer.isDaytime();
 		val p = worldServer.getChunkProvider();
+		val hell = worldServer.provider instanceof WorldProviderHell;
 		float mobMultiplier = entityMultiplier * (dayTime ? 2 : 3);
 		val requiredSpawns = new EnumMap<EnumCreatureType, Integer>(EnumCreatureType.class);
 		for (EnumCreatureType creatureType : EnumCreatureType.values()) {
+			if (hell && creatureType == EnumCreatureType.WATER_CREATURE)
+				continue;
+
 			int count = (int) ((creatureType.getPeacefulCreature() ? entityMultiplier : mobMultiplier) * creatureType.getMaxNumberOfCreature());
 			if (!(creatureType.getPeacefulCreature() && !peaceful || creatureType.getAnimal() && !animal || !creatureType.getPeacefulCreature() && !hostile) && count > worldServer.countEntities(creatureType.getCreatureClass())) {
 				requiredSpawns.put(creatureType, count);
@@ -156,7 +160,7 @@ public abstract class MixinWorldEntitySpawner extends WorldEntitySpawner {
 				continue;
 			int sX = x >> 4 + worldServer.rand.nextInt(16);
 			int sZ = z >> 4 + worldServer.rand.nextInt(16);
-			boolean surface = !(worldServer.provider instanceof WorldProviderHell) && (creatureType.getPeacefulCreature() || (dayTime ? surfaceChance++ % 5 == 0 : surfaceChance++ % 5 != 0));
+			boolean surface = !hell && (creatureType.getPeacefulCreature() || (dayTime ? surfaceChance++ % 5 == 0 : surfaceChance++ % 5 != 0));
 			int gap = gapChance++;
 			int sY;
 			if (creatureType == EnumCreatureType.WATER_CREATURE) {
