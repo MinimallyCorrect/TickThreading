@@ -12,7 +12,7 @@ import java.util.*;
 @IFMLLoadingPlugin.Name("@MOD_NAME@Core")
 @IFMLLoadingPlugin.MCVersion("@MC_VERSION@")
 @IFMLLoadingPlugin.SortingIndex(1002)
-public class CoreMod implements IFMLLoadingPlugin {
+public class TickThreadingCore implements IFMLLoadingPlugin {
 	public static boolean canLoadMinecraftClasses;
 
 	static {
@@ -42,7 +42,7 @@ public class CoreMod implements IFMLLoadingPlugin {
 	@Override
 	public void injectData(Map<String, Object> map) {
 		ModPatcher.loadMixins("nallar.tickthreading.mixin");
-		ModPatcher.loadPatches(CoreMod.class.getResourceAsStream("/patches/minecraft.xml"));
+		ModPatcher.loadPatches(TickThreadingCore.class.getResourceAsStream("/patches/minecraft.xml"));
 	}
 
 	@Override

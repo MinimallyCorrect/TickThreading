@@ -22,7 +22,8 @@ group = 'me.nallar'
 archivesBaseName = 'TickThreading'
 
 // Extended project information
-ext.projectName = 'TickThreading'
+ext.projectName = project.name
+ext.modid = project.name.toLowerCase()
 ext.inceptionYear = '2014'
 ext.packaging = 'jar'
 ext.url = 'http://nallar.me/minecraft'
@@ -46,6 +47,7 @@ minecraft {
 	mappings = "snapshot_20160518"
 
 	replace "@MOD_NAME@", project.name
+	replace "@MOD_ID@", ext.modid
 	replace "@MOD_VERSION@", project.version
 	replace "@MC_VERSION@", version
 }
@@ -100,7 +102,9 @@ def jarConfig = {
 			"Implementation-Title": name,
 			"Implementation-Version": version + "+" + ciSystem + "-b" + buildNumber + ".git-" + commit,
 			"Implementation-Vendor": url,
-			"FMLCorePlugin": "nallar.tickthreading.mod.CoreMod")
+			"FMLCorePlugin": "nallar.tickthreading.mod.TickThreadingCore",
+			"FMLCorePluginContainsFMLMod": "true"
+		)
 	}
 	from mappingsPath + 'packaged.srg'
 	from mappingsPath + 'methods.csv'
@@ -139,7 +143,7 @@ processResources {
 		include 'mcmod.info'
 
 		// replace version and mcversion
-		expand 'version': project.version, 'mcversion': project.minecraft.version, 'name': project.projectName
+		expand 'version': project.version, 'mcversion': project.minecraft.version, 'name': project.projectName, 'modid': ext.modid
 	}
 
 	// copy everything else, thats not the mcmod.info
