@@ -47,7 +47,7 @@ minecraft {
 	mappings = "snapshot_20160518"
 
 	replace "@MOD_NAME@", project.name
-	replace "@MOD_ID@", ext.modid
+	replace "@MOD_ID@", modid
 	replace "@MOD_VERSION@", project.version
 	replace "@MC_VERSION@", version
 }
@@ -143,7 +143,7 @@ processResources {
 		include 'mcmod.info'
 
 		// replace version and mcversion
-		expand 'version': project.version, 'mcversion': project.minecraft.version, 'name': project.projectName, 'modid': ext.modid
+		expand 'version': project.version, 'mcversion': project.minecraft.version, 'name': project.projectName, 'modid': modid
 	}
 
 	// copy everything else, thats not the mcmod.info
