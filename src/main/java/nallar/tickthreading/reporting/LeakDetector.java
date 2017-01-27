@@ -30,7 +30,7 @@ public class LeakDetector {
 			long id = System.identityHashCode(o);
 			scheduledObjects.put(id, new LeakCheckEntry(o, getDescription(o, name, id), clean ? Level.TRACE : Level.WARN));
 
-			scheduledThreadPoolExecutor.schedule((Runnable) () -> scheduledObjects.remove(id).check(), waitTimeSeconds, TimeUnit.SECONDS);
+			scheduledThreadPoolExecutor.schedule(scheduledObjects.remove(id)::check, waitTimeSeconds, TimeUnit.SECONDS);
 		} catch (Throwable t) {
 			Log.error("Failed to schedule leak check for " + name, t);
 		}

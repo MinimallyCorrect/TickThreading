@@ -8,7 +8,7 @@ import java.lang.reflect.*;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class UnsafeUtil {
-	static final Unsafe $ = UnsafeAccess.$;
+	private static final Unsafe $ = UnsafeAccess.$;
 	private static final long baseOffset = $.arrayBaseOffset(Object[].class);
 	private static final long headerSize = baseOffset - 8;
 	private static final int ADDRESS_SIZE = $.addressSize();
