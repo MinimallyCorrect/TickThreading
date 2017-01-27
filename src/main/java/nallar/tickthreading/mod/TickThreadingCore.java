@@ -13,8 +13,6 @@ import java.util.*;
 @IFMLLoadingPlugin.MCVersion("@MC_VERSION@")
 @IFMLLoadingPlugin.SortingIndex(1002)
 public class TickThreadingCore implements IFMLLoadingPlugin {
-	public static boolean canLoadMinecraftClasses;
-
 	static {
 		if (PropertyUtil.get("removeSecurityManager", false)) {
 			UnsafeUtil.removeSecurityManager();
