@@ -24,10 +24,6 @@ import java.util.*;
 
 @Mixin
 public abstract class MixinWorldEntitySpawner extends WorldEntitySpawner {
-	private static long hash(int x, int z) {
-		return (((long) x) << 32) | (z & 0xffffffffL);
-	}
-
 	private static final int closeRange = 1;
 	private static final int farRange = 5;
 	private static final int spawnVariance = 6;
@@ -35,6 +31,10 @@ public abstract class MixinWorldEntitySpawner extends WorldEntitySpawner {
 	private static final int maxChunksPerPlayer = square(farRange * 2) - square(closeRange * 2);
 	private static int surfaceChance;
 	private static int gapChance;
+
+	private static long hash(int x, int z) {
+		return (((long) x) << 32) | (z & 0xffffffffL);
+	}
 
 	private static int square(int a) {
 		return a * a;
@@ -177,7 +177,7 @@ public abstract class MixinWorldEntitySpawner extends WorldEntitySpawner {
 			}
 			// TODO: Fix this check?
 			if (true) {
-			//if (chunk.getBlockState(sX, sY, sZ).getMaterial() == creatureType.getCreatureMaterial()) {
+				//if (chunk.getBlockState(sX, sY, sZ).getMaterial() == creatureType.getCreatureMaterial()) {
 				IEntityLivingData unusedIEntityLivingData = null;
 				for (int i = 0; i < ((clumping * 3) / 2); i++) {
 					int ssX = sX + (worldServer.rand.nextInt(spawnVariance) - spawnVariance / 2);

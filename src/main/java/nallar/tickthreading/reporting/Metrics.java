@@ -96,7 +96,9 @@ public class Metrics {
 	private Thread thrd = null;
 	private boolean firstPost = true;
 
-	public Metrics(@NonNull final String modname, @NonNull final String modversion) {
+	public Metrics(@NonNull
+				   final String modname, @NonNull
+				   final String modversion) {
 		this.modname = modname;
 		this.modversion = modversion;
 

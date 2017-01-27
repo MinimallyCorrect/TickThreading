@@ -10,6 +10,15 @@ public class LongHashMap<T> {
 	private final java.lang.Object[][] values = new java.lang.Object[BUCKET_SIZE][];
 	private int size;
 
+	private static long keyIndex(long key) {
+		key ^= key >>> 33;
+		key *= 0xff51afd7ed558ccdL;
+		key ^= key >>> 33;
+		key *= 0xc4ceb9fe1a85ec53L;
+		key ^= key >>> 33;
+		return key;
+	}
+
 	public long[][] getKeys() {
 		return keys;
 	}
@@ -121,14 +130,5 @@ public class LongHashMap<T> {
 		}
 
 		return null;
-	}
-
-	private static long keyIndex(long key) {
-		key ^= key >>> 33;
-		key *= 0xff51afd7ed558ccdL;
-		key ^= key >>> 33;
-		key *= 0xc4ceb9fe1a85ec53L;
-		key ^= key >>> 33;
-		return key;
 	}
 }
