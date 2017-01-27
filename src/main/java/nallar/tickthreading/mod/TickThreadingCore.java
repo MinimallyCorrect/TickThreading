@@ -20,6 +20,9 @@ public class TickThreadingCore implements IFMLLoadingPlugin {
 
 		ModPatcher.requireVersion("latest", "beta");
 		Log.info(Version.DESCRIPTION + " CoreMod initialised");
+
+		if (Version.EXTENDED && !PropertyUtil.get("overrideExtended", false))
+			throw new UnsupportedOperationException("TickThreading EXTENDED release is not currently usable");
 	}
 
 	@Override
