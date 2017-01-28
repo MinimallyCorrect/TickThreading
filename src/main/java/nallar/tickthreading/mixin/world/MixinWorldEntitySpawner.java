@@ -65,7 +65,7 @@ public abstract class MixinWorldEntitySpawner extends WorldEntitySpawner {
 		int lastGap = 0;
 		for (int y = 1; y < height; y++) {
 			val block = chunk.getBlockState(x, y, z);
-			if (block.getBlock() == Blocks.AIR || block.isTranslucent() || block.getMaterial() == Material.GRASS) {
+			if (block.getBlock() == Blocks.AIR || block.isTranslucent() || block.getMaterial() == Material.VINE) {
 				if (!inGap) {
 					inGap = true;
 					if (gapChance++ % 3 == 0) {
