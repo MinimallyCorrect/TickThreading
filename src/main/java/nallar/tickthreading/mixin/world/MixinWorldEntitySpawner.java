@@ -92,15 +92,17 @@ public abstract class MixinWorldEntitySpawner extends WorldEntitySpawner {
 		boolean dayTime = worldServer.isDaytime();
 		val p = worldServer.getChunkProvider();
 		val hell = worldServer.provider instanceof WorldProviderHell;
-		float mobMultiplier = entityMultiplier * (dayTime ? 2 : 3);
+		float mobMultiplier = entityMultiplier * (dayTime ? 2 : 4);
 		val requiredSpawns = new EnumMap<EnumCreatureType, Integer>(EnumCreatureType.class);
 		for (EnumCreatureType creatureType : EnumCreatureType.values()) {
 			if (hell && creatureType == EnumCreatureType.WATER_CREATURE)
 				continue;
 
 			int count = (int) ((creatureType.getPeacefulCreature() ? entityMultiplier : mobMultiplier) * creatureType.getMaxNumberOfCreature());
-			if (!(creatureType.getPeacefulCreature() && !peaceful || creatureType.getAnimal() && !animal || !creatureType.getPeacefulCreature() && !hostile) && count > worldServer.countEntities(creatureType.getCreatureClass())) {
-				requiredSpawns.put(creatureType, count);
+			if (!(creatureType.getPeacefulCreature() && !peaceful || creatureType.getAnimal() && !animal || !creatureType.getPeacefulCreature() && !hostile)) {
+				val current = worldServer.countEntities(creatureType, true);
+				if (count > current)
+					requiredSpawns.put(creatureType, count - current);
 			}
 		}
 		profiler.endSection();
@@ -143,11 +145,13 @@ public abstract class MixinWorldEntitySpawner extends WorldEntitySpawner {
 				}
 			}
 		}
-		profiler.endStartSection("spawnMobs");
+		profiler.endSection();
 
 		int size = spawnableChunks.size;
 		if (size == 0)
 			return 0;
+
+		profiler.startSection("spawnMobs");
 
 		SpawnLoop:
 		for (val entry : requiredSpawns.entrySet()) {
@@ -235,7 +239,7 @@ public abstract class MixinWorldEntitySpawner extends WorldEntitySpawner {
 					}
 				}
 			}
-			if (attemptedSpawnedMobs >= 24) {
+			if (attemptedSpawnedMobs >= size) {
 				break;
 			}
 		}
