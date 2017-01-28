@@ -4,6 +4,7 @@ import lombok.val;
 import me.nallar.mixin.Mixin;
 import nallar.tickthreading.collection.LongList;
 import nallar.tickthreading.collection.LongSet;
+import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EnumCreatureType;
@@ -27,7 +28,9 @@ public abstract class MixinWorldEntitySpawner extends WorldEntitySpawner {
 	private static final int closeRange = 1;
 	private static final int farRange = 5;
 	private static final int spawnVariance = 6;
+	private static final int minSpawns = 4;
 	private static final int clumping = 7;
+	private static final int mobClumping = 10;
 	private static final int maxChunksPerPlayer = square(farRange * 2) - square(closeRange * 2);
 	private static int surfaceChance;
 	private static int gapChance;
@@ -62,7 +65,7 @@ public abstract class MixinWorldEntitySpawner extends WorldEntitySpawner {
 		int lastGap = 0;
 		for (int y = 1; y < height; y++) {
 			val block = chunk.getBlockState(x, y, z);
-			if (block.getBlock() == Blocks.AIR || block.isTranslucent()) {
+			if (block.getBlock() == Blocks.AIR || block.isTranslucent() || block.getMaterial() == Material.GRASS) {
 				if (!inGap) {
 					inGap = true;
 					if (gapChance++ % 3 == 0) {
@@ -157,91 +160,90 @@ public abstract class MixinWorldEntitySpawner extends WorldEntitySpawner {
 		SpawnLoop:
 		for (val entry : requiredSpawns.entrySet()) {
 			val creatureType = entry.getKey();
-			long hash = spawnableChunks.get(worldServer.rand.nextInt(size));
-			int x = (int) (hash >> 32);
-			int z = (int) hash;
-			val chunk = p.getLoadedChunk(x, z);
-			if (chunk == null)
-				continue;
-			int sX = x >> 4 + worldServer.rand.nextInt(16);
-			int sZ = z >> 4 + worldServer.rand.nextInt(16);
-			boolean surface = !hell && (creatureType.getPeacefulCreature() || (dayTime ? surfaceChance++ % 5 == 0 : surfaceChance++ % 5 != 0));
-			int gap = gapChance++;
-			int sY;
-			if (creatureType == EnumCreatureType.WATER_CREATURE) {
-				String biomeName = chunk.getBiome(new BlockPos(sX, 64, sZ), worldServer.provider.getBiomeProvider()).getBiomeName();
-				if (!"Ocean".equals(biomeName) && !"River".equals(biomeName)) {
+			val tries = ((entry.getValue() + minSpawns) / (mobClumping + 1)) + 1;
+			for (int j = 0; j < tries; j++) {
+				long hash = spawnableChunks.get(worldServer.rand.nextInt(size));
+				int x = (int) (hash >> 32);
+				int z = (int) hash;
+				val chunk = p.getLoadedChunk(x, z);
+				if (chunk == null)
 					continue;
-				}
-				sY = getPseudoRandomHeightValue(sX, sZ, worldServer, true, gap) - 2;
-			} else {
-				sY = getPseudoRandomHeightValue(sX, sZ, worldServer, surface, gap);
-			}
-			if (sY <= 0) {
-				continue;
-			}
-			// TODO: Fix this check?
-			if (true) {
-				//if (chunk.getBlockState(sX, sY, sZ).getMaterial() == creatureType.getCreatureMaterial()) {
-				IEntityLivingData unusedIEntityLivingData = null;
-				for (int i = 0; i < ((clumping * 3) / 2); i++) {
-					int ssX = sX + (worldServer.rand.nextInt(spawnVariance) - spawnVariance / 2);
-					int ssZ = sZ + (worldServer.rand.nextInt(spawnVariance) - spawnVariance / 2);
-
-					if (!p.chunkExists(ssX >> 4, ssZ >> 4)) {
+				int sX = x >> 4 + worldServer.rand.nextInt(16);
+				int sZ = z >> 4 + worldServer.rand.nextInt(16);
+				boolean surface = !hell && (creatureType.getPeacefulCreature() || (dayTime ? surfaceChance++ % 5 == 0 : surfaceChance++ % 5 != 0));
+				int gap = gapChance++;
+				int sY;
+				if (creatureType == EnumCreatureType.WATER_CREATURE) {
+					String biomeName = chunk.getBiome(new BlockPos(sX, 64, sZ), worldServer.provider.getBiomeProvider()).getBiomeName();
+					if (!"Ocean".equals(biomeName) && !"River".equals(biomeName)) {
 						continue;
 					}
+					sY = getPseudoRandomHeightValue(sX, sZ, worldServer, true, gap) - 2;
+				} else {
+					sY = getPseudoRandomHeightValue(sX, sZ, worldServer, surface, gap);
+				}
+				if (sY <= 0) {
+					continue;
+				}
+				// TODO: Fix this check?
+				if (true) {
+					//if (chunk.getBlockState(sX, sY, sZ).getMaterial() == creatureType.getCreatureMaterial()) {
+					IEntityLivingData unusedIEntityLivingData = null;
+					for (int i = 0; i < mobClumping; i++) {
+						int ssX = sX + (worldServer.rand.nextInt(spawnVariance) - spawnVariance / 2);
+						int ssZ = sZ + (worldServer.rand.nextInt(spawnVariance) - spawnVariance / 2);
 
-					int ssY;
-
-					IBlockState state = null;
-					if (creatureType == EnumCreatureType.WATER_CREATURE) {
-						ssY = sY;
-					} else if (creatureType == EnumCreatureType.AMBIENT) {
-						ssY = worldServer.rand.nextInt(63) + 1;
-					} else {
-						ssY = getPseudoRandomHeightValue(ssX, ssZ, worldServer, surface, gap);
-						if (ssY <= 0)
+						if (!p.chunkExists(ssX >> 4, ssZ >> 4))
 							continue;
-						state = chunk.getBlockState(ssX, ssY - 1, ssZ);
-						if (!state.getMaterial().isOpaque() || !state.getBlock().canCreatureSpawn(state, worldServer, new BlockPos(ssX, ssY - 1, ssZ), null))
-							continue;
-					}
 
-					if (creatureType != EnumCreatureType.WATER_CREATURE) {
-						if (state == null)
+						int ssY;
+						IBlockState state = null;
+						if (creatureType == EnumCreatureType.WATER_CREATURE) {
+							ssY = sY;
+						} else if (creatureType == EnumCreatureType.AMBIENT) {
+							ssY = worldServer.rand.nextInt(63) + 1;
+						} else {
+							ssY = getPseudoRandomHeightValue(ssX, ssZ, worldServer, surface, gap);
+							if (ssY <= 0)
+								continue;
 							state = chunk.getBlockState(ssX, ssY - 1, ssZ);
-						if (state.getMaterial().isLiquid())
-							continue;
-					}
-
-					Biome.SpawnListEntry creatureClass = worldServer.getSpawnListEntryForTypeAt(creatureType, new BlockPos(ssX, ssY, ssZ));
-					if (creatureClass == null) {
-						break;
-					}
-
-					EntityLiving spawnedEntity;
-					try {
-						spawnedEntity = creatureClass.entityClass.getConstructor(World.class).newInstance(worldServer);
-						spawnedEntity.setLocationAndAngles((double) ssX, (double) ssY, (double) ssZ, worldServer.rand.nextFloat() * 360.0F, 0.0F);
-
-						val canSpawn = ForgeEventFactory.canEntitySpawn(spawnedEntity, worldServer, ssX, ssY, ssZ);
-						if (canSpawn == Event.Result.ALLOW || (canSpawn == Event.Result.DEFAULT && spawnedEntity.getCanSpawnHere())) {
-							worldServer.spawnEntityInWorld(spawnedEntity);
-							if (!ForgeEventFactory.doSpecialSpawn(spawnedEntity, worldServer, ssX, ssY, ssZ)) {
-								unusedIEntityLivingData = spawnedEntity.onInitialSpawn(worldServer.getDifficultyForLocation(new BlockPos(spawnedEntity)), unusedIEntityLivingData);
-							}
+							if (!state.getMaterial().isOpaque() || !state.getBlock().canCreatureSpawn(state, worldServer, new BlockPos(ssX, ssY - 1, ssZ), null))
+								continue;
 						}
-						attemptedSpawnedMobs++;
-					} catch (Exception e) {
-						System.err.println("Failed to spawn entity " + creatureClass);
-						e.printStackTrace();
-						break SpawnLoop;
+
+						if (creatureType != EnumCreatureType.WATER_CREATURE) {
+							if (state == null)
+								state = chunk.getBlockState(ssX, ssY - 1, ssZ);
+							if (state.getMaterial().isLiquid())
+								continue;
+						}
+
+						Biome.SpawnListEntry creatureClass = worldServer.getSpawnListEntryForTypeAt(creatureType, new BlockPos(ssX, ssY, ssZ));
+						if (creatureClass == null)
+							break;
+
+						EntityLiving spawnedEntity;
+						try {
+							spawnedEntity = creatureClass.entityClass.getConstructor(World.class).newInstance(worldServer);
+							spawnedEntity.setLocationAndAngles((double) ssX, (double) ssY, (double) ssZ, worldServer.rand.nextFloat() * 360.0F, 0.0F);
+
+							val canSpawn = ForgeEventFactory.canEntitySpawn(spawnedEntity, worldServer, ssX, ssY, ssZ);
+							if (canSpawn == Event.Result.ALLOW || (canSpawn == Event.Result.DEFAULT && spawnedEntity.getCanSpawnHere())) {
+								worldServer.spawnEntityInWorld(spawnedEntity);
+								if (!ForgeEventFactory.doSpecialSpawn(spawnedEntity, worldServer, ssX, ssY, ssZ)) {
+									unusedIEntityLivingData = spawnedEntity.onInitialSpawn(worldServer.getDifficultyForLocation(new BlockPos(spawnedEntity)), unusedIEntityLivingData);
+								}
+							}
+							attemptedSpawnedMobs++;
+						} catch (Exception e) {
+							System.err.println("Failed to spawn entity " + creatureClass);
+							e.printStackTrace();
+							break SpawnLoop;
+						}
 					}
 				}
-			}
-			if (attemptedSpawnedMobs >= size) {
-				break;
+				if (attemptedSpawnedMobs >= size)
+					break SpawnLoop;
 			}
 		}
 		profiler.endSection();
