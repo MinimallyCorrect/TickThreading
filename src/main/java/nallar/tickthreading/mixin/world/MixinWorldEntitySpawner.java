@@ -99,11 +99,12 @@ public abstract class MixinWorldEntitySpawner extends WorldEntitySpawner {
 				continue;
 
 			int count = (int) ((creatureType.getPeacefulCreature() ? entityMultiplier : mobMultiplier) * creatureType.getMaxNumberOfCreature());
-			if (!(creatureType.getPeacefulCreature() && !peaceful || creatureType.getAnimal() && !animal || !creatureType.getPeacefulCreature() && !hostile)) {
-				val current = worldServer.countEntities(creatureType, true);
-				if (count > current)
-					requiredSpawns.put(creatureType, count - current);
-			}
+			if (creatureType.getPeacefulCreature() && !peaceful || creatureType.getAnimal() && !animal || !creatureType.getPeacefulCreature() && !hostile)
+				continue;
+
+			val current = worldServer.countEntities(creatureType, true);
+			if (count > current)
+				requiredSpawns.put(creatureType, count - current);
 		}
 		profiler.endSection();
 
