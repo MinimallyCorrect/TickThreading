@@ -1,5 +1,4 @@
-[
-{
+[{
 	"modid": "${modid}",
 	"name": "${name}",
 	"description": "Mod which runs entity and tileEntity ticks in threads.",
@@ -7,6 +6,5 @@
 	"mcversion": "${mcversion}",
 	"url": "https://github.com/nallar/TickThreading",
 	"authorList": [ "nallar" ],
-	"credits": "Authored by nallar",
-}
-]
+	"credits": "Authored by nallar"
+}]
