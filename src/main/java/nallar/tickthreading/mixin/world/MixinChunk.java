@@ -15,6 +15,6 @@ public abstract class MixinChunk extends Chunk {
 			return isModified || (hasEntities && this.worldObj.getTotalWorldTime() != this.lastSaveTime);
 		}
 
-		return (isModified || hasEntities) && this.worldObj.getTotalWorldTime() >= this.lastSaveTime + 1200L;
+		return (isModified || hasEntities) && this.worldObj.getTotalWorldTime() >= this.lastSaveTime + 2111L;
 	}
 }

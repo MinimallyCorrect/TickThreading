@@ -126,7 +126,7 @@ public class Log {
 		}
 	}
 
-	public static String dumpWorlds() {
+	private static String dumpWorlds() {
 		StringBuilder sb = new StringBuilder();
 		List<World> dimensionManagerWorlds = new ArrayList<>(Arrays.asList(DimensionManager.getWorlds()));
 		MinecraftServer minecraftServer = FMLCommonHandler.instance().getMinecraftServerInstance();

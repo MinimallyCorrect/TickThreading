@@ -10,19 +10,15 @@ import java.util.*;
 import java.util.concurrent.*;
 
 public class LeakDetector {
-	final long waitTimeSeconds;
-	private final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1, new ThreadFactoryBuilder().setNameFormat("tt-clean-%1").build());
-	private final Map<Long, LeakCheckEntry> scheduledObjects = new ConcurrentHashMap<>();
+	private static final long waitTimeSeconds = 60;
+	private static final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1, new ThreadFactoryBuilder().setNameFormat("tt-clean-%1").build());
+	private static final Map<Long, LeakCheckEntry> scheduledObjects = new ConcurrentHashMap<>();
 
-	public LeakDetector(final long waitTimeSeconds) {
-		this.waitTimeSeconds = waitTimeSeconds;
-	}
-
-	private void scheduleCleanupTask(Object toClean, long seconds) {
+	private static void scheduleCleanupTask(Object toClean, long seconds) {
 		scheduledThreadPoolExecutor.schedule(() -> UnsafeUtil.clean(toClean), seconds, TimeUnit.SECONDS);
 	}
 
-	public synchronized void scheduleLeakCheck(Object o, String name, boolean clean) {
+	public static synchronized void scheduleLeakCheck(Object o, String name, boolean clean) {
 		try {
 			if (clean)
 				scheduleCleanupTask(o, Math.min(waitTimeSeconds / 2, 20));
@@ -36,14 +32,14 @@ public class LeakDetector {
 		}
 	}
 
-	private String getDescription(Object o, String oDescription_, long id) {
+	private static String getDescription(Object o, String oDescription_, long id) {
 		return (oDescription_ == null ? "" : oDescription_ + " : ") + o.getClass() + '@' + System.identityHashCode(o) + ':' + id;
 	}
 
-	private class LeakCheckEntry {
-		public final WeakReference<Object> o;
-		public final String description;
-		public final Level level;
+	private static class LeakCheckEntry {
+		final WeakReference<Object> o;
+		final String description;
+		final Level level;
 
 		LeakCheckEntry(final Object o, final String description, Level level) {
 			this.o = new WeakReference<>(o);
@@ -51,7 +47,7 @@ public class LeakDetector {
 			this.level = level;
 		}
 
-		public void check() {
+		void check() {
 			if (o.get() == null) {
 				Log.trace("Object " + description + " has been removed normally.");
 				return;
