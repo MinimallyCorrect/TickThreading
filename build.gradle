@@ -30,7 +30,7 @@ ext.url = 'http://nallar.me/minecraft'
 ext.description = 'Mod Patcher'
 ext.organization = 'nallar.me'
 ext.mcVersion = '1.10.2'
-ext.forgeVersion = "12.18.1.2076"
+ext.forgeVersion = "12.18.3.2281"
 ext.fullForgeVersion = mcVersion + "-" + forgeVersion
 
 gradle.startParameter.showStacktrace = org.gradle.api.logging.configuration.ShowStacktrace.ALWAYS
@@ -44,7 +44,7 @@ version = mcVersion + '.' + buildNumber
 
 minecraft {
 	version = fullForgeVersion
-	mappings = "snapshot_20160518"
+	mappings = "snapshot_20161111"
 
 	replace "@MOD_NAME@", project.name
 	replace "@MOD_ID@", modid
