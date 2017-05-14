@@ -14,9 +14,11 @@ buildscript {
 	dependencies {
 		classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
 		classpath group: 'me.nallar', name: 'ModPatcherGradle', version: '0.1-SNAPSHOT', changing: true
+		classpath 'me.nallar.libloader:LibLoaderGradle:0.1-SNAPSHOT'
 	}
 }
 apply plugin: 'me.nallar.ModPatcherGradle'
+apply plugin: 'me.nallar.libloader.LibLoaderGradle'
 
 group = 'me.nallar'
 archivesBaseName = 'TickThreading'
@@ -67,17 +69,12 @@ repositories {
 	maven { url 'https://repo.nallar.me/' }
 }
 
-configurations {
-	all { resolutionStrategy.cacheChangingModulesFor 30, 'seconds' }
-	provided
-	compile.extendsFrom provided
-}
+configurations.all { resolutionStrategy.cacheChangingModulesFor 30, 'seconds' }
 
 dependencies {
 	testCompile 'junit:junit:4.12'
-	compile "me.nallar:ModPatcher:$mcVersion-SNAPSHOT:api"
-	compile 'org.projectlombok:lombok:1.16.12'
-	provided "me.nallar:Mixin:1.0-SNAPSHOT"
+	compileOnly 'org.projectlombok:lombok:1.16.12'
+	libLoader "me.nallar:ModPatcher:$mcVersion-SNAPSHOT"
 }
 
 if (System.env.GRADLE_USER_HOME) {
@@ -91,11 +88,6 @@ task extendedJar(type: Jar, dependsOn: classes)
 
 def jarConfig = {
 	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-	from((configurations.runtime - configurations.provided).filter { it.exists() }.collect {
-		it.isDirectory() ? it : zipTree(it)
-	}) {
-		exclude "META-INF/**"
-	}
 	manifest {
 		attributes("Built-By": System.properties['user.name'],
 			"Created-By": System.properties['java.vm.version'] + " (" + System.properties['java.vm.vendor'] + ")",

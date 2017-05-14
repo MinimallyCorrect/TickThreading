@@ -1,6 +1,7 @@
 package nallar.tickthreading.mod;
 
-import me.nallar.modpatcher.ModPatcher;
+import me.nallar.libloader.LibLoader;
+import me.nallar.modpatcher.api.ModPatcher;
 import nallar.tickthreading.log.Log;
 import nallar.tickthreading.util.PropertyUtil;
 import nallar.tickthreading.util.Version;
@@ -14,11 +15,12 @@ import java.util.*;
 @IFMLLoadingPlugin.SortingIndex(1002)
 public class TickThreadingCore implements IFMLLoadingPlugin {
 	static {
+		LibLoader.init();
+
 		if (PropertyUtil.get("removeSecurityManager", false)) {
 			UnsafeUtil.removeSecurityManager();
 		}
 
-		ModPatcher.requireVersion("latest", "beta");
 		Log.info(Version.DESCRIPTION + " CoreMod initialised");
 
 		if (Version.EXTENDED && !PropertyUtil.get("overrideExtended", false))
