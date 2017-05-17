@@ -95,7 +95,7 @@ def jarConfig = {
 			"Implementation-Title": name,
 			"Implementation-Version": version + "+" + ciSystem + "-b" + buildNumber + ".git-" + commit,
 			"Implementation-Vendor": url,
-			"FMLCorePlugin": "TickThreadingCore",
+			"FMLCorePlugin": "org.minimallycorrect.tickthreading.mod.TickThreadingCore",
 			"FMLCorePluginContainsFMLMod": "true"
 		)
 	}
