@@ -6,8 +6,11 @@ TickThreading is licensed under the MIT license
 
 Download
 -----
-
 Download the latest builds from [Jenkins](https://jenkins.nallar.me/jobs/TickThreading).
+
+Support [![Discord](https://img.shields.io/discord/313371711632441344.svg)](https://discordapp.com/invite/YrV3bDm)
+----------------------------------
+[Chat with us on discord.](https://discordapp.com/invite/YrV3bDm)
 
 Compatibility with other mods
 -----
@@ -40,13 +43,6 @@ Coding and Pull Request Formatting
 * Code should be self-documenting - when possible meaningful names and good design should make comments unnecessary
 
 Please follow the above conventions if you want your pull requests accepted.
-
-Discord
-----------------------------------
-
-Chat with us at [irc.esper.net #TickThreading](irc://irc.esper.net/TickThreading)
-
-Build service alerts of new builds are available at #n-builds.
 
 Acknowledgements
 ----------------------------------
