@@ -1,6 +1,8 @@
 package nallar.tickthreading.reporting;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import lombok.val;
+import nallar.tickthreading.config.Config;
 import nallar.tickthreading.log.Log;
 import nallar.tickthreading.util.unsafe.UnsafeUtil;
 import org.apache.logging.log4j.Level;
@@ -18,8 +20,9 @@ public class LeakDetector {
 		scheduledThreadPoolExecutor.schedule(() -> UnsafeUtil.clean(toClean), seconds, TimeUnit.SECONDS);
 	}
 
-	public static synchronized void scheduleLeakCheck(Object o, String name, boolean clean) {
+	public static synchronized void scheduleLeakCheck(Object o, String name) {
 		try {
+			val clean = Config.$.worldCleaning;
 			if (clean)
 				scheduleCleanupTask(o, Math.min(waitTimeSeconds / 2, 20));
 

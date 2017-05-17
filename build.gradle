@@ -74,6 +74,7 @@ configurations.all { resolutionStrategy.cacheChangingModulesFor 30, 'seconds' }
 dependencies {
 	testCompile 'junit:junit:4.12'
 	compileOnly 'org.projectlombok:lombok:1.16.12'
+	libLoader "org.minimallycorrect.typedconfig:TypedConfig:0.1-SNAPSHOT"
 	libLoader "me.nallar:ModPatcher:$mcVersion-SNAPSHOT"
 }
 

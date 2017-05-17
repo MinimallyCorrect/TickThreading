@@ -3,6 +3,7 @@ package nallar.tickthreading.mixin.forge;
 import me.nallar.mixin.Add;
 import me.nallar.mixin.Mixin;
 import me.nallar.mixin.OverrideStatic;
+import nallar.tickthreading.config.Config;
 import nallar.tickthreading.log.Log;
 import nallar.tickthreading.reporting.LeakDetector;
 import net.minecraft.world.WorldServer;
@@ -22,13 +23,10 @@ public abstract class MixinDimensionManager extends DimensionManager {
 		//noinspection SynchronizationOnStaticField
 		//noinspection SynchronizeOnNonFinalField
 		synchronized (unloadQueue) {
-			/*
-			TODO: new config system isn't in yet
-			if (!TickThreading.instance.allowWorldUnloading) {
+			if (!Config.$.worldUnloading) {
 				unloadQueue.clear();
 				return;
 			}
-			*/
 			for (int id : unloadQueue) {
 				unloadWorldImmediately(worlds.get(id));
 			}
@@ -60,7 +58,7 @@ public abstract class MixinDimensionManager extends DimensionManager {
 		} catch (Throwable t) {
 			Log.error("Failed to flush changes when unloading world", t);
 		}
-		LeakDetector.scheduleLeakCheck(w, w.getName(), true);
+		LeakDetector.scheduleLeakCheck(w, w.getName());
 		return true;
 	}
 }

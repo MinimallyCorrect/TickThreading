@@ -2,6 +2,7 @@ package nallar.tickthreading.mod;
 
 import me.nallar.libloader.LibLoader;
 import me.nallar.modpatcher.api.ModPatcher;
+import nallar.tickthreading.config.Config;
 import nallar.tickthreading.log.Log;
 import nallar.tickthreading.util.PropertyUtil;
 import nallar.tickthreading.util.Version;
@@ -16,6 +17,9 @@ import java.util.*;
 public class TickThreadingCore implements IFMLLoadingPlugin {
 	static {
 		LibLoader.init();
+		//Load config file early so invalid config crashes fast, not 2 minutes into loading a large modpack
+		//noinspection ResultOfMethodCallIgnored
+		Config.$.getClass();
 
 		if (PropertyUtil.get("removeSecurityManager", false)) {
 			UnsafeUtil.removeSecurityManager();
