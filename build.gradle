@@ -14,13 +14,13 @@ buildscript {
 	dependencies {
 		classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
 		classpath group: 'me.nallar', name: 'ModPatcherGradle', version: '0.1-SNAPSHOT', changing: true
-		classpath 'me.nallar.libloader:LibLoaderGradle:0.1-SNAPSHOT'
+		classpath 'org.minimallycorrect.libloader:LibLoaderGradle:0.1-SNAPSHOT'
 	}
 }
 apply plugin: 'me.nallar.ModPatcherGradle'
-apply plugin: 'me.nallar.libloader.LibLoaderGradle'
+apply plugin: 'org.minimallycorrect.libloader.LibLoaderGradle'
 
-group = 'me.nallar'
+group = 'org.minimallycorrect.tickthreading'
 archivesBaseName = 'TickThreading'
 
 // Extended project information
@@ -28,9 +28,9 @@ ext.projectName = project.name
 ext.modid = project.name.toLowerCase()
 ext.inceptionYear = '2014'
 ext.packaging = 'jar'
-ext.url = 'http://nallar.me/minecraft'
-ext.description = 'Mod Patcher'
-ext.organization = 'nallar.me'
+ext.url = 'https://github.com/MinimallyCorrect/TickThreading'
+ext.description = 'TickThreading'
+ext.organization = 'minimallycorrect.org'
 ext.mcVersion = '1.10.2'
 ext.forgeVersion = "12.18.3.2281"
 ext.fullForgeVersion = mcVersion + "-" + forgeVersion
@@ -55,7 +55,7 @@ minecraft {
 }
 
 modpatcher {
-	mixinPackage = "nallar.tickthreading.mixin"
+	mixinPackage = "org.minimallycorrect.tickthreading.mixin"
 	extractGeneratedSources = true
 	generateInheritanceHierarchy = true
 }
@@ -95,7 +95,7 @@ def jarConfig = {
 			"Implementation-Title": name,
 			"Implementation-Version": version + "+" + ciSystem + "-b" + buildNumber + ".git-" + commit,
 			"Implementation-Vendor": url,
-			"FMLCorePlugin": "nallar.tickthreading.mod.TickThreadingCore",
+			"FMLCorePlugin": "TickThreadingCore",
 			"FMLCorePluginContainsFMLMod": "true"
 		)
 	}
@@ -110,7 +110,7 @@ extendedJar jarConfig
 
 jar {
 	classifier = 'core'
-	exclude('nallar/tickthreading/mixin/extended**')
+	exclude('org/minimallycorrect/tickthreading/mixin/extended**')
 }
 
 extendedJar {

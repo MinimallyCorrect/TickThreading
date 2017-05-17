@@ -1,17 +1,13 @@
-TickThreading [![Build Status](https://jenkins.nallar.me/job/TickThreading/branch/1.10.2/badge/icon)](https://jenkins.nallar.me/job/TickThreading/branch/1.10.2/)
+TickThreading [![Discord](https://img.shields.io/discord/313371711632441344.svg)](https://discordapp.com/invite/YrV3bDm) [![Build Status](https://jenkins.nallar.me/job/TickThreading/branch/1.10.2/badge/icon)](https://jenkins.nallar.me/job/TickThreading/branch/1.10.2/)
 ==========
 Multi-threaded minecraft. Requires Forge.
-
-Update for 1.10 in-progress.
-
-Copyright &copy; 2012-2016, nallar <ross@nallar.me>
 
 TickThreading is licensed under the MIT license
 
 Download
 -----
 
-Download the latest builds from [Jenkins].
+Download the latest builds from [Jenkins](https://jenkins.nallar.me/jobs/TickThreading).
 
 Compatibility with other mods
 -----
@@ -45,27 +41,14 @@ Coding and Pull Request Formatting
 
 Please follow the above conventions if you want your pull requests accepted.
 
-IRC
+Discord
 ----------------------------------
 
 Chat with us at [irc.esper.net #TickThreading](irc://irc.esper.net/TickThreading)
 
 Build service alerts of new builds are available at #n-builds.
 
-Donations
-----------------------------------
-
-Paypal: [Donate](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=PTWH8MH8Y4WH8)
-
-Contributors
-----------------------------------
-
-* [nallar](https://github.com/nallar/ "Ross Allan")
-* Everyone who's helped with testing and reporting bugs :)
-
 Acknowledgements
 ----------------------------------
 
 YourKit is kindly supporting open source projects with its full-featured Java Profiler. YourKit, LLC is the creator of innovative and intelligent tools for profiling Java and .NET applications. Take a look at YourKit's leading software products: [YourKit Java Profiler](http://www.yourkit.com/java/profiler/index.jsp) and [YourKit .NET Profiler](http://www.yourkit.com/.net/profiler/index.jsp).
-
-[Jenkins]: https://jenkins.nallar.me/jobs/TickThreading

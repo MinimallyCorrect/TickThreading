@@ -1,7 +1,7 @@
 Installing TickThreading
 ==========
 
-- [Download TickThreading](http://nallar.me/buildservice/job/TickThreading/)
+- Download TickThreading
 - Place it in your mods folder
 - Have fun. Make sure to report any issues encountered while using TT to me, not other mod developers!
 
