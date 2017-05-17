@@ -1,8 +1,8 @@
 package org.minimallycorrect.tickthreading.mixin.world;
 
-import me.nallar.mixin.Mixin;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.ChunkProviderServer;
+import org.minimallycorrect.mixin.Mixin;
 
 @Mixin
 public abstract class MixinChunkProviderServer extends ChunkProviderServer {

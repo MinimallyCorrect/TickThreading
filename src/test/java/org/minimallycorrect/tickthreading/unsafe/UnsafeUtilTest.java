@@ -1,7 +1,7 @@
 package org.minimallycorrect.tickthreading.unsafe;
 
-import org.minimallycorrect.tickthreading.util.unsafe.UnsafeUtil;
 import org.junit.Test;
+import org.minimallycorrect.tickthreading.util.unsafe.UnsafeUtil;
 
 import java.security.*;
 

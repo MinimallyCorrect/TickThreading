@@ -1,15 +1,15 @@
 package org.minimallycorrect.tickthreading.mixin.forge;
 
-import me.nallar.mixin.Add;
-import me.nallar.mixin.Mixin;
-import me.nallar.mixin.OverrideStatic;
-import org.minimallycorrect.tickthreading.config.Config;
-import org.minimallycorrect.tickthreading.log.Log;
-import org.minimallycorrect.tickthreading.reporting.LeakDetector;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.WorldEvent;
+import org.minimallycorrect.mixin.Add;
+import org.minimallycorrect.mixin.Mixin;
+import org.minimallycorrect.mixin.OverrideStatic;
+import org.minimallycorrect.tickthreading.config.Config;
+import org.minimallycorrect.tickthreading.log.Log;
+import org.minimallycorrect.tickthreading.reporting.LeakDetector;
 
 import java.util.*;
 

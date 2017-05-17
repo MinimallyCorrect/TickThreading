@@ -1,10 +1,10 @@
 package org.minimallycorrect.tickthreading.mod;
 
 import lombok.val;
-import org.minimallycorrect.tickthreading.log.Log;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import org.minimallycorrect.tickthreading.log.Log;
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
 

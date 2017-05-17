@@ -1,8 +1,8 @@
 package org.minimallycorrect.tickthreading.mixin.extended.server;
 
 import com.google.common.util.concurrent.ListenableFuture;
-import me.nallar.mixin.Mixin;
 import net.minecraft.server.MinecraftServer;
+import org.minimallycorrect.mixin.Mixin;
 
 import java.util.concurrent.*;
 

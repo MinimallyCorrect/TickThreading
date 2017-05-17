@@ -1,13 +1,13 @@
 package org.minimallycorrect.tickthreading.mod;
 
 import me.nallar.libloader.LibLoader;
-import me.nallar.modpatcher.api.ModPatcher;
+import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
+import org.minimallycorrect.modpatcher.api.ModPatcher;
 import org.minimallycorrect.tickthreading.config.Config;
 import org.minimallycorrect.tickthreading.log.Log;
 import org.minimallycorrect.tickthreading.util.PropertyUtil;
 import org.minimallycorrect.tickthreading.util.Version;
 import org.minimallycorrect.tickthreading.util.unsafe.UnsafeUtil;
-import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 
 import java.util.*;
 

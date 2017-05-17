@@ -1,13 +1,13 @@
 package org.minimallycorrect.tickthreading.mixin.extended.forge;
 
 import lombok.val;
-import me.nallar.mixin.Mixin;
-import me.nallar.mixin.OverrideStatic;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.fml.common.registry.GameData;
 import net.minecraftforge.oredict.OreDictionary;
 import org.apache.logging.log4j.Level;
+import org.minimallycorrect.mixin.Mixin;
+import org.minimallycorrect.mixin.OverrideStatic;
 
 import java.util.*;
 

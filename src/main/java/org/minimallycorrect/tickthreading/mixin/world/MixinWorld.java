@@ -1,8 +1,8 @@
 package org.minimallycorrect.tickthreading.mixin.world;
 
-import me.nallar.mixin.Add;
-import me.nallar.mixin.Mixin;
 import net.minecraft.world.World;
+import org.minimallycorrect.mixin.Add;
+import org.minimallycorrect.mixin.Mixin;
 
 @Mixin
 public abstract class MixinWorld extends World {

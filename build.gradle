@@ -13,11 +13,11 @@ buildscript {
 	configurations.all { resolutionStrategy.cacheChangingModulesFor 30, 'seconds' }
 	dependencies {
 		classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
-		classpath group: 'me.nallar', name: 'ModPatcherGradle', version: '0.1-SNAPSHOT', changing: true
+		classpath 'org.minimallycorrect.modpatcher:ModPatcherGradle:0.1-SNAPSHOT'
 		classpath 'org.minimallycorrect.libloader:LibLoaderGradle:0.1-SNAPSHOT'
 	}
 }
-apply plugin: 'me.nallar.ModPatcherGradle'
+apply plugin: 'org.minimallycorrect.modpatcher.ModPatcherGradle'
 apply plugin: 'org.minimallycorrect.libloader.LibLoaderGradle'
 
 group = 'org.minimallycorrect.tickthreading'
@@ -75,7 +75,7 @@ dependencies {
 	testCompile 'junit:junit:4.12'
 	compileOnly 'org.projectlombok:lombok:1.16.12'
 	libLoader "org.minimallycorrect.typedconfig:TypedConfig:0.1-SNAPSHOT"
-	libLoader "me.nallar:ModPatcher:$mcVersion-SNAPSHOT"
+	libLoader "org.minimallycorrect.modpatcher:ModPatcher:$mcVersion-SNAPSHOT"
 }
 
 if (System.env.GRADLE_USER_HOME) {

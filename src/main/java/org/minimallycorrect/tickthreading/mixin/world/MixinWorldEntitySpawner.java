@@ -1,9 +1,6 @@
 package org.minimallycorrect.tickthreading.mixin.world;
 
 import lombok.val;
-import me.nallar.mixin.Mixin;
-import org.minimallycorrect.tickthreading.collection.LongList;
-import org.minimallycorrect.tickthreading.collection.LongSet;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLiving;
@@ -20,6 +17,9 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.fml.common.eventhandler.Event;
+import org.minimallycorrect.mixin.Mixin;
+import org.minimallycorrect.tickthreading.collection.LongList;
+import org.minimallycorrect.tickthreading.collection.LongSet;
 
 import java.util.*;
 

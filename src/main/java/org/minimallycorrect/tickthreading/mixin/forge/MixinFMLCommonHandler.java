@@ -1,8 +1,8 @@
 package org.minimallycorrect.tickthreading.mixin.forge;
 
-import me.nallar.mixin.Mixin;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
+import org.minimallycorrect.mixin.Mixin;
 
 @Mixin
 public abstract class MixinFMLCommonHandler extends FMLCommonHandler {

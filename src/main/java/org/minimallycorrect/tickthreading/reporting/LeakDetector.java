@@ -2,10 +2,10 @@ package org.minimallycorrect.tickthreading.reporting;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.val;
+import org.apache.logging.log4j.Level;
 import org.minimallycorrect.tickthreading.config.Config;
 import org.minimallycorrect.tickthreading.log.Log;
 import org.minimallycorrect.tickthreading.util.unsafe.UnsafeUtil;
-import org.apache.logging.log4j.Level;
 
 import java.lang.ref.*;
 import java.util.*;

@@ -1,7 +1,7 @@
 package org.minimallycorrect.tickthreading.mixin.world;
 
-import me.nallar.mixin.Mixin;
 import net.minecraft.world.chunk.Chunk;
+import org.minimallycorrect.mixin.Mixin;
 
 @Mixin
 public abstract class MixinChunk extends Chunk {
