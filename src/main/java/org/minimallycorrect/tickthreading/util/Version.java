@@ -15,7 +15,7 @@ public class Version {
 
 	private static boolean isExtended() {
 		try {
-			Class.forName("nallar.tickthreading.mixin.extended.package-info");
+			Class.forName("org.minimallycorrect.tickthreading.mixin.extended.package-info");
 		} catch (ClassNotFoundException e) {
 			return false;
 		}

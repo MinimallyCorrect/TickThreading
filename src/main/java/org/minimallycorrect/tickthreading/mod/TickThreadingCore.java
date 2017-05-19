@@ -48,7 +48,7 @@ public class TickThreadingCore implements IFMLLoadingPlugin {
 
 	@Override
 	public void injectData(Map<String, Object> map) {
-		ModPatcher.loadMixins("nallar.tickthreading.mixin");
+		ModPatcher.loadMixins("org.minimallycorrect.tickthreading.mixin");
 		ModPatcher.loadPatches(TickThreadingCore.class.getResourceAsStream("/patches/minecraft.xml"));
 	}
 
