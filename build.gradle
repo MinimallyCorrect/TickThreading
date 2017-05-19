@@ -10,7 +10,12 @@ buildscript {
 			url = "https://repo.nallar.me/"
 		}
 	}
-	configurations.all { resolutionStrategy.cacheChangingModulesFor 30, 'seconds' }
+	if (System.getenv("GRADLE_NO_CACHE_CHANGING") != null) {
+		configurations.all {
+			resolutionStrategy.cacheChangingModulesFor 1, 'seconds'
+			resolutionStrategy.cacheDynamicVersionsFor 1, 'seconds'
+		}
+	}
 	dependencies {
 		classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
 		classpath 'org.minimallycorrect.modpatcher:ModPatcherGradle:0.1-SNAPSHOT'
@@ -69,7 +74,12 @@ repositories {
 	maven { url 'https://repo.nallar.me/' }
 }
 
-configurations.all { resolutionStrategy.cacheChangingModulesFor 30, 'seconds' }
+if (System.getenv("GRADLE_NO_CACHE_CHANGING") != null) {
+	configurations.all {
+		resolutionStrategy.cacheChangingModulesFor 1, 'seconds'
+		resolutionStrategy.cacheDynamicVersionsFor 1, 'seconds'
+	}
+}
 
 dependencies {
 	testCompile 'junit:junit:4.12'
