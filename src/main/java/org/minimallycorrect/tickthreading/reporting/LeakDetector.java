@@ -13,7 +13,7 @@ import java.util.concurrent.*;
 
 public class LeakDetector {
 	private static final long waitTimeSeconds = 60;
-	private static final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1, new ThreadFactoryBuilder().setNameFormat("tt-clean-%1").build());
+	private static final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1, new ThreadFactoryBuilder().setNameFormat("tt-clean-%d").build());
 	private static final Map<Long, LeakCheckEntry> scheduledObjects = new ConcurrentHashMap<>();
 
 	private static void scheduleCleanupTask(Object toClean, long seconds) {
