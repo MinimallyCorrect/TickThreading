@@ -162,7 +162,8 @@ public abstract class MixinWorldEntitySpawner extends WorldEntitySpawner {
 		SpawnLoop:
 		for (val entry : requiredSpawns.entrySet()) {
 			val creatureType = entry.getKey();
-			for (int j = 0; j < triesPerCreatureType; j++) {
+			val tries = Math.max(triesPerCreatureType, entry.getValue() / (triesPerCreatureType * mobClumping));
+			for (int j = 0; j < tries; j++) {
 				long hash = spawnableChunks.get(worldServer.rand.nextInt(size));
 				int x = (int) (hash >> 32);
 				int z = (int) hash;
@@ -208,7 +209,7 @@ public abstract class MixinWorldEntitySpawner extends WorldEntitySpawner {
 							if (ssY <= 0)
 								continue;
 							state = chunk.getBlockState(ssX, ssY - 1, ssZ);
-							if (!state.getMaterial().isOpaque() || !state.getBlock().canCreatureSpawn(state, worldServer, new BlockPos(ssX, ssY - 1, ssZ), null))
+							if (!state.getBlock().canCreatureSpawn(state, worldServer, new BlockPos(ssX, ssY - 1, ssZ), null))
 								continue;
 						}
 
