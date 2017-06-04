@@ -28,9 +28,9 @@ public abstract class MixinWorldEntitySpawner extends WorldEntitySpawner {
 	private static final int closeRange = 1;
 	private static final int farRange = 5;
 	private static final int spawnVariance = 6;
-	private static final int minSpawns = 4;
+	private static final int triesPerCreatureType = 4;
 	private static final int clumping = 7;
-	private static final int mobClumping = 10;
+	private static final int mobClumping = 5;
 	private static final int maxChunksPerPlayer = square(farRange * 2) - square(closeRange * 2);
 	private static int surfaceChance;
 	private static int gapChance;
@@ -97,7 +97,7 @@ public abstract class MixinWorldEntitySpawner extends WorldEntitySpawner {
 		boolean dayTime = worldServer.isDaytime();
 		val p = worldServer.getChunkProvider();
 		val hell = worldServer.provider instanceof WorldProviderHell;
-		float mobMultiplier = entityMultiplier * (dayTime ? 2 : 4);
+		float mobMultiplier = entityMultiplier * (dayTime ? 1 : 2);
 		val requiredSpawns = new EnumMap<EnumCreatureType, Integer>(EnumCreatureType.class);
 		for (EnumCreatureType creatureType : EnumCreatureType.values()) {
 			if (hell && creatureType == EnumCreatureType.WATER_CREATURE)
@@ -162,16 +162,15 @@ public abstract class MixinWorldEntitySpawner extends WorldEntitySpawner {
 		SpawnLoop:
 		for (val entry : requiredSpawns.entrySet()) {
 			val creatureType = entry.getKey();
-			val tries = ((entry.getValue() + minSpawns) / (mobClumping + 1)) + 1;
-			for (int j = 0; j < tries; j++) {
+			for (int j = 0; j < triesPerCreatureType; j++) {
 				long hash = spawnableChunks.get(worldServer.rand.nextInt(size));
 				int x = (int) (hash >> 32);
 				int z = (int) hash;
 				val chunk = p.getLoadedChunk(x, z);
 				if (chunk == null)
 					continue;
-				int sX = x >> 4 + worldServer.rand.nextInt(16);
-				int sZ = z >> 4 + worldServer.rand.nextInt(16);
+				int sX = x << 4 + worldServer.rand.nextInt(16);
+				int sZ = z << 4 + worldServer.rand.nextInt(16);
 				boolean surface = !hell && (creatureType.getPeacefulCreature() || (dayTime ? surfaceChance++ % 5 == 0 : surfaceChance++ % 5 != 0));
 				int gap = gapChance++;
 				int sY;
