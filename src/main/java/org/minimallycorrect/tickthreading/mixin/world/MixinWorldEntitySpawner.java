@@ -1,13 +1,13 @@
 package org.minimallycorrect.tickthreading.mixin.world;
 
 import lombok.val;
-import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldEntitySpawner;
@@ -63,9 +63,11 @@ public abstract class MixinWorldEntitySpawner extends WorldEntitySpawner {
 		}
 		boolean inGap = false;
 		int lastGap = 0;
+		val blockPos = new BlockPos.MutableBlockPos(wX, 0, wZ);
 		for (int y = 1; y < height; y++) {
 			val block = chunk.getBlockState(x, y, z);
-			if (block.getBlock() == Blocks.AIR || block.isTranslucent() || block.getMaterial() == Material.VINE) {
+			blockPos.setY(y);
+			if (block.getBlock() == Blocks.AIR || !block.isSideSolid(worldServer, blockPos, EnumFacing.UP)) {
 				if (!inGap) {
 					inGap = true;
 					if (gapChance++ % 3 == 0) {
