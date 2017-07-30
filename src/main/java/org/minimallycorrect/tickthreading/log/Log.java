@@ -1,5 +1,6 @@
 package org.minimallycorrect.tickthreading.log;
 
+import lombok.val;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
@@ -111,14 +112,15 @@ public class Log {
 
 	public static void checkWorlds() {
 		MinecraftServer minecraftServer = FMLCommonHandler.instance().getMinecraftServerInstance();
-		int a = minecraftServer.worldServers.length;
+		val worlds = minecraftServer.worlds;
+		int a = worlds.length;
 		int b = DimensionManager.getWorlds().length;
 		if (a != b) {
 			Log.error("World counts mismatch.\n" + dumpWorlds());
-		} else if (hasDuplicates(minecraftServer.worldServers) || hasDuplicates(DimensionManager.getWorlds())) {
+		} else if (hasDuplicates(worlds) || hasDuplicates(DimensionManager.getWorlds())) {
 			Log.error("Duplicate worlds.\n" + dumpWorlds());
 		} else {
-			for (WorldServer worldServer : minecraftServer.worldServers) {
+			for (WorldServer worldServer : worlds) {
 				if (worldServer.unloaded || worldServer.provider == null) {
 					Log.error("Broken/unloaded world in worlds list.\n" + dumpWorlds());
 				}
@@ -130,7 +132,7 @@ public class Log {
 		StringBuilder sb = new StringBuilder();
 		List<World> dimensionManagerWorlds = new ArrayList<>(Arrays.asList(DimensionManager.getWorlds()));
 		MinecraftServer minecraftServer = FMLCommonHandler.instance().getMinecraftServerInstance();
-		List<World> minecraftServerWorlds = new ArrayList<>(Arrays.asList(minecraftServer.worldServers));
+		List<World> minecraftServerWorlds = new ArrayList<>(Arrays.asList(minecraftServer.worlds));
 		sb.append("Worlds in dimensionManager: \n").append(dumpWorlds(dimensionManagerWorlds));
 		sb.append("Worlds in minecraftServer: \n").append(dumpWorlds(minecraftServerWorlds));
 		return sb.toString();

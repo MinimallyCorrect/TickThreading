@@ -92,7 +92,7 @@ public abstract class MixinWorldEntitySpawner extends WorldEntitySpawner {
 			return 0;
 		}
 
-		val profiler = worldServer.theProfiler;
+		val profiler = worldServer.profiler;
 		profiler.startSection("creatureTypes");
 		boolean dayTime = worldServer.isDaytime();
 		val p = worldServer.getChunkProvider();
@@ -229,9 +229,9 @@ public abstract class MixinWorldEntitySpawner extends WorldEntitySpawner {
 							spawnedEntity = creatureClass.entityClass.getConstructor(World.class).newInstance(worldServer);
 							spawnedEntity.setLocationAndAngles((double) ssX, (double) ssY, (double) ssZ, worldServer.rand.nextFloat() * 360.0F, 0.0F);
 
-							val canSpawn = ForgeEventFactory.canEntitySpawn(spawnedEntity, worldServer, ssX, ssY, ssZ);
+							val canSpawn = ForgeEventFactory.canEntitySpawn(spawnedEntity, worldServer, ssX, ssY, ssZ, false);
 							if (canSpawn == Event.Result.ALLOW || (canSpawn == Event.Result.DEFAULT && spawnedEntity.getCanSpawnHere())) {
-								worldServer.spawnEntityInWorld(spawnedEntity);
+								worldServer.spawnEntity(spawnedEntity);
 								if (!ForgeEventFactory.doSpecialSpawn(spawnedEntity, worldServer, ssX, ssY, ssZ)) {
 									unusedIEntityLivingData = spawnedEntity.onInitialSpawn(worldServer.getDifficultyForLocation(new BlockPos(spawnedEntity)), unusedIEntityLivingData);
 								}

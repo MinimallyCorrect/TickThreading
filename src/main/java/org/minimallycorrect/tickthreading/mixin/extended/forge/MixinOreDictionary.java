@@ -1,11 +1,10 @@
 package org.minimallycorrect.tickthreading.mixin.extended.forge;
 
 import lombok.val;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.FMLLog;
-import net.minecraftforge.fml.common.registry.GameData;
 import net.minecraftforge.oredict.OreDictionary;
-import org.apache.logging.log4j.Level;
 import org.minimallycorrect.mixin.Mixin;
 import org.minimallycorrect.mixin.OverrideStatic;
 
@@ -22,16 +21,17 @@ public abstract class MixinOreDictionary extends OreDictionary {
 		if (item == null)
 			throw new IllegalArgumentException("Stack can not be null!");
 
-		val registryName = item.delegate.name();
+		val delegate = item.delegate;
+		val registryName = delegate.name();
 		if (registryName == null) {
-			FMLLog.log(Level.DEBUG, "Attempted to find the oreIDs for an unregistered object (%s). This won't work very well.", new Object[]{stack});
+			FMLLog.log.debug("Attempted to find the oreIDs for an unregistered object (%s). This won't work very well.", stack);
 			return new int[0];
 		}
 
 		// TODO: cache by registryName. Need to add ability for static constructors
 
 		Set<Integer> set = new HashSet<>();
-		int id = GameData.getItemRegistry().getId(registryName);
+		int id = Item.REGISTRY.getIDForObject(delegate.get());
 		List<Integer> ids = stackToId.get(id);
 		if (ids != null) {
 			set.addAll(ids);
