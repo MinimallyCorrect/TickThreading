@@ -1,4 +1,4 @@
-TickThreading [![Discord](https://img.shields.io/discord/313371711632441344.svg)](https://discordapp.com/invite/YrV3bDm) [![Build Status](https://jenkins.nallar.me/job/TickThreading/branch/1.10.2/badge/icon)](https://jenkins.nallar.me/job/TickThreading/branch/1.10.2/)
+TickThreading [![Discord](https://img.shields.io/discord/313371711632441344.svg)](https://discordapp.com/invite/YrV3bDm) [![Build Status](https://jenkins.nallar.me/job/TickThreading/branch/1.12/badge/icon)](https://jenkins.nallar.me/job/TickThreading/branch/1.12/)
 ==========
 Multi-threaded minecraft. Requires Forge.
 
