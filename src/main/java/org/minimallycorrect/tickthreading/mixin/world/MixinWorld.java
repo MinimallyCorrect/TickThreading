@@ -11,11 +11,6 @@ public abstract class MixinWorld extends World {
 	@Add
 	private String cachedName_;
 
-	@SuppressWarnings("ConstantConditions")
-	protected MixinWorld() {
-		super(null, null, null, null, false);
-	}
-
 	@Add
 	public int getDimensionId() {
 		return provider.getDimensionType().getId();

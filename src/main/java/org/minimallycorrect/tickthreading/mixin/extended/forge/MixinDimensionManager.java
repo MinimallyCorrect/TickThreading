@@ -1,4 +1,4 @@
-package org.minimallycorrect.tickthreading.mixin.forge;
+package org.minimallycorrect.tickthreading.mixin.extended.forge;
 
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;

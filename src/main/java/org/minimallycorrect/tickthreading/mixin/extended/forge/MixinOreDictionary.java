@@ -1,5 +1,6 @@
 package org.minimallycorrect.tickthreading.mixin.extended.forge;
 
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import lombok.val;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -28,9 +29,9 @@ public abstract class MixinOreDictionary extends OreDictionary {
 			return new int[0];
 		}
 
-		// TODO: cache by registryName. Need to add ability for static constructors
+		// TODO: cache this?
 
-		Set<Integer> set = new HashSet<>();
+		val set = new IntOpenHashSet();
 		int id = Item.REGISTRY.getIDForObject(delegate.get());
 		List<Integer> ids = stackToId.get(id);
 		if (ids != null) {
@@ -42,11 +43,11 @@ public abstract class MixinOreDictionary extends OreDictionary {
 			set.addAll(ids);
 		}
 
-		val tmp = set.toArray(new Integer[0]);
-		val ret = new int[tmp.length];
-		for (int x = 0; x < tmp.length; ++x) {
-			ret[x] = tmp[x];
-		}
+		val ret = new int[set.size()];
+		val ie = set.iterator();
+		int i = 0;
+		while (ie.hasNext())
+			ret[i++] = ie.nextInt();
 
 		return ret;
 	}

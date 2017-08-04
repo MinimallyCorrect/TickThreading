@@ -6,9 +6,6 @@ import org.minimallycorrect.mixin.Mixin;
 
 @Mixin
 public abstract class MixinFMLCommonHandler extends FMLCommonHandler {
-	private MixinFMLCommonHandler() {
-	}
-
 	@Override
 	public Side getEffectiveSide() {
 		return Side.SERVER;

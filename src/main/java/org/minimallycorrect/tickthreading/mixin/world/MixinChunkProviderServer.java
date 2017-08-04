@@ -6,10 +6,6 @@ import org.minimallycorrect.mixin.Mixin;
 
 @Mixin
 public abstract class MixinChunkProviderServer extends ChunkProviderServer {
-	public MixinChunkProviderServer() {
-		super(null, null, null);
-	}
-
 	@Override
 	public boolean saveChunks(boolean force) {
 		int i = 0;

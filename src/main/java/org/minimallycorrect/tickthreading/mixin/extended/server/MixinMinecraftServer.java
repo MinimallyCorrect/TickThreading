@@ -8,11 +8,6 @@ import java.util.concurrent.*;
 
 @Mixin
 public abstract class MixinMinecraftServer extends MinecraftServer {
-	@SuppressWarnings("ConstantConditions")
-	public MixinMinecraftServer() {
-		super(null, null, null, null, null, null, null);
-	}
-
 	@Override
 	public <V> ListenableFuture<V> callFromMainThread(Callable<V> callable) {
 		// TODO: Replace this with error, move all scheduled tasks to be per world?
