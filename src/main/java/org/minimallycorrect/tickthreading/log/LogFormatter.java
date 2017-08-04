@@ -6,6 +6,7 @@ import java.io.*;
 import java.text.*;
 import java.util.logging.*;
 
+// TODO rework for log4j - not currently used
 public class LogFormatter extends Formatter {
 	public static final String LINE_SEPARATOR = System.getProperty("line.separator");
 	protected static final boolean colorEnabled = PropertyUtil.get("logColor", false);
@@ -28,8 +29,6 @@ public class LogFormatter extends Formatter {
 			return 31;
 		} else if (level == Level.WARNING) {
 			return 33;
-		} else if (level == DebugLevel.DEBUG) {
-			return 35;
 		} else if (level == Level.INFO) {
 			return 32;
 		}
