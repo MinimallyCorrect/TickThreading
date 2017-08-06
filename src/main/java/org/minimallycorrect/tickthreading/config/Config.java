@@ -11,9 +11,8 @@ import java.nio.file.*;
 
 @EqualsAndHashCode
 @ToString
-public class Config implements Serializable {
+public class Config {
 	public static final Config $ = loadConfig();
-	private static final long serialVersionUID = 0;
 	// TODO implement simple deadlock detector
 	@Entry(description = "Maximum frozen time before deadlock detector assumes a deadlock has occurred")
 	public int deadLockSeconds = 15;
