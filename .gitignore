@@ -3,6 +3,10 @@ MANIFEST.MF
 dependency-reduced-pom.xml
 generated
 
+# Build scripts for testing using hardcoded patchs #
+build.sh
+refresh.sh
+
 # Compiled
 bin
 build
