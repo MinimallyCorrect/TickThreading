@@ -1,11 +1,9 @@
 # Build #
-#########
 MANIFEST.MF
 dependency-reduced-pom.xml
 generated
 
-# Compiled #
-############
+# Compiled
 bin
 build
 dist
@@ -21,14 +19,12 @@ target
 *.o
 *.so
 
-# Databases #
-#############
+# Databases
 *.db
 *.sql
 *.sqlite
 
-# Packages #
-############
+# Packages
 *.7z
 *.dmg
 *.gz
@@ -37,27 +33,22 @@ target
 *.tar
 *.zip
 
-# Repository #
-##############
+# Repository
 .git
 
-# Logging #
-###########
+# Logging
 /logs
 *.log
 
-# Misc #
-########
+# Misc
 *.bak
 
-# System #
-##########
+# System
 .DS_Store
 ehthumbs.db
 Thumbs.db
 
-# Project #
-###########
+# Project
 .classpath
 .externalToolBuilders
 .gradle
