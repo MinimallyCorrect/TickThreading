@@ -61,4 +61,10 @@ public abstract class MixinDimensionManager extends DimensionManager {
 		LeakDetector.scheduleLeakCheck(w, w.getName());
 		return true;
 	}
+
+	@OverrideStatic
+	public static void initDimension(int dim) {
+		// TODO: re-implement this safely
+		throw new UnsupportedOperationException();
+	}
 }
