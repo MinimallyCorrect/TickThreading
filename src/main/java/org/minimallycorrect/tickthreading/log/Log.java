@@ -61,6 +61,8 @@ public class Log {
 		val saveFile = logFolder.resolve(Version.NAME + ".1.log");
 		final LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
 		final Configuration config = ctx.getConfiguration();
+		// can't define a static field for an anonymous class, so no serialVersionUID
+		@SuppressWarnings("serial")
 		val layout = new AbstractStringLayout(Charset.forName("UTF-8")) {
 			@Override
 			public String toSerializable(LogEvent event) {
