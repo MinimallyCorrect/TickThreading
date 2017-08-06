@@ -1,5 +1,6 @@
 package org.minimallycorrect.tickthreading.log;
 
+import lombok.SneakyThrows;
 import lombok.val;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
@@ -10,12 +11,77 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.FileAppender;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.layout.AbstractStringLayout;
+import org.minimallycorrect.tickthreading.util.PropertyUtil;
+import org.minimallycorrect.tickthreading.util.Version;
 
+import java.nio.charset.*;
+import java.nio.file.*;
 import java.util.*;
 
-@SuppressWarnings({"UnusedDeclaration", "UseOfSystemOutOrSystemErr"})
+@SuppressWarnings({"UnusedDeclaration"})
 public class Log {
-	public static final Logger LOGGER = LogManager.getLogger("@MOD_NAME@");
+	private static final Path logFolder = Paths.get("TickThreadingLogs");
+	private static final int numberOfLogFiles = PropertyUtil.get("numberOfLogFiles", 5);
+	private static final String[] logsToSave = new String[] {
+		"@MOD_NAME@",
+		"JavaPatcher",
+		"JavaTransformer",
+		"LibLoader",
+		"Mixin",
+		"ModPatcher",
+	};
+	private static final Logger LOGGER = LogManager.getLogger(Version.NAME);
+
+	static {
+		createLogFiles();
+	}
+
+	@SneakyThrows
+	private static void createLogFiles() {
+		if (!Files.isDirectory(logFolder))
+			Files.createDirectory(logFolder);
+		for (int i = numberOfLogFiles; i >= 1; i--) {
+			val currentFile = logFolder.resolve(Version.NAME + '.' + i + ".log");
+			if (Files.exists(currentFile)) {
+				if (i == numberOfLogFiles) {
+					Files.delete(currentFile);
+				} else {
+					Files.move(currentFile, logFolder.resolve(Version.NAME + '.' + (i + 1) + ".log"));
+				}
+			}
+		}
+
+		// TODO: rewrite this next bit using log4j public API at some point? gave up trying since it didn't work
+
+		val saveFile = logFolder.resolve(Version.NAME + ".1.log");
+		final LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+		final Configuration config = ctx.getConfiguration();
+		val layout = new AbstractStringLayout(Charset.forName("UTF-8")) {
+			@Override
+			public String toSerializable(LogEvent event) {
+				return "[" +
+					event.getLoggerName() +
+					'/' +
+					event.getThreadName() +
+					'/' +
+					event.getLevel().name() +
+					"] " +
+					event.getMessage().getFormattedMessage() +
+					'\n';
+			}
+		};
+		val appender = FileAppender.createAppender(saveFile.toAbsolutePath().toString(), "false", "false", "File", "true", "false", "false", "4000", layout, null, "false", null, config);
+		appender.start();
+		config.addAppender(appender);
+		for (val logName : logsToSave)
+			((org.apache.logging.log4j.core.Logger) LogManager.getLogger(logName)).addAppender(appender);
+		ctx.updateLoggers();
+	}
 
 	public static void error(String msg) {
 		LOGGER.error(msg);
@@ -105,7 +171,7 @@ public class Log {
 		return "at " + x + ", " + y + ", " + z;
 	}
 
-	public static String dumpWorld(World world) {
+	private static String dumpWorld(World world) {
 		boolean unloaded = world.unloaded;
 		return (unloaded ? "un" : "") + "loaded world " + name(world) + '@' + System.identityHashCode(world) + ", dimension: " + world.getDimensionId();
 	}

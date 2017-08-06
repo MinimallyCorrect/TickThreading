@@ -4,6 +4,7 @@ import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class Version {
+	public static final String NAME = "@MOD_NAME@";
 	public static final boolean EXTENDED = isExtended();
 	public static final String RELEASE = getRelease();
 	public static final String DESCRIPTION = "TickThreading v@MOD_VERSION@ for MC@MC_VERSION@";

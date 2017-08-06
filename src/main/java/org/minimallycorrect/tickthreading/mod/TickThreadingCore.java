@@ -15,10 +15,11 @@ import java.util.*;
 @IFMLLoadingPlugin.MCVersion("@MC_VERSION@")
 @IFMLLoadingPlugin.SortingIndex(1002)
 public class TickThreadingCore implements IFMLLoadingPlugin {
+	//noinspection ResultOfMethodCallIgnored
 	static {
+		Log.classString("");
 		LibLoader.init();
 		//Load config file early so invalid config crashes fast, not 2 minutes into loading a large modpack
-		//noinspection ResultOfMethodCallIgnored
 		Config.$.getClass();
 
 		if (PropertyUtil.get("removeSecurityManager", false)) {
