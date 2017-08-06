@@ -62,7 +62,7 @@ public final class ThreadManager {
 	}
 
 	private void addThread(String name) {
-		Thread workThread = null; //new FakeServerThread(workerTask, name, true);
+		Thread workThread = new Thread(workerTask, name);
 		workThread.start();
 		threadIdToManager.put(workThread.getId(), this.name);
 		workThreads.add(workThread);
