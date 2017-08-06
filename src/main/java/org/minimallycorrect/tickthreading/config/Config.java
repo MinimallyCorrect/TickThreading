@@ -13,6 +13,9 @@ import java.nio.file.*;
 @ToString
 public class Config {
 	public static final Config $ = loadConfig();
+
+	@Entry(description = "Target ticks per second")
+	public int targetTps = 20;
 	// TODO implement simple deadlock detector
 	@Entry(description = "Maximum frozen time before deadlock detector assumes a deadlock has occurred")
 	public int deadLockSeconds = 15;
