@@ -19,7 +19,7 @@ public abstract class MixinChunkProviderServer extends ChunkProviderServer {
 			if (chunk.needsSaving(force)) {
 				this.saveChunkData(chunk);
 				chunk.setModified(false);
-				if (++i == 12 && !force) {
+				if (!force && ++i == 24) {
 					return false;
 				}
 			}
