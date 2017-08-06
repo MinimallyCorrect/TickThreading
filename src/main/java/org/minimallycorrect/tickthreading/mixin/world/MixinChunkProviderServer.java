@@ -10,6 +10,7 @@ public abstract class MixinChunkProviderServer extends ChunkProviderServer {
 	public boolean saveChunks(boolean force) {
 		int i = 0;
 
+		// id2ChunkMap should not be modified while we're doing this - don't duplicate it to a list like original MC code
 		for (Chunk chunk : this.id2ChunkMap.values()) {
 			if (force) {
 				this.saveChunkExtraData(chunk);
