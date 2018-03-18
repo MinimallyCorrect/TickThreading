@@ -72,9 +72,9 @@ def coreJarFile = new File(outputJarFile.getParentFile(), outputJarFile.getName(
 
 println(coreJarFile)
 
-task coreJar(type: Copy, dependsOn: retromapReplacedMain) {
-	from jar
-	into coreJarFile
+task coreJar(type: Jar, dependsOn: retromapReplacedMain) {
+	with jar
+	classifier = "core"
 	exclude('org/minimallycorrect/tickthreading/mixin/extended**')
 }
 
