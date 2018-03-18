@@ -1,6 +1,15 @@
 package org.minimallycorrect.tickthreading.mixin.world;
 
+import java.util.Collection;
+import java.util.EnumMap;
+
 import lombok.val;
+
+import org.minimallycorrect.mixin.Mixin;
+import org.minimallycorrect.mixin.Overwrite;
+import org.minimallycorrect.tickthreading.collection.LongList;
+import org.minimallycorrect.tickthreading.collection.LongSet;
+
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EnumCreatureType;
@@ -17,13 +26,6 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.fml.common.eventhandler.Event;
-import org.minimallycorrect.mixin.Mixin;
-import org.minimallycorrect.mixin.Overwrite;
-import org.minimallycorrect.tickthreading.collection.LongList;
-import org.minimallycorrect.tickthreading.collection.LongSet;
-
-import java.util.Collection;
-import java.util.EnumMap;
 
 @Mixin
 public abstract class MixinWorldEntitySpawner extends WorldEntitySpawner {
@@ -161,8 +163,7 @@ public abstract class MixinWorldEntitySpawner extends WorldEntitySpawner {
 
 		profiler.startSection("spawnMobs");
 
-		SpawnLoop:
-		for (val entry : requiredSpawns.entrySet()) {
+		SpawnLoop: for (val entry : requiredSpawns.entrySet()) {
 			val creatureType = entry.getKey();
 			val tries = Math.max(triesPerCreatureType, entry.getValue() / (triesPerCreatureType * mobClumping));
 			for (int j = 0; j < tries; j++) {
@@ -231,10 +232,10 @@ public abstract class MixinWorldEntitySpawner extends WorldEntitySpawner {
 							spawnedEntity = creatureClass.entityClass.getConstructor(World.class).newInstance(worldServer);
 							spawnedEntity.setLocationAndAngles((double) ssX, (double) ssY, (double) ssZ, worldServer.rand.nextFloat() * 360.0F, 0.0F);
 
-							val canSpawn = ForgeEventFactory.canEntitySpawn(spawnedEntity, worldServer, ssX, ssY, ssZ, false);
+							val canSpawn = ForgeEventFactory.canEntitySpawn(spawnedEntity, worldServer, ssX, ssY, ssZ, null);
 							if (canSpawn == Event.Result.ALLOW || (canSpawn == Event.Result.DEFAULT && spawnedEntity.getCanSpawnHere())) {
 								worldServer.spawnEntity(spawnedEntity);
-								if (!ForgeEventFactory.doSpecialSpawn(spawnedEntity, worldServer, ssX, ssY, ssZ)) {
+								if (!ForgeEventFactory.doSpecialSpawn(spawnedEntity, worldServer, ssX, ssY, ssZ, null)) {
 									unusedIEntityLivingData = spawnedEntity.onInitialSpawn(worldServer.getDifficultyForLocation(new BlockPos(spawnedEntity)), unusedIEntityLivingData);
 								}
 							}

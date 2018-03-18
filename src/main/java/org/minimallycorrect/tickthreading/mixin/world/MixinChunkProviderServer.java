@@ -1,9 +1,10 @@
 package org.minimallycorrect.tickthreading.mixin.world;
 
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.gen.ChunkProviderServer;
 import org.minimallycorrect.mixin.Mixin;
 import org.minimallycorrect.mixin.Overwrite;
+
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.gen.ChunkProviderServer;
 
 @Mixin
 public abstract class MixinChunkProviderServer extends ChunkProviderServer {

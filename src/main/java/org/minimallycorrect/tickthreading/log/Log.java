@@ -1,13 +1,12 @@
 package org.minimallycorrect.tickthreading.log;
 
+import java.nio.charset.*;
+import java.nio.file.*;
+import java.util.*;
+
 import lombok.SneakyThrows;
 import lombok.val;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
-import net.minecraftforge.common.DimensionManager;
-import net.minecraftforge.fml.common.FMLCommonHandler;
+
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,24 +15,28 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.FileAppender;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.layout.AbstractStringLayout;
+
 import org.minimallycorrect.tickthreading.util.PropertyUtil;
 import org.minimallycorrect.tickthreading.util.Version;
 
-import java.nio.charset.*;
-import java.nio.file.*;
-import java.util.*;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
+import net.minecraftforge.common.DimensionManager;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class Log {
 	private static final Path logFolder = Paths.get("TickThreadingLogs");
 	private static final int numberOfLogFiles = PropertyUtil.get("numberOfLogFiles", 5);
-	private static final String[] logsToSave = new String[] {
-		"@MOD_NAME@",
-		"JavaPatcher",
-		"JavaTransformer",
-		"LibLoader",
-		"Mixin",
-		"ModPatcher",
+	private static final String[] logsToSave = new String[]{
+			"@MOD_NAME@",
+			"JavaPatcher",
+			"JavaTransformer",
+			"LibLoader",
+			"Mixin",
+			"ModPatcher",
 	};
 	private static final Logger LOGGER = LogManager.getLogger(Version.NAME);
 

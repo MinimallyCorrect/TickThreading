@@ -1,13 +1,14 @@
 package org.minimallycorrect.tickthreading.config;
 
+import java.io.*;
+import java.nio.file.*;
+
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.val;
+
 import org.minimallycorrect.typedconfig.TypedConfig;
 import org.minimallycorrect.typedconfig.TypedConfig.Entry;
-
-import java.io.*;
-import java.nio.file.*;
 
 @EqualsAndHashCode
 @ToString

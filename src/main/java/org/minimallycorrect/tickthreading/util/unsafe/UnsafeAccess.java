@@ -1,9 +1,10 @@
 package org.minimallycorrect.tickthreading.util.unsafe;
 
-import org.minimallycorrect.tickthreading.log.Log;
+import java.lang.reflect.*;
+
 import sun.misc.Unsafe;
 
-import java.lang.reflect.*;
+import org.minimallycorrect.tickthreading.log.Log;
 
 public class UnsafeAccess {
 	public static final Unsafe $;

@@ -1,12 +1,13 @@
 package org.minimallycorrect.tickthreading.unsafe;
 
-import org.junit.Test;
-import org.minimallycorrect.tickthreading.util.unsafe.UnsafeUtil;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.security.*;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import org.junit.Test;
+
+import org.minimallycorrect.tickthreading.util.unsafe.UnsafeUtil;
 
 public class UnsafeUtilTest {
 	private static void installAnnoyingSecurityManager() {

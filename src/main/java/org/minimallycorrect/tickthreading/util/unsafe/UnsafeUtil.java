@@ -1,10 +1,12 @@
 package org.minimallycorrect.tickthreading.util.unsafe;
 
+import java.lang.reflect.*;
+
 import lombok.SneakyThrows;
-import org.minimallycorrect.tickthreading.log.Log;
+
 import sun.misc.Unsafe;
 
-import java.lang.reflect.*;
+import org.minimallycorrect.tickthreading.log.Log;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class UnsafeUtil {
@@ -47,8 +49,7 @@ public class UnsafeUtil {
 	}
 
 	/**
-	 * Creates an instance of class c without calling any constructors - all fields will be null/default primitive values, INCLUDING FINAL FIELDS.
-	 * This breaks assumptions about final fields which may be made elsewhere.
+	 * Creates an instance of class c without calling any constructors - all fields will be null/default primitive values, INCLUDING FINAL FIELDS. This breaks assumptions about final fields which may be made elsewhere.
 	 *
 	 * @param c Class to instantiate
 	 * @return the instance of c
@@ -102,8 +103,7 @@ public class UnsafeUtil {
 	}
 
 	/**
-	 * Sets all non-primitive/array fields of o to null. For use when you know some stupid mod/plugin is going to leak this object,
-	 * and want to leak only the size of the object, not everything it references.
+	 * Sets all non-primitive/array fields of o to null. For use when you know some stupid mod/plugin is going to leak this object, and want to leak only the size of the object, not everything it references.
 	 *
 	 * @param o Object to clean.
 	 */

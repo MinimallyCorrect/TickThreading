@@ -1,14 +1,12 @@
 package org.minimallycorrect.tickthreading.concurrent.threadlocal;
 
-import org.minimallycorrect.tickthreading.util.ReflectUtil;
-import org.minimallycorrect.tickthreading.util.unsafe.UnsafeAccess;
 import sun.misc.Unsafe;
 
+import org.minimallycorrect.tickthreading.util.ReflectUtil;
+import org.minimallycorrect.tickthreading.util.unsafe.UnsafeAccess;
+
 /**
- * Accessing a field is much faster than a normal ThreadLocal get.
- * Here, we maintain a field which counts the number of threads in which the variable is true
- * In most cases, this allows us to avoid the performance hit of a hashmap lookup in
- * ThreadLocal.get(), assuming the variable is normally false in all threads.
+ * Accessing a field is much faster than a normal ThreadLocal get. Here, we maintain a field which counts the number of threads in which the variable is true In most cases, this allows us to avoid the performance hit of a hashmap lookup in ThreadLocal.get(), assuming the variable is normally false in all threads.
  */
 public class CounterThreadLocalAssumeZero extends ThreadLocal<Integer> {
 	private static final Unsafe $ = UnsafeAccess.$;

@@ -1,10 +1,11 @@
 package org.minimallycorrect.tickthreading.concurrent.collection;
 
-import org.minimallycorrect.tickthreading.util.ReflectUtil;
-import org.minimallycorrect.tickthreading.util.unsafe.UnsafeAccess;
+import java.util.*;
+
 import sun.misc.Unsafe;
 
-import java.util.*;
+import org.minimallycorrect.tickthreading.util.ReflectUtil;
+import org.minimallycorrect.tickthreading.util.unsafe.UnsafeAccess;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class ConcurrentUnsafeIterableArrayList<T> extends ArrayList<T> {

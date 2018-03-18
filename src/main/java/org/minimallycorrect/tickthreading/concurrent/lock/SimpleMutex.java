@@ -11,8 +11,7 @@ public final class SimpleMutex implements Lock {
 		while (locked) {
 			try {
 				wait();
-			} catch (InterruptedException ignored) {
-			}
+			} catch (InterruptedException ignored) {}
 		}
 		locked = true;
 	}

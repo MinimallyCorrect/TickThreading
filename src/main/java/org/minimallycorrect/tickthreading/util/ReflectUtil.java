@@ -10,8 +10,7 @@ public enum ReflectUtil {
 		do {
 			try {
 				field = c.getDeclaredField(name);
-			} catch (NoSuchFieldException ignored) {
-			}
+			} catch (NoSuchFieldException ignored) {}
 		} while (field == null && (c = c.getSuperclass()) != Object.class);
 		if (field != null) {
 			field.setAccessible(true);

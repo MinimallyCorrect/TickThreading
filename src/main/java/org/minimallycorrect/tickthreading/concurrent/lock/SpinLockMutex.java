@@ -1,10 +1,11 @@
 package org.minimallycorrect.tickthreading.concurrent.lock;
 
-import org.minimallycorrect.tickthreading.util.unsafe.UnsafeAccess;
-import sun.misc.Unsafe;
-
 import java.util.concurrent.*;
 import java.util.concurrent.locks.*;
+
+import sun.misc.Unsafe;
+
+import org.minimallycorrect.tickthreading.util.unsafe.UnsafeAccess;
 
 public final class SpinLockMutex implements Lock {
 	private static final Unsafe $ = UnsafeAccess.$;

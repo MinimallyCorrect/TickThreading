@@ -1,6 +1,7 @@
 package org.minimallycorrect.tickthreading.mod;
 
-import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
+import java.util.Map;
+
 import org.minimallycorrect.libloader.LibLoader;
 import org.minimallycorrect.modpatcher.api.ModPatcher;
 import org.minimallycorrect.tickthreading.config.Config;
@@ -9,10 +10,9 @@ import org.minimallycorrect.tickthreading.util.PropertyUtil;
 import org.minimallycorrect.tickthreading.util.Version;
 import org.minimallycorrect.tickthreading.util.unsafe.UnsafeUtil;
 
-import java.util.Map;
+import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 
 @IFMLLoadingPlugin.Name("@MOD_NAME@Core")
-@IFMLLoadingPlugin.MCVersion("@MC_VERSION@")
 @IFMLLoadingPlugin.SortingIndex(1002)
 public class TickThreadingCore implements IFMLLoadingPlugin {
 	//noinspection ResultOfMethodCallIgnored

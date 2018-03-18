@@ -1,15 +1,17 @@
 package org.minimallycorrect.tickthreading.mixin.extended.forge;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import java.util.List;
+
 import lombok.val;
+
+import org.minimallycorrect.mixin.Mixin;
+import org.minimallycorrect.mixin.Overwrite;
+
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.oredict.OreDictionary;
-import org.minimallycorrect.mixin.Mixin;
-import org.minimallycorrect.mixin.Overwrite;
-
-import java.util.List;
 
 @Mixin
 public abstract class MixinOreDictionary extends OreDictionary {

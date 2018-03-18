@@ -1,63 +1,32 @@
 buildscript {
 	repositories {
 		jcenter()
-		maven {
-			name = "forge"
-			url = "http://files.minecraftforge.net/maven"
-		}
-		maven {
-			name = "nallar"
-			url = "https://repo.nallar.me/"
-		}
-	}
-	if (System.getenv("GRADLE_NO_CACHE_CHANGING") != null) {
-		configurations.all {
-			resolutionStrategy.cacheChangingModulesFor 1, 'seconds'
-			resolutionStrategy.cacheDynamicVersionsFor 1, 'seconds'
-		}
+		maven { url "https://repo.nallar.me/" }
+		maven { url "https://plugins.gradle.org/m2/" }
+		maven { url "http://files.minecraftforge.net/maven" }
 	}
 	dependencies {
 		classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
 		classpath 'org.minimallycorrect.modpatcher:ModPatcherGradle:0.1-SNAPSHOT'
 		classpath 'org.minimallycorrect.libloader:LibLoaderGradle:0.1-SNAPSHOT'
+		classpath 'org.minimallycorrect.gradle:DefaultsPlugin:0.0.27'
 	}
 }
+apply plugin: 'org.minimallycorrect.gradle.DefaultsPlugin'
 apply plugin: 'org.minimallycorrect.modpatcher.ModPatcherGradle'
 apply plugin: 'org.minimallycorrect.libloader.LibLoaderGradle'
 
 group = 'org.minimallycorrect.tickthreading'
-archivesBaseName = 'TickThreading'
 
-// Extended project information
-ext.projectName = project.name
-ext.modid = project.name.toLowerCase()
-ext.inceptionYear = '2014'
-ext.packaging = 'jar'
-ext.url = 'https://github.com/MinimallyCorrect/TickThreading'
-ext.description = 'TickThreading'
-ext.organization = 'minimallycorrect.org'
-ext.mcVersion = '1.12.1'
-ext.forgeVersion = "14.22.0.2467"
-ext.fullForgeVersion = mcVersion + "-" + forgeVersion
+minimallyCorrectDefaults {
+	minecraft = 1.12
+	fmlCorePlugin = "org.minimallycorrect.tickthreading.mod.TickThreadingCore"
+	fmlCorePluginContainsFmlMod = true
+	labels = ['minecraft-mod', 'threading', 'minecraft', 'java', 'performance']
+	description = "Multi-threaded minecraft. Performance over correctness. What could go wrong?"
+} ()
 
 gradle.startParameter.showStacktrace = org.gradle.api.logging.configuration.ShowStacktrace.ALWAYS
-
-// Define variables
-ext.buildNumber = System.getenv("BUILD_NUMBER") ?: 0
-ext.ciSystem = System.getenv("JENKINS_URL") ? 'Jenkins' : 'unknown'
-ext.commit = System.getenv("GIT_COMMIT") ?: 'unknown'
-
-version = mcVersion + '.' + buildNumber
-
-minecraft {
-	version = fullForgeVersion
-	mappings = "snapshot_20170624"
-
-	replace "@MOD_NAME@", project.name
-	replace "@MOD_ID@", modid
-	replace "@MOD_VERSION@", project.version
-	replace "@MC_VERSION@", version
-}
 
 modpatcher {
 	mixinPackage = "org.minimallycorrect.tickthreading.mixin"
@@ -67,28 +36,14 @@ modpatcher {
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
-defaultTasks "setupCiWorkspace", "build"
-
-repositories {
-	jcenter()
-	maven { url 'https://repo.nallar.me/' }
-}
-
-if (System.getenv("GRADLE_NO_CACHE_CHANGING") != null) {
-	configurations.all {
-		resolutionStrategy.cacheChangingModulesFor 1, 'seconds'
-		resolutionStrategy.cacheDynamicVersionsFor 1, 'seconds'
-	}
-}
 
 dependencies {
 	testCompile 'junit:junit:4.12'
-	compileOnly 'org.projectlombok:lombok:1.16.18'
 	compileOnly 'org.jetbrains:annotations:15.0'
 	testCompileOnly 'org.projectlombok:lombok:1.16.18'
 	testCompileOnly 'org.jetbrains:annotations:15.0'
 	libLoader "org.minimallycorrect.typedconfig:TypedConfig:0.1-SNAPSHOT"
-	libLoader "org.minimallycorrect.modpatcher:ModPatcher:$mcVersion-SNAPSHOT"
+	libLoader "org.minimallycorrect.modpatcher:ModPatcher:${minimallyCorrectDefaults.minecraft}-SNAPSHOT"
 }
 
 if (System.env.GRADLE_USER_HOME) {
@@ -96,20 +51,10 @@ if (System.env.GRADLE_USER_HOME) {
 } else {
 	ext.homeDir = System.properties['user.home'] + '/.gradle/'
 }
-ext.mappingsPath = homeDir + 'caches/minecraft/net/minecraftforge/forge/' + fullForgeVersion + '/unpacked/conf/'
+ext.mappingsPath = homeDir + 'caches/minecraft/net/minecraftforge/forge/' + minimallyCorrectDefaults.forge + '/unpacked/conf/'
 
 def jarConfig = {
 	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-	manifest {
-		attributes("Built-By": System.properties['user.name'],
-			"Created-By": System.properties['java.vm.version'] + " (" + System.properties['java.vm.vendor'] + ")",
-			"Implementation-Title": name,
-			"Implementation-Version": version + "+" + ciSystem + "-b" + buildNumber + ".git-" + commit,
-			"Implementation-Vendor": url,
-			"FMLCorePlugin": "org.minimallycorrect.tickthreading.mod.TickThreadingCore",
-			"FMLCorePluginContainsFMLMod": "true"
-		)
-	}
 	from mappingsPath + 'packaged.srg'
 	from mappingsPath + 'methods.csv'
 	from mappingsPath + 'fields.csv'
@@ -122,10 +67,12 @@ jar {
 	classifier = 'extended'
 }
 
-def outputJarFile = (File) jar.outputs.files.getSingleFile().getParentFile()
-def coreJarFile = new File(outputJarFile.getParentFile(), outputJarFile.getName().replace('extended', 'core'))
+def outputJarFile = (File) jar.outputs.files.getSingleFile()
+def coreJarFile = new File(outputJarFile.getParentFile(), outputJarFile.getName().replace('extended', 'core-borked'))
 
-task coreJar(type: Copy, dependsOn: jar) {
+println(coreJarFile)
+
+task coreJar(type: Copy, dependsOn: retromapReplacedMain) {
 	from jar
 	into coreJarFile
 	exclude('org/minimallycorrect/tickthreading/mixin/extended**')
@@ -136,22 +83,7 @@ artifacts {
 	archives coreJarFile
 }
 
-processResources {
-	// this will ensure that this task is redone when the versions change.
-	inputs.property "version", project.version
-	inputs.property "mcversion", project.minecraft.version
-
-	// replace stuff in mcmod.info, nothing else
-	from(sourceSets.main.resources.srcDirs) {
-		include 'mcmod.info'
-
-		// replace version and mcversion
-		expand 'version': project.version, 'mcversion': project.minecraft.version, 'name': project.projectName, 'modid': modid
-	}
-
-	// copy everything else, thats not the mcmod.info
-	from(sourceSets.main.resources.srcDirs) { exclude 'mcmod.info' }
-}
+build.dependsOn(coreJar)
 
 // Source compiler configuration
 tasks.withType(JavaCompile) {

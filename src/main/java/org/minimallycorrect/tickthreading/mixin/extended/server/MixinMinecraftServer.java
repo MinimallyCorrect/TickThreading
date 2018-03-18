@@ -1,26 +1,29 @@
 package org.minimallycorrect.tickthreading.mixin.extended.server;
 
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListenableFutureTask;
-import com.mojang.authlib.GameProfile;
-import lombok.SneakyThrows;
-import lombok.val;
-import net.minecraft.network.ServerStatusResponse;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.Util;
-import net.minecraft.util.math.MathHelper;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import org.minimallycorrect.mixin.*;
-import org.minimallycorrect.modpatcher.api.UsedByPatch;
-import org.minimallycorrect.tickthreading.config.Config;
-import org.minimallycorrect.tickthreading.log.Log;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
+
+import lombok.SneakyThrows;
+import lombok.val;
+
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListenableFutureTask;
+import com.mojang.authlib.GameProfile;
+
+import org.minimallycorrect.mixin.*;
+import org.minimallycorrect.modpatcher.api.UsedByPatch;
+import org.minimallycorrect.tickthreading.config.Config;
+import org.minimallycorrect.tickthreading.log.Log;
+
+import net.minecraft.network.ServerStatusResponse;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.Util;
+import net.minecraft.util.math.MathHelper;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 
 @Mixin
 public abstract class MixinMinecraftServer extends MinecraftServer {
@@ -120,7 +123,7 @@ public abstract class MixinMinecraftServer extends MinecraftServer {
 			synchronized (this.futureTaskQueue) {
 				FutureTask<?> c;
 				while ((c = this.futureTaskQueue.poll()) != null)
-					Util.runTask(c, LOG);
+					Util.runTask(c, LOGGER);
 			}
 		}
 

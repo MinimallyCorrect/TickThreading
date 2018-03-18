@@ -1,12 +1,12 @@
 package org.minimallycorrect.tickthreading.concurrent.scheduling;
 
-import org.minimallycorrect.tickthreading.concurrent.collection.ConcurrentIterableArrayList;
-import org.minimallycorrect.tickthreading.exception.ThreadStuckError;
-import org.minimallycorrect.tickthreading.log.Log;
-
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
+
+import org.minimallycorrect.tickthreading.concurrent.collection.ConcurrentIterableArrayList;
+import org.minimallycorrect.tickthreading.exception.ThreadStuckError;
+import org.minimallycorrect.tickthreading.log.Log;
 
 /*
 TODO 19/02/2016: Rework this class? Do we still need this, or is there a better solution?
@@ -44,10 +44,8 @@ public final class ThreadManager {
 					}
 					try {
 						runnable.run();
-					} catch (ThreadStuckError | ThreadDeath ignored) {
-					}
-				} catch (InterruptedException ignored) {
-				} catch (Throwable t) {
+					} catch (ThreadStuckError | ThreadDeath ignored) {}
+				} catch (InterruptedException ignored) {} catch (Throwable t) {
 					Log.error("Unhandled exception in worker thread " + Thread.currentThread().getName(), t);
 				}
 				if (waiting.decrementAndGet() == 0) {
@@ -77,8 +75,7 @@ public final class ThreadManager {
 			while (waiting.get() > 0) {
 				try {
 					readyLock.wait(1L);
-				} catch (InterruptedException ignored) {
-				}
+				} catch (InterruptedException ignored) {}
 			}
 		}
 	}

@@ -1,9 +1,10 @@
 package org.minimallycorrect.tickthreading.util;
 
-import com.sun.management.UnixOperatingSystemMXBean;
-import org.minimallycorrect.tickthreading.log.Log;
-
 import java.lang.management.*;
+
+import com.sun.management.UnixOperatingSystemMXBean;
+
+import org.minimallycorrect.tickthreading.log.Log;
 
 public class EnvironmentInfo {
 	public static String getJavaVersion() {

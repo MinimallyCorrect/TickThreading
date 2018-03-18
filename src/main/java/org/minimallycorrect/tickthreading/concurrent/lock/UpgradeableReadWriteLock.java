@@ -49,8 +49,7 @@ public class UpgradeableReadWriteLock implements ReadWriteLock {
 		while (writingThread != callingThread && writingThread != null) {
 			try {
 				wait();
-			} catch (InterruptedException ignored) {
-			}
+			} catch (InterruptedException ignored) {}
 		}
 		readRequests--;
 
@@ -83,8 +82,7 @@ public class UpgradeableReadWriteLock implements ReadWriteLock {
 		while ((writingThread != callingThread && writingThread != null) || ((size = readingThreads.size()) > 1 || (size == 1 && readingThreads.get(callingThread) == null))) {
 			try {
 				wait();
-			} catch (InterruptedException ignored) {
-			}
+			} catch (InterruptedException ignored) {}
 		}
 		writeRequests--;
 		writeAccesses++;
@@ -106,8 +104,7 @@ public class UpgradeableReadWriteLock implements ReadWriteLock {
 	}
 
 	private abstract static class SimpleLock implements Lock {
-		SimpleLock() {
-		}
+		SimpleLock() {}
 
 		@Override
 		public void lockInterruptibly() throws InterruptedException {

@@ -3,9 +3,11 @@ package org.minimallycorrect.tickthreading.concurrent.scheduling;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
-import net.minecraft.world.WorldServer;
+
 import org.minimallycorrect.tickthreading.config.Config;
 import org.minimallycorrect.tickthreading.log.Log;
+
+import net.minecraft.world.WorldServer;
 
 @AllArgsConstructor
 public class WorldRunnable implements Runnable {

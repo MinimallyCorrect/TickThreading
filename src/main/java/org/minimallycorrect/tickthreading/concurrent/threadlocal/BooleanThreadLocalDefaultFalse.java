@@ -1,14 +1,12 @@
 package org.minimallycorrect.tickthreading.concurrent.threadlocal;
 
-import org.minimallycorrect.tickthreading.util.ReflectUtil;
-import org.minimallycorrect.tickthreading.util.unsafe.UnsafeAccess;
 import sun.misc.Unsafe;
 
+import org.minimallycorrect.tickthreading.util.ReflectUtil;
+import org.minimallycorrect.tickthreading.util.unsafe.UnsafeAccess;
+
 /**
- * Accessing a field is much faster than a normal ThreadLocal get.
- * Here, we maintain a field which counts the number of threads in which the variable is true
- * In most cases, this allows us to avoid the performance hit of a hashmap lookup in
- * ThreadLocal.get(), assuming the variable is normally false in all threads.
+ * Accessing a field is much faster than a normal ThreadLocal get. Here, we maintain a field which counts the number of threads in which the variable is true In most cases, this allows us to avoid the performance hit of a hashmap lookup in ThreadLocal.get(), assuming the variable is normally false in all threads.
  */
 public class BooleanThreadLocalDefaultFalse extends ThreadLocal<Boolean> {
 	private static final Unsafe $ = UnsafeAccess.$;
@@ -23,9 +21,7 @@ public class BooleanThreadLocalDefaultFalse extends ThreadLocal<Boolean> {
 	}
 
 	/**
-	 * @param value Must be Boolean.TRUE or Boolean.FALSE. No new Boolean(true/false)!
-	 *              Must always set back to false before the thread stops, else performance will be worse.
-	 *              Not going to break anything, but bad for performance.
+	 * @param value Must be Boolean.TRUE or Boolean.FALSE. No new Boolean(true/false)! Must always set back to false before the thread stops, else performance will be worse. Not going to break anything, but bad for performance.
 	 */
 	@Override
 	public void set(Boolean value) {
@@ -33,9 +29,7 @@ public class BooleanThreadLocalDefaultFalse extends ThreadLocal<Boolean> {
 	}
 
 	/**
-	 * @param value Must be Boolean.TRUE or Boolean.FALSE. No new Boolean(true/false)!
-	 *              Must always set back to false before the thread stops, else performance will be worse.
-	 *              Not going to break anything, but bad for performance.
+	 * @param value Must be Boolean.TRUE or Boolean.FALSE. No new Boolean(true/false)! Must always set back to false before the thread stops, else performance will be worse. Not going to break anything, but bad for performance.
 	 */
 	public Boolean getAndSet(Boolean value) {
 		Boolean oldValue = get();

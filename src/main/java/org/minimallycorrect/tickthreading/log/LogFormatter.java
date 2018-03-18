@@ -1,10 +1,10 @@
 package org.minimallycorrect.tickthreading.log;
 
-import org.minimallycorrect.tickthreading.util.PropertyUtil;
-
 import java.io.*;
 import java.text.*;
 import java.util.logging.*;
+
+import org.minimallycorrect.tickthreading.util.PropertyUtil;
 
 // TODO rework for log4j - not currently used
 public class LogFormatter extends Formatter {
@@ -57,7 +57,6 @@ public class LogFormatter extends Formatter {
 			formattedMessage.append(endColor);
 		}
 		formattedMessage.append("] ");
-
 
 		String loggerName = record.getLoggerName();
 		String message = record.getMessage();

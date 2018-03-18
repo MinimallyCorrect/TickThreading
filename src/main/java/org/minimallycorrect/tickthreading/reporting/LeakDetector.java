@@ -1,15 +1,18 @@
 package org.minimallycorrect.tickthreading.reporting;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import lombok.val;
-import org.apache.logging.log4j.Level;
-import org.minimallycorrect.tickthreading.config.Config;
-import org.minimallycorrect.tickthreading.log.Log;
-import org.minimallycorrect.tickthreading.util.unsafe.UnsafeUtil;
-
 import java.lang.ref.*;
 import java.util.*;
 import java.util.concurrent.*;
+
+import lombok.val;
+
+import org.apache.logging.log4j.Level;
+
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
+import org.minimallycorrect.tickthreading.config.Config;
+import org.minimallycorrect.tickthreading.log.Log;
+import org.minimallycorrect.tickthreading.util.unsafe.UnsafeUtil;
 
 public class LeakDetector {
 	private static final long waitTimeSeconds = 60;

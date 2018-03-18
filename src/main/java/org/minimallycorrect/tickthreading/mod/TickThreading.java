@@ -1,20 +1,22 @@
 package org.minimallycorrect.tickthreading.mod;
 
 import lombok.val;
+
+import sun.misc.Signal;
+import sun.misc.SignalHandler;
+
+import org.minimallycorrect.tickthreading.log.Log;
+
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import org.minimallycorrect.tickthreading.log.Log;
-import sun.misc.Signal;
-import sun.misc.SignalHandler;
 
 @Mod(modid = "@MOD_ID@", version = "@MOD_VERSION@", name = "@MOD_NAME@", acceptableRemoteVersions = "*", acceptedMinecraftVersions = "[@MC_VERSION@]")
 public class TickThreading {
 	private static void handleSignal(String name, SignalHandler handler) {
 		try {
 			Signal.handle(new Signal(name), handler);
-		} catch (IllegalArgumentException ignored) {
-		}
+		} catch (IllegalArgumentException ignored) {}
 	}
 
 	@Mod.EventHandler
@@ -26,8 +28,7 @@ public class TickThreading {
 			while (!server.isServerStopped()) {
 				try {
 					Thread.sleep(100);
-				} catch (InterruptedException ignored) {
-				}
+				} catch (InterruptedException ignored) {}
 			}
 		};
 		handleSignal("TERM", handler);

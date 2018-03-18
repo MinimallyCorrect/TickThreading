@@ -1,13 +1,14 @@
 package org.minimallycorrect.tickthreading.mixin.extended.forge;
 
-import net.minecraft.world.WorldServer;
-import net.minecraftforge.common.DimensionManager;
+import java.util.Hashtable;
+
 import org.minimallycorrect.javatransformer.api.code.RETURN;
 import org.minimallycorrect.mixin.*;
 import org.minimallycorrect.tickthreading.config.Config;
 import org.minimallycorrect.tickthreading.reporting.LeakDetector;
 
-import java.util.Hashtable;
+import net.minecraft.world.WorldServer;
+import net.minecraftforge.common.DimensionManager;
 
 @Mixin
 public abstract class MixinDimensionManager extends DimensionManager {
@@ -29,8 +30,7 @@ public abstract class MixinDimensionManager extends DimensionManager {
 
 	@Inject(injectable = "abortWorldUnloading", type = Type.BODY)
 	@Inject(injectable = "scheduleLeakCheck", type = Type.METHOD_CALL, value = "flush")
-	public static void unloadWorlds(@SuppressWarnings({"UseOfObsoleteCollectionType", "unused"}) Hashtable<Integer, long[]> worldTickTimes) {
-	}
+	public static void unloadWorlds(@SuppressWarnings({"UseOfObsoleteCollectionType", "unused"}) Hashtable<Integer, long[]> worldTickTimes) {}
 
 	@Overwrite
 	public static void initDimension(int dim) {
