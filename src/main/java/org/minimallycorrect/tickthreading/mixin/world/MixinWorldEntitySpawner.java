@@ -18,10 +18,12 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import org.minimallycorrect.mixin.Mixin;
+import org.minimallycorrect.mixin.Overwrite;
 import org.minimallycorrect.tickthreading.collection.LongList;
 import org.minimallycorrect.tickthreading.collection.LongSet;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.EnumMap;
 
 @Mixin
 public abstract class MixinWorldEntitySpawner extends WorldEntitySpawner {
@@ -82,7 +84,7 @@ public abstract class MixinWorldEntitySpawner extends WorldEntitySpawner {
 		return lastGap == 0 ? height : lastGap;
 	}
 
-	@Override
+	@Overwrite
 	public int findChunksForSpawning(WorldServer worldServer, boolean peaceful, boolean hostile, boolean animal) {
 		if (worldServer.getWorldTime() % clumping != 0) {
 			return 0;
@@ -94,9 +96,9 @@ public abstract class MixinWorldEntitySpawner extends WorldEntitySpawner {
 
 		val profiler = worldServer.profiler;
 		profiler.startSection("creatureTypes");
-		boolean dayTime = worldServer.isDaytime();
 		val p = worldServer.getChunkProvider();
 		val hell = worldServer.provider instanceof WorldProviderHell;
+		boolean dayTime = !hell && worldServer.isDaytime();
 		float mobMultiplier = entityMultiplier * (dayTime ? 1 : 2);
 		val requiredSpawns = new EnumMap<EnumCreatureType, Integer>(EnumCreatureType.class);
 		for (EnumCreatureType creatureType : EnumCreatureType.values()) {

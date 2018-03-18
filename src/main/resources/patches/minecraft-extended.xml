@@ -1,0 +1,19 @@
+<patchGroups>
+	<minecraftExtended>
+		<!-- Replace the main loop with our own -->
+		<class id="net.minecraft.server.MinecraftServer">
+			<replaceMethodCall method="^method:MinecraftServer/applyServerIconToResponse^"
+							   code="{$_ = $proceed($$); mainLoop();}">run
+			</replaceMethodCall>
+		</class>
+		<!-- threading breaks the built-in profiler
+		TODO: could we do something clever and remove all the profiler fields and usages?
+		-->
+		<class id="net.minecraft.profiler.Profiler">
+			<disableMethod>startSection,endStartSection,endSection</disableMethod>
+		</class>
+		<class id="net.minecraftforge.common.DimensionManager">
+			<synchronize>setWorld</synchronize>
+		</class>
+	</minecraftExtended>
+</patchGroups>

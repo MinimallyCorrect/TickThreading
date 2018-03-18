@@ -7,20 +7,20 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.oredict.OreDictionary;
 import org.minimallycorrect.mixin.Mixin;
-import org.minimallycorrect.mixin.OverrideStatic;
+import org.minimallycorrect.mixin.Overwrite;
 
-import java.util.*;
+import java.util.List;
 
 @Mixin
 public abstract class MixinOreDictionary extends OreDictionary {
-	@OverrideStatic
+	@Overwrite
 	public static int[] getOreIDs(ItemStack stack) {
 		if (stack == null)
-			throw new IllegalArgumentException("Stack can not be null!");
+			throw new IllegalArgumentException();
 
 		val item = stack.getItem();
 		if (item == null)
-			throw new IllegalArgumentException("Stack can not be null!");
+			throw new IllegalArgumentException();
 
 		val delegate = item.delegate;
 		val registryName = delegate.name();

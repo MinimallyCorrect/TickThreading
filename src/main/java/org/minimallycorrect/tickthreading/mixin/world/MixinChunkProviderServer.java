@@ -3,10 +3,11 @@ package org.minimallycorrect.tickthreading.mixin.world;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.ChunkProviderServer;
 import org.minimallycorrect.mixin.Mixin;
+import org.minimallycorrect.mixin.Overwrite;
 
 @Mixin
 public abstract class MixinChunkProviderServer extends ChunkProviderServer {
-	@Override
+	@Overwrite
 	public boolean saveChunks(boolean force) {
 		int i = 0;
 

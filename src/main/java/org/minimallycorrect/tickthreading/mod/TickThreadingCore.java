@@ -9,7 +9,7 @@ import org.minimallycorrect.tickthreading.util.PropertyUtil;
 import org.minimallycorrect.tickthreading.util.Version;
 import org.minimallycorrect.tickthreading.util.unsafe.UnsafeUtil;
 
-import java.util.*;
+import java.util.Map;
 
 @IFMLLoadingPlugin.Name("@MOD_NAME@Core")
 @IFMLLoadingPlugin.MCVersion("@MC_VERSION@")
@@ -22,14 +22,13 @@ public class TickThreadingCore implements IFMLLoadingPlugin {
 		//Load config file early so invalid config crashes fast, not 2 minutes into loading a large modpack
 		Config.$.getClass();
 
-		if (PropertyUtil.get("removeSecurityManager", false)) {
+		// By default, disable FML security manager.
+		// All it does currently is stop System.exit() calls
+		// It adds some (small) overhead to many operations and we don't really need it
+		if (PropertyUtil.get("removeSecurityManager", true))
 			UnsafeUtil.removeSecurityManager();
-		}
 
 		Log.info(Version.DESCRIPTION + " CoreMod initialised");
-
-		if (Version.EXTENDED && !PropertyUtil.get("overrideExtended", false))
-			throw new UnsupportedOperationException("TickThreading EXTENDED release is not currently usable");
 	}
 
 	@Override
@@ -51,6 +50,8 @@ public class TickThreadingCore implements IFMLLoadingPlugin {
 	public void injectData(Map<String, Object> map) {
 		ModPatcher.loadMixins("org.minimallycorrect.tickthreading.mixin");
 		ModPatcher.loadPatches(TickThreadingCore.class.getResourceAsStream("/patches/minecraft.xml"));
+		if (Version.EXTENDED)
+			ModPatcher.loadPatches(TickThreadingCore.class.getResourceAsStream("/patches/minecraft-extended.xml"));
 	}
 
 	@Override

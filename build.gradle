@@ -36,8 +36,8 @@ ext.packaging = 'jar'
 ext.url = 'https://github.com/MinimallyCorrect/TickThreading'
 ext.description = 'TickThreading'
 ext.organization = 'minimallycorrect.org'
-ext.mcVersion = '1.12'
-ext.forgeVersion = "14.21.1.2428"
+ext.mcVersion = '1.12.1'
+ext.forgeVersion = "14.22.0.2467"
 ext.fullForgeVersion = mcVersion + "-" + forgeVersion
 
 gradle.startParameter.showStacktrace = org.gradle.api.logging.configuration.ShowStacktrace.ALWAYS
@@ -83,7 +83,10 @@ if (System.getenv("GRADLE_NO_CACHE_CHANGING") != null) {
 
 dependencies {
 	testCompile 'junit:junit:4.12'
-	compileOnly 'org.projectlombok:lombok:1.16.12'
+	compileOnly 'org.projectlombok:lombok:1.16.18'
+	compileOnly 'org.jetbrains:annotations:15.0'
+	testCompileOnly 'org.projectlombok:lombok:1.16.18'
+	testCompileOnly 'org.jetbrains:annotations:15.0'
 	libLoader "org.minimallycorrect.typedconfig:TypedConfig:0.1-SNAPSHOT"
 	libLoader "org.minimallycorrect.modpatcher:ModPatcher:$mcVersion-SNAPSHOT"
 }
