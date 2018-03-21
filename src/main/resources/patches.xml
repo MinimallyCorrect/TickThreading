@@ -1855,4 +1855,12 @@
 			}">getGenY</replaceMethod>
 		</class>
 	</meteorCraft>
+	<galacticraft>
+		<class id="micdoodle8.mods.galacticraft.core.tick.GCCoreTickHandlerServer">
+			<!-- Lazy fix - synchronize all methods in this class rather than trying to use concurrent collections
+			Could have fixed in a way that doesn't add so much synchronization overhead but can't be bothered :D
+			-->
+			<synchronize/>
+		</class>
+	</galacticraft>
 </mods>
