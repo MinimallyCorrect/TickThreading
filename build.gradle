@@ -68,19 +68,16 @@ jar {
 }
 
 def outputJarFile = (File) jar.outputs.files.getSingleFile()
-def coreJarFile = new File(outputJarFile.getParentFile(), outputJarFile.getName().replace('extended', 'core-borked'))
 
-println(coreJarFile)
-
-task coreJar(type: Jar, dependsOn: retromapReplacedMain) {
-	with jar
-	classifier = "core"
+task coreJar(type: Zip, dependsOn: reobfJar) {
+	from zipTree(outputJarFile).matching { exclude 'org/minimallycorrect/tickthreading/mixin/extended/**' }
+	archiveName = jar.archiveName.replace('-' + jar.classifier, "-core")
+	destinationDir = jar.destinationDir
 	exclude('org/minimallycorrect/tickthreading/mixin/extended**')
 }
 
 artifacts {
-	archives jar
-	archives coreJarFile
+	archives coreJar
 }
 
 build.dependsOn(coreJar)
