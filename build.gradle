@@ -9,7 +9,7 @@ buildscript {
 		classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
 		classpath 'org.minimallycorrect.modpatcher:ModPatcherGradle:0.1-SNAPSHOT'
 		classpath 'org.minimallycorrect.libloader:LibLoaderGradle:0.1-SNAPSHOT'
-		classpath 'org.minimallycorrect.gradle:DefaultsPlugin:0.0.27'
+		classpath 'org.minimallycorrect.gradle:DefaultsPlugin:0.0.28'
 	}
 }
 apply plugin: 'org.minimallycorrect.gradle.DefaultsPlugin'
