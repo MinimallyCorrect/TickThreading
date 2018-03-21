@@ -866,6 +866,10 @@
 			<replaceInitializer field="tickingGridsToRemove" class="nallar.collections.CLinkedHashSet"/>
 			<replaceInitializer field="tickConduit" class="nallar.collections.CLinkedHashSet"/>
 			<replaceInitializer field="tickConduitToAdd" class="nallar.collections.CLinkedHashSet"/>
+			<synchronize field="thermalexpansion.part.conduit.GridFormer.tickLock">tickEnd</synchronize>
+		</class>
+		<class id="thermalexpansion.part.conduit.ConduitBase">
+			<synchronize field="thermalexpansion.part.conduit.GridFormer.tickLock">load,onChunkUnload</synchronize>
 		</class>
 		<class id="thermalexpansion.part.conduit.fluid.GridFluid">
 			<final field="worldObj"/>
