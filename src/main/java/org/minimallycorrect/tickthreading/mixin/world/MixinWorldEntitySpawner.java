@@ -5,6 +5,7 @@ import java.util.EnumMap;
 
 import lombok.val;
 
+import org.minimallycorrect.mixin.Add;
 import org.minimallycorrect.mixin.Mixin;
 import org.minimallycorrect.mixin.Overwrite;
 import org.minimallycorrect.tickthreading.collection.LongList;
@@ -35,22 +36,19 @@ public abstract class MixinWorldEntitySpawner extends WorldEntitySpawner {
 	private static final int triesPerCreatureType = 4;
 	private static final int clumping = 7;
 	private static final int mobClumping = 5;
-	private static final int maxChunksPerPlayer = square(farRange * 2) - square(closeRange * 2);
-	private static int surfaceChance;
-	private static int gapChance;
+	private static final int maxChunksPerPlayer = (farRange * farRange * 4) - (closeRange * closeRange * 4);
 
+	@Add
 	private static long hash(int x, int z) {
 		return (((long) x) << 32) | (z & 0xffffffffL);
 	}
 
-	private static int square(int a) {
-		return a * a;
-	}
-
+	@Add
 	private static Chunk getChunkFromBlockCoords(WorldServer w, int x, int z) {
 		return w.getChunkProvider().getLoadedChunk(x >> 4, z >> 4);
 	}
 
+	@Add
 	private static int getPseudoRandomHeightValue(int wX, int wZ, WorldServer worldServer, boolean surface, int gapChance) {
 		Chunk chunk = getChunkFromBlockCoords(worldServer, wX, wZ);
 		if (chunk == null) {
@@ -163,6 +161,8 @@ public abstract class MixinWorldEntitySpawner extends WorldEntitySpawner {
 
 		profiler.startSection("spawnMobs");
 
+		int surfaceChance = 0;
+		int gapChance = 0;
 		SpawnLoop: for (val entry : requiredSpawns.entrySet()) {
 			val creatureType = entry.getKey();
 			val tries = Math.max(triesPerCreatureType, entry.getValue() / (triesPerCreatureType * mobClumping));
