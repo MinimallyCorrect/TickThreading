@@ -737,6 +737,7 @@
 		</class>
 		<class id="cpw.mods.fml.common.registry.TickRegistry">
 			<addAll fromClass="nallar.patched.forge.PatchTickRegistry"/>
+            <synchronize>updateTickQueue,registerScheduledTickHandler</synchronize>
 		</class>
 		<class id="cpw.mods.fml.relauncher.FMLLogFormatter">
 			<replace class="nallar.log.LogFormatter"/>

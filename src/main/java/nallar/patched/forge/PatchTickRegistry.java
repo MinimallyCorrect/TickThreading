@@ -9,7 +9,7 @@ import nallar.tickthreading.Log;
 import nallar.tickthreading.util.WrappedScheduledTickHandler;
 
 public abstract class PatchTickRegistry extends TickRegistry {
-	public static void registerScheduledTickHandler(IScheduledTickHandler handler, Side side) {
+	public static synchronized void registerScheduledTickHandler(IScheduledTickHandler handler, Side side) {
 		if (handler.getClass().getName().toLowerCase().contains("version")) {
 			Log.info("Skipping version tick handler " + Log.toString(handler));
 			return;
