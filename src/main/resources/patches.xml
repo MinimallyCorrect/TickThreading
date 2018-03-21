@@ -871,6 +871,10 @@
 		<class id="thermalexpansion.part.conduit.ConduitBase">
 			<synchronize field="thermalexpansion.part.conduit.GridFormer.tickLock">load,onChunkUnload</synchronize>
 		</class>
+		<class id="thermalexpansion.part.conduit.Grid">
+			<synchronize/>
+			<synchronize field="thermalexpansion.part.conduit.GridFormer.tickLock">rebalanceGrid,nodeAdded,addConduit,removeConduit,makeNode,makeConduit,destroyGrid,regenerateGrid,mergeGrid,setUntransversed</synchronize>
+		</class>
 		<class id="thermalexpansion.part.conduit.fluid.GridFluid">
 			<final field="worldObj"/>
 			<insertAfter code="{
