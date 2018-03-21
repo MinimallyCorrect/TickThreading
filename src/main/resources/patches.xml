@@ -1522,6 +1522,11 @@
 			<newField field="staticLock" class="java.lang.Object" static=""/>
 			<synchronize field="staticLock">init</synchronize>
 		</class>
+		<class id="crazypants.enderio.conduit.power.NetworkPowerManager">
+            <!-- Could change checkReceptors to create new list then replace the list and not synchronize
+             if this causes deadlocks -->
+            <synchronize>getPowerInReceptors,checkReceptors,init,getMaxPowerInReceptors</synchronize>
+		</class>
 		<class id="crazypants.enderio.conduit.ConduitNetworkTickHandler">
 			<replaceInitializer field="listeners" class="nallar.collections.SynchronizedList"/>
 			<synchronize field="listeners">tickStart,tickEnd</synchronize>
