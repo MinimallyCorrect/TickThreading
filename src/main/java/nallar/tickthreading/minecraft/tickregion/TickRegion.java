@@ -55,8 +55,8 @@ public abstract class TickRegion implements TryRunnable {
 	public TableFormatter writeStats(TableFormatter tf) {
 		return tf
 				.row(this.getShortTypeName())
-				.row(regionX * TickManager.regionSize)
-				.row(regionZ * TickManager.regionSize)
+				.row(regionX << TickManager.regionSizePower)
+				.row(regionZ << TickManager.regionSizePower)
 				.row(size())
 				.row(getAverageTickTime());
 	}

@@ -26,8 +26,7 @@ import java.util.*;
 import java.util.concurrent.*;
 
 public final class TickManager {
-	public static final int regionSize = 32;
-	public static final int regionSizePower = 31 - Integer.numberOfLeadingZeros(regionSize);
+	public static final int regionSizePower = 6;
 	public boolean profilingEnabled = false;
 	private double averageTickLength = 0;
 	private long lastTickLength = 0;
