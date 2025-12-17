@@ -8,4 +8,8 @@ If you want to do something with the earlier working versions check out the [1.4
 
 Luna
 
-TickThreading is licensed under the MIT license (Copyright (c) 2012 Luna Nova)
+## License
+
+TickThreading is dual-licensed under your choice of:
+- **CC0 1.0 Universal** (Public Domain Dedication) - see `LICENSE-CC0`
+- **MIT License** (Copyright (c) 2012 Luna Nova) - see `LICENSE`
